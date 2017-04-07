@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="RuckZuck_Tool.NewSWPanelxaml"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="580" d:DesignWidth="600" SizeChanged="UserControl_SizeChanged">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ContextMenu>
+            <ContextMenu x:Name="myContextMenu">
+                <MenuItem Header="Convert to X86" Click="MenuItem_Click" />
+                <MenuItem Header="Get Description from existing Version" Click="MenuItem_Click_1"/>
+            </ContextMenu>
+        </Grid.ContextMenu>
+            <ScrollViewer>
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Bottom">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+                        <Button x:Name="btUpload"  Content="Upload" Width="130" Height="30" Click="Button_Click" IsEnabled="False" ToolTip="URL must be specified before SW upload is possible." Margin="0,0,5,0" />
+                        <Button x:Name="btSaveAsXML" Content="Save as XML..." Width="130" Height="30" ToolTip="Save settings as XML..." Click="btSaveAsXML_Click" Margin="0,0,5,0"  />
+                        <Button x:Name="btOpenXML" Content="Open an XML..." Width="130" Height="30" ToolTip="Open settings from XML..." Click="btOpenXML_Click" Margin="0,0,5,0" />
+                        <Button x:Name="btCreateEXE" Content="Create EXE..." Width="130" Height="30" ToolTip="Create a Setup.EXE without dependency to RuckZuck.tools" Margin="0,0,5,0" Click="btCreateEXE_Click" />
+                        <Button x:Name="btTest" Content="Test Install" Width="130" Height="30" ToolTip="Open settings from XML..." Click="btTest_Click" />
+                    </StackPanel>
+                </DockPanel>
+                <DockPanel ScrollViewer.CanContentScroll="True" DockPanel.Dock="Top">
+                    <GroupBox Header="Product Information" DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="0" Name="rArch" />
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Grid.Row="0" Content="Product Name:" />
+                            <TextBox x:Name="tbProductName" Grid.Column="1" Grid.Row="0"  Height="24" VerticalAlignment="Top" />
+                            <Label Grid.Column="0" Grid.Row="1" Content="Product Version:" />
+                            <TextBox x:Name="tbVersion" Grid.Column="1" Grid.Row="1"  Height="24" VerticalAlignment="Top" GotFocus="tbVersion_GotFocus" LostFocus="tbVersion_LostFocus" />
+                            <Label Grid.Column="0" Grid.Row="2" Content="Manufacturer:" />
+                            <TextBox x:Name="tbManufacturer" Grid.Column="1" Grid.Row="2"  Height="24" VerticalAlignment="Top" />
+                            <Label Grid.Column="0" Grid.Row="3" Content="Product URL:" />
+                            <TextBox x:Name="tbProductURL" Grid.Column="1" Grid.Row="3"  Height="24" VerticalAlignment="Top" />
+                            <Label Grid.Column="0" Grid.Row="4" Content="Description:" />
+                            <TextBox x:Name="tbDescription" Grid.Column="1" Grid.Row="4"  Height="64" VerticalAlignment="Top" AcceptsReturn="True" />
+                            <Label Grid.Column="0" Grid.Row="5" Content="MSI Product Code:" />
+                            <DockPanel Grid.Column="1" Grid.Row="5" LastChildFill="True">
+                                <DockPanel DockPanel.Dock="Right">
+                                    <Button x:Name="btOpenMSI" Width="24"  HorizontalAlignment="Stretch" Content="..." Click="btOpenMSI_Click" />
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Left">
+                                    <TextBox x:Name="tbMSIId" Height="24" AcceptsReturn="True" LostFocus="tbMSIId_LostFocus" HorizontalAlignment="Stretch"  />
+                                </DockPanel>
+                            </DockPanel>
+                            <Label Grid.Column="0" Grid.Row="6" Content="Architecture:" />
+                            <TextBox x:Name="tbArchitecture" Grid.Column="1" Grid.Row="6"  Height="24" Text="NEW" />
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Product Source" DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="72" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Grid.Row="0" Content="Files to download:" />
+                            <DataGrid x:Name="dgSourceFiles" Grid.Column="1" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" CellEditEnding="dgSourceFiles_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="URL" Binding="{Binding URL, ValidatesOnExceptions=True}" Width="*"/>
+                                    <DataGridTextColumn Header="FileName" Binding="{Binding FileName}" Width="180"/>
+                                    <DataGridTextColumn Header="FileHash" Binding="{Binding FileHash}" Width="100"/>
+                                    <DataGridTextColumn Header="HashType" Binding="{Binding HashType}" Width="60"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Label Grid.Column="0" Grid.Row="1" Content="ContentId:" />
+                            <TextBox x:Name="tbContentId" Grid.Column="1" Grid.Row="1"  Height="24" VerticalAlignment="Top" IsReadOnly="True" MouseDoubleClick="tbContentId_MouseDoubleClick" KeyDown="tbContentId_KeyDown" />
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Installation" DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" MinHeight="24" />
+                                <RowDefinition Height="Auto" MinHeight="48" />
+                                <RowDefinition Height="0" Name="rPreInstall" />
+                                <RowDefinition Height="Auto" MinHeight="48" />
+                                <RowDefinition Height="0" Name="rPostInstall" />
+                                <RowDefinition Height="Auto" MinHeight="24" />
+                                <RowDefinition Height="0" Name="rPreReq" />
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Grid.Row="0" Content="Detection Script:" />
+                            <TextBox x:Name="tbPSDetection" Grid.Column="1" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="1" Content="Prerequisite Script:" />
+                            <ComboBox x:Name="tbPSPrereq" Grid.Column="1" Grid.Row="1" IsEditable="True"  >
+                                <ComboBoxItem Content="[Environment]::Is64BitProcess" ToolTip="X64"/>
+                                <ComboBoxItem Content="![Environment]::Is64BitProcess" ToolTip="X86"/>
+                            </ComboBox>
+                            <Label Grid.Column="0" Grid.Row="2" Content="PreInstall Script:" />
+                            <TextBox x:Name="tbPSPreInstall" Grid.Column="2" Grid.Row="2" AcceptsReturn="True" IsEnabled="False" />
+                            <Label Grid.Column="0" Grid.Row="3" Content="Installation Script:" />
+                            <TextBox x:Name="tbPSInstall" Grid.Column="2" Grid.Row="3"  AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="4" Content="PostInstall Script:" />
+                            <TextBox x:Name="tbPSPostInstall" Grid.Column="1" Grid.Row="4" AcceptsReturn="True" IsEnabled="False" />
+                            <Label Grid.Column="0" Grid.Row="5" Content="UnInstallation Script:" />
+                            <TextBox x:Name="tbPSUnInstall" Grid.Column="2" Grid.Row="5" AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="6" Content="SW PreRequisites:" ToolTip="Shortname of other Products" />
+                            <TextBox x:Name="tbPreReq" Grid.Column="2" Grid.Row="6" AcceptsReturn="True" AcceptsTab="True" />
+                        </Grid>
+                    </GroupBox>
+                </DockPanel>
+
+
+
+
+            </DockPanel>
+        </ScrollViewer>
+        <Canvas Width="96" Height="124" Margin="0,17,23,490" HorizontalAlignment="Right" Background="#FFFFFFFF" VerticalAlignment="Top" DockPanel.Dock="Top">
+            <StackPanel>
+                <Button x:Name="btLoadIcon" Content="Load Icon..." Click="btLoadIcon_Click" Height="22"/>
+                <Image x:Name="imgIcon" Width="96" Height="96" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Canvas>
+    </Grid>
+
+</UserControl>

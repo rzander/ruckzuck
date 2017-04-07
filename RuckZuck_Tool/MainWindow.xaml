@@ -1,0 +1,652 @@
+﻿<Window xmlns:RuckZuck_Tool="clr-namespace:RuckZuck_Tool" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        x:Class="RuckZuck_Tool.MainWindow"
+        Title="RuckZuck" Height="700" Width="800" WindowStartupLocation="CenterScreen" Icon="Images/RuckZuck.png" Closing="Window_Closing">
+    <Window.Resources>
+        <Style TargetType="ToolTip">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding}" Width="300" TextWrapping='Wrap' />
+                        </StackPanel>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <TabControl x:Name="tabWizard" Margin="0,-5,0,-2" SelectionChanged="tabWizard_SelectionChanged">
+            <TabItem Header="Start" Name="tabStart">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderStart" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Software Package Manager for Windows..." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterStart" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btNextStart" Content="Next &gt;" Width="80"  Margin="10" Click="btNextStart_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainStart" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel LastChildFill="True" >
+                            <DockPanel DockPanel.Dock="Top">
+                                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" FontSize="14">
+                                <LineBreak/>
+                                Welcome to RuckZuck, a quick way to install and update your Software...<LineBreak/>  
+                                RuckZuck is free software, without warranty and support. You can redistribute and run this Tool on as many machines you want.
+                                <LineBreak/>
+                                <LineBreak/>
+                                The Software Repository in this 'free' edition is managed by the Community.<LineBreak/>
+                                There is no warranty that the Installation of a Software-Package will work on your Computer.<LineBreak/>
+                                It's important for the quality of the Packages that you use the Feedback option to rate the quality of the Installation (not the Quality of the Product you are installing !).
+                                <LineBreak/>
+                                <LineBreak/>
+                                Before a Software becomes visible in the Installation-Form, we will do a quick check, just to guarantee that the source is from a public Repository or from the Vendor of the Software.<LineBreak/>
+                                <LineBreak/>
+                                
+                                <LineBreak/>
+                                
+                                    <LineBreak/>
+                                </TextBlock>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Bottom">
+                                <TextBlock Name="tbVersion">
+                                    Version:{0}  Copyright (c) 2016 by Roger Zander
+                                </TextBlock>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top" VerticalAlignment="Top">
+                                <TextBlock  VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="DarkRed">
+                                When you install Software with RuckZuck, you confirm that you have read and agree with the license agreements and restrictions of the software you install.
+                                </TextBlock>
+                            </DockPanel>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Scan" Name="tabScan">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderScan" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="... will Scan your Computer to detect installed Software" Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterScan" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackScan" Content="&lt; Back" Width="80" Margin="10" />
+                            <Button x:Name="btNextScan" Content="Next &gt;" Width="80"  Margin="10" Click="btNextScan_Click" IsEnabled="False" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainScan" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Bottom">
+                                <Label Content=""/>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top" VerticalAlignment="Center">
+                                <StackPanel>
+                                    <Label Name="lbWait" Content="Please wait a moment while Software-Scan is running... " HorizontalAlignment="Center" Foreground="#FF000CFD" Visibility="Hidden"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="ScanResult" Name="tabScanResult">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderScanResult" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="... has Found unknow Software on your Computer." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterScanResult" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackScanResult" Content="&lt; Back" Width="80" Margin="10" Click="btBackScanResult_Click" />
+                            <Button x:Name="btNextScanResult" Content="Next &gt;" Width="80"  Margin="10" Click="btNextScanResult_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainScanResult" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel  >
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="MainMenu" Name="tabMain">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderMain" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Software Package Manager for Windows..." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterMain" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btFinishMain" Content="Close" Width="80"  Margin="10" Click="btFinishMain_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainMain" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Bottom" Margin="0,0,0,3">
+                            <DockPanel DockPanel.Dock="Left">
+                                <Button Name="btOpenSettings" Height="32" BorderThickness="0" Click="btOpenSettings_Click" Background="{x:Null}" ToolTip="RuckZuck Settings...">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/Setting_32.png" Width="32" Height="32" />
+                                    </StackPanel>
+                                </Button>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
+                                <TextBlock>           
+                                    <Hyperlink NavigateUri="https://RuckZuck.tools" RequestNavigate="Hyperlink_RequestNavigate">
+                                        https://RuckZuck.tools
+                                    </Hyperlink>
+                                </TextBlock>
+                            </DockPanel>
+                        </DockPanel>
+
+                        <DockPanel DockPanel.Dock="Top">
+                            <StackPanel VerticalAlignment="Center">
+                                <DockPanel>
+                                    <Button x:Name="btInstallSoftware" Content="Connecting to RuckZuck.tools ... please wait !" Height="32" Click="btInstallSoftware_Click" Margin="10" IsEnabled="False" >
+                                        <Button.Background>
+                                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                                <GradientStop Color="#FFAFF06E" Offset="0.356"/>
+                                                <GradientStop Color="#FF58C725" Offset="1"/>
+                                                <GradientStop Color="White"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                    </Button>
+                                </DockPanel>
+                                <DockPanel>
+                                    <Button x:Name="btUpdateSoftware" Content="Update existing Software" Height="32" Margin="10" Click="btUpdateSoftware_Click" IsEnabled="False" >
+                                        <Button.Background>
+                                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                                <GradientStop Color="#FFE4F06E" Offset="0.356"/>
+                                                <GradientStop Color="#FFB8C725" Offset="1"/>
+                                                <GradientStop Color="White"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                    </Button>
+                                </DockPanel>
+                                <DockPanel Visibility="Collapsed">
+                                    <Button x:Name="btNewSoftware" Content="Create new Software-Item (from .MSI)" Click="btNewSoftware_Click" Height="32" Margin="10" IsEnabled="False" />
+                                </DockPanel>
+                                <Separator />
+                                <DockPanel>
+                                    <Button x:Name="btNewSoftwareARP" Content="Create new Software-Item" Height="32" Click="btNewSoftwareARP_Click" Margin="10">
+                                        <Button.Background>
+                                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                                <GradientStop Color="#FF9BABF3" Offset="0.632"/>
+                                                <GradientStop Color="#FF686DE6" Offset="1"/>
+                                                <GradientStop Color="White"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                    </Button>
+                                </DockPanel>
+                            </StackPanel>
+
+                        </DockPanel>
+
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="InstallSoftware" Name="tabInstallSW">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderInstall" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Install Software" Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterInstall" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackInstall" Content="&lt; Back" Width="80" Margin="10" Click="btBackInstall_Click" />
+                            <Button x:Name="btNextInstall" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
+                            <Button x:Name="btFinishInstall" Content="Finish" Width="80"  Margin="10" Click="btFinishInstall_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainInstall" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel>
+                            <RuckZuck_Tool:InstallSwPanel x:Name="oInstPanel" />
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="UpdateSoftware" Name="tabUpdateSW">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderUpdate" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Install Software" Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterUpdate" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackUpdate" Content="&lt; Back" Width="80" Margin="10" Click="btBackInstall_Click" />
+                            <Button x:Name="btNextUpdate" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
+                            <Button x:Name="btFinishUpdate" Content="Finish" Width="80"  Margin="10" Click="btFinishInstall_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainUpdate" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel  >
+                            <RuckZuck_Tool:UpdateSwPanel x:Name="oUpdPanel" />
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="NewSoftwareMSI" Name="tabNewSWSMI">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderNewSWSMI" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Create a new Softare Package..." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterNewSWSMI" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackNewSWSMI" Content="&lt; Back" Width="80" Margin="10" Click="btBackNewSWSMI_Click" />
+                            <Button x:Name="btNextNewSWSMI" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
+                            <Button x:Name="btFinishNewSWSMI" Content="Finish" Width="80"  Margin="10" Click="btFinishNewSWSMI_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainNewSWSMI" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel  >
+                            <RuckZuck_Tool:NewSWPanelxaml x:Name="oNewPanel"  />
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="NewSoftwareARP" Name="tabNewSWARP">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderNewSWARP" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Create new Software-Items based on a existing installation." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterNewSWARP" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackNewSWARP" Content="&lt; Back" Width="80" Margin="10" Click="btBackNewSWARP_Click" />
+                            <Button x:Name="btNextNewSWARP" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
+                            <Button x:Name="btFinishNewSWARP" Content="Finish" Width="80"  Margin="10" Click="btFinishNewSWARP_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainNewSWARP" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel  >
+                            <DockPanel LastChildFill="True">
+                                <Label Content="missing Software-Items:" DockPanel.Dock="Top" />
+                                <Button Content="Create new Software-Item..." Name="btCreatARPSW" Click="btCreatARPSW_Click" DockPanel.Dock="Bottom" Margin="10" BorderBrush="#FF1B491D" Height="26">
+                                    <Button.Background>
+                                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFAFF06E" Offset="0.356"/>
+                                            <GradientStop Color="#FF58C725" Offset="1"/>
+                                            <GradientStop Color="White"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                                    <DataGrid x:Name="arpGrid2" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" DockPanel.Dock="Top" SelectionMode="Single">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Id" Binding="{Binding Id}" Visibility="Hidden"/>
+                                            <DataGridTemplateColumn Header="Icon">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding Image}" Height="24" Width="24" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}"/>
+                                            <DataGridTextColumn Header="Version" Binding="{Binding ProductVersion}"/>
+                                            <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" />
+                                            <DataGridTextColumn Header="Arch" Binding="{Binding Architecture}" />
+                                            <DataGridTextColumn Header="Short Name" Binding="{Binding ShortName}" Visibility="Hidden"/>
+
+                                            <DataGridTextColumn Header="Description" Binding="{Binding ProductDescription}" Visibility="Hidden" />
+                                            <DataGridTextColumn Header="ProjectURL" Binding="{Binding ProjectURL}" Visibility="Hidden" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Settings" Name="tabSettings" Loaded="tabSettings_Loaded">
+                <DockPanel>
+                    <DockPanel x:Name="dpHeaderSettings" DockPanel.Dock="Top" Height="50">
+                        <Border CornerRadius="0" BorderThickness="1" Padding="0" Margin="-3,0">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF6A6A6A" Offset="0"/>
+                                    <GradientStop Color="#FFCBCBCB" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFDEDEDE" Offset="0.017"/>
+                                    <GradientStop Color="White" Offset="0.577"/>
+                                    <GradientStop Color="#FFFDFDFD" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
+                                    <Label Content="Settings..." Margin="50,-10,0,0" />
+                                </StackPanel>
+                                <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
+                            </Grid>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel x:Name="dpFooterSettings" DockPanel.Dock="Bottom" Margin="-3,0">
+                        <DockPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="1"/>
+                                <GradientStop Color="#FFC9C9C9" Offset="0.067"/>
+                                <GradientStop Color="#FFFBFBFB" Offset="0"/>
+                            </LinearGradientBrush>
+                        </DockPanel.Background>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
+                            <Button x:Name="btBackSettings" Content="Back" Width="80"  Margin="10" Click="btBackSettings_Click"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel x:Name="dpMainSettings" DockPanel.Dock="Top" >
+                        <DockPanel DockPanel.Dock="Left" Width="40" HorizontalAlignment="Left" >
+
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Width="40"  HorizontalAlignment="Right">
+
+                        </DockPanel>
+                        <DockPanel LastChildFill="True" >
+                            <DockPanel DockPanel.Dock="Top">
+                                <Label DockPanel.Dock="Top">If you are a registered RuckZuck User, enter you account here:</Label>
+                                <Grid Margin="0,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="250" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="30"/>
+                                        <RowDefinition Height="30"/>
+                                        <RowDefinition Height="30"/>
+                                        <RowDefinition Height="30"/>
+                                        <RowDefinition Height="45"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Column="0" Grid.Row="0" Content="Username:" />
+                                    <TextBox x:Name="tbUsername" Grid.Column="1" Grid.Row="0"  Height="24" VerticalAlignment="Top"/>
+                                    <Label Grid.Column="2" Grid.Row="0" Content="You can request an Account at RuckZuck.tools" FontWeight="Light" />
+                                    <Label Grid.Column="0" Grid.Row="1" Content="Password:" />
+                                    <PasswordBox x:Name="tbPassword" Grid.Column="1" Grid.Row="1"  Height="24" VerticalAlignment="Top"/>
+                                    <Button x:Name="btSettingsSave" Grid.Row="2" Grid.Column="1" Content="Save" Width="80" Height="20" Click="btSettingsSave_Click" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                    <Label Grid.Column="0" Grid.Row="3" Content="Web-API:" />
+                                    <TextBox x:Name="tbSVC" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="True" IsEnabled="False"/>
+                                    <Label Grid.Column="0" Grid.Row="4" Content="local Repository:" />
+                                    <TextBox x:Name="tbRepository" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="False" IsEnabled="False" ToolTip="a local or shared directoy with RZ XML-Files"/>
+                                    <Label Grid.Column="0" Grid.Row="5" Content="Update Exclusion:" />
+                                    <Button x:Name="btUpdExclusion" Grid.Row="5" Grid.Column="1" Content="Clear All" Width="80" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="clear List of Update-Exclusion. Restart the Tool to rescan for Software-Updates." Click="btUpdExclusion_Click"/>
+                                    <Label Grid.Column="0" Grid.Row="6" Content="Internal URL:" Visibility="Hidden" />
+                                    <TextBox x:Name="tbURL" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" IsReadOnly="true" Visibility="Hidden"/>
+                                    <Label Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="2" Visibility="Hidden" Content="downloads will be redirected to this URL. This URL must contain subfolders with the ContentId as name." Margin="0,20,0,0" FontWeight="Light" />
+                                </Grid>
+                            </DockPanel>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
