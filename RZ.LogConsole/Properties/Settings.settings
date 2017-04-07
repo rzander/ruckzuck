@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RZ.LogConsole.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxx</Value>
+    </Setting>
+    <Setting Name="TopicName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ruckzuck</Value>
+    </Setting>
+    <Setting Name="Filtername" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">{0}</Value>
+    </Setting>
+    <Setting Name="SQLFilter" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">1 = 1</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
