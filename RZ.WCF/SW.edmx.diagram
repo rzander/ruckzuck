@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="a3bfde7db5a94e88a535810510a0ee6c" Name="Diagram1" ZoomLevel="74">
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.Content" Width="1.5" PointX="7.5" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.DeploymentType" Width="1.5" PointX="5.25" PointY="1.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.Product" Width="1.5" PointX="0.75" PointY="3.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.ProductVersion" Width="1.5" PointX="3" PointY="3.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.ProductVersionDownloads" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.ProductVersionFeedback" Width="1.5" PointX="0.75" PointY="6.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.WindowsInstallerIDs" Width="1.5" PointX="5.25" PointY="5.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vActiveLatestProducts" Width="1.5" PointX="7.75" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vAllSWDetails" Width="1.5" PointX="9.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vDownloadsByInstalltype" Width="1.5" PointX="2.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vDownloadsByProductVersion" Width="1.5" PointX="4.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vFeedbackSuccessRatio" Width="1.5" PointX="6.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vListProducts" Width="1.5" PointX="9.75" PointY="7.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vPendingSoftwareRequests" Width="1.5" PointX="11.75" PointY="0.75" IsExpanded="true" />
+        <AssociationConnector Association="RuckZuck_pubEntities.FK_Content_DeploymentType" ManuallyRouted="false" />
+        <AssociationConnector Association="RuckZuck_pubEntities.FK_DeploymentType_ProductVersion" ManuallyRouted="false" />
+        <AssociationConnector Association="RuckZuck_pubEntities.FK_ProductVersion_Product" ManuallyRouted="false" />
+        <AssociationConnector Association="RuckZuck_pubEntities.FK_WindowsInstallerIDs_ProductVersion" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.Categories" Width="1.5" PointX="14.5" PointY="5.25" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vFeedbackNotWorking" Width="1.5" PointX="0.5" PointY="11.625" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vProductsWithIssues" Width="1.5" PointX="2.125" PointY="11.625" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vProductVersionChanges" Width="1.5" PointX="3.875" PointY="11.625" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.ProductCategory" Width="1.5" PointX="0.75" PointY="15.125" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vCategorySummary" Width="1.5" PointX="9.25" PointY="12.125" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vProductCategories" Width="1.5" PointX="3" PointY="15.25" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.PreRequisite" Width="1.5" PointX="0.5" PointY="9" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vLatestProducts" Width="1.5" PointX="11.375" PointY="11.75" />
+        <EntityTypeShape EntityType="RuckZuck_pubEntities.vPreRequisites" Width="1.5" PointX="6.375" PointY="12.75" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

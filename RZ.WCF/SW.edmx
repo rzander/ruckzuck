@@ -1,0 +1,1394 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="SWEntities.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Categories">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Category" Type="nvarchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Content">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="DeploymentTypeID" Type="bigint" Nullable="false" />
+          <Property Name="DownloadURL" Type="nvarchar(max)" />
+          <Property Name="Filename" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="FileHash" Type="nvarchar" MaxLength="50" />
+          <Property Name="HashType" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="DeploymentType">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="Type" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="PSPreReq" Type="varchar(max)" />
+          <Property Name="PSPreInstall" Type="varchar(max)" />
+          <Property Name="PSInstall" Type="varchar(max)" />
+          <Property Name="PSPostInstall" Type="varchar(max)" />
+          <Property Name="PSUninstall" Type="varchar(max)" />
+          <Property Name="PSDetection" Type="varchar(max)" />
+          <Property Name="ContentID" Type="uniqueidentifier" />
+          <Property Name="IsSealed" Type="bit" />
+          <Property Name="LastModified" Type="datetime" />
+          <Property Name="IsRejected" Type="bit" />
+          <Property Name="Author" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="PreRequisite">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductId" Type="bigint" Nullable="false" />
+          <Property Name="Position" Type="int" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="ProductVersion" Type="nvarchar" MaxLength="50" />
+          <Property Name="Enabled" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Manufacturer" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="ProductCategory">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="CategoryId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ProductVersion">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductId" Type="bigint" Nullable="false" />
+          <Property Name="Icon" Type="varbinary(max)" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="LastModified" Type="datetime" />
+        </EntityType>
+        <EntityType Name="ProductVersionDownloads">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="DownloadDateTime" Type="datetime" Nullable="false" />
+          <Property Name="InstallTypeId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ProductVersionFeedback">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="Working" Type="bit" Nullable="false" />
+          <Property Name="UserKey" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Feedback" Type="text" />
+          <Property Name="CreationDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="WindowsInstallerIDs">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="MSIProductID" Type="uniqueidentifier" />
+          <Property Name="MSIVersion" Type="nvarchar" MaxLength="50" />
+          <Property Name="MSIProductName" Type="nvarchar" MaxLength="256" />
+          <Property Name="ARPDisplayName" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vActiveLatestProducts' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vActiveLatestProducts">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Id" />
+            <PropertyRef Name="PSCode" />
+          </Key>
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Manufacturer" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+          <Property Name="Id" Type="bigint" Nullable="false" />
+          <Property Name="SuccessRatio" Type="int" />
+          <Property Name="LastStatus" Type="datetime" />
+          <Property Name="PSCode" Type="nvarchar" MaxLength="359" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vAllSWDetails' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vAllSWDetails">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="IconId" />
+            <PropertyRef Name="Type" />
+            <PropertyRef Name="Filename" />
+          </Key>
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Manufacturer" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="IconId" Type="bigint" Nullable="false" />
+          <Property Name="LastModified" Type="datetime" />
+          <Property Name="Type" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="PSPreReq" Type="varchar(max)" />
+          <Property Name="PSPreInstall" Type="varchar(max)" />
+          <Property Name="PSInstall" Type="varchar(max)" />
+          <Property Name="PSPostInstall" Type="varchar(max)" />
+          <Property Name="PSUninstall" Type="varchar(max)" />
+          <Property Name="PSDetection" Type="varchar(max)" />
+          <Property Name="DownloadURL" Type="nvarchar(max)" />
+          <Property Name="Filename" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="FileHash" Type="nvarchar" MaxLength="50" />
+          <Property Name="Icon" Type="varbinary(max)" />
+          <Property Name="Downloads" Type="int" />
+          <Property Name="Success" Type="int" />
+          <Property Name="Failed" Type="int" />
+          <Property Name="SuccessRatio" Type="int" />
+          <Property Name="LastStatus" Type="datetime" />
+          <Property Name="Categories" Type="nvarchar(max)" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vCategorySummary' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vCategorySummary">
+          <Key>
+            <PropertyRef Name="Category" />
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Name="Items" Type="int" />
+          <Property Name="Category" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="CategoryId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vDownloadsByInstalltype' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vDownloadsByInstalltype">
+          <Key>
+            <PropertyRef Name="InstallTypeId" />
+          </Key>
+          <Property Name="InstallTypeId" Type="bigint" Nullable="false" />
+          <Property Name="Downloads" Type="int" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vDownloadsByProductVersion' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vDownloadsByProductVersion">
+          <Key>
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="Downloads" Type="int" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vFeedbackNotWorking' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vFeedbackNotWorking">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Working" />
+            <PropertyRef Name="CreationDateTime" />
+          </Key>
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Feedback" Type="text" />
+          <Property Name="Working" Type="bit" Nullable="false" />
+          <Property Name="CreationDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vFeedbackSuccessRatio' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vFeedbackSuccessRatio">
+          <Key>
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="Success" Type="int" />
+          <Property Name="Failed" Type="int" />
+          <Property Name="Total" Type="int" />
+          <Property Name="SuccessRatio" Type="int" />
+          <Property Name="LastStatus" Type="datetime" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vLatestProducts' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vLatestProducts">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="Shortname" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="LastModified" Type="datetime" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vListProducts' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vListProducts">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Manufacturer" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="Id" Type="bigint" Nullable="false" />
+          <Property Name="LastModified" Type="datetime" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vPendingSoftwareRequests' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vPendingSoftwareRequests">
+          <Key>
+            <PropertyRef Name="ProductId" />
+            <PropertyRef Name="ProductVersionId" />
+            <PropertyRef Name="DeploymentTypeID" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Type" />
+            <PropertyRef Name="Filename" />
+          </Key>
+          <Property Name="ProductId" Type="bigint" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="DeploymentTypeID" Type="bigint" Nullable="false" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Manufacturer" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ProductDescription" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ProjectURL" Type="nvarchar" MaxLength="256" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="Type" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="PSPreInstall" Type="varchar(max)" />
+          <Property Name="PSInstall" Type="varchar(max)" />
+          <Property Name="PSUnInstall" Type="varchar(max)" />
+          <Property Name="PSPostInstall" Type="varchar(max)" />
+          <Property Name="PSDetection" Type="varchar(max)" />
+          <Property Name="PSPreReq" Type="varchar(max)" />
+          <Property Name="IsSealed" Type="bit" />
+          <Property Name="DownloadURL" Type="nvarchar(max)" />
+          <Property Name="Filename" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="FileHash" Type="nvarchar" MaxLength="50" />
+          <Property Name="LastModified" Type="datetime" />
+          <Property Name="Author" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vPreRequisites' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vPreRequisites">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Position" />
+            <PropertyRef Name="DepProdName" />
+            <PropertyRef Name="Enabled" />
+          </Key>
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="Position" Type="int" Nullable="false" />
+          <Property Name="DepProdName" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="DepProdversion" Type="nvarchar" MaxLength="50" />
+          <Property Name="Enabled" Type="bit" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vProductCategories' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vProductCategories">
+          <Key>
+            <PropertyRef Name="ShortName" />
+            <PropertyRef Name="Category" />
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Name="ShortName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Category" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="CategoryId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vProductsWithIssues' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vProductsWithIssues">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductVersionId" />
+            <PropertyRef Name="Working" />
+            <PropertyRef Name="UserKey" />
+            <PropertyRef Name="CreationDateTime" />
+          </Key>
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ProductVersionId" Type="bigint" Nullable="false" />
+          <Property Name="Working" Type="bit" Nullable="false" />
+          <Property Name="UserKey" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Feedback" Type="text" />
+          <Property Name="CreationDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'RuckZuck_pub.dbo.vProductVersionChanges' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vProductVersionChanges">
+          <Key>
+            <PropertyRef Name="ProductId" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Version" />
+          </Key>
+          <Property Name="ProductId" Type="bigint" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Version" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ShortName" Type="nvarchar" MaxLength="64" />
+          <Property Name="IsLatest" Type="bit" />
+          <Property Name="LastModified" Type="datetime" />
+        </EntityType>
+        <Association Name="FK_Content_DeploymentType">
+          <End Role="DeploymentType" Type="Self.DeploymentType" Multiplicity="1" />
+          <End Role="Content" Type="Self.Content" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DeploymentType">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Content">
+              <PropertyRef Name="DeploymentTypeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DeploymentType_ProductVersion">
+          <End Role="ProductVersion" Type="Self.ProductVersion" Multiplicity="1" />
+          <End Role="DeploymentType" Type="Self.DeploymentType" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductVersion">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="DeploymentType">
+              <PropertyRef Name="ProductVersionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ProductVersion_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="1" />
+          <End Role="ProductVersion" Type="Self.ProductVersion" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="ProductVersion">
+              <PropertyRef Name="ProductId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_WindowsInstallerIDs_ProductVersion">
+          <End Role="ProductVersion" Type="Self.ProductVersion" Multiplicity="1" />
+          <End Role="WindowsInstallerIDs" Type="Self.WindowsInstallerIDs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductVersion">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="WindowsInstallerIDs">
+              <PropertyRef Name="ProductVersionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SWEntitiesStoreContainer">
+          <EntitySet Name="Categories" EntityType="Self.Categories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Content" EntityType="Self.Content" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DeploymentType" EntityType="Self.DeploymentType" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PreRequisite" EntityType="Self.PreRequisite" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Product" EntityType="Self.Product" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProductCategory" EntityType="Self.ProductCategory" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProductVersion" EntityType="Self.ProductVersion" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProductVersionDownloads" EntityType="Self.ProductVersionDownloads" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProductVersionFeedback" EntityType="Self.ProductVersionFeedback" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="WindowsInstallerIDs" EntityType="Self.WindowsInstallerIDs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="vActiveLatestProducts" EntityType="Self.vActiveLatestProducts" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vActiveLatestProducts].[ProductName] AS [ProductName], 
+    [vActiveLatestProducts].[Manufacturer] AS [Manufacturer], 
+    [vActiveLatestProducts].[ProductDescription] AS [ProductDescription], 
+    [vActiveLatestProducts].[ShortName] AS [ShortName], 
+    [vActiveLatestProducts].[Version] AS [Version], 
+    [vActiveLatestProducts].[IsLatest] AS [IsLatest], 
+    [vActiveLatestProducts].[ProjectURL] AS [ProjectURL], 
+    [vActiveLatestProducts].[Id] AS [Id], 
+    [vActiveLatestProducts].[SuccessRatio] AS [SuccessRatio], 
+    [vActiveLatestProducts].[LastStatus] AS [LastStatus], 
+    [vActiveLatestProducts].[PSCode] AS [PSCode]
+    FROM [dbo].[vActiveLatestProducts] AS [vActiveLatestProducts]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vAllSWDetails" EntityType="Self.vAllSWDetails" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vAllSWDetails].[ShortName] AS [ShortName], 
+    [vAllSWDetails].[Version] AS [Version], 
+    [vAllSWDetails].[ProductName] AS [ProductName], 
+    [vAllSWDetails].[Manufacturer] AS [Manufacturer], 
+    [vAllSWDetails].[ProductDescription] AS [ProductDescription], 
+    [vAllSWDetails].[ProjectURL] AS [ProjectURL], 
+    [vAllSWDetails].[IsLatest] AS [IsLatest], 
+    [vAllSWDetails].[IconId] AS [IconId], 
+    [vAllSWDetails].[LastModified] AS [LastModified], 
+    [vAllSWDetails].[Type] AS [Type], 
+    [vAllSWDetails].[PSPreReq] AS [PSPreReq], 
+    [vAllSWDetails].[PSPreInstall] AS [PSPreInstall], 
+    [vAllSWDetails].[PSInstall] AS [PSInstall], 
+    [vAllSWDetails].[PSPostInstall] AS [PSPostInstall], 
+    [vAllSWDetails].[PSUninstall] AS [PSUninstall], 
+    [vAllSWDetails].[PSDetection] AS [PSDetection], 
+    [vAllSWDetails].[DownloadURL] AS [DownloadURL], 
+    [vAllSWDetails].[Filename] AS [Filename], 
+    [vAllSWDetails].[FileHash] AS [FileHash], 
+    [vAllSWDetails].[Icon] AS [Icon], 
+    [vAllSWDetails].[Downloads] AS [Downloads], 
+    [vAllSWDetails].[Success] AS [Success], 
+    [vAllSWDetails].[Failed] AS [Failed], 
+    [vAllSWDetails].[SuccessRatio] AS [SuccessRatio], 
+    [vAllSWDetails].[LastStatus] AS [LastStatus], 
+    [vAllSWDetails].[Categories] AS [Categories]
+    FROM [dbo].[vAllSWDetails] AS [vAllSWDetails]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vCategorySummary" EntityType="Self.vCategorySummary" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vCategorySummary].[Items] AS [Items], 
+    [vCategorySummary].[Category] AS [Category], 
+    [vCategorySummary].[CategoryId] AS [CategoryId]
+    FROM [dbo].[vCategorySummary] AS [vCategorySummary]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vDownloadsByInstalltype" EntityType="Self.vDownloadsByInstalltype" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vDownloadsByInstalltype].[InstallTypeId] AS [InstallTypeId], 
+    [vDownloadsByInstalltype].[Downloads] AS [Downloads]
+    FROM [dbo].[vDownloadsByInstalltype] AS [vDownloadsByInstalltype]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vDownloadsByProductVersion" EntityType="Self.vDownloadsByProductVersion" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vDownloadsByProductVersion].[ProductVersionId] AS [ProductVersionId], 
+    [vDownloadsByProductVersion].[Downloads] AS [Downloads]
+    FROM [dbo].[vDownloadsByProductVersion] AS [vDownloadsByProductVersion]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vFeedbackNotWorking" EntityType="Self.vFeedbackNotWorking" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vFeedbackNotWorking].[ShortName] AS [ShortName], 
+    [vFeedbackNotWorking].[Version] AS [Version], 
+    [vFeedbackNotWorking].[Feedback] AS [Feedback], 
+    [vFeedbackNotWorking].[Working] AS [Working], 
+    [vFeedbackNotWorking].[CreationDateTime] AS [CreationDateTime]
+    FROM [dbo].[vFeedbackNotWorking] AS [vFeedbackNotWorking]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vFeedbackSuccessRatio" EntityType="Self.vFeedbackSuccessRatio" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vFeedbackSuccessRatio].[ProductVersionId] AS [ProductVersionId], 
+    [vFeedbackSuccessRatio].[Success] AS [Success], 
+    [vFeedbackSuccessRatio].[Failed] AS [Failed], 
+    [vFeedbackSuccessRatio].[Total] AS [Total], 
+    [vFeedbackSuccessRatio].[SuccessRatio] AS [SuccessRatio], 
+    [vFeedbackSuccessRatio].[LastStatus] AS [LastStatus]
+    FROM [dbo].[vFeedbackSuccessRatio] AS [vFeedbackSuccessRatio]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vLatestProducts" EntityType="Self.vLatestProducts" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vLatestProducts].[Shortname] AS [Shortname], 
+    [vLatestProducts].[Version] AS [Version], 
+    [vLatestProducts].[LastModified] AS [LastModified], 
+    [vLatestProducts].[ProductVersionId] AS [ProductVersionId], 
+    [vLatestProducts].[ProductDescription] AS [ProductDescription], 
+    [vLatestProducts].[ProjectURL] AS [ProjectURL]
+    FROM [dbo].[vLatestProducts] AS [vLatestProducts]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vListProducts" EntityType="Self.vListProducts" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vListProducts].[ProductName] AS [ProductName], 
+    [vListProducts].[Manufacturer] AS [Manufacturer], 
+    [vListProducts].[ProductDescription] AS [ProductDescription], 
+    [vListProducts].[ShortName] AS [ShortName], 
+    [vListProducts].[Version] AS [Version], 
+    [vListProducts].[IsLatest] AS [IsLatest], 
+    [vListProducts].[Id] AS [Id], 
+    [vListProducts].[LastModified] AS [LastModified], 
+    [vListProducts].[ProjectURL] AS [ProjectURL]
+    FROM [dbo].[vListProducts] AS [vListProducts]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vPendingSoftwareRequests" EntityType="Self.vPendingSoftwareRequests" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vPendingSoftwareRequests].[ProductId] AS [ProductId], 
+    [vPendingSoftwareRequests].[ProductVersionId] AS [ProductVersionId], 
+    [vPendingSoftwareRequests].[DeploymentTypeID] AS [DeploymentTypeID], 
+    [vPendingSoftwareRequests].[ShortName] AS [ShortName], 
+    [vPendingSoftwareRequests].[Version] AS [Version], 
+    [vPendingSoftwareRequests].[ProductName] AS [ProductName], 
+    [vPendingSoftwareRequests].[Manufacturer] AS [Manufacturer], 
+    [vPendingSoftwareRequests].[ProductDescription] AS [ProductDescription], 
+    [vPendingSoftwareRequests].[ProjectURL] AS [ProjectURL], 
+    [vPendingSoftwareRequests].[IsLatest] AS [IsLatest], 
+    [vPendingSoftwareRequests].[Type] AS [Type], 
+    [vPendingSoftwareRequests].[PSPreInstall] AS [PSPreInstall], 
+    [vPendingSoftwareRequests].[PSInstall] AS [PSInstall], 
+    [vPendingSoftwareRequests].[PSUnInstall] AS [PSUnInstall], 
+    [vPendingSoftwareRequests].[PSPostInstall] AS [PSPostInstall], 
+    [vPendingSoftwareRequests].[PSDetection] AS [PSDetection], 
+    [vPendingSoftwareRequests].[PSPreReq] AS [PSPreReq], 
+    [vPendingSoftwareRequests].[IsSealed] AS [IsSealed], 
+    [vPendingSoftwareRequests].[DownloadURL] AS [DownloadURL], 
+    [vPendingSoftwareRequests].[Filename] AS [Filename], 
+    [vPendingSoftwareRequests].[FileHash] AS [FileHash], 
+    [vPendingSoftwareRequests].[LastModified] AS [LastModified], 
+    [vPendingSoftwareRequests].[Author] AS [Author]
+    FROM [dbo].[vPendingSoftwareRequests] AS [vPendingSoftwareRequests]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vPreRequisites" EntityType="Self.vPreRequisites" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vPreRequisites].[ProductName] AS [ProductName], 
+    [vPreRequisites].[ShortName] AS [ShortName], 
+    [vPreRequisites].[Position] AS [Position], 
+    [vPreRequisites].[DepProdName] AS [DepProdName], 
+    [vPreRequisites].[DepProdversion] AS [DepProdversion], 
+    [vPreRequisites].[Enabled] AS [Enabled]
+    FROM [dbo].[vPreRequisites] AS [vPreRequisites]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vProductCategories" EntityType="Self.vProductCategories" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vProductCategories].[ShortName] AS [ShortName], 
+    [vProductCategories].[Category] AS [Category], 
+    [vProductCategories].[CategoryId] AS [CategoryId]
+    FROM [dbo].[vProductCategories] AS [vProductCategories]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vProductsWithIssues" EntityType="Self.vProductsWithIssues" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vProductsWithIssues].[ShortName] AS [ShortName], 
+    [vProductsWithIssues].[ProductName] AS [ProductName], 
+    [vProductsWithIssues].[Version] AS [Version], 
+    [vProductsWithIssues].[ProductVersionId] AS [ProductVersionId], 
+    [vProductsWithIssues].[Working] AS [Working], 
+    [vProductsWithIssues].[UserKey] AS [UserKey], 
+    [vProductsWithIssues].[Feedback] AS [Feedback], 
+    [vProductsWithIssues].[CreationDateTime] AS [CreationDateTime]
+    FROM [dbo].[vProductsWithIssues] AS [vProductsWithIssues]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vProductVersionChanges" EntityType="Self.vProductVersionChanges" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vProductVersionChanges].[ProductId] AS [ProductId], 
+    [vProductVersionChanges].[ProductName] AS [ProductName], 
+    [vProductVersionChanges].[Version] AS [Version], 
+    [vProductVersionChanges].[ShortName] AS [ShortName], 
+    [vProductVersionChanges].[IsLatest] AS [IsLatest], 
+    [vProductVersionChanges].[LastModified] AS [LastModified]
+    FROM [dbo].[vProductVersionChanges] AS [vProductVersionChanges]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_Content_DeploymentType" Association="Self.FK_Content_DeploymentType">
+            <End Role="DeploymentType" EntitySet="DeploymentType" />
+            <End Role="Content" EntitySet="Content" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DeploymentType_ProductVersion" Association="Self.FK_DeploymentType_ProductVersion">
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+            <End Role="DeploymentType" EntitySet="DeploymentType" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ProductVersion_Product" Association="Self.FK_ProductVersion_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+          </AssociationSet>
+          <AssociationSet Name="FK_WindowsInstallerIDs_ProductVersion" Association="Self.FK_WindowsInstallerIDs_ProductVersion">
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+            <End Role="WindowsInstallerIDs" EntitySet="WindowsInstallerIDs" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="RuckZuck_pubEntities" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="SWEntitiesApi" p1:LazyLoadingEnabled="true">
+          <EntitySet Name="Content" EntityType="RuckZuck_pubEntities.Content" />
+          <EntitySet Name="DeploymentType" EntityType="RuckZuck_pubEntities.DeploymentType" />
+          <EntitySet Name="Product" EntityType="RuckZuck_pubEntities.Product" />
+          <EntitySet Name="ProductVersion" EntityType="RuckZuck_pubEntities.ProductVersion" />
+          <EntitySet Name="ProductVersionDownloads" EntityType="RuckZuck_pubEntities.ProductVersionDownloads" />
+          <EntitySet Name="ProductVersionFeedback" EntityType="RuckZuck_pubEntities.ProductVersionFeedback" />
+          <EntitySet Name="WindowsInstallerIDs" EntityType="RuckZuck_pubEntities.WindowsInstallerIDs" />
+          <EntitySet Name="vActiveLatestProducts" EntityType="RuckZuck_pubEntities.vActiveLatestProducts" />
+          <EntitySet Name="vAllSWDetails" EntityType="RuckZuck_pubEntities.vAllSWDetails" />
+          <EntitySet Name="vDownloadsByInstalltype" EntityType="RuckZuck_pubEntities.vDownloadsByInstalltype" />
+          <EntitySet Name="vDownloadsByProductVersion" EntityType="RuckZuck_pubEntities.vDownloadsByProductVersion" />
+          <EntitySet Name="vFeedbackSuccessRatio" EntityType="RuckZuck_pubEntities.vFeedbackSuccessRatio" />
+          <EntitySet Name="vListProducts" EntityType="RuckZuck_pubEntities.vListProducts" />
+          <EntitySet Name="vPendingSoftwareRequests" EntityType="RuckZuck_pubEntities.vPendingSoftwareRequests" />
+          <AssociationSet Name="FK_Content_DeploymentType" Association="RuckZuck_pubEntities.FK_Content_DeploymentType">
+            <End Role="DeploymentType" EntitySet="DeploymentType" />
+            <End Role="Content" EntitySet="Content" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DeploymentType_ProductVersion" Association="RuckZuck_pubEntities.FK_DeploymentType_ProductVersion">
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+            <End Role="DeploymentType" EntitySet="DeploymentType" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ProductVersion_Product" Association="RuckZuck_pubEntities.FK_ProductVersion_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+          </AssociationSet>
+          <AssociationSet Name="FK_WindowsInstallerIDs_ProductVersion" Association="RuckZuck_pubEntities.FK_WindowsInstallerIDs_ProductVersion">
+            <End Role="ProductVersion" EntitySet="ProductVersion" />
+            <End Role="WindowsInstallerIDs" EntitySet="WindowsInstallerIDs" />
+          </AssociationSet>
+          <EntitySet Name="Categories" EntityType="RuckZuck_pubEntities.Categories" />
+          <EntitySet Name="vFeedbackNotWorking" EntityType="RuckZuck_pubEntities.vFeedbackNotWorking" />
+          <EntitySet Name="vProductsWithIssues" EntityType="RuckZuck_pubEntities.vProductsWithIssues" />
+          <EntitySet Name="vProductVersionChanges" EntityType="RuckZuck_pubEntities.vProductVersionChanges" />
+          <EntitySet Name="ProductCategory" EntityType="RuckZuck_pubEntities.ProductCategory" />
+          <EntitySet Name="vCategorySummary" EntityType="RuckZuck_pubEntities.vCategorySummary" />
+          <EntitySet Name="vProductCategories" EntityType="RuckZuck_pubEntities.vProductCategories" />
+          <EntitySet Name="PreRequisite" EntityType="RuckZuck_pubEntities.PreRequisite" />
+          <EntitySet Name="vLatestProducts" EntityType="RuckZuck_pubEntities.vLatestProducts" />
+          <EntitySet Name="vPreRequisites" EntityType="RuckZuck_pubEntities.vPreRequisites" />
+        </EntityContainer>
+        <EntityType Name="Content">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="DeploymentTypeID" Type="Int64" Nullable="false" />
+          <Property Name="DownloadURL" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="Filename" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="FileHash" Type="String" MaxLength="50" Unicode="true" FixedLength="false" />
+          <NavigationProperty Name="DeploymentType" Relationship="RuckZuck_pubEntities.FK_Content_DeploymentType" FromRole="Content" ToRole="DeploymentType" />
+          <Property Name="HashType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="DeploymentType">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="Type" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="PSPreReq" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSPreInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSPostInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSUninstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSDetection" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="ContentID" Type="Guid" />
+          <Property Name="IsSealed" Type="Boolean" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+          <Property Name="IsRejected" Type="Boolean" />
+          <NavigationProperty Name="Content" Relationship="RuckZuck_pubEntities.FK_Content_DeploymentType" FromRole="DeploymentType" ToRole="Content" />
+          <NavigationProperty Name="ProductVersion" Relationship="RuckZuck_pubEntities.FK_DeploymentType_ProductVersion" FromRole="DeploymentType" ToRole="ProductVersion" />
+          <Property Type="String" Name="Author" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Manufacturer" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" Unicode="true" FixedLength="false" />
+          <Property Name="ShortName" Type="String" MaxLength="64" Unicode="true" FixedLength="false" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+          <NavigationProperty Name="ProductVersion" Relationship="RuckZuck_pubEntities.FK_ProductVersion_Product" FromRole="Product" ToRole="ProductVersion" />
+        </EntityType>
+        <EntityType Name="ProductVersion">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductId" Type="Int64" Nullable="false" />
+          <Property Name="Icon" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="IsLatest" Type="Boolean" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="DeploymentType" Relationship="RuckZuck_pubEntities.FK_DeploymentType_ProductVersion" FromRole="ProductVersion" ToRole="DeploymentType" />
+          <NavigationProperty Name="Product" Relationship="RuckZuck_pubEntities.FK_ProductVersion_Product" FromRole="ProductVersion" ToRole="Product" />
+          <NavigationProperty Name="WindowsInstallerIDs" Relationship="RuckZuck_pubEntities.FK_WindowsInstallerIDs_ProductVersion" FromRole="ProductVersion" ToRole="WindowsInstallerIDs" />
+        </EntityType>
+        <EntityType Name="ProductVersionDownloads">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="DownloadDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="InstallTypeId" Type="Int64" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ProductVersionFeedback">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="Working" Type="Boolean" Nullable="false" />
+          <Property Name="UserKey" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="Feedback" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="CreationDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="WindowsInstallerIDs">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="MSIProductID" Type="Guid" />
+          <Property Name="MSIVersion" Type="String" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="MSIProductName" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="ARPDisplayName" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+          <NavigationProperty Name="ProductVersion" Relationship="RuckZuck_pubEntities.FK_WindowsInstallerIDs_ProductVersion" FromRole="WindowsInstallerIDs" ToRole="ProductVersion" />
+        </EntityType>
+        <EntityType Name="vActiveLatestProducts">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Id" />
+            <PropertyRef Name="PSCode" />
+          </Key>
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Manufacturer" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" Unicode="true" FixedLength="false" />
+          <Property Name="ShortName" Type="String" MaxLength="64" Unicode="true" FixedLength="false" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="IsLatest" Type="Boolean" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Id" Type="Int64" Nullable="false" />
+          <Property Name="SuccessRatio" Type="Int32" />
+          <Property Name="LastStatus" Type="DateTime" Precision="3" />
+          <Property Name="PSCode" Type="String" Nullable="false" MaxLength="359" Unicode="true" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="vAllSWDetails">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Type" />
+            <PropertyRef Name="Filename" />
+            <PropertyRef Name="IconId" />
+          </Key>
+          <Property Name="ShortName" Type="String" MaxLength="64" Unicode="true" FixedLength="false" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Manufacturer" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" Unicode="true" FixedLength="false" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="IsLatest" Type="Boolean" />
+          <Property Name="Type" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="PSPreReq" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSPreInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSPostInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSUninstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSDetection" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="DownloadURL" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="Filename" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="FileHash" Type="String" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="Icon" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="Downloads" Type="Int32" />
+          <Property Name="Success" Type="Int32" />
+          <Property Name="Failed" Type="Int32" />
+          <Property Name="SuccessRatio" Type="Int32" />
+          <Property Name="LastStatus" Type="DateTime" Precision="3" />
+          <Property Type="Int64" Name="IconId" Nullable="false" />
+          <Property Type="String" Name="Categories" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="vDownloadsByInstalltype">
+          <Key>
+            <PropertyRef Name="InstallTypeId" />
+          </Key>
+          <Property Name="InstallTypeId" Type="Int64" Nullable="false" />
+          <Property Name="Downloads" Type="Int32" />
+        </EntityType>
+        <EntityType Name="vDownloadsByProductVersion">
+          <Key>
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="Downloads" Type="Int32" />
+        </EntityType>
+        <EntityType Name="vFeedbackSuccessRatio">
+          <Key>
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="Success" Type="Int32" />
+          <Property Name="Failed" Type="Int32" />
+          <Property Name="Total" Type="Int32" />
+          <Property Name="SuccessRatio" Type="Int32" />
+          <Property Name="LastStatus" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="vListProducts">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Manufacturer" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" Unicode="true" FixedLength="false" />
+          <Property Name="ShortName" Type="String" MaxLength="64" Unicode="true" FixedLength="false" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="IsLatest" Type="Boolean" />
+          <Property Name="Id" Type="Int64" Nullable="false" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="vPendingSoftwareRequests">
+          <Key>
+            <PropertyRef Name="ProductId" />
+            <PropertyRef Name="ProductVersionId" />
+            <PropertyRef Name="DeploymentTypeID" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Manufacturer" />
+            <PropertyRef Name="Filename" />
+            <PropertyRef Name="Type" />
+          </Key>
+          <Property Name="ProductId" Type="Int64" Nullable="false" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="DeploymentTypeID" Type="Int64" Nullable="false" />
+          <Property Name="ShortName" Type="String" MaxLength="64" Unicode="true" FixedLength="false" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="Manufacturer" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+          <Property Name="IsLatest" Type="Boolean" />
+          <Property Name="PSInstall" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSDetection" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="PSPreReq" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
+          <Property Name="IsSealed" Type="Boolean" />
+          <Property Name="DownloadURL" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="Filename" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="FileHash" Type="String" MaxLength="50" Unicode="true" FixedLength="false" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+          <Property Type="String" Name="Author" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Type" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PSPreInstall" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="PSUnInstall" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="PSPostInstall" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <Association Name="FK_Content_DeploymentType">
+          <End Role="DeploymentType" Type="RuckZuck_pubEntities.DeploymentType" Multiplicity="1" />
+          <End Role="Content" Type="RuckZuck_pubEntities.Content" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DeploymentType">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Content">
+              <PropertyRef Name="DeploymentTypeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DeploymentType_ProductVersion">
+          <End Role="ProductVersion" Type="RuckZuck_pubEntities.ProductVersion" Multiplicity="1" />
+          <End Role="DeploymentType" Type="RuckZuck_pubEntities.DeploymentType" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductVersion">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="DeploymentType">
+              <PropertyRef Name="ProductVersionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ProductVersion_Product">
+          <End Role="Product" Type="RuckZuck_pubEntities.Product" Multiplicity="1" />
+          <End Role="ProductVersion" Type="RuckZuck_pubEntities.ProductVersion" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="ProductVersion">
+              <PropertyRef Name="ProductId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_WindowsInstallerIDs_ProductVersion">
+          <End Role="ProductVersion" Type="RuckZuck_pubEntities.ProductVersion" Multiplicity="1" />
+          <End Role="WindowsInstallerIDs" Type="RuckZuck_pubEntities.WindowsInstallerIDs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductVersion">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="WindowsInstallerIDs">
+              <PropertyRef Name="ProductVersionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Categories">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int64" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="Category" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="vFeedbackNotWorking">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Working" />
+            <PropertyRef Name="CreationDateTime" />
+          </Key>
+          <Property Type="String" Name="ShortName" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Version" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Feedback" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Type="Boolean" Name="Working" Nullable="false" />
+          <Property Type="DateTime" Name="CreationDateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="vProductsWithIssues">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductVersionId" />
+            <PropertyRef Name="Working" />
+            <PropertyRef Name="UserKey" />
+            <PropertyRef Name="CreationDateTime" />
+          </Key>
+          <Property Type="String" Name="ShortName" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="ProductName" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Version" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="Int64" Name="ProductVersionId" Nullable="false" />
+          <Property Type="Boolean" Name="Working" Nullable="false" />
+          <Property Type="String" Name="UserKey" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Feedback" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Type="DateTime" Name="CreationDateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="vProductVersionChanges">
+          <Key>
+            <PropertyRef Name="ProductId" />
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Version" />
+          </Key>
+          <Property Type="Int64" Name="ProductId" Nullable="false" />
+          <Property Type="String" Name="ProductName" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Version" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="ShortName" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Type="Boolean" Name="IsLatest" />
+          <Property Type="DateTime" Name="LastModified" Precision="3" />
+        </EntityType>
+        <EntityType Name="ProductCategory">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int64" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="ShortName" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="Int64" Name="CategoryId" Nullable="false" />
+        </EntityType>
+        <EntityType Name="vCategorySummary">
+          <Key>
+            <PropertyRef Name="Category" />
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Type="Int32" Name="Items" />
+          <Property Type="String" Name="Category" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="Int64" Name="CategoryId" Nullable="false" />
+        </EntityType>
+        <EntityType Name="vProductCategories">
+          <Key>
+            <PropertyRef Name="ShortName" />
+            <PropertyRef Name="Category" />
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Type="String" Name="ShortName" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Category" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="Int64" Name="CategoryId" Nullable="false" />
+        </EntityType>
+        <EntityType Name="PreRequisite">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int64" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="Int64" Name="ProductId" Nullable="false" />
+          <Property Type="Int32" Name="Position" Nullable="false" />
+          <Property Type="String" Name="ProductName" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="ProductVersion" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="Boolean" Name="Enabled" Nullable="false" />
+        </EntityType>
+        <EntityType Name="vLatestProducts">
+          <Key>
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="ProductVersionId" />
+          </Key>
+          <Property Name="Shortname" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Name="Version" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="LastModified" Type="DateTime" Precision="3" />
+          <Property Name="ProductVersionId" Type="Int64" Nullable="false" />
+          <Property Name="ProductDescription" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="ProjectURL" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="vPreRequisites">
+          <Key>
+            <PropertyRef Name="ProductName" />
+            <PropertyRef Name="Position" />
+            <PropertyRef Name="DepProdName" />
+            <PropertyRef Name="Enabled" />
+          </Key>
+          <Property Name="ProductName" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="ShortName" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Name="Position" Type="Int32" Nullable="false" />
+          <Property Name="DepProdName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="DepProdversion" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Enabled" Type="Boolean" Nullable="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SWEntitiesStoreContainer" CdmEntityContainer="SWEntitiesApi">
+          <EntitySetMapping Name="Content">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.Content">
+              <MappingFragment StoreEntitySet="Content">
+                <ScalarProperty Name="HashType" ColumnName="HashType" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="DeploymentTypeID" ColumnName="DeploymentTypeID" />
+                <ScalarProperty Name="DownloadURL" ColumnName="DownloadURL" />
+                <ScalarProperty Name="Filename" ColumnName="Filename" />
+                <ScalarProperty Name="FileHash" ColumnName="FileHash" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DeploymentType">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.DeploymentType">
+              <MappingFragment StoreEntitySet="DeploymentType">
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="PSPreReq" ColumnName="PSPreReq" />
+                <ScalarProperty Name="PSPreInstall" ColumnName="PSPreInstall" />
+                <ScalarProperty Name="PSInstall" ColumnName="PSInstall" />
+                <ScalarProperty Name="PSPostInstall" ColumnName="PSPostInstall" />
+                <ScalarProperty Name="PSUninstall" ColumnName="PSUninstall" />
+                <ScalarProperty Name="PSDetection" ColumnName="PSDetection" />
+                <ScalarProperty Name="ContentID" ColumnName="ContentID" />
+                <ScalarProperty Name="IsSealed" ColumnName="IsSealed" />
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+                <ScalarProperty Name="IsRejected" ColumnName="IsRejected" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Product">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.Product">
+              <MappingFragment StoreEntitySet="Product">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Manufacturer" ColumnName="Manufacturer" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProductVersion">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.ProductVersion">
+              <MappingFragment StoreEntitySet="ProductVersion">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+                <ScalarProperty Name="Icon" ColumnName="Icon" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProductVersionDownloads">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.ProductVersionDownloads">
+              <MappingFragment StoreEntitySet="ProductVersionDownloads">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="DownloadDateTime" ColumnName="DownloadDateTime" />
+                <ScalarProperty Name="InstallTypeId" ColumnName="InstallTypeId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProductVersionFeedback">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.ProductVersionFeedback">
+              <MappingFragment StoreEntitySet="ProductVersionFeedback">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="Working" ColumnName="Working" />
+                <ScalarProperty Name="UserKey" ColumnName="UserKey" />
+                <ScalarProperty Name="Feedback" ColumnName="Feedback" />
+                <ScalarProperty Name="CreationDateTime" ColumnName="CreationDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="WindowsInstallerIDs">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.WindowsInstallerIDs">
+              <MappingFragment StoreEntitySet="WindowsInstallerIDs">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="MSIProductID" ColumnName="MSIProductID" />
+                <ScalarProperty Name="MSIVersion" ColumnName="MSIVersion" />
+                <ScalarProperty Name="MSIProductName" ColumnName="MSIProductName" />
+                <ScalarProperty Name="ARPDisplayName" ColumnName="ARPDisplayName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vActiveLatestProducts">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vActiveLatestProducts">
+              <MappingFragment StoreEntitySet="vActiveLatestProducts">
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Manufacturer" ColumnName="Manufacturer" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="SuccessRatio" ColumnName="SuccessRatio" />
+                <ScalarProperty Name="LastStatus" ColumnName="LastStatus" />
+                <ScalarProperty Name="PSCode" ColumnName="PSCode" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vAllSWDetails">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vAllSWDetails">
+              <MappingFragment StoreEntitySet="vAllSWDetails">
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+                <ScalarProperty Name="Categories" ColumnName="Categories" />
+                <ScalarProperty Name="IconId" ColumnName="IconId" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Manufacturer" ColumnName="Manufacturer" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="PSPreReq" ColumnName="PSPreReq" />
+                <ScalarProperty Name="PSPreInstall" ColumnName="PSPreInstall" />
+                <ScalarProperty Name="PSInstall" ColumnName="PSInstall" />
+                <ScalarProperty Name="PSPostInstall" ColumnName="PSPostInstall" />
+                <ScalarProperty Name="PSUninstall" ColumnName="PSUninstall" />
+                <ScalarProperty Name="PSDetection" ColumnName="PSDetection" />
+                <ScalarProperty Name="DownloadURL" ColumnName="DownloadURL" />
+                <ScalarProperty Name="Filename" ColumnName="Filename" />
+                <ScalarProperty Name="FileHash" ColumnName="FileHash" />
+                <ScalarProperty Name="Icon" ColumnName="Icon" />
+                <ScalarProperty Name="Downloads" ColumnName="Downloads" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+                <ScalarProperty Name="Failed" ColumnName="Failed" />
+                <ScalarProperty Name="SuccessRatio" ColumnName="SuccessRatio" />
+                <ScalarProperty Name="LastStatus" ColumnName="LastStatus" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vDownloadsByInstalltype">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vDownloadsByInstalltype">
+              <MappingFragment StoreEntitySet="vDownloadsByInstalltype">
+                <ScalarProperty Name="InstallTypeId" ColumnName="InstallTypeId" />
+                <ScalarProperty Name="Downloads" ColumnName="Downloads" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vDownloadsByProductVersion">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vDownloadsByProductVersion">
+              <MappingFragment StoreEntitySet="vDownloadsByProductVersion">
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="Downloads" ColumnName="Downloads" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vFeedbackSuccessRatio">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vFeedbackSuccessRatio">
+              <MappingFragment StoreEntitySet="vFeedbackSuccessRatio">
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+                <ScalarProperty Name="Failed" ColumnName="Failed" />
+                <ScalarProperty Name="Total" ColumnName="Total" />
+                <ScalarProperty Name="SuccessRatio" ColumnName="SuccessRatio" />
+                <ScalarProperty Name="LastStatus" ColumnName="LastStatus" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vListProducts">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vListProducts">
+              <MappingFragment StoreEntitySet="vListProducts">
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Manufacturer" ColumnName="Manufacturer" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vPendingSoftwareRequests">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vPendingSoftwareRequests">
+              <MappingFragment StoreEntitySet="vPendingSoftwareRequests">
+                <ScalarProperty Name="PSPostInstall" ColumnName="PSPostInstall" />
+                <ScalarProperty Name="PSUnInstall" ColumnName="PSUnInstall" />
+                <ScalarProperty Name="PSPreInstall" ColumnName="PSPreInstall" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="DeploymentTypeID" ColumnName="DeploymentTypeID" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Manufacturer" ColumnName="Manufacturer" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="PSInstall" ColumnName="PSInstall" />
+                <ScalarProperty Name="PSDetection" ColumnName="PSDetection" />
+                <ScalarProperty Name="PSPreReq" ColumnName="PSPreReq" />
+                <ScalarProperty Name="IsSealed" ColumnName="IsSealed" />
+                <ScalarProperty Name="DownloadURL" ColumnName="DownloadURL" />
+                <ScalarProperty Name="Filename" ColumnName="Filename" />
+                <ScalarProperty Name="FileHash" ColumnName="FileHash" />
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Categories">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.Categories">
+              <MappingFragment StoreEntitySet="Categories">
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vFeedbackNotWorking">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vFeedbackNotWorking">
+              <MappingFragment StoreEntitySet="vFeedbackNotWorking">
+                <ScalarProperty Name="CreationDateTime" ColumnName="CreationDateTime" />
+                <ScalarProperty Name="Working" ColumnName="Working" />
+                <ScalarProperty Name="Feedback" ColumnName="Feedback" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vProductsWithIssues">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vProductsWithIssues">
+              <MappingFragment StoreEntitySet="vProductsWithIssues">
+                <ScalarProperty Name="CreationDateTime" ColumnName="CreationDateTime" />
+                <ScalarProperty Name="Feedback" ColumnName="Feedback" />
+                <ScalarProperty Name="UserKey" ColumnName="UserKey" />
+                <ScalarProperty Name="Working" ColumnName="Working" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vProductVersionChanges">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vProductVersionChanges">
+              <MappingFragment StoreEntitySet="vProductVersionChanges">
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+                <ScalarProperty Name="IsLatest" ColumnName="IsLatest" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProductCategory">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.ProductCategory">
+              <MappingFragment StoreEntitySet="ProductCategory">
+                <ScalarProperty Name="CategoryId" ColumnName="CategoryId" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vCategorySummary">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vCategorySummary">
+              <MappingFragment StoreEntitySet="vCategorySummary">
+                <ScalarProperty Name="CategoryId" ColumnName="CategoryId" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="Items" ColumnName="Items" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vProductCategories">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vProductCategories">
+              <MappingFragment StoreEntitySet="vProductCategories">
+                <ScalarProperty Name="CategoryId" ColumnName="CategoryId" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PreRequisite">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.PreRequisite">
+              <MappingFragment StoreEntitySet="PreRequisite">
+                <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+                <ScalarProperty Name="ProductVersion" ColumnName="ProductVersion" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Position" ColumnName="Position" />
+                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vLatestProducts">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vLatestProducts">
+              <MappingFragment StoreEntitySet="vLatestProducts">
+                <ScalarProperty Name="ProjectURL" ColumnName="ProjectURL" />
+                <ScalarProperty Name="ProductDescription" ColumnName="ProductDescription" />
+                <ScalarProperty Name="ProductVersionId" ColumnName="ProductVersionId" />
+                <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="Shortname" ColumnName="Shortname" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vPreRequisites">
+            <EntityTypeMapping TypeName="RuckZuck_pubEntities.vPreRequisites">
+              <MappingFragment StoreEntitySet="vPreRequisites">
+                <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+                <ScalarProperty Name="DepProdversion" ColumnName="DepProdversion" />
+                <ScalarProperty Name="DepProdName" ColumnName="DepProdName" />
+                <ScalarProperty Name="Position" ColumnName="Position" />
+                <ScalarProperty Name="ShortName" ColumnName="ShortName" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="False" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+        <DesignerProperty Name="UseLegacyProvider" Value="False" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
