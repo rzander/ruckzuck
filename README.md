@@ -30,11 +30,11 @@ RZUpdate.exe is a portable command-line tool to install or update Applications f
 A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to update or install Applications from the RZ Repository with PowerShell.
 
 ### RZ for Configuration Manager
-allow import Applications from the RZ Repository into Microsofts System Center Configuration Manager from a UI. It will create ConfigMgr Applications, DeploymentType, Collection and a Deployment. To automatically get the latest Version of An App in ConfigMgr: https://rzander.azurewebsites.net/update-existing-sccm-applications-with-ruckzuck/ 
+allows to import Applications from the RZ Repository into Microsofts System Center Configuration Manager from a UI. It will create ConfigMgr Applications, DeploymentType, Collection and a Deployment. To automatically get the latest Version of An App in ConfigMgr: https://rzander.azurewebsites.net/update-existing-sccm-applications-with-ruckzuck/ 
 
 ### RZ.Bot
-A "Service" to automatically download and install failed apps.
+(internals) A "Service" to automatically download and install failed apps.
 ### RZ.LogConsole
-A real-time Log-Console to get failed and success installations.
+(internals) A real-time Log-Console to get failed and success installations.
 ### RZ.WCF
-RuckZuck Back-End Web-Service. [Overview](https://rzander.azurewebsites.net/ruckzuck-backend-services-v2/)
+(internals) RuckZuck Back-End Web-Service. [Overview](https://rzander.azurewebsites.net/ruckzuck-backend-services-v2/)
