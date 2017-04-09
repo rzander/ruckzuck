@@ -36,3 +36,5 @@ allow import Applications from the RZ Repository into Microsofts System Center C
 A "Service" to automatically download and install failed apps.
 ### RZ.LogConsole
 A real-time Log-Console to get failed and success installations.
+### RZ.WCF
+RuckZuck Back-End Web-Service. [Overview](https://rzander.azurewebsites.net/ruckzuck-backend-services-v2/)
