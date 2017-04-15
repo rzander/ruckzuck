@@ -23,7 +23,7 @@ namespace RuckZuck_WCF
 
         private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
         {
-            return ConnectionMultiplexer.Connect("ruckzuck2.redis.cache.windows.net ,abortConnect=false,ssl=true,password=hXptN4dMrrAaXcDrEY0RSZUjL6/X7WWol/fMZlSgbO0=");
+            return ConnectionMultiplexer.Connect("ruckzuck2.redis.cache.windows.net ,abortConnect=false,ssl=true,password=xxx");
         });
 
         public static ConnectionMultiplexer Connection
@@ -1510,7 +1510,7 @@ namespace RuckZuck_WCF
             {
                 WebRequest request = WebRequest.Create("https://api.pushbullet.com/v2/pushes");
                 request.Method = "POST";
-                request.Headers.Add("Authorization", "Bearer o.WP944MGzspDyIxmiT61zv7S7Lrxnnx5c");
+                request.Headers.Add("Authorization", "Bearer xxx");
                 request.ContentType = "application/json; charset=UTF-8";
                 string postData =
                     "{\"channel_tag\": \"ruckzuck\",  \"type\": \"note\", \"title\": \"" + Message + "\", \"body\": \"" + Body + "\"}";
