@@ -825,7 +825,7 @@ namespace RZUpdate
                 int iExitCode = -1;
 
                 //Run Install Script
-                if (!string.IsNullOrEmpty(psPath + SW.PSInstall))
+                if (!string.IsNullOrEmpty(SW.PSInstall))
                 {
                     try
                     {
