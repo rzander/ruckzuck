@@ -1183,7 +1183,7 @@ namespace RZUpdate
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
                     httpRequest.UserAgent = "chocolatey command line";
                     httpRequest.AllowAutoRedirect = true;
-                    httpRequest.MaximumAutomaticRedirections = 2;
+                    httpRequest.MaximumAutomaticRedirections = 5;
                     httpRequest.GetResponse();
 
 
@@ -1285,7 +1285,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1306,7 +1306,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1327,7 +1327,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1344,7 +1344,7 @@ namespace RZUpdate
                     return false;
 
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
