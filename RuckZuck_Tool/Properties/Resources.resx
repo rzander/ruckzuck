@@ -580,11 +580,14 @@ namespace RZUpdate
         /// &lt;summary&gt;
         /// Constructor
         /// &lt;/summary&gt;
-        public RZUpdater()
+        public RZUpdater() : this("FreeRZ", _getTimeToken())
+        {
+        }
+
+        public RZUpdater(string Username, string Password)
         {
             AddSoftware oSW = new AddSoftware();
-            sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", _getTimeToken());
-            RZRestAPI.Token.ToString();
+            sAuthToken = RZRestAPI.GetAuthToken(Username, Password);
 
             SoftwareUpdate = new SWUpdate(oSW);
         }
@@ -823,7 +826,7 @@ namespace RZUpdate
         }
 
         //Constructor
-        public SWUpdate(string ProductName, string ProductVersion, string Manufacturer)
+        public SWUpdate(string ProductName, string ProductVersion, string Manufacturer, bool NoPreReqCheck = false)
         {
             SW = null;
             SW = new AddSoftware();
@@ -835,8 +838,9 @@ namespace RZUpdate
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, UnInstalled = false, Installed = false };
             downloadTask.SWUpd = this;
 
+
             //Get Install-type
-            if (!GetInstallType())
+            if (!GetInstallType(NoPreReqCheck))
             {
                 SW = null;
                 return;
@@ -908,7 +912,7 @@ namespace RZUpdate
             catch { }
         }
 
-        public bool GetInstallType()
+        public bool GetInstallType(bool bGetFirst = false)
         {
             foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
             {
@@ -919,8 +923,11 @@ namespace RZUpdate
                     {
                         if (!string.IsNullOrEmpty(DT.PSPreReq))
                         {
-                            if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
-                                continue;
+                            if (!bGetFirst)
+                            {
+                                if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
+                                    continue;
+                            }
                         }
                     }
                     catch { continue; }
@@ -1372,7 +1379,7 @@ namespace RZUpdate
                 int iExitCode = -1;
 
                 //Run Install Script
-                if (!string.IsNullOrEmpty(psPath + SW.PSInstall))
+                if (!string.IsNullOrEmpty(SW.PSInstall))
                 {
                     try
                     {
@@ -1730,7 +1737,7 @@ namespace RZUpdate
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
                     httpRequest.UserAgent = "chocolatey command line";
                     httpRequest.AllowAutoRedirect = true;
-                    httpRequest.MaximumAutomaticRedirections = 2;
+                    httpRequest.MaximumAutomaticRedirections = 5;
                     httpRequest.GetResponse();
 
 
@@ -1832,7 +1839,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1853,7 +1860,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1874,7 +1881,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1891,7 +1898,7 @@ namespace RZUpdate
                     return false;
 
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1982,7 +1989,7 @@ namespace RZWrapper
                     oRZSW.SoftwareUpdate = new SWUpdate("RZRZRZ");
                 }
 
-                Console.WriteLine("RuckZuck.tools Package-Wrapper (c) 2016 by Roger Zander");
+                Console.WriteLine("RuckZuck.tools Package-Wrapper (c) 2017 by Roger Zander");
                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                 {
                     Console.WriteLine("Error: Product not valid...");
