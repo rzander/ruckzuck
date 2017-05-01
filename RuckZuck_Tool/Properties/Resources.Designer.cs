@@ -93,13 +93,13 @@ namespace RuckZuck_Tool.Properties {
         ///
         ///namespace RuckZuck_WCF
         ///{
-        ///    class RZRestAPI
+        ///    public static class RZRestAPI
         ///    {
-        ///        public static string sURL = &quot;http://ruckzuck.azurewebsites.net/wcf/RZService.svc&quot;;
+        ///        public static string sURL = &quot;https://ruckzuck.azurewebsites.net/wcf/RZService.svc&quot;;
         ///        //internal static string sURL = &quot;http://localhost:7727/RZService.svc&quot;;
         ///
         ///        public static string Token;
-        ///        public static string GetAuthToken(string  [rest of string was truncated]&quot;;.
+        ///        public static string GetAu [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
@@ -130,8 +130,7 @@ namespace RuckZuck_Tool.Properties {
         ///    /// &lt;/summary&gt;
         ///    public class RZUpdater
         ///    {
-        ///
-        ///        static string sAuthTo [rest of string was truncated]&quot;;.
+        ///        static string sAuthToke [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {

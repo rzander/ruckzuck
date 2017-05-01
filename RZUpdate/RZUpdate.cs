@@ -20,7 +20,6 @@ namespace RZUpdate
     /// </summary>
     public class RZUpdater
     {
-
         static string sAuthToken = "";
 
         /// <summary>
@@ -894,19 +893,38 @@ namespace RZUpdate
         public async Task<bool> Install(bool Force = false)
         {
             bool msiIsRunning = false;
+
             do
             {
                 try
                 {
-                    //Check if MSI is running...
-                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    Mutex mRes = null;
+
+                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
                     {
                         msiIsRunning = true;
                         Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                    else msiIsRunning = false;
+
+                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
                     }
 
+
+                    //Check if MSI is running...
+                    /*using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                    }*/
+
                     //Sleep 15s if another MSI is running...
-                    Thread.Sleep(new TimeSpan(0, 0, 15));
+
                 }
                 catch (Exception)
                 {
@@ -915,13 +933,20 @@ namespace RZUpdate
             }
             while (msiIsRunning);
 
+            bool bMutexCreated = false;
+            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
             bool bResult = await Task.Run(() => _Install(Force)).ConfigureAwait(false);
+
+            if (bMutexCreated)
+                mutex.Close();
+
             return bResult;
+
+
         }
 
         private bool _UnInstall(bool Force = false)
         {
-
             //Check if Installer is already running
             if (downloadTask.Installing)
             {
@@ -1058,8 +1083,46 @@ namespace RZUpdate
 
         public async Task<bool> UnInstall(bool Force = false)
         {
+            bool msiIsRunning = false;
+
+            do
+            {
+                try
+                {
+                    Mutex mRes = null;
+
+                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                    else msiIsRunning = false;
+
+                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                }
+                catch (Exception)
+                {
+                    msiIsRunning = false;
+                }
+            }
+            while (msiIsRunning);
+
+            bool bMutexCreated = false;
+            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
+
             bool bResult = await Task.Run(() => _UnInstall(Force)).ConfigureAwait(false);
+
+            if (bMutexCreated)
+                mutex.Close();
+
             return bResult;
+
         }
 
         /// <summary>

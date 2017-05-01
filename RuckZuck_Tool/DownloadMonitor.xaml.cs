@@ -34,7 +34,7 @@ namespace RuckZuck_Tool
         {
             InitializeComponent();
             tDelay = new System.Timers.Timer(300);
-            tDelay.Elapsed += TDelay_Elapsed;
+            tDelay.Elapsed += tDelay_Elapsed;
             tDelay.AutoReset = false;
 
             lDLTasks.CollectionChanged += LDLTasks_CollectionChanged;
@@ -42,7 +42,7 @@ namespace RuckZuck_Tool
 
         public void RefreshData()
         {
-            Debug.WriteLine("RefreshData: " + DateTime.Now.ToString("HH:mm:ss.fff"));
+            //Debug.WriteLine("RefreshData: " + DateTime.Now.ToString("HH:mm:ss.fff"));
             if (DateTime.Now - tLastRefresh < new TimeSpan(0, 0, 0, 1, 0))
             {
                 tDelay.Interval = 300;
@@ -50,13 +50,13 @@ namespace RuckZuck_Tool
             }
             else
             {
-                TDelay_Elapsed(this, null);
+                tDelay_Elapsed(this, null);
             }
         }
 
-        private void TDelay_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void tDelay_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Debug.WriteLine("TaskUpdate: " + DateTime.Now.ToString("HH:mm:ss.fff"));
+            //Debug.WriteLine("TaskUpdate: " + DateTime.Now.ToString("HH:mm:ss.fff"));
 
             tDelay.Stop();
             TaskUpdate();
@@ -65,7 +65,7 @@ namespace RuckZuck_Tool
 
         private void LDLTasks_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            Debug.WriteLine("CollectionChanged: " + DateTime.Now.ToLongTimeString());
+            //Debug.WriteLine("CollectionChanged: " + DateTime.Now.ToLongTimeString());
             tDelay.Interval = 300;
             tDelay.Start();
         }
@@ -104,13 +104,15 @@ namespace RuckZuck_Tool
                     return;
                 }
 
-
                 foreach (DLTask oDL in lDLTasks.Where(t => t.AutoInstall & t.PercentDownloaded == 100 & !t.Error & !t.Installed & !t.Downloading & !t.WaitingForDependency & !t.Installing & !t.UnInstalled))
                 {
                     try
                     {
-
-                        oDL.SWUpd.Install(false).ConfigureAwait(false); ;
+                        Mutex mRes = null;
+                        if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                        {
+                            oDL.SWUpd.Install(false).ConfigureAwait(false);
+                        }
 
                         return;
                     }
@@ -136,19 +138,25 @@ namespace RuckZuck_Tool
                         {
                             if (!bInstalling)
                             {
-                                oDL.SWUpd.Install(false).ConfigureAwait(false); ;
+                                Mutex mRes = null;
+                                if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                                {
+                                    oDL.SWUpd.Install(false).ConfigureAwait(false);
+                                }
 
                                 return;
                             }
-
-
                         }
                         else
                         {
                             if (!oDL.Downloading & !oDL.WaitingForDependency & oDL.AutoInstall)
                                 if (!bInstalling)
                                 {
-                                    oDL.SWUpd.Install(false).ConfigureAwait(false);
+                                    Mutex mRes = null;
+                                    if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                                    {
+                                        oDL.SWUpd.Install(false).ConfigureAwait(false);
+                                    }
 
                                     return;
                                 }

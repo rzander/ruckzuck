@@ -20,7 +20,6 @@ namespace RZUpdate
     /// </summary>
     public class RZUpdater
     {
-
         static string sAuthToken = "";
 
         /// <summary>
@@ -894,19 +893,38 @@ namespace RZUpdate
         public async Task<bool> Install(bool Force = false)
         {
             bool msiIsRunning = false;
+
             do
             {
                 try
                 {
-                    //Check if MSI is running...
-                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    Mutex mRes = null;
+
+                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
                     {
                         msiIsRunning = true;
                         Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                    else msiIsRunning = false;
+
+                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
                     }
 
+
+                    //Check if MSI is running...
+                    /*using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                    }*/
+
                     //Sleep 15s if another MSI is running...
-                    Thread.Sleep(new TimeSpan(0, 0, 15));
+
                 }
                 catch (Exception)
                 {
@@ -915,13 +933,20 @@ namespace RZUpdate
             }
             while (msiIsRunning);
 
+            bool bMutexCreated = false;
+            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
             bool bResult = await Task.Run(() => _Install(Force)).ConfigureAwait(false);
+
+            if (bMutexCreated)
+                mutex.Close();
+
             return bResult;
+
+
         }
 
         private bool _UnInstall(bool Force = false)
         {
-
             //Check if Installer is already running
             if (downloadTask.Installing)
             {
@@ -954,13 +979,13 @@ namespace RZUpdate
                     return false;
                 }
 
-                //Is Product already installed ?
-                try
+                    //Is Product already installed ?
+                    try
                 {
                     if (!Force)
                     {
-                        //Already installed ?
-                        if (!CheckIsInstalled(false))
+                            //Already installed ?
+                            if (!CheckIsInstalled(false))
                         {
                             downloadTask.Installed = false;
                             downloadTask.Installing = false;
@@ -970,8 +995,8 @@ namespace RZUpdate
                         }
                     }
 
-                    //Check if Installer is already running
-                    while (downloadTask.Installing)
+                        //Check if Installer is already running
+                        while (downloadTask.Installing)
                     {
                         Thread.Sleep(1500);
                         if (!CheckIsInstalled(false))
@@ -988,8 +1013,8 @@ namespace RZUpdate
 
                     int iExitCode = -1;
 
-                    //Run Install Script
-                    if (!string.IsNullOrEmpty(SW.PSUninstall))
+                        //Run Install Script
+                        if (!string.IsNullOrEmpty(SW.PSUninstall))
                     {
                         try
                         {
@@ -1004,8 +1029,8 @@ namespace RZUpdate
                             }
                             catch { }
 
-                            //Wait 500ms to let the installer close completely...
-                            System.Threading.Thread.Sleep(550);
+                                //Wait 500ms to let the installer close completely...
+                                System.Threading.Thread.Sleep(550);
                         }
                         catch (Exception ex)
                         {
@@ -1013,18 +1038,18 @@ namespace RZUpdate
                         }
 
                         downloadTask.Installing = false;
-                        //InstProgress(this, EventArgs.Empty);
-                    }
+                            //InstProgress(this, EventArgs.Empty);
+                        }
 
-                    //is installed ?
-                    if (!CheckIsInstalled(false))
+                        //is installed ?
+                        if (!CheckIsInstalled(false))
                     {
                         downloadTask.Installed = false;
                         downloadTask.Installing = false;
                         downloadTask.UnInstalled = true;
                         downloadTask.Error = false;
-                        //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, "true", "RZUpdate", "Uninstalled...");
-                        ProgressDetails(downloadTask, EventArgs.Empty);
+                            //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, "true", "RZUpdate", "Uninstalled...");
+                            ProgressDetails(downloadTask, EventArgs.Empty);
                         return true;
                     }
                     else
@@ -1048,8 +1073,8 @@ namespace RZUpdate
                     bError = true;
                 }
 
-                //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, (!bError).ToString(), "RZUpdate", "");
-                ProgressDetails(this.downloadTask, EventArgs.Empty);
+                    //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, (!bError).ToString(), "RZUpdate", "");
+                    ProgressDetails(this.downloadTask, EventArgs.Empty);
                 return !bError;
             });
 
@@ -1058,8 +1083,46 @@ namespace RZUpdate
 
         public async Task<bool> UnInstall(bool Force = false)
         {
+            bool msiIsRunning = false;
+
+            do
+            {
+                try
+                {
+                    Mutex mRes = null;
+
+                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                    else msiIsRunning = false;
+
+                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
+                    {
+                        msiIsRunning = true;
+                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                    }
+                }
+                catch (Exception)
+                {
+                    msiIsRunning = false;
+                }
+            }
+            while (msiIsRunning);
+
+            bool bMutexCreated = false;
+            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
+
             bool bResult = await Task.Run(() => _UnInstall(Force)).ConfigureAwait(false);
+
+            if (bMutexCreated)
+                mutex.Close();
+
             return bResult;
+
         }
 
         /// <summary>

@@ -101,6 +101,8 @@ namespace RuckZuck_Tool
 
                 }
                 catch { }
+
+                OnSWUpdated(this, new EventArgs());
             }
             
         }
@@ -147,6 +149,8 @@ namespace RuckZuck_Tool
 
                 }
                 catch { }
+
+                OnSWUpdated(this, new EventArgs());
             }
 
             
