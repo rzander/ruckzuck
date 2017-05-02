@@ -430,8 +430,6 @@ namespace PackageManagement
                 catch { }
             }
 
-
-
             oUpdate.SoftwareUpdate.SW.ProductName = sProd;
             oUpdate.SoftwareUpdate.SW.ProductVersion = sVer;
             oUpdate.SoftwareUpdate.SW.Manufacturer = sManu;
@@ -440,14 +438,10 @@ namespace PackageManagement
 
             oUpdate.SoftwareUpdate.Download(false).Result.ToString();
 
-            if (oUpdate.SoftwareUpdate.Install(false).Result)
+            if (oUpdate.SoftwareUpdate.Install(false, true).Result)
                 request.Verbose(sManu + " " + sProd + " " + sVer + " installed.");
             else
                 request.Verbose(sManu + " " + sProd + " " + sVer + " NOT installed.");
-
-
-
-
         }
 
         /// <summary>
