@@ -685,7 +685,7 @@ namespace RuckZuck_Tool
                 if (oRZSW.SoftwareUpdate.Download().Result)
                 {
                     Console.WriteLine("Installing...");
-                    if (oRZSW.SoftwareUpdate.Install().Result)
+                    if (oRZSW.SoftwareUpdate.Install(false, true).Result)
                     {
                         Console.WriteLine("done.");
                     }

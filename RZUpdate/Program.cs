@@ -50,7 +50,7 @@ namespace RZUpdate
                     {
                         Console.WriteLine("... done.");
                         Console.Write("Installing...");
-                        if (oRZSW.SoftwareUpdate.Install().Result)
+                        if (oRZSW.SoftwareUpdate.Install(false,true).Result)
                         {
                             Console.WriteLine("... done.");
                         }
@@ -102,7 +102,7 @@ namespace RZUpdate
                                     {
                                         Console.WriteLine("... done.");
                                         Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
-                                        if (oRZSWPreReq.SoftwareUpdate.Install().Result)
+                                        if (oRZSWPreReq.SoftwareUpdate.Install(false,true).Result)
                                         {
                                             Console.WriteLine("... done.");
                                         }
@@ -117,7 +117,7 @@ namespace RZUpdate
                                 {
                                     Console.WriteLine("... done.");
                                     Console.Write("Installing...");
-                                    if (oRZSW.SoftwareUpdate.Install().Result)
+                                    if (oRZSW.SoftwareUpdate.Install(false,true).Result)
                                     {
                                         Console.WriteLine("... done.");
                                     }
@@ -149,7 +149,7 @@ namespace RZUpdate
                     {
                         Console.WriteLine("... done.");
                         Console.Write("Installing...");
-                        if (oUpdate.Install(false).Result)
+                        if (oUpdate.Install(false, true).Result)
                         {
                             Console.WriteLine("... done.");
                         }
@@ -185,7 +185,7 @@ namespace RZUpdate
                     {
                         Console.WriteLine("... done.");
                         Console.Write("Installing...");
-                        if (oUpdate.SoftwareUpdate.Install(false).Result)
+                        if (oUpdate.SoftwareUpdate.Install(false, true).Result)
                         {
                             Console.WriteLine("... done.");
                         }

@@ -799,7 +799,6 @@ namespace RZUpdate
         public delegate void ChangedEventHandler(object sender, EventArgs e);
         public event ChangedEventHandler Downloaded;
         private static event EventHandler DLProgress = delegate { };
-        //private static event EventHandler DLProgressDetails = delegate { };
         public event EventHandler ProgressDetails = delegate { };
         internal DLTask downloadTask;
         private ReaderWriterLockSlim UILock = new ReaderWriterLockSlim();
@@ -1444,56 +1443,68 @@ namespace RZUpdate
             return !bError;
         }
 
-        public async Task&lt;bool&gt; Install(bool Force = false)
+        public async Task&lt;bool&gt; Install(bool Force = false, bool Retry = false)
         {
             bool msiIsRunning = false;
-
+            bool RZisRunning = false;
             do
             {
+                //Check if MSI is running...
                 try
                 {
-                    Mutex mRes = null;
-
-                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
+                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
                     {
                         msiIsRunning = true;
-                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
-                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
                     }
-                    else msiIsRunning = false;
-
-                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
-                    {
-                        msiIsRunning = true;
-                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
-                        Thread.Sleep(new TimeSpan(0, 0, 10));
-                    }
-
-
-                    //Check if MSI is running...
-                    /*using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
-                    {
-                        msiIsRunning = true;
-                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
-                    }*/
-
-                    //Sleep 15s if another MSI is running...
-
+                    GC.Collect();
                 }
-                catch (Exception)
+                catch
                 {
                     msiIsRunning = false;
                 }
+
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
             }
-            while (msiIsRunning);
+            while (msiIsRunning | RZisRunning);
 
             bool bMutexCreated = false;
-            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
-            bool bResult = await Task.Run(() =&gt; _Install(Force)).ConfigureAwait(false);
+            bool bResult = false;
 
-            if (bMutexCreated)
-                mutex.Close();
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() =&gt; _Install(Force)).ConfigureAwait(false);
 
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
             return bResult;
 
 
@@ -1635,48 +1646,69 @@ namespace RZUpdate
             return true;
         }
 
-        public async Task&lt;bool&gt; UnInstall(bool Force = false)
+        public async Task&lt;bool&gt; UnInstall(bool Force = false, bool Retry = false)
         {
             bool msiIsRunning = false;
-
+            bool RZisRunning = false;
             do
             {
+                //Check if MSI is running...
                 try
                 {
-                    Mutex mRes = null;
-
-                    if (Mutex.TryOpenExisting(@"Global\_MSIExecute", out mRes))
+                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
                     {
                         msiIsRunning = true;
-                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
-                        Thread.Sleep(new TimeSpan(0, 0, 10));
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
                     }
-                    else msiIsRunning = false;
-
-                    if (Mutex.TryOpenExisting(@"RuckZuck", out mRes))
-                    {
-                        msiIsRunning = true;
-                        Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
-                        Thread.Sleep(new TimeSpan(0, 0, 10));
-                    }
+                    GC.Collect();
                 }
-                catch (Exception)
+                catch
                 {
                     msiIsRunning = false;
                 }
+
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
             }
-            while (msiIsRunning);
+            while (msiIsRunning | RZisRunning);
 
             bool bMutexCreated = false;
-            Mutex mutex = new Mutex(false, "RuckZuck", out bMutexCreated);
+            bool bResult = false;
 
-            bool bResult = await Task.Run(() =&gt; _UnInstall(Force)).ConfigureAwait(false);
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() =&gt; _UnInstall(Force)).ConfigureAwait(false);
 
-            if (bMutexCreated)
-                mutex.Close();
-
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
             return bResult;
-
         }
 
         /// &lt;summary&gt;
@@ -1997,7 +2029,6 @@ namespace RZUpdate
         {
             return Environment.ExpandEnvironmentVariables("%TEMP%\\" + SW.ContentID.ToString());
         }
-
     }
 }</value>
   </data>
@@ -2017,96 +2048,69 @@ namespace RZWrapper
     {
         static int Main(string[] args)
         {
-            Mutex mutex = new Mutex(false, "RuckZuck");
+            string xmlSW = null;
+
             try
             {
-                string xmlSW = null;
-                //var xmlSW = Unzip(oOut);
+                Assembly _assembly = Assembly.GetExecutingAssembly();
 
-                try
+                var stream = _assembly.GetManifestResourceStream("Resources.resx");
+                var resourceData = new byte[] { };
+                using (var rr = new ResourceReader(stream))
                 {
-                    Assembly _assembly = Assembly.GetExecutingAssembly();
-
-                    var stream = _assembly.GetManifestResourceStream("Resources.resx");
-                    var resourceData = new byte[] { };
-                    using (var rr = new ResourceReader(stream))
-                    {
-                        var resourceType = "";
-                        rr.GetResourceData("xmlSW.xml", out resourceType, out resourceData);
-                        //Console.WriteLine(resourceType);
-                    }
-
-                    xmlSW = Encoding.Default.GetString(resourceData, 2, resourceData.Length - 2);
-                }
-                catch { }
-
-                RZUpdater oRZSW;
-                if (!string.IsNullOrEmpty(xmlSW))
-                {
-                    oRZSW = new RZUpdater(xmlSW);
-                    oRZSW.SoftwareUpdate.SendFeedback = false; //It's from a custom XML...
-                }
-                else
-                {
-                    oRZSW = new RZUpdater();
-                    oRZSW.SoftwareUpdate = new SWUpdate("RZRZRZ");
+                    var resourceType = "";
+                    rr.GetResourceData("xmlSW.xml", out resourceType, out resourceData);
                 }
 
-                Console.WriteLine("RuckZuck.tools Package-Wrapper (c) 2017 by Roger Zander");
-                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                xmlSW = Encoding.Default.GetString(resourceData, 2, resourceData.Length - 2);
+            }
+            catch { }
+
+            RZUpdater oRZSW;
+            if (!string.IsNullOrEmpty(xmlSW))
+            {
+                oRZSW = new RZUpdater(xmlSW);
+                oRZSW.SoftwareUpdate.SendFeedback = false;
+            }
+            else
+            {
+                oRZSW = new RZUpdater();
+                oRZSW.SoftwareUpdate = new SWUpdate("RZRZRZ");
+            }
+
+            Console.WriteLine("RuckZuck.tools Package-Wrapper (c) 2017 by Roger Zander");
+            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+            {
+                Console.WriteLine("Error: Product not valid...");
+                return 100;
+            }
+
+            Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
+
+            Console.Write("Downloading...");
+            if (oRZSW.SoftwareUpdate.Download().Result)
+            {
+                Console.WriteLine("... done.");
+
+                Console.Write("Installing...");
+                if (oRZSW.SoftwareUpdate.Install(false, true).Result)
                 {
-                    Console.WriteLine("Error: Product not valid...");
-                    //Console.WriteLine("Error: Product not found in Repository...");
-                    return 100;
-                }
-
-                Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
-                //Console.ReadLine();
-                if (mutex.WaitOne(new TimeSpan(0, 15, 0), false))
-                {
-                    Console.Write("Downloading...");
-                    if (oRZSW.SoftwareUpdate.Download().Result)
-                    {
-                        Console.WriteLine("... done.");
-
-                        Console.Write("Installing...");
-                        if (oRZSW.SoftwareUpdate.Install().Result)
-                        {
-                            Console.WriteLine("... done.");
-                            Thread.Sleep(2000);
-                            return 0;
-                        }
-                        else
-                        {
-                            Console.WriteLine("... Error. Installation failed.");
-                            Thread.Sleep(3000);
-                            return 1603;
-                        }
-
-                    }
-                    else
-                    {
-                        Console.WriteLine("... Error. Download failed.");
-                        Thread.Sleep(3000);
-                        return 1602;
-                    }
+                    Console.WriteLine("... done.");
+                    Thread.Sleep(2000);
+                    return 0;
                 }
                 else
                 {
-                    Console.WriteLine("Another installation is already running...");
-                    return 1618;
+                    Console.WriteLine("... Error. Installation failed.");
+                    Thread.Sleep(3000);
+                    return 1603;
                 }
             }
-            finally
+            else
             {
-                if (mutex != null)
-                {
-                    try
-                    {
-                      mutex.ReleaseMutex();
-                    } 
-                    catch {}
-                }
+                Console.WriteLine("... Error. Download failed.");
+                Thread.Sleep(3000);
+                return 1602;
             }
         }
     }

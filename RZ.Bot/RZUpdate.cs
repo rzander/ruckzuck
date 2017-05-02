@@ -20,17 +20,19 @@ namespace RZUpdate
     /// </summary>
     public class RZUpdater
     {
-
         static string sAuthToken = "";
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public RZUpdater()
+        public RZUpdater() : this("FreeRZ", _getTimeToken())
+        {
+        }
+
+        public RZUpdater(string Username, string Password)
         {
             AddSoftware oSW = new AddSoftware();
-            sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", _getTimeToken());
-            RZRestAPI.Token.ToString();
+            sAuthToken = RZRestAPI.GetAuthToken(Username, Password);
 
             SoftwareUpdate = new SWUpdate(oSW);
         }
@@ -243,7 +245,6 @@ namespace RZUpdate
         public delegate void ChangedEventHandler(object sender, EventArgs e);
         public event ChangedEventHandler Downloaded;
         private static event EventHandler DLProgress = delegate { };
-        //private static event EventHandler DLProgressDetails = delegate { };
         public event EventHandler ProgressDetails = delegate { };
         internal DLTask downloadTask;
         private ReaderWriterLockSlim UILock = new ReaderWriterLockSlim();
@@ -269,7 +270,7 @@ namespace RZUpdate
         }
 
         //Constructor
-        public SWUpdate(string ProductName, string ProductVersion, string Manufacturer)
+        public SWUpdate(string ProductName, string ProductVersion, string Manufacturer, bool NoPreReqCheck = false)
         {
             SW = null;
             SW = new AddSoftware();
@@ -281,8 +282,9 @@ namespace RZUpdate
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, UnInstalled = false, Installed = false };
             downloadTask.SWUpd = this;
 
+
             //Get Install-type
-            if (!GetInstallType())
+            if (!GetInstallType(NoPreReqCheck))
             {
                 SW = null;
                 return;
@@ -354,7 +356,7 @@ namespace RZUpdate
             catch { }
         }
 
-        public bool GetInstallType()
+        public bool GetInstallType(bool bGetFirst = false)
         {
             foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
             {
@@ -365,8 +367,11 @@ namespace RZUpdate
                     {
                         if (!string.IsNullOrEmpty(DT.PSPreReq))
                         {
-                            if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
-                                continue;
+                            if (!bGetFirst)
+                            {
+                                if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
+                                    continue;
+                            }
                         }
                     }
                     catch { continue; }
@@ -818,7 +823,7 @@ namespace RZUpdate
                 int iExitCode = -1;
 
                 //Run Install Script
-                if (!string.IsNullOrEmpty(psPath + SW.PSInstall))
+                if (!string.IsNullOrEmpty(SW.PSInstall))
                 {
                     try
                     {
@@ -884,37 +889,75 @@ namespace RZUpdate
             return !bError;
         }
 
-        public async Task<bool> Install(bool Force = false)
+        public async Task<bool> Install(bool Force = false, bool Retry = false)
         {
             bool msiIsRunning = false;
+            bool RZisRunning = false;
             do
             {
+                //Check if MSI is running...
                 try
                 {
-                    //Check if MSI is running...
                     using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
                     {
                         msiIsRunning = true;
-                        Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
                     }
-
-                    //Sleep 15s if another MSI is running...
-                    Thread.Sleep(new TimeSpan(0, 0, 15));
+                    GC.Collect();
                 }
-                catch (Exception)
+                catch
                 {
                     msiIsRunning = false;
                 }
-            }
-            while (msiIsRunning);
 
-            bool bResult = await Task.Run(() => _Install(Force)).ConfigureAwait(false);
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
+            }
+            while (msiIsRunning | RZisRunning);
+
+            bool bMutexCreated = false;
+            bool bResult = false;
+
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() => _Install(Force)).ConfigureAwait(false);
+
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
             return bResult;
+
+
         }
 
         private bool _UnInstall(bool Force = false)
         {
-
             //Check if Installer is already running
             if (downloadTask.Installing)
             {
@@ -1049,9 +1092,68 @@ namespace RZUpdate
             return true;
         }
 
-        public async Task<bool> UnInstall(bool Force = false)
+        public async Task<bool> UnInstall(bool Force = false, bool Retry = false)
         {
-            bool bResult = await Task.Run(() => _UnInstall(Force)).ConfigureAwait(false);
+            bool msiIsRunning = false;
+            bool RZisRunning = false;
+            do
+            {
+                //Check if MSI is running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    {
+                        msiIsRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    msiIsRunning = false;
+                }
+
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
+            }
+            while (msiIsRunning | RZisRunning);
+
+            bool bMutexCreated = false;
+            bool bResult = false;
+
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() => _UnInstall(Force)).ConfigureAwait(false);
+
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
             return bResult;
         }
 
@@ -1176,7 +1278,7 @@ namespace RZUpdate
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
                     httpRequest.UserAgent = "chocolatey command line";
                     httpRequest.AllowAutoRedirect = true;
-                    httpRequest.MaximumAutomaticRedirections = 2;
+                    httpRequest.MaximumAutomaticRedirections = 5;
                     httpRequest.GetResponse();
 
 
@@ -1278,7 +1380,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1299,7 +1401,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1320,7 +1422,7 @@ namespace RZUpdate
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1337,7 +1439,7 @@ namespace RZUpdate
                     return false;
 
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -1373,6 +1475,5 @@ namespace RZUpdate
         {
             return Environment.ExpandEnvironmentVariables("%TEMP%\\" + SW.ContentID.ToString());
         }
-
     }
 }

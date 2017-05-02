@@ -59,7 +59,6 @@ namespace RZ.Bot
                     //Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Properties["WorkerServiceHost"].ToString() + "(" + message.Properties["Queue"].ToString() + ") : " + message.Properties["TargetComputer"].ToString()  + " : " + message.GetBody<string>());
                     //Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Label + " " + message.GetBody<string>());
 
-                    Mutex mutex = new Mutex(false, "RuckZuck");
                     try
                     {
                         RZUpdater oRZSW = new RZUpdater();
@@ -71,63 +70,62 @@ namespace RZ.Bot
 
                         if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
-                            Console.WriteLine("Error: ProductName not valid... "  + message.Properties["ProductName"].ToString());
+                            Console.WriteLine("Error: ProductName not valid... " + message.Properties["ProductName"].ToString());
                             message.Abandon();
                             //Console.WriteLine("Error: Product not found in Repository...");
                         }
                         else
                         {
                             Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
-                            if (mutex.WaitOne(new TimeSpan(0, 15, 0), false))
+
+                            Console.Write("Downloading...");
+                            foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
                             {
-                                Console.Write("Downloading...");
-                                foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
-                                {
-                                    RZUpdater oRZSWPreReq = new RZUpdater();
-                                    oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
-                                    Console.WriteLine();
-                                    Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
-                                    if (oRZSWPreReq.SoftwareUpdate.Download().Result)
-                                    {
-                                        Console.WriteLine("... done.");
-                                        Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
-                                        if (oRZSWPreReq.SoftwareUpdate.Install().Result)
-                                        {
-                                            Console.WriteLine("... done.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("... Error. The installation failed.");
-                                        }
-                                    }
-                                }
-                                if (oRZSW.SoftwareUpdate.Download().Result)
+                                RZUpdater oRZSWPreReq = new RZUpdater();
+                                oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
+                                Console.WriteLine();
+                                Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                if (oRZSWPreReq.SoftwareUpdate.Download().Result)
                                 {
                                     Console.WriteLine("... done.");
-
-                                    Console.Write("Installing...");
-                                    if (oRZSW.SoftwareUpdate.Install().Result)
+                                    Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                    if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
                                     {
                                         Console.WriteLine("... done.");
-                                        message.Complete();
-                                        RZRestAPI.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer,  "true", "RZBot", "ok..").Wait(3000);
-                                        //return 0;
                                     }
                                     else
                                     {
-                                        Console.WriteLine("... Error. Installation failed.");
-                                        message.Abandon();
-                                        //return 1603;
+                                        Console.WriteLine("... Error. The installation failed.");
                                     }
+                                }
+                            }
+                            if (oRZSW.SoftwareUpdate.Download().Result)
+                            {
+                                Console.WriteLine("... done.");
 
+                                Console.Write("Installing...");
+                                if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                                {
+                                    Console.WriteLine("... done.");
+                                    message.Complete();
+                                    RZRestAPI.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
+                                    //return 0;
                                 }
                                 else
                                 {
-                                    Console.WriteLine("... Error. Download failed.");
+                                    Console.WriteLine("... Error. Installation failed.");
                                     message.Abandon();
-                                    //return 1602;
+                                    //return 1603;
                                 }
+
                             }
+                            else
+                            {
+                                Console.WriteLine("... Error. Download failed.");
+                                message.Abandon();
+                                //return 1602;
+                            }
+
                         }
 
                     }
@@ -135,14 +133,6 @@ namespace RZ.Bot
                     {
                         message.Abandon();
                     }
-                    finally
-                    {
-                        if (mutex != null)
-                        {
-                            mutex.ReleaseMutex();
-                        }
-                    }
-
 
                     Console.ResetColor();
                 }

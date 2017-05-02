@@ -640,7 +640,7 @@ namespace RuckZuck_Tool
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = true;
                                 dm.lDLTasks.Add(oSW.downloadTask);
-                                oSW.UnInstall(false).ConfigureAwait(false); ;
+                                oSW.UnInstall(false, false).ConfigureAwait(false);
 
                             }
                             dm.Show();

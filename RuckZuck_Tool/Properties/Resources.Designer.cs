@@ -154,15 +154,14 @@ namespace RuckZuck_Tool.Properties {
         ///    {
         ///        static int Main(string[] args)
         ///        {
-        ///            Mutex mutex = new Mutex(false, &quot;RuckZuck&quot;);
+        ///            string xmlSW = null;
+        ///
         ///            try
         ///            {
-        ///                string xmlSW = null;
-        ///                //var xmlSW = Unzip(oOut);
+        ///                Assembly _assembly = Assembly.GetExecutingAssembly();
         ///
-        ///                try
-        ///                {
-        ///              [rest of string was truncated]&quot;;.
+        ///                var stream = _assembly.GetManifestResourceStream(&quot;Resources.resx&quot;);
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {
