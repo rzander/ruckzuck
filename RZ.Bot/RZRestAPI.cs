@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace RuckZuck_WCF
 {
-    class RZRestAPI
+    public static class RZRestAPI
     {
         public static string sURL = "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
         //internal static string sURL = "http://localhost:7727/RZService.svc";
@@ -49,6 +49,16 @@ namespace RuckZuck_WCF
             oClient.Headers.Add("AuthenticatedToken:" + Token);
             oClient.Headers.Add("Content-Type:application/xml");
             string sResult = oClient.DownloadString(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
+
+            return DataContractDeSerializeObject<List<GetSoftware>>(sResult);
+        }
+
+        public static List<GetSoftware> SWGet(string PackageName, string Manufacturer, string PackageVersion)
+        {
+            WebClient oClient = new WebClient();
+            oClient.Headers.Add("AuthenticatedToken:" + Token);
+            oClient.Headers.Add("Content-Type:application/xml");
+            string sResult = oClient.DownloadString(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + Manufacturer + "&ver=" + PackageVersion);
 
             return DataContractDeSerializeObject<List<GetSoftware>>(sResult);
         }
@@ -363,26 +373,36 @@ namespace RuckZuck_WCF
 
         public string ErrorMessage { get; set; }
 
+        internal string _status = "";
         public string Status
         {
             get
             {
-                if (Installing & !Error)
-                    return "Installing";
-                if (Downloading & !Error)
-                    return "Downloading";
-                if (Installed & !Error)
-                    return "Installed";
-                if (UnInstalled & !Error)
-                    return "Uninstalled";
-                if (WaitingForDependency)
-                    return "Installing dependencies";
-                if (PercentDownloaded == 100 & !Error)
-                    return "Downloaded";
-                if (Error)
-                    return ErrorMessage;
+                if (string.IsNullOrEmpty(_status))
+                {
+                    if (Installing & !Error)
+                        return "Installing";
+                    if (Downloading & !Error)
+                        return "Downloading";
+                    if (Installed & !Error)
+                        return "Installed";
+                    if (UnInstalled & !Error)
+                        return "Uninstalled";
+                    if (WaitingForDependency)
+                        return "Installing dependencies";
+                    if (PercentDownloaded == 100 & !Error)
+                        return "Downloaded";
+                    if (Error)
+                        return ErrorMessage;
 
-                return "Waiting";
+                    return "Waiting";
+                }
+                else
+                    return _status;
+            }
+            set
+            {
+                _status = value;
             }
         }
 

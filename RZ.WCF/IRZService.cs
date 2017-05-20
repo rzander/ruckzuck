@@ -24,6 +24,10 @@ namespace RuckZuck_WCF
         List<GetSoftware> SWGetByPkgNameAndVersion(string PkgName, string PkgVersion);
 
         [OperationContract]
+        [WebGet(UriTemplate = "SWGetPkg?name={PkgName}&manuf={Manufacturer}&ver={PkgVersion}")]
+        List<GetSoftware> SWGetByPkg(string PkgName, string Manufacturer, string PkgVersion);
+
+        [OperationContract]
         [WebGet(UriTemplate = "SWGetShort?name={Shortname}")]
         List<GetSoftware> SWGetByShortname(string Shortname);
 

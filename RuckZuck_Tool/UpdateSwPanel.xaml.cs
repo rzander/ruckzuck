@@ -62,64 +62,26 @@ namespace RuckZuck_Tool
 
         private void btInstall_Click(object sender, RoutedEventArgs e)
         {
-            foreach(AddSoftware oItem in lvSW.SelectedItems)
-            {
-                try
-                {
-                    SWUpdate oSW = new SWUpdate(oItem);
-                    oSW.GetInstallType();
-
-                    if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
-                    {
-                        //oSW.Downloaded += OSW_Downloaded;
-                        oSW.ProgressDetails += OSW_ProgressDetails;
-                        oSW.downloadTask.AutoInstall = true;
-                        oSW.Download(false).ConfigureAwait(false);
-                        dm.lDLTasks.Add(oSW.downloadTask);
-
-                        foreach (string sPreReq in oSW.SW.PreRequisites)
-                        {
-                            try
-                            {
-                                SWUpdate oPreReq = new SWUpdate(sPreReq);
-                                oPreReq.GetInstallType();
-                                if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
-                                {
-                                    //oPreReq.Downloaded += OSW_Downloaded;
-                                    oPreReq.ProgressDetails += OSW_ProgressDetails;
-                                    oPreReq.downloadTask.AutoInstall = true;
-                                    oPreReq.Download(false).ConfigureAwait(false);
-                                    dm.lDLTasks.Add(oPreReq.downloadTask);
-                                }
-
-                            }
-                            catch { }
-
-                        }
-                    }
-                    dm.Show();
-
-                }
-                catch { }
-
-                OnSWUpdated(this, new EventArgs());
-            }
-            
+            InstallSW(lvSW.SelectedItems as List<AddSoftware>);
         }
 
         private void btInstallAll_Click(object sender, RoutedEventArgs e)
         {
-            List<AddSoftware> lSW = lvSW.ItemsSource as List<AddSoftware>;
-            foreach (var oItem in lSW)
+            InstallSW(lvSW.ItemsSource as List<AddSoftware>);
+        }
+
+        private void InstallSW(List<AddSoftware> lSW)
+        {
+            foreach (AddSoftware oItem in lSW)
             {
                 try
                 {
                     SWUpdate oSW = new SWUpdate(oItem);
                     oSW.GetInstallType();
+                    oSW.SW.Author = oItem.Author; //Author is used to store the Bootstrap flag
 
                     if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
                     {
-                        //oSW.Downloaded += OSW_Downloaded;
                         oSW.ProgressDetails += OSW_ProgressDetails;
                         oSW.downloadTask.AutoInstall = true;
                         oSW.Download(false).ConfigureAwait(false);
@@ -133,7 +95,6 @@ namespace RuckZuck_Tool
                                 oPreReq.GetInstallType();
                                 if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
                                 {
-                                    //oPreReq.Downloaded += OSW_Downloaded;
                                     oPreReq.ProgressDetails += OSW_ProgressDetails;
                                     oPreReq.downloadTask.AutoInstall = true;
                                     oPreReq.Download(false).ConfigureAwait(false);
@@ -152,8 +113,6 @@ namespace RuckZuck_Tool
 
                 OnSWUpdated(this, new EventArgs());
             }
-
-            
         }
 
         private void OSW_ProgressDetails(object sender, EventArgs e)
@@ -167,9 +126,9 @@ namespace RuckZuck_Tool
             {
                 if (lvSW.SelectedItems.Count > 0)
                 {
-                    foreach(AddSoftware oSW in lvSW.SelectedItems)
+                    foreach (AddSoftware oSW in lvSW.SelectedItems)
                     {
-                        if(!Properties.Settings.Default.UpdExlusion.Contains(oSW.Shortname))
+                        if (!Properties.Settings.Default.UpdExlusion.Contains(oSW.Shortname))
                             Properties.Settings.Default.UpdExlusion.Add(oSW.Shortname);
                         ((List<AddSoftware>)lvSW.ItemsSource).Remove(oSW);
                     }
@@ -178,8 +137,8 @@ namespace RuckZuck_Tool
                     lvSW.ItemsSource = null;
                     lvSW.ItemsSource = oList;
                 }
-                
-                
+
+
             }
             catch { }
         }
@@ -193,7 +152,7 @@ namespace RuckZuck_Tool
                     try
                     {
                         string sShortName = ((AddSoftware)lvSW.SelectedItem).Shortname;
-                        
+
                         Process.Start(lSWRep.Where(t => t.Shortname == sShortName).FirstOrDefault().ProductURL);
                     }
                     catch { }
@@ -211,9 +170,9 @@ namespace RuckZuck_Tool
                     try
                     {
                         string sProdName = ((AddSoftware)lvSW.SelectedItem).ProductName;
-                        
+
                         List<AddSoftware> possibleSW = lInstalledSW.Where(t => t.Manufacturer == ((AddSoftware)lvSW.SelectedItem).Manufacturer & t.ProductVersion == ((AddSoftware)lvSW.SelectedItem).MSIProductID).ToList();
-                        if(possibleSW.Count == 1)
+                        if (possibleSW.Count == 1)
                         {
                             SWUpdate._RunPS(possibleSW[0].PSUninstall.ToString());
                         }
@@ -221,10 +180,10 @@ namespace RuckZuck_Tool
                         if (possibleSW.Count > 1)
                         {
                             bool bRun = false;
-                            foreach(AddSoftware aSW in possibleSW)
+                            foreach (AddSoftware aSW in possibleSW)
                             {
-                                string subProdName = new String(sProdName.Where(c => c != '-' && c != '.' &&(c < '0' || c > '9')).ToArray()).Trim();
-                                if(subProdName == new String(aSW.ProductName.Where(c => c != '-' && c != '.' && (c < '0' || c > '9')).ToArray()).Trim())
+                                string subProdName = new String(sProdName.Where(c => c != '-' && c != '.' && (c < '0' || c > '9')).ToArray()).Trim();
+                                if (subProdName == new String(aSW.ProductName.Where(c => c != '-' && c != '.' && (c < '0' || c > '9')).ToArray()).Trim())
                                 {
                                     SWUpdate._RunPS(aSW.PSUninstall.ToString());
                                     bRun = true;
@@ -232,11 +191,11 @@ namespace RuckZuck_Tool
                                 }
                             }
 
-                            if(!bRun)
+                            if (!bRun)
                             {
                                 Process.Start("control", "appwiz.cpl");
                             }
-                            
+
                         }
 
 

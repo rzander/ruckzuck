@@ -524,6 +524,73 @@ namespace RuckZuck_WCF
             return oResult;
         }
 
+        public List<GetSoftware> SWGetByPkg(string PkgName, string Manufacturer, string PkgVersion = "")
+        {
+            if (!IsUserValid())
+                return new List<GetSoftware>();
+
+            //PkgName = WebUtility.UrlDecode(PkgName);
+            //PkgVersion = WebUtility.UrlDecode(PkgVersion);
+
+            List<GetSoftware> oResult = new List<GetSoftware>();
+            List<vAllSWDetails> oFoundItems = new List<vAllSWDetails>();
+            oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ProductName == PkgName & t.Version == PkgVersion & t.Manufacturer == Manufacturer));
+
+            if (oFoundItems.Count() == 0)
+            {
+                oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ShortName == PkgName & t.IsLatest ?? false));
+            }
+
+            //remove duplicates
+            var distinctList = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer })
+                         .Select(g => g.First())
+                         .ToList();
+
+            foreach (vAllSWDetails oItem in distinctList)
+            {
+                try
+                {
+                    GetSoftware oRItem = new GetSoftware()
+                    {
+                        Description = oItem.ProductDescription,
+                        //Image = oItem.Icon,
+                        Manufacturer = oItem.Manufacturer,
+                        ProductName = oItem.ProductName,
+                        ProductURL = oItem.ProjectURL,
+                        ProductVersion = oItem.Version,
+                        Shortname = oItem.ShortName,
+                        Quality = oItem.SuccessRatio,
+                        Downloads = oItem.Downloads,
+                        IconId = oItem.IconId
+                    };
+
+                    try
+                    {
+                        oRItem.Categories = oItem.Categories.Split(',').ToList();
+                        if (oRItem.Categories.Count == 0)
+                            oRItem.Categories.Add("Other");
+                    }
+                    catch { }
+
+                    if (oRItem.Categories == null)
+                        oRItem.Categories = new List<string>() { "Other" };
+
+
+                    oResult.Add(oRItem);
+                }
+                catch { }
+            }
+            try
+            {
+                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWGet/" + PkgName + ";" + PkgVersion, TimeToLive = new TimeSpan(4, 0, 0) };
+                bMSG.Properties.Add("Count", oResult.Count);
+                tcRuckZuck.SendAsync(bMSG);
+            }
+            catch { }
+
+            return oResult;
+        }
+
         public bool UploadSWEntry(AddSoftware SoftwareItem)
         {
             if (!IsUserValid())
@@ -854,6 +921,14 @@ namespace RuckZuck_WCF
                         sShortName = "ConEmu";
                     if (SoftwareItem.ProductName.StartsWith("AVStoDVD "))
                         sShortName = "AVStoDVD";
+
+                    //14.4.2017
+                    if (SoftwareItem.ProductName.StartsWith("Wireshark "))
+                        sShortName = "Wireshark";
+                    if (SoftwareItem.ProductName.StartsWith("Postman-win64-"))
+                        sShortName = "Postman";
+                    if (SoftwareItem.ProductName.StartsWith("Sandboxie "))
+                        sShortName = "Sandboxie";
 
                     if (string.IsNullOrEmpty(sShortName))
                         oProduct = oSW.Product.Add(new Product() { ProductName = SoftwareItem.ProductName, Manufacturer = SoftwareItem.Manufacturer, ProductDescription = SoftwareItem.Description, ProjectURL = SoftwareItem.ProductURL });
@@ -1510,7 +1585,7 @@ namespace RuckZuck_WCF
             {
                 WebRequest request = WebRequest.Create("https://api.pushbullet.com/v2/pushes");
                 request.Method = "POST";
-                request.Headers.Add("Authorization", "Bearer xxx");
+                request.Headers.Add("Authorization", "Bearer o.xxxx");
                 request.ContentType = "application/json; charset=UTF-8";
                 string postData =
                     "{\"channel_tag\": \"ruckzuck\",  \"type\": \"note\", \"title\": \"" + Message + "\", \"body\": \"" + Body + "\"}";
