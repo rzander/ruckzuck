@@ -62,12 +62,12 @@ namespace RuckZuck_Tool
 
         private void btInstall_Click(object sender, RoutedEventArgs e)
         {
-            InstallSW(lvSW.SelectedItems as List<AddSoftware>);
+            InstallSW(lvSW.SelectedItems.Cast<AddSoftware>().ToList());
         }
 
         private void btInstallAll_Click(object sender, RoutedEventArgs e)
         {
-            InstallSW(lvSW.ItemsSource as List<AddSoftware>);
+            InstallSW(lvSW.ItemsSource.Cast<AddSoftware>().ToList());
         }
 
         private void InstallSW(List<AddSoftware> lSW)
