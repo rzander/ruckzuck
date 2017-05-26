@@ -22,6 +22,8 @@ using System.Threading;
 using System.Net;
 using RuckZuck_WCF;
 using RZUpdate;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace RuckZuck_Tool
 {
@@ -211,7 +213,7 @@ namespace RuckZuck_Tool
                 //Authenticate with custom User and Password from config file...
                 if (!string.IsNullOrEmpty(Properties.Settings.Default.UserPW))
                 {
-                    string sResponse = RZRestAPI.GetAuthToken(Properties.Settings.Default.UserKey, Properties.Settings.Default.UserPW);
+                    string sResponse = RZRestAPI.GetAuthToken(Properties.Settings.Default.UserKey, Decrypt(Properties.Settings.Default.UserPW, Environment.UserName));
                     try
                     {
                         Guid.Parse(sResponse);
@@ -230,6 +232,58 @@ namespace RuckZuck_Tool
                     sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
             }
             catch { }
+        }
+
+        /// <summary>
+        /// Encrypt a string
+        /// </summary>
+        /// <param name="strPlainText"></param>
+        /// <param name="strKey"></param>
+        /// <returns></returns>
+        public static string Encrypt(string strPlainText, string strKey)
+        {
+            try
+            {
+                TripleDESCryptoServiceProvider objDES = new TripleDESCryptoServiceProvider();
+
+                SHA1CryptoServiceProvider objSHA1 = new SHA1CryptoServiceProvider();
+                byte[] bHash = objSHA1.ComputeHash(ASCIIEncoding.ASCII.GetBytes(strKey));
+
+                byte[] bRes = ProtectedData.Protect(ASCIIEncoding.ASCII.GetBytes(strPlainText), bHash, DataProtectionScope.CurrentUser);
+
+                return Convert.ToBase64String(bRes);
+            }
+            catch (System.Exception ex)
+            {
+                ex.Message.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Decrypt a string
+        /// </summary>
+        /// <param name="strBase64Text"></param>
+        /// <param name="strKey"></param>
+        /// <returns></returns>
+        public static string Decrypt(string strBase64Text, string strKey)
+        {
+            try
+            {
+                TripleDESCryptoServiceProvider objDES = new TripleDESCryptoServiceProvider();
+
+                SHA1CryptoServiceProvider objSHA1 = new SHA1CryptoServiceProvider();
+                byte[] bHash = objSHA1.ComputeHash(ASCIIEncoding.ASCII.GetBytes(strKey));
+
+                byte[] arrBuffer = Convert.FromBase64String(strBase64Text);
+                return ASCIIEncoding.ASCII.GetString(System.Security.Cryptography.ProtectedData.Unprotect(arrBuffer, bHash, DataProtectionScope.CurrentUser));
+            }
+            catch (System.Exception ex)
+            {
+                ex.Message.ToString();
+            }
+            return "";
+
         }
 
         private void OUpdPanel_OnSWUpdated(object sender, EventArgs e)
@@ -746,7 +800,7 @@ namespace RuckZuck_Tool
         private void tabSettings_Loaded(object sender, RoutedEventArgs e)
         {
             tbUsername.Text = Properties.Settings.Default.UserKey;
-            tbPassword.Password = Properties.Settings.Default.UserPW;
+            tbPassword.Password = Decrypt(Properties.Settings.Default.UserPW, Environment.UserName);
         }
 
         private void btSettingsSave_Click(object sender, RoutedEventArgs e)
@@ -763,7 +817,7 @@ namespace RuckZuck_Tool
 
                 //Update and save new username and password
                 Properties.Settings.Default.UserKey = tbUsername.Text;
-                Properties.Settings.Default.UserPW = tbPassword.Password;
+                Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
                 Properties.Settings.Default.InternalURL = tbURL.Text;
                 Properties.Settings.Default.LocallRepository = tbRepository.Text;
                 Properties.Settings.Default.Save();
