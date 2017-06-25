@@ -58,7 +58,7 @@ namespace RuckZuck_WCF
             WebClient oClient = new WebClient();
             oClient.Headers.Add("AuthenticatedToken:" + Token);
             oClient.Headers.Add("Content-Type:application/xml");
-            string sResult = oClient.DownloadString(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + Manufacturer + "&ver=" + PackageVersion);
+            string sResult = oClient.DownloadString(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
 
             return DataContractDeSerializeObject<List<GetSoftware>>(sResult);
         }
