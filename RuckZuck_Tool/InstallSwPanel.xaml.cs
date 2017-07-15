@@ -86,6 +86,7 @@ namespace RuckZuck_Tool
         public InstallSwPanel()
         {
             InitializeComponent();
+            tbSearch.Text = "";
             tSearch.Elapsed += TSearch_Elapsed;
             tSearch.Enabled = false;
             tSearch.AutoReset = false;
@@ -96,7 +97,10 @@ namespace RuckZuck_Tool
         {
             AnonymousDelegate update = delegate ()
             {
-                tbSearch_LostFocus(sender, null);
+                if(tbSearch.IsFocused)
+                    tbSearch_Search(sender, null);
+                else
+                    tSearch.Stop();
             };
             Dispatcher.Invoke(update);
 
@@ -114,12 +118,44 @@ namespace RuckZuck_Tool
 
         private void tbSearch_GotFocus(object sender, RoutedEventArgs e)
         {
+            tSearch.Stop();
             tbSearch.Foreground = new SolidColorBrush(Colors.Black);
             if (tbSearch.Tag != null)
                 tbSearch.Text = "";
         }
 
         private void tbSearch_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            if (string.IsNullOrEmpty(tbSearch.Text))
+            {
+                tbSearch.Foreground = new SolidColorBrush(Colors.LightGray);
+                tbSearch.Tag = "Search";
+                tbSearch.Text = "Search...";
+            }
+            else
+            {
+                tbSearch.Foreground = new SolidColorBrush(Colors.Black);
+                tbSearch.Tag = null;
+
+                try
+                {
+                    var vResult = lAllSoftware.FindAll(t => t.Shortname.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
+                    vResult.AddRange(lAllSoftware.FindAll(t => t.ProductName.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
+                    vResult.AddRange(lAllSoftware.FindAll(t => t.Manufacturer.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
+                    if (vResult.Count <= 15)
+                    {
+                        vResult.AddRange(lAllSoftware.FindAll(t => (t.Description ?? "").IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
+                    }
+
+                    lvSW.ItemsSource = vResult.Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName);
+                }
+                catch { }
+            }
+            Mouse.OverrideCursor = null;
+        }
+
+        private void tbSearch_Search(object sender, RoutedEventArgs e)
         {
             Mouse.OverrideCursor = Cursors.Wait;
             if (string.IsNullOrEmpty(tbSearch.Text))
@@ -190,6 +226,7 @@ namespace RuckZuck_Tool
 
         private void lvSW_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            tSearch.Stop();
             if (lvSW.SelectedItems.Count > 0)
             {
                 btInstall.IsEnabled = true;
@@ -202,9 +239,9 @@ namespace RuckZuck_Tool
 
         private void btInstall_Click(object sender, RoutedEventArgs e)
         {
-
             if (lvSW.SelectedItem != null)
             {
+                tSearch.Stop();
                 try
                 {
                     foreach (var oItem in lvSW.SelectedItems)
@@ -215,16 +252,16 @@ namespace RuckZuck_Tool
                             if (oItem.GetType() == typeof(GetSoftware))
                             {
                                 GetSoftware dgr = oItem as GetSoftware;
-                                if(!string.IsNullOrEmpty(dgr.XMLFile))
+                                if (!string.IsNullOrEmpty(dgr.XMLFile))
                                 {
-                                    if(System.IO.File.Exists(dgr.XMLFile))
+                                    if (System.IO.File.Exists(dgr.XMLFile))
                                     {
                                         oSW = new SWUpdate(RZUpdater.ParseXML(dgr.XMLFile));
                                         oSW.SendFeedback = false;
                                     }
                                 }
 
-                                if(oSW == null)
+                                if (oSW == null)
                                     oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
 
                                 if (oSW.SW == null)
@@ -268,8 +305,8 @@ namespace RuckZuck_Tool
                             catch { }
 
 
-                        //Allow only one entry
-                        if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
+                            //Allow only one entry
+                            if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
                             {
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
@@ -325,9 +362,13 @@ namespace RuckZuck_Tool
             if (e.Key == Key.Return)
             {
                 lvSW.Focus();
+                tSearch.Stop();
+                tSearch.Enabled = false;
+                tSearch.Interval = 1000;
             }
             else
             {
+                tSearch.Interval = 1000;
                 tSearch.Enabled = true;
                 tSearch.Start();
             }
@@ -453,6 +494,7 @@ namespace RuckZuck_Tool
             try
             {
                 var oldSW = RZRestAPI.SWResults("--OLD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                tbSearch.Text = "";
 
                 //Mark all installed...
                 oldSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -460,6 +502,7 @@ namespace RuckZuck_Tool
                 ListCollectionView lcv = new ListCollectionView(oldSW.ToList());
 
                 lvSW.ItemsSource = lcv;
+
             }
             finally
             {
@@ -473,6 +516,7 @@ namespace RuckZuck_Tool
             try
             {
                 var badSW = RZRestAPI.SWResults("--BAD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                tbSearch.Text = "";
 
                 //Mark all installed...
                 badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -493,7 +537,11 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
+                tSearch.Stop();
+                tbSearch.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+
                 var badSW = RZRestAPI.SWResults("--ISSUE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                tbSearch.Text = "";
 
                 //Mark all installed...
                 badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -514,7 +562,9 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
+                tSearch.Stop();
                 var badSW = RZRestAPI.SWResults("--NEW--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                tbSearch.Text = "";
 
                 //Mark all installed...
                 badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -535,7 +585,9 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
+                tSearch.Stop();
                 var badSW = RZRestAPI.SWResults("--APPROVE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                tbSearch.Text = "";
 
                 //Mark all installed...
                 badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -553,6 +605,7 @@ namespace RuckZuck_Tool
 
         private void miOpenFolders_Click(object sender, RoutedEventArgs e)
         {
+            tSearch.Stop();
             if (lvSW.SelectedItems.Count > 0)
             {
                 int iSelecteItems = lvSW.SelectedItems.Count;
@@ -571,6 +624,7 @@ namespace RuckZuck_Tool
 
         private void tbSearch_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            tSearch.Stop();
             lAllSoftware = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).Select(x => new GetSoftware() { isInstalled = false }).ToList();
             //Mark all installed...
             lAllSoftware.ToList().ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
@@ -578,6 +632,7 @@ namespace RuckZuck_Tool
 
         private void miInstall_Click(object sender, RoutedEventArgs e)
         {
+            tSearch.Stop();
             lvSW.ContextMenu.IsOpen = false;
             Thread.Sleep(200);
 
@@ -588,6 +643,7 @@ namespace RuckZuck_Tool
 
         private void miUninstall_Click(object sender, RoutedEventArgs e)
         {
+            tSearch.Stop();
             lvSW.ContextMenu.IsOpen = false;
             Thread.Sleep(200);
 
@@ -733,7 +789,7 @@ namespace RuckZuck_Tool
                         }
 
                         string sDir = AppDomain.CurrentDomain.BaseDirectory;
-                        sDir = Path.Combine(sDir, "windows-" + oSW.SW.Shortname.Replace(" ","")).Trim();
+                        sDir = Path.Combine(sDir, "windows-" + oSW.SW.Shortname.Replace(" ", "")).Trim();
                         Directory.CreateDirectory(sDir);
                         CreateExe oExe = new CreateExe(Path.Combine(sDir, oSW.SW.Shortname.Replace(" ", "") + "_setup.exe"));
                         oExe.Icon = oSW.SW.Image;
@@ -751,11 +807,11 @@ namespace RuckZuck_Tool
                         lLines.Add("{");
                         lLines.Add("\t\"title\": \"" + oSW.SW.Shortname + "\",");
                         lLines.Add("\t\"description\": \"" + oSW.SW.Description + "\",");
-                        lLines.Add("\t\"publisher\": \"" + oSW.SW.Manufacturer +"\",");
+                        lLines.Add("\t\"publisher\": \"" + oSW.SW.Manufacturer + "\",");
                         lLines.Add("\t\"tags\": [\"Windows\"");
-                        if(((GetSoftware)oItem).Categories.Count > 0)
+                        if (((GetSoftware)oItem).Categories.Count > 0)
                         {
-                            foreach(string sCat in ((GetSoftware)oItem).Categories)
+                            foreach (string sCat in ((GetSoftware)oItem).Categories)
                             {
                                 lLines.Add("\t, \"" + sCat + "\"");
                             }
