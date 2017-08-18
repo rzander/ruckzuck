@@ -26,7 +26,7 @@ namespace RuckZuck_Tool
     public partial class InstallSwPanel : UserControl
     {
         public string sAuthToken;
-        public string sInternalURL;
+        //public string sInternalURL;
         //public List<RZApi.GetSoftware> lAllSoftware;
         public List<GetSoftware> lAllSoftware;
         public List<AddSoftware> lSoftware = new List<AddSoftware>();
@@ -821,7 +821,7 @@ namespace RuckZuck_Tool
                         {
                             lLines.Add("\t],");
                         }
-                        lLines.Add("\t\"iconUri\": \"https://ruckzuck.azurewebsites.net/wcf/GetIcon.ashx?Id=" + ((GetSoftware)oItem).IconId + "\",");
+                        lLines.Add("\t\"iconUri\": \"https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + ((GetSoftware)oItem).IconId + "\",");
                         lLines.Add("\t\"targetOsType\": \"Windows\",");
                         lLines.Add("\t\"runCommand\": { \"commandToExecute\": \"" + oSW.SW.Shortname.Replace(" ", "") + "_setup.exe" + "\" }");
                         lLines.Add("}");

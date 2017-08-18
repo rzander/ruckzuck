@@ -483,7 +483,7 @@ namespace RZUpdate
                 if (bIsMSI)
                 {
                     oResult.MSIProductID = sMSI;
-                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qb! \" -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qb! REBOOT=REALLYSUPPRESS \" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
 
 
                     oResult.PSDetection = @"Test-Path 'HKLM:\SOFTWARE\Classes\Installer\Products\" + EncKey + "'";
@@ -493,7 +493,7 @@ namespace RZUpdate
                         RegistryKey oSource = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey + "\\SourceList");
                         if (oSource != null)
                         {
-                            oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"" + oSource.GetValue("PackageName") + "`\" /qb! ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                            oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"" + oSource.GetValue("PackageName") + "`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                         }
                     }
                     catch
@@ -504,7 +504,7 @@ namespace RZUpdate
                         }
                         catch { }
 
-                        oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"<PackageName.msi>`\" /qb! ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                        oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"<PackageName.msi>`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                     }
                 }
                 else

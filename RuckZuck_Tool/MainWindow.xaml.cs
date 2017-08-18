@@ -67,6 +67,7 @@ namespace RuckZuck_Tool
             //Get Version
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
             tbVersion.Text = string.Format(tbVersion.Text, fvi.FileVersion);
+            lVersion.Content = "Version: " + fvi.FileVersion;
 
             //Hide Tabs
             Style s = new Style();
@@ -80,6 +81,16 @@ namespace RuckZuck_Tool
             }
 
             RZRestAPI.sURL = Properties.Settings.Default.WebService;
+
+            string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
+            if (!string.IsNullOrEmpty(sWebSVC))
+            {
+                if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    RZRestAPI.sURL = sWebSVC;
+                    tbSVC.Text = sWebSVC;
+                }
+            }
 
             //Authenticate;
             Authenticate();
@@ -218,9 +229,9 @@ namespace RuckZuck_Tool
                     {
                         Guid.Parse(sResponse);
                         sAuthToken = sResponse;
-                        tbURL.Text = Properties.Settings.Default.InternalURL;
+                        //tbURL.Text = Properties.Settings.Default.InternalURL;
                         tbRepository.Text = Properties.Settings.Default.LocallRepository;
-                        oInstPanel.sInternalURL = Properties.Settings.Default.InternalURL;
+                        //oInstPanel.sInternalURL = Properties.Settings.Default.InternalURL;
                         tbURL.IsEnabled = true;
                         tbRepository.IsEnabled = true;
                     }
@@ -515,8 +526,8 @@ namespace RuckZuck_Tool
                 oInstPanel.lAllSoftware.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
-                if (!string.IsNullOrEmpty(tbURL.Text))
-                    oInstPanel.sInternalURL = tbURL.Text;
+                /*if (!string.IsNullOrEmpty(tbURL.Text))
+                    oInstPanel.sInternalURL = tbURL.Text;*/
             }
             finally
             {
@@ -781,12 +792,12 @@ namespace RuckZuck_Tool
         private void btBackSettings_Click(object sender, RoutedEventArgs e)
         {
             tabWizard.SelectedItem = tabMain;
-            if (tbURL.Text != Properties.Settings.Default.InternalURL)
+            /*if (tbURL.Text != Properties.Settings.Default.InternalURL)
             {
                 Properties.Settings.Default.InternalURL = tbURL.Text;
                 Properties.Settings.Default.LocallRepository = tbRepository.Text;
                 Properties.Settings.Default.Save();
-            }
+            }*/
 
             if(!string.IsNullOrEmpty(tbSVC.Text))
             {
@@ -812,17 +823,17 @@ namespace RuckZuck_Tool
                 Guid.Parse(sResponse);
 
                 //Enable InternalURL
-                tbURL.IsEnabled = true;
+                //tbURL.IsEnabled = true;
                 tbRepository.IsEnabled = true;
 
                 //Update and save new username and password
                 Properties.Settings.Default.UserKey = tbUsername.Text;
                 Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
-                Properties.Settings.Default.InternalURL = tbURL.Text;
+                //Properties.Settings.Default.InternalURL = tbURL.Text;
                 Properties.Settings.Default.LocallRepository = tbRepository.Text;
                 Properties.Settings.Default.Save();
 
-                oInstPanel.sInternalURL = tbURL.Text;
+                //oInstPanel.sInternalURL = tbURL.Text;
 
                 //Back to Main
                 //tabWizard.SelectedItem = tabMain;
@@ -857,7 +868,7 @@ namespace RuckZuck_Tool
                 tbPassword.BorderBrush = Brushes.Red;
                 tbUsername.ToolTip = sResponse;
                 tbPassword.ToolTip = sResponse;
-                oInstPanel.sInternalURL = "";
+                //oInstPanel.sInternalURL = "";
             }
 
         }

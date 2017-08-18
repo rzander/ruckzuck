@@ -282,13 +282,13 @@ namespace RuckZuck_WCF
             {
                 if (IconId > 0)
                 {
-                    return RZRestAPI.sURL.Replace("RZService.svc", "GetIcon.ashx?Id=") + IconId.ToString();
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + IconId.ToString();
                 }
                 else
                 {
                     return "File://" + IconFile;
                 }
-                //return "https://ruckzuck.azurewebsites.net/wcf/GetIcon.ashx?Id=" + IconId.ToString();
+                //return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + IconId.ToString();
             }
         }
 
