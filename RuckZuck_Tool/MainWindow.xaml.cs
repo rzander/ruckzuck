@@ -81,16 +81,7 @@ namespace RuckZuck_Tool
             }
 
             RZRestAPI.sURL = Properties.Settings.Default.WebService;
-
-            string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
-            if (!string.IsNullOrEmpty(sWebSVC))
-            {
-                if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    RZRestAPI.sURL = sWebSVC;
-                    tbSVC.Text = sWebSVC;
-                }
-            }
+            tbSVC.Text = RZRestAPI.sURL;
 
             //Authenticate;
             Authenticate();

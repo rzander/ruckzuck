@@ -1247,7 +1247,7 @@ namespace RZUpdate
         /// <param name="URL"></param>
         /// <param name="FileName"></param>
         /// <returns>true = success; false = error</returns>
-        private bool _DownloadFile2(string URL, string FileName)
+        public bool _DownloadFile2(string URL, string FileName)
         {
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) & !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))

@@ -135,11 +135,13 @@ namespace RuckZuck_WCF
                 var oClient = new HttpClient();
                 oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                 oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                
                 var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
                 response.Wait(5000);
                 if (response.Result != null)
                 {
                     JavaScriptSerializer ser = new JavaScriptSerializer();
+
                     List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
                     return lRes;
                 }
@@ -202,7 +204,7 @@ namespace RuckZuck_WCF
 
                 if (contentType == "application/json")
                 {
-                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateJSON", oCont);
+                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
                     response.Wait(5000);
 
 
@@ -226,21 +228,18 @@ namespace RuckZuck_WCF
                 oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                 oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                 HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, contentType);
-                if (contentType == "application/xml")
+
+                var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
+                response.Wait(5000);
+
+                if (response.Result.StatusCode == HttpStatusCode.OK)
                 {
-                    var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
-                    response.Wait(5000);
-
-                    if (response.Result.StatusCode == HttpStatusCode.OK)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
-
+                else
+                {
+                    return false;
+                }
             }
             catch { }
 
