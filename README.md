@@ -34,6 +34,7 @@ allows to import Applications from the RZ Repository into Microsofts System Cent
 
 ### RuckZuck Caching Service ###
 Docker container to cache RuckZuck traffic (SW definitions, Icons and binary-downloads).
+https://rzander.azurewebsites.net/ruckzuck-cache/
 https://hub.docker.com/r/zanderr/ruckzuck/
 
 ### RZ.Bot
