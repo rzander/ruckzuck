@@ -56,7 +56,7 @@ namespace RuckZuck_Tool
                 if (string.IsNullOrEmpty(tbPSDetection.Text))
                     tbPSDetection.Text = @"Test-Path 'HKLM:\SOFTWARE\Classes\Installer\Products\" + EncKey + "'";
                 if (string.IsNullOrEmpty(tbPSUnInstall.Text))
-                    tbPSUnInstall.Text = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x {" + sMSI + "} /qn REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                    tbPSUnInstall.Text = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x {" + sMSI + "} /qb! REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                 if (string.IsNullOrEmpty(tbPSInstall.Text))
                     tbPSInstall.Text = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"" + "<name of the msi file>" + "`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
             }
