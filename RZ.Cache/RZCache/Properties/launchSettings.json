@@ -1,0 +1,33 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "localURL": "http://192.168.2.146:5000",
+        "ParentServer": "https://ruckzuck.azurewebsites.net/wcf/RZService.svc",
+        "RZUser": "",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CatalogTTL": "4",
+        "RZPW": ""
+      }
+    },
+    "RZWCF": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:53449"
+    }
+  }
+}

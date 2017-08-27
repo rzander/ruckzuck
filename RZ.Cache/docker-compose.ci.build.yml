@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  ci-build:
+    image: microsoft/aspnetcore
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: /bin/bash -c "dotnet restore ./RZWCF.sln && dotnet publish ./RZWCF.sln -c Release -o ./obj/Docker/publish"

@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  rzwcf:
+    image: zanderr/ruckzuck
+    build:
+      context: ./RZWCF
+      dockerfile: Dockerfile
