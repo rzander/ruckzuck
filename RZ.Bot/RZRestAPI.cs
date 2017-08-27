@@ -8,12 +8,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Script.Serialization;
 using Microsoft.Win32;
+using System.Net.Sockets;
 
 namespace RuckZuck_WCF
 {
     public static class RZRestAPI
     {
-        private static string _sURL = "";
+        private static string _sURL = "UDP";
         public static string sURL
         {
             get
@@ -27,8 +28,34 @@ namespace RuckZuck_WCF
                     }
                 }
 
+                if(_sURL == "UDP")
+                {
+                    try
+                    {
+                        var Client = new UdpClient();
+                        Client.Client.SendTimeout = 1000;
+                        Client.Client.ReceiveTimeout = 1000;
+                        var RequestData = Encoding.ASCII.GetBytes("RZCache lookup");
+                        var ServerEp = new IPEndPoint(IPAddress.Any, 0);
+
+                        Client.EnableBroadcast = true;
+                        Client.Send(RequestData, RequestData.Length, new IPEndPoint(IPAddress.Broadcast, 5001));
+
+                        var ServerResponseData = Client.Receive(ref ServerEp);
+                        var ServerResponse = Encoding.ASCII.GetString(ServerResponseData);
+                        Console.WriteLine("Recived {0} from {1}", ServerResponse, ServerEp.Address.ToString());
+                        if (ServerResponse.StartsWith("http"))
+                            _sURL = ServerResponse;
+                        Client.Close();
+                    }
+                    catch { _sURL = ""; }
+                }
+
                 if (string.IsNullOrEmpty(_sURL))
+                {
+
                     return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
+                }
                 else
                     return _sURL;
             }
@@ -135,7 +162,7 @@ namespace RuckZuck_WCF
                 var oClient = new HttpClient();
                 oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                 oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-
+                
                 var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
                 response.Wait(5000);
                 if (response.Result != null)
