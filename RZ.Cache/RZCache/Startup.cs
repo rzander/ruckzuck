@@ -20,6 +20,7 @@ namespace RZWCF
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+                
             Configuration = builder.Build();
         }
 
@@ -30,14 +31,18 @@ namespace RZWCF
         {
             // Adds services required for using options.
             services.AddOptions();
-
+            
             services.AddSingleton<IConfiguration>(Configuration);
+
+            services.AddMemoryCache();
 
             // Add framework services.
             services.AddMvc(options => options.OutputFormatters.RemoveType<StringOutputFormatter>()).AddJsonOptions(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-            }); ;
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,7 +50,7 @@ namespace RZWCF
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
+            
             app.UseMvc();
         }
     }

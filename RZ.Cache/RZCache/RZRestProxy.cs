@@ -14,11 +14,13 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using static RuckZuck_WCF.RZRestProxy;
 using System.Threading;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace RuckZuck_WCF
 {
     public static class RZRestProxy
     {
+        internal static IMemoryCache _cache;
         public static string sURL = "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
         //internal static string sURL = "http://localhost:7727/RZService.svc";
 
@@ -31,20 +33,38 @@ namespace RuckZuck_WCF
         {
             try
             {
-                var oClient = new HttpClient();
 
-                oClient.DefaultRequestHeaders.Add("Username", Username);
-                oClient.DefaultRequestHeaders.Add("Password", Password);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
-                response.Wait(5000);
-                if (response.Result != null)
+                if (!_cache.TryGetValue("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out Token))
                 {
-                    Token = response.Result.Replace("\"", "");
-                    return Token;
+                    using (var oClient = new HttpClient())
+                    {
+                        oClient.DefaultRequestHeaders.Add("Username", Username);
+                        oClient.DefaultRequestHeaders.Add("Password", Password);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
+                        response.Wait(5000);
+                        if (response.IsCompleted)
+                        {
+                            Token = response.Result.Replace("\"", "");
+
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                // Keep in cache for this time, reset time if accessed.
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(300));
+
+                            _cache.Set("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), Token, cacheEntryOptions);
+
+                            return Token;
+                        }
+                    }
                 }
+                else
+                    return Token;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Auth. Error: " + ex.Message);
+            }
 
             return "";
 
@@ -53,9 +73,15 @@ namespace RuckZuck_WCF
         public static string SWResults(string Searchstring)
         {
             string sCatFile = @"wwwroot/rzcat.xml";
-
+            string sResult = "";
             if (contentType.ToLower() == "application/json")
+            {
+                if (_cache.TryGetValue("SWResult-" + Searchstring, out sResult))
+                {
+                    return sResult;
+                }
                 sCatFile = @"wwwroot/rzcat.json";
+            }
 
             try
             {
@@ -63,26 +89,51 @@ namespace RuckZuck_WCF
                 {
                     if (File.Exists(sCatFile))
                     {
-                        if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sCatFile).ToUniversalTime() <= new TimeSpan(1, 0, 0))
+                        if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sCatFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
                         {
-                            return File.ReadAllText(sCatFile);
+                            sResult = File.ReadAllText(sCatFile);
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                            _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
+                            return sResult;
                         }
                     }
                 }
-
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                response.Wait(5000);
-                if (response.Result != null)
+                else
                 {
-                    string sResult = response.Result;
-                    File.WriteAllText(sCatFile, sResult);
-                    return sResult;
+
+                }
+
+                using (var handler = new HttpClientHandler())
+                {
+                    //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+
+                    using (var oClient = new HttpClient(handler))
+                    {
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
+                        response.Wait(7000); //7s max.
+                        if (response.IsCompleted)
+                        {
+                            sResult = response.Result;
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                            _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
+
+                            if (string.IsNullOrEmpty(Searchstring))
+                                File.WriteAllText(sCatFile, sResult);
+
+                            return sResult;
+                        }
+                    }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
             //return old File
             if (File.Exists(sCatFile))
@@ -95,57 +146,91 @@ namespace RuckZuck_WCF
 
         public static string SWGet(string Shortname)
         {
-            try
+            string sResult = "";
+            if (!_cache.TryGetValue("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    return response.Result;
-                }
-            }
-            catch { }
+                    var oClient = new HttpClient();
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        sResult = response.Result;
 
-            return "";
+                        // Set cache options.
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+
+                        _cache.Set("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+
+                        return sResult;
+                    }
+                }
+                catch { }
+            }
+
+            return sResult;
         }
 
         public static string SWGet(string PackageName, string PackageVersion)
         {
-            try
+            string sResult = "";
+            if (!_cache.TryGetValue("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    return response.Result;
+                    var oClient = new HttpClient();
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        sResult = response.Result;
+
+                        // Set cache options.
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                        sResult = response.Result;
+                        _cache.Set("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                        return sResult;
+                    }
                 }
+                catch { }
             }
-            catch { }
 
             return "";
         }
 
         public static string SWGet(string PackageName, string Manufacturer, string PackageVersion)
         {
-            try
+            string sResult = "";
+            if (!_cache.TryGetValue("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    return response.Result;
+                    var oClient = new HttpClient();
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        sResult = response.Result;
+
+                        // Set cache options.
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                        sResult = response.Result;
+                        _cache.Set("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                        return sResult;
+                    }
                 }
+                catch { }
             }
-            catch { }
 
             return "";
         }
@@ -186,56 +271,68 @@ namespace RuckZuck_WCF
 
                 if (File.Exists(sSWFile))
                 {
-                    if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sSWFile).ToUniversalTime() <= new TimeSpan(1, 0, 0))
+                    if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sSWFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
                     {
                         return File.ReadAllText(sSWFile);
                     }
                 }
 
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                response.Wait(5000);
-                if (response.Result != null)
+                using (var handler = new HttpClientHandler())
                 {
-                    string sResult = response.Result;
 
-                    try
+                    handler.AllowAutoRedirect = true;
+                    handler.MaxAutomaticRedirections = 5;
+                    handler.CheckCertificateRevocationList = false;
+
+                    using (var oClient = new HttpClient(handler))
                     {
-                        if (contentType.ToLower() == "application/json")
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                        response.Wait(5000);
+                        if (response.IsCompleted)
                         {
-                            var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
-                            foreach (var oSW in oAddSW)
+                            string sResult = response.Result;
+
+                            Task.Run(() =>
                             {
-                                foreach (var oDL in oSW.Files)
+                                try
                                 {
-                                    string sDir = @"wwwroot/files/" + oSW.ContentID;
-                                    if (!Directory.Exists(sDir))
+                                    if (contentType.ToLower() == "application/json")
                                     {
-                                        Directory.CreateDirectory(sDir);
-                                    }
-
-                                    if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
-                                    {
-                                        if (!File.Exists(sDir + "/" + oDL.FileName))
+                                        var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                                        foreach (var oSW in oAddSW)
                                         {
-                                            var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName).Status;
+                                            foreach (var oDL in oSW.Files)
+                                            {
+                                                string sDir = @"wwwroot/files/" + oSW.ContentID;
+                                                if (!Directory.Exists(sDir))
+                                                {
+                                                    Directory.CreateDirectory(sDir);
+                                                }
 
-                                            //Thread.Sleep(5000);
+                                                if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
+                                                {
+                                                    if (!File.Exists(sDir + "/" + oDL.FileName))
+                                                    {
+                                                        var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName).Status;
+                                                    }
+
+                                                    oDL.URL = localURL + "/rest/dl/" + oSW.ContentID + "/" + oDL.FileName;
+
+                                                }
+                                            }
                                         }
-
-                                        oDL.URL = localURL + "/rest/dl/" + oSW.ContentID + "/" + oDL.FileName;
-
+                                        sResult = Newtonsoft.Json.JsonConvert.SerializeObject(oAddSW);
+                                        File.WriteAllText(sSWFile, sResult);
                                     }
                                 }
-                            }
-                            sResult = Newtonsoft.Json.JsonConvert.SerializeObject(oAddSW);
+                                catch { }
+                            });
+
+                            return response.Result;
                         }
                     }
-                    catch { }
-                    File.WriteAllText(sSWFile, sResult);
-                    return sResult;
                 }
             }
             catch { }
@@ -339,7 +436,7 @@ namespace RuckZuck_WCF
                     //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                     oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/jpeg"));
                     var response = oClient.GetStreamAsync(sURL + "/rest/GetIcon?id=" + iconid.ToString());
-                    //response.Wait(5000);
+                    response.Wait(5000);
                     if (response.Result != null)
                     {
                         var oRet = response.Result;
@@ -386,28 +483,46 @@ namespace RuckZuck_WCF
 
         public static string CheckForUpdate(string lSoftware)
         {
+            string sResult = "";
+            if (_cache.TryGetValue("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
+            {
+                return sResult;
+            }
             try
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-                if (contentType == "application/xml")
+                using (var oClient = new HttpClient())
                 {
-                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
-                    response.Wait(5000);
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
+                    if (contentType == "application/xml")
+                    {
+                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
+                        response.Wait(5000);
+                        if (response.IsCompleted)
+                        {
+                            string responseBody = response.Result.Content.ReadAsStringAsync().Result;
+                            sResult = responseBody;
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
 
-                    string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-                    return responseBody;
-                }
+                            _cache.Set("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
 
-                if (contentType == "application/json")
-                {
-                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateJSON", oCont);
-                    response.Wait(5000);
+                            return sResult;
+                        }
+                    }
 
-                    string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-                    return responseBody;
+                    if (contentType == "application/json")
+                    {
+                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateJSON", oCont);
+                        response.Wait(5000);
+                        if (response.IsCompleted)
+                        {
+                            string responseBody = response.Result.Content.ReadAsStringAsync().Result;
+                            return responseBody;
+                        }
+                    }
                 }
 
 
@@ -459,27 +574,31 @@ namespace RuckZuck_WCF
         {
             try
             {
-                HttpClientHandler handler = new HttpClientHandler();
-                handler.AllowAutoRedirect = true;
-                handler.MaxAutomaticRedirections = 5;
-
-                using (var httpClient = new HttpClient(handler))
+                using (HttpClientHandler handler = new HttpClientHandler())
                 {
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(URL)))
-                    {
-                        using (Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                        stream = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None, 32768, true))
-                        {
-                            await contentStream.CopyToAsync(stream);
-                        }
-                    }
+                    handler.AllowAutoRedirect = true;
+                    handler.MaxAutomaticRedirections = 5;
+                    handler.CheckCertificateRevocationList = false;
+                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
 
+                    using (var httpClient = new HttpClient(handler))
+                    {
+                        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+                        using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(URL)))
+                        {
+                            using (Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
+                            stream = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None, 32768, true))
+                            {
+                                await contentStream.CopyToAsync(stream);
+                            }
+                            Console.WriteLine("Donwloaded: " + URL);
+                        }
+
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
                 Console.WriteLine(ex.Message);
                 return false;
             }

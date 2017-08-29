@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace RZWCF.Controllers
 {
@@ -53,17 +54,22 @@ namespace RZWCF.Controllers
 
     }
 
+  
     [Route("/rest")]
     public class RZController : Controller
     {
         private readonly IConfiguration _config;
+        private IMemoryCache _cache;
 
-        public RZController(IConfiguration config)
+        public RZController(IConfiguration config, IMemoryCache memoryCache)
         {
             this._config = config;
+            _cache = memoryCache;
+
             RuckZuck_WCF.RZRestProxy.sURL = config.GetSection("ParentServer").Value ?? _config.GetSection("RuckZuck:ParentServer").Value;
             RuckZuck_WCF.RZRestProxy.CatalogTTL =  int.Parse(_config.GetSection("CatalogTTL").Value ?? _config.GetSection("RuckZuck:CatalogTTL").Value);
             RuckZuck_WCF.RZRestProxy.localURL = config.GetSection("localURL").Value ?? _config.GetSection("RuckZuck:localURL").Value;
+            RuckZuck_WCF.RZRestProxy._cache = _cache;
         }
 
         [Route("AuthenticateUser")]
@@ -216,7 +222,6 @@ namespace RZWCF.Controllers
             return RuckZuck_WCF.RZRestProxy.GetFile(contentid + "\\" + filename);
         }
     }
-
 
     public class GetSoftware
     {
