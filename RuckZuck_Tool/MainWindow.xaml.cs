@@ -80,8 +80,10 @@ namespace RuckZuck_Tool
                 Properties.Settings.Default.Save();
             }
 
-            RZRestAPI.sURL = Properties.Settings.Default.WebService;
+            //RZRestAPI.sURL = Properties.Settings.Default.WebService;
+            RZRestAPI.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
             tbSVC.Text = RZRestAPI.sURL;
+            cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
 
             //Authenticate;
             Authenticate();
@@ -883,6 +885,12 @@ namespace RuckZuck_Tool
         private void btUpdExclusion_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.UpdExlusion.Clear();
+            Properties.Settings.Default.Save();
+        }
+
+        private void cbRZCache_Checked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.DisableBroadcast = !cbRZCache.IsChecked ?? false;
             Properties.Settings.Default.Save();
         }
     }

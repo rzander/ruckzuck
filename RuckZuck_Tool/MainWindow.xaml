@@ -639,6 +639,8 @@
                                     <TextBox x:Name="tbRepository" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="False" IsEnabled="False" ToolTip="a local or shared directoy with RZ XML-Files"/>
                                     <Label Grid.Column="0" Grid.Row="5" Content="Update Exclusion:" />
                                     <Button x:Name="btUpdExclusion" Grid.Row="5" Grid.Column="1" Content="Clear All" Width="80" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="clear List of Update-Exclusion. Restart the Tool to rescan for Software-Updates." Click="btUpdExclusion_Click"/>
+                                    <Label Grid.Column="0" Grid.Row="6" Content="RZCache discovery:" />
+                                    <CheckBox x:Name="cbRZCache" Content="search for an RZCache server on startup." Grid.Column="1" Grid.Row="6" Margin="0,5,0,0" Checked="cbRZCache_Checked" Unchecked="cbRZCache_Checked"/>
                                     <Label Grid.Column="0" Grid.Row="6" Content="Internal URL:" Visibility="Hidden" />
                                     <TextBox x:Name="tbURL" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" IsReadOnly="true" Visibility="Hidden"/>
                                     <Label Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="2" Visibility="Hidden" Content="downloads will be redirected to this URL. This URL must contain subfolders with the ContentId as name." Margin="0,20,0,0" FontWeight="Light" />
