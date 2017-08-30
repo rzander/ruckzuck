@@ -15,10 +15,14 @@ namespace RuckZuck_WCF
     public static class RZRestAPI
     {
         private static string _sURL = "UDP";
+        public static bool DisableBroadcast = false;
         public static string sURL
         {
             get
             {
+                if (DisableBroadcast)
+                    _sURL = "";
+
                 string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
                 if (!string.IsNullOrEmpty(sWebSVC))
                 {
@@ -28,32 +32,33 @@ namespace RuckZuck_WCF
                     }
                 }
 
-                if(_sURL == "UDP")
+                if (_sURL == "UDP" & !DisableBroadcast)
                 {
                     try
                     {
-                        var Client = new UdpClient();
-                        Client.Client.SendTimeout = 1000;
-                        Client.Client.ReceiveTimeout = 1000;
-                        var RequestData = Encoding.ASCII.GetBytes("RZCache lookup");
-                        var ServerEp = new IPEndPoint(IPAddress.Any, 0);
+                        using (var Client = new UdpClient())
+                        {
+                            Client.Client.SendTimeout = 1000;
+                            Client.Client.ReceiveTimeout = 1000;
+                            var RequestData = Encoding.ASCII.GetBytes(Environment.MachineName);
+                            var ServerEp = new IPEndPoint(IPAddress.Any, 0);
 
-                        Client.EnableBroadcast = true;
-                        Client.Send(RequestData, RequestData.Length, new IPEndPoint(IPAddress.Broadcast, 5001));
+                            Client.EnableBroadcast = true;
+                            Client.Send(RequestData, RequestData.Length, new IPEndPoint(IPAddress.Broadcast, 5001));
 
-                        var ServerResponseData = Client.Receive(ref ServerEp);
-                        var ServerResponse = Encoding.ASCII.GetString(ServerResponseData);
-                        Console.WriteLine("Recived {0} from {1}", ServerResponse, ServerEp.Address.ToString());
-                        if (ServerResponse.StartsWith("http"))
-                            _sURL = ServerResponse;
-                        Client.Close();
+                            var ServerResponseData = Client.Receive(ref ServerEp);
+                            var ServerResponse = Encoding.ASCII.GetString(ServerResponseData);
+                            Console.WriteLine("Recived {0} from {1}", ServerResponse, ServerEp.Address.ToString());
+                            if (ServerResponse.StartsWith("http"))
+                                _sURL = ServerResponse;
+                            Client.Close();
+                        }
                     }
                     catch { _sURL = ""; }
                 }
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-
                     return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
                 }
                 else
@@ -73,17 +78,19 @@ namespace RuckZuck_WCF
         {
             try
             {
-                var oClient = new HttpClient();
-
-                oClient.DefaultRequestHeaders.Add("Username", Username);
-                oClient.DefaultRequestHeaders.Add("Password", Password);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
-                response.Wait(5000);
-                if (response.Result != null)
+                using (var oClient = new HttpClient())
                 {
-                    Token = response.Result.Replace("\"", "");
-                    return Token;
+
+                    oClient.DefaultRequestHeaders.Add("Username", Username);
+                    oClient.DefaultRequestHeaders.Add("Password", Password);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        Token = response.Result.Replace("\"", "");
+                        return Token;
+                    }
                 }
             }
             catch { }
@@ -94,86 +101,97 @@ namespace RuckZuck_WCF
 
         public static List<GetSoftware> SWGet(string Shortname)
         {
-            try
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                    return lRes;
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        JavaScriptSerializer ser = new JavaScriptSerializer();
+                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                        return lRes;
+                    }
                 }
+                catch { }
             }
-            catch { }
 
             return new List<GetSoftware>();
         }
 
         public static List<GetSoftware> SWGet(string PackageName, string PackageVersion)
         {
-            try
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                    return lRes;
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        JavaScriptSerializer ser = new JavaScriptSerializer();
+                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                        return lRes;
+                    }
                 }
+                catch { }
             }
-            catch { }
 
             return new List<GetSoftware>();
         }
 
         public static List<GetSoftware> SWGet(string PackageName, string Manufacturer, string PackageVersion)
         {
-            try
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                    return lRes;
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        JavaScriptSerializer ser = new JavaScriptSerializer();
+                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                        return lRes;
+                    }
                 }
+                catch { }
             }
-            catch { }
+
 
             return new List<GetSoftware>();
         }
 
         public static List<GetSoftware> SWResults(string Searchstring)
         {
-            try
-            {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                
-                var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                response.Wait(5000);
-                if (response.Result != null)
-                {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
 
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                    return lRes;
+            using (var oClient = new HttpClient())
+            {
+                try
+                {
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        JavaScriptSerializer ser = new JavaScriptSerializer();
+
+                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                        return lRes;
+                    }
                 }
+                catch { }
             }
-            catch { }
+
 
             return new List<GetSoftware>();
         }
@@ -182,15 +200,19 @@ namespace RuckZuck_WCF
         {
             if (!string.IsNullOrEmpty(feedback))
             {
-                try
+
+                using (var oClient = new HttpClient())
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    var oRes = await oClient.GetStringAsync(sURL + "/rest/Feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
-                    return oRes;
+                    try
+                    {
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        var oRes = await oClient.GetStringAsync(sURL + "/rest/Feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
+                        return oRes;
+                    }
+                    catch { }
                 }
-                catch { }
+
             }
 
             return "";
@@ -198,21 +220,23 @@ namespace RuckZuck_WCF
 
         public static List<AddSoftware> GetSWDefinitions(string productName, string productVersion, string manufacturer)
         {
-            try
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                response.Wait(5000);
-                if (response.Result != null)
+                try
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result);
-                    return lRes;
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        JavaScriptSerializer ser = new JavaScriptSerializer();
+                        List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result);
+                        return lRes;
+                    }
                 }
+                catch { }
             }
-            catch { }
 
             return new List<AddSoftware>();
 
@@ -220,28 +244,31 @@ namespace RuckZuck_WCF
 
         public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
         {
-            try
+
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, contentType);
-
-                if (contentType == "application/json")
+                try
                 {
-                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
-                    response.Wait(5000);
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
 
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, contentType);
 
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
-                    return lRes;
+                    if (contentType == "application/json")
+                    {
+                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
+                        response.Wait(15000);
+                        if (response.IsCompleted)
+                        {
+                            List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
+                            return lRes;
+                        }
+                    }
+
                 }
-
-
+                catch { }
             }
-            catch { }
 
             return new List<AddSoftware>();
         }
@@ -275,14 +302,16 @@ namespace RuckZuck_WCF
 
         public static async void TrackDownloads(string contentID)
         {
-            try
+            using (var oClient = new HttpClient())
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                await oClient.GetStringAsync(sURL + "/rest/TrackDownloads/" + WebUtility.UrlEncode(contentID));
+                try
+                {
+                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloads/" + WebUtility.UrlEncode(contentID));
+                }
+                catch { }
             }
-            catch { }
         }
 
         public static List<string> GetCategories(List<GetSoftware> oSWList)

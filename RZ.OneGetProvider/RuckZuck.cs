@@ -38,6 +38,9 @@ namespace PackageManagement
         {
             try
             {
+                Properties.Settings.Default.Location = "";
+                Properties.Settings.Default.Save();
+
                 if (Properties.Settings.Default.Location.StartsWith("https:"))
                 {
                     RZRestAPI.sURL = Properties.Settings.Default.Location;
