@@ -498,29 +498,31 @@ namespace RuckZuck_WCF
                     if (contentType == "application/xml")
                     {
                         var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
-                        response.Wait(5000);
+                        response.Wait(10000);
                         if (response.IsCompleted)
                         {
                             string responseBody = response.Result.Content.ReadAsStringAsync().Result;
                             sResult = responseBody;
-                            // Set cache options.
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
-
-                            _cache.Set("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-
                             return sResult;
                         }
                     }
 
                     if (contentType == "application/json")
                     {
-                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateJSON", oCont);
-                        response.Wait(5000);
+                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
+                        response.Wait(10000);
                         if (response.IsCompleted)
                         {
                             string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-                            return responseBody;
+
+                            sResult = responseBody;
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(90));
+
+                            _cache.Set("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+
+                            return sResult;
                         }
                     }
                 }
@@ -584,6 +586,7 @@ namespace RuckZuck_WCF
                     using (var httpClient = new HttpClient(handler))
                     {
                         httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+                        httpClient.Timeout = new TimeSpan(0, 15, 0);
                         using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(URL)))
                         {
                             using (Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
