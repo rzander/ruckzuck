@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
-    <FileVersion>1.0.0.2</FileVersion>
-    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <Authors>Roger Zander</Authors>
     <Company>Zander Tools</Company>
     <Product>RZWCF Proxy Service</Product>
@@ -13,18 +13,15 @@
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/rzander/ruckzuck/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageTags>software package manager windows cache proxy</PackageTags>
+    <UserSecretsId>3d943e5a-c0e9-40f0-b91e-9ab682223099</UserSecretsId>
+    <Version>1.0.1</Version>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
-
   <ItemGroup>
-    <Folder Include="wwwroot\files\" />
-    <Folder Include="wwwroot\icons\" />
-    <Folder Include="wwwroot\rzsw\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +31,9 @@
     <Content Update="rzdb.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

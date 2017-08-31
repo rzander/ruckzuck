@@ -4,5 +4,5 @@ services:
   rzwcf:
     image: zanderr/ruckzuck
     build:
-      context: ./RZWCF
+      context: ./RZCache
       dockerfile: Dockerfile

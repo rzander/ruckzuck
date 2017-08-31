@@ -255,16 +255,17 @@ namespace RuckZuck_WCF
 
         public static string GetSWDefinitions(string productName, string productVersion, string manufacturer)
         {
+            string s1 = NormalizeString(productName + productVersion + manufacturer);
+            string sSWFile = @"wwwroot/rzsw/" + s1 + ".xml";
             try
             {
-                string s1 = NormalizeString(productName + productVersion + manufacturer);
+
 
                 if (!Directory.Exists("wwwroot/rzsw"))
                     Directory.CreateDirectory("wwwroot/rzsw");
                 if (!Directory.Exists("wwwroot/files"))
                     Directory.CreateDirectory("wwwroot/files");
 
-                string sSWFile = @"wwwroot/rzsw/" + s1 + ".xml";
 
                 if (contentType.ToLower() == "application/json")
                     sSWFile = @"wwwroot/rzsw/" + s1 + ".json";
@@ -330,13 +331,17 @@ namespace RuckZuck_WCF
                                 catch { }
                             });
 
-                            return response.Result;
+                            return sResult;
                         }
                     }
                 }
             }
             catch { }
 
+            if (File.Exists(sSWFile))
+            {
+                    return File.ReadAllText(sSWFile);
+            }
             return "";
 
         }
@@ -404,11 +409,11 @@ namespace RuckZuck_WCF
                 }
                 else
                 {
-                    throw new Exception(
-                        string.Format(
-                            "Unexpected token parsing binary. "
-                            + "Expected StartArray, got {0}.",
-                            reader.TokenType));
+                     throw new Exception(
+                         string.Format(
+                             "Unexpected token parsing binary. "
+                             + "Expected StartArray, got {0}.",
+                             reader.TokenType));
                 }
             }
 
@@ -484,12 +489,28 @@ namespace RuckZuck_WCF
         public static string CheckForUpdate(string lSoftware)
         {
             string sResult = "";
-            if (_cache.TryGetValue("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
-            {
-                return sResult;
-            }
+
             try
             {
+                //lets check if any previous request already found SW without update
+                JsonSerializerSettings oJSet = new JsonSerializerSettings();
+                oJSet.NullValueHandling = NullValueHandling.Ignore;
+                var oSWUpload = JsonConvert.DeserializeObject<List<AddSoftware>>(lSoftware, oJSet);
+                List<AddSoftware> lSWToCheck = new List<AddSoftware>();
+                foreach(AddSoftware oSW in oSWUpload ) 
+                {
+                    AddSoftware oCheck;
+                    if(!_cache.TryGetValue("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, out oCheck))
+                    {
+                        lSWToCheck.Add(oSW);
+                    }
+                }
+                if (lSWToCheck.Count > 0) 
+                {
+                    lSoftware = JsonConvert.SerializeObject(lSWToCheck);
+                }
+                else return ""; //no updates required
+
                 using (var oClient = new HttpClient())
                 {
                     oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
@@ -516,11 +537,23 @@ namespace RuckZuck_WCF
                             string responseBody = response.Result.Content.ReadAsStringAsync().Result;
 
                             sResult = responseBody;
-                            // Set cache options.
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                .SetSlidingExpiration(TimeSpan.FromSeconds(90));
 
-                            _cache.Set("CHK" + lSoftware.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                            try
+                            {
+                                var lSWUpd = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                                if (lSWUpd.Count == 0) //No Updates found -> cache all SW Items to prevent further check
+                                {
+                                    // Set cache options.
+                                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                        .SetSlidingExpiration(new TimeSpan(4, 0, 0)); //Cache 4h
+
+                                    foreach (AddSoftware oSW in lSWToCheck)
+                                    {
+                                        _cache.Set("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, oSW, cacheEntryOptions);
+                                    }
+                                }
+                            }
+                            catch { }
 
                             return sResult;
                         }
