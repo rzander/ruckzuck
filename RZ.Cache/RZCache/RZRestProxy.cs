@@ -28,6 +28,16 @@ namespace RuckZuck_WCF
         public static int CatalogTTL = 1;
         public static string contentType = "application/xml";
         public static string localURL = "http://localhost:5000";
+        public static string Proxy = "";
+        public static string ProxyUserPW = "";
+
+        private static byte[] bProxyUser
+        {
+            get
+            {
+                return Encoding.ASCII.GetBytes(ProxyUserPW);
+            }
+        }
 
         public static string GetAuthToken(string Username, string Password)
         {
@@ -36,8 +46,20 @@ namespace RuckZuck_WCF
 
                 if (!_cache.TryGetValue("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out Token))
                 {
-                    using (var oClient = new HttpClient())
+                    HttpClientHandler handler = new HttpClientHandler();
+
+                    if (!string.IsNullOrEmpty(Proxy))
                     {
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
+
+                    using (var oClient = new HttpClient(handler))
+                    {
+                        if (!string.IsNullOrEmpty(ProxyUserPW))
+                        {
+                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                        }
                         oClient.DefaultRequestHeaders.Add("Username", Username);
                         oClient.DefaultRequestHeaders.Add("Password", Password);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -108,8 +130,18 @@ namespace RuckZuck_WCF
                 {
                     //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
 
+                    if (!string.IsNullOrEmpty(Proxy))
+                    {
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
+
                     using (var oClient = new HttpClient(handler))
                     {
+                        if (!string.IsNullOrEmpty(ProxyUserPW))
+                        {
+                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                        }
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                         var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
@@ -280,10 +312,15 @@ namespace RuckZuck_WCF
 
                 using (var handler = new HttpClientHandler())
                 {
-
                     handler.AllowAutoRedirect = true;
                     handler.MaxAutomaticRedirections = 5;
                     handler.CheckCertificateRevocationList = false;
+
+                    if (!string.IsNullOrEmpty(Proxy))
+                    {
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
 
                     using (var oClient = new HttpClient(handler))
                     {
@@ -436,20 +473,37 @@ namespace RuckZuck_WCF
                 }
                 else
                 {
-                    var oClient = new HttpClient();
-
-                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/jpeg"));
-                    var response = oClient.GetStreamAsync(sURL + "/rest/GetIcon?id=" + iconid.ToString());
-                    response.Wait(5000);
-                    if (response.Result != null)
+                    using (var handler = new HttpClientHandler())
                     {
-                        var oRet = response.Result;
-                        var sIcon = new System.IO.FileStream(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Create);
-                        response.Result.CopyTo(sIcon);
-                        sIcon.Flush();
-                        sIcon.Dispose();
-                        return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open);
+                        handler.AllowAutoRedirect = true;
+                        handler.MaxAutomaticRedirections = 5;
+                        handler.CheckCertificateRevocationList = false;
+
+                        if (!string.IsNullOrEmpty(Proxy))
+                        {
+                            handler.Proxy = new WebProxy(Proxy, true);
+                            handler.UseProxy = true;
+                        }
+
+                        using (var oClient = new HttpClient(handler))
+                        {
+
+                            //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/jpeg"));
+                            var response = oClient.GetStreamAsync(sURL + "/rest/GetIcon?id=" + iconid.ToString());
+                            response.Wait(5000);
+                            if (response.IsCompleted)
+                            {
+                                var oRet = response.Result;
+                                using (var sIcon = new FileStream(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Create))
+                                {
+                                    response.Result.CopyTo(sIcon);
+                                    sIcon.Flush();
+                                    sIcon.Dispose();
+                                }
+                                return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open);
+                            }
+                        }
                     }
                 }
             }
@@ -511,51 +565,64 @@ namespace RuckZuck_WCF
                 }
                 else return ""; //no updates required
 
-                using (var oClient = new HttpClient())
+                using (var handler = new HttpClientHandler())
                 {
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-                    if (contentType == "application/xml")
+                    handler.AllowAutoRedirect = true;
+                    handler.MaxAutomaticRedirections = 5;
+                    handler.CheckCertificateRevocationList = false;
+
+                    if (!string.IsNullOrEmpty(Proxy))
                     {
-                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
-                        response.Wait(10000);
-                        if (response.IsCompleted)
-                        {
-                            string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-                            sResult = responseBody;
-                            return sResult;
-                        }
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
                     }
 
-                    if (contentType == "application/json")
+                    using (var oClient = new HttpClient(handler))
                     {
-                        var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
-                        response.Wait(10000);
-                        if (response.IsCompleted)
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
+                        if (contentType == "application/xml")
                         {
-                            string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-
-                            sResult = responseBody;
-
-                            try
+                            var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
+                            response.Wait(10000);
+                            if (response.IsCompleted)
                             {
-                                var lSWUpd = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
-                                if (lSWUpd.Count == 0) //No Updates found -> cache all SW Items to prevent further check
-                                {
-                                    // Set cache options.
-                                    var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                        .SetSlidingExpiration(new TimeSpan(4, 0, 0)); //Cache 4h
+                                string responseBody = response.Result.Content.ReadAsStringAsync().Result;
+                                sResult = responseBody;
+                                return sResult;
+                            }
+                        }
 
-                                    foreach (AddSoftware oSW in lSWToCheck)
+                        if (contentType == "application/json")
+                        {
+                            var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
+                            response.Wait(10000);
+                            if (response.IsCompleted)
+                            {
+                                string responseBody = response.Result.Content.ReadAsStringAsync().Result;
+
+                                sResult = responseBody;
+
+                                try
+                                {
+                                    var lSWUpd = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                                    if (lSWUpd.Count == 0) //No Updates found -> cache all SW Items to prevent further check
                                     {
-                                        _cache.Set("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, oSW, cacheEntryOptions);
+                                        // Set cache options.
+                                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                            .SetSlidingExpiration(new TimeSpan(4, 0, 0)); //Cache 4h
+
+                                        foreach (AddSoftware oSW in lSWToCheck)
+                                        {
+                                            _cache.Set("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, oSW, cacheEntryOptions);
+                                        }
                                     }
                                 }
-                            }
-                            catch { }
+                                catch { }
 
-                            return sResult;
+                                return sResult;
+                            }
                         }
                     }
                 }
@@ -571,22 +638,44 @@ namespace RuckZuck_WCF
         {
             try
             {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-                if (contentType == "application/xml")
+                using (var handler = new HttpClientHandler())
                 {
-                    var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
-                    response.Wait(5000);
+                    handler.AllowAutoRedirect = true;
+                    handler.MaxAutomaticRedirections = 5;
+                    handler.CheckCertificateRevocationList = false;
 
-                    if (response.Result.StatusCode == HttpStatusCode.OK)
+                    if (!string.IsNullOrEmpty(Proxy))
                     {
-                        return true;
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
                     }
-                    else
+
+                    using (var oClient = new HttpClient(handler))
                     {
-                        return false;
+                        if (!string.IsNullOrEmpty(ProxyUserPW))
+                        {
+                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                        }
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
+                        if (contentType == "application/xml")
+                        {
+                            var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
+                            response.Wait(5000);
+
+                            if (response.IsCompleted)
+                            {
+                                if (response.Result.StatusCode == HttpStatusCode.OK)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -615,6 +704,12 @@ namespace RuckZuck_WCF
                     handler.MaxAutomaticRedirections = 5;
                     handler.CheckCertificateRevocationList = false;
                     handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+
+                    if (!string.IsNullOrEmpty(Proxy))
+                    {
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
 
                     using (var httpClient = new HttpClient(handler))
                     {
