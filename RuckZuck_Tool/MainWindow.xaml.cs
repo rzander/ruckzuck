@@ -404,22 +404,44 @@ namespace RuckZuck_Tool
             {
                 try
                 {
-                    GetSoftware oSelectedItem = (GetSoftware)sender;
-
                     bool bNoPreReqCheck = false;
-
-                    //Ignore PreRequisites if SHIFT is pressed
-                    if (Keyboard.Modifiers == ModifierKeys.Shift)
+                    if (sender.GetType() == typeof(GetSoftware))
                     {
-                        bNoPreReqCheck = true;
+                        GetSoftware oSelectedItem = (GetSoftware)sender;
+
+                        //Ignore PreRequisites if SHIFT is pressed
+                        if (Keyboard.Modifiers == ModifierKeys.Shift)
+                        {
+                            bNoPreReqCheck = true;
+                        }
+
+                        //Load Software details for a valid DeploymentType...
+                        SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
+
+                        oNewPanel.OpenXML(oSW.SW);
+
+
+                        tabWizard.SelectedItem = tabNewSWSMI;
                     }
 
-                    //Load Software details for a valid DeploymentType...
-                    SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
+                    if (sender.GetType() == typeof(AddSoftware))
+                    {
+                        AddSoftware oSelectedItem = (AddSoftware)sender;
 
-                    oNewPanel.OpenXML(oSW.SW);
+                        //Ignore PreRequisites if SHIFT is pressed
+                        if (Keyboard.Modifiers == ModifierKeys.Shift)
+                        {
+                            bNoPreReqCheck = true;
+                        }
 
-                    tabWizard.SelectedItem = tabNewSWSMI;
+                        //Load Software details for a valid DeploymentType...
+                        SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
+
+                        oNewPanel.OpenXML(oSW.SW);
+
+
+                        tabWizard.SelectedItem = tabNewSWSMI;
+                    }
                 }
                 catch { }
             };

@@ -180,7 +180,7 @@ namespace RuckZuck_WCF
                     oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
 
                     var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                    response.Wait(5000);
+                    response.Wait(10000);
                     if (response.IsCompleted)
                     {
                         JavaScriptSerializer ser = new JavaScriptSerializer();
@@ -227,7 +227,7 @@ namespace RuckZuck_WCF
                     oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                     oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                     var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                    response.Wait(5000);
+                    response.Wait(10000);
                     if (response.IsCompleted)
                     {
                         JavaScriptSerializer ser = new JavaScriptSerializer();
@@ -284,7 +284,7 @@ namespace RuckZuck_WCF
                 HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, contentType);
 
                 var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
-                response.Wait(5000);
+                response.Wait(10000);
 
                 if (response.Result.StatusCode == HttpStatusCode.OK)
                 {
@@ -416,6 +416,20 @@ namespace RuckZuck_WCF
         public string Category { get; set; }
 
         public string[] PreRequisites { get; set; }
+
+        public long IconId { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                if (IconId > 0)
+                {
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + IconId.ToString();
+                }
+                return "";
+            }
+        }
     }
 
     public class contentFiles

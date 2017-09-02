@@ -216,7 +216,7 @@ namespace RuckZuck_Tool
 
             if (lvSW.SelectedItems.Count > 0)
             {
-                GetSoftware oSelectedItem = lvSW.SelectedItems[0] as GetSoftware;
+                AddSoftware oSelectedItem = lvSW.SelectedItems[0] as AddSoftware;
                 if (onEdit != null)
                     onEdit(oSelectedItem, EventArgs.Empty);
             }
