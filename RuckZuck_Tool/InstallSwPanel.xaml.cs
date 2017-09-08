@@ -493,7 +493,7 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                var oldSW = RZRestAPI.SWResults("--OLD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var oldSW = RZRestAPI.SWResults("--OLD--"); //.Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...

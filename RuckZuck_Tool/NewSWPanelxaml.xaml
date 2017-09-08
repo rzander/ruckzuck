@@ -103,6 +103,8 @@
                                 <RowDefinition Height="0" Name="rPostInstall" />
                                 <RowDefinition Height="Auto" MinHeight="24" />
                                 <RowDefinition Height="0" Name="rPreReq" />
+                                <RowDefinition Height="Auto" MinHeight="24" />
+                                <RowDefinition Height="Auto" MinHeight="24" />
                             </Grid.RowDefinitions>
                             <Label Grid.Column="0" Grid.Row="0" Content="Detection Script:" />
                             <TextBox x:Name="tbPSDetection" Grid.Column="1" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" />
@@ -121,6 +123,10 @@
                             <TextBox x:Name="tbPSUnInstall" Grid.Column="2" Grid.Row="5" AcceptsReturn="True" AcceptsTab="True" />
                             <Label Grid.Column="0" Grid.Row="6" Content="SW PreRequisites:" ToolTip="Shortname of other Products" />
                             <TextBox x:Name="tbPreReq" Grid.Column="2" Grid.Row="6" AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="7" Content="Categories:" ToolTip="Categories delimited by semicolon (;)" />
+                            <TextBox x:Name="tbCategories" Grid.Column="2" Grid.Row="7" AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="8" Content="Shortname:" ToolTip="Shortname" />
+                            <TextBox x:Name="tbShortname" Grid.Column="2" Grid.Row="8" AcceptsReturn="True" AcceptsTab="True" />
                         </Grid>
                     </GroupBox>
                 </DockPanel>

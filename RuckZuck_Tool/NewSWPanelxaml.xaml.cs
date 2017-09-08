@@ -229,6 +229,10 @@ namespace RuckZuck_Tool
             if (imgIcon.Tag != null)
                 oSoftware.Image = imgIcon.Tag as byte[];
 
+            oSoftware.Category = tbCategories.Text.Trim();
+
+            oSoftware.Shortname = tbShortname.Text.Trim();
+
             if (RZRestAPI.UploadSWEntry(oSoftware))
                 btUpload.IsEnabled = false;
         }
@@ -501,7 +505,7 @@ namespace RuckZuck_Tool
 
         private void btOpenXML_Click(object sender, RoutedEventArgs e)
         {
-            var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "XML Files (*.xml)|*.xml" };
+            var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "RuckZuck Files|*.xml;*.json" };
             ofd.FileName = "";
             var result = ofd.ShowDialog();
             if (result != false)
@@ -562,6 +566,9 @@ namespace RuckZuck_Tool
                 imgIcon.Source = ByteToImage(oSoftware.Image);
             }
             catch { }
+
+            tbCategories.Text = oSoftware.Category;
+            tbShortname.Text = oSoftware.Shortname;
         }
 
         private void tbContentId_MouseDoubleClick(object sender, MouseButtonEventArgs e)

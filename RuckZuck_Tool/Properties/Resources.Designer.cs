@@ -19,7 +19,7 @@ namespace RuckZuck_Tool.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -85,21 +85,24 @@ namespace RuckZuck_Tool.Properties {
         ///   Looks up a localized string similar to using System;
         ///using System.Collections.Generic;
         ///using System.Net;
-        ///using System.IO;
         ///using System.Text;
         ///using System.Threading.Tasks;
-        ///using System.Runtime.Serialization;
         ///using System.Linq;
+        ///using System.Net.Http;
+        ///using System.Net.Http.Headers;
+        ///using System.Web.Script.Serialization;
+        ///using Microsoft.Win32;
+        ///using System.Net.Sockets;
+        ///using System.IO;
+        ///using System.Diagnostics;
         ///
         ///namespace RuckZuck_WCF
         ///{
         ///    public static class RZRestAPI
         ///    {
-        ///        public static string sURL = &quot;https://ruckzuck.azurewebsites.net/wcf/RZService.svc&quot;;
-        ///        //internal static string sURL = &quot;http://localhost:7727/RZService.svc&quot;;
-        ///
-        ///        public static string Token;
-        ///        public static string GetAu [rest of string was truncated]&quot;;.
+        ///        private static string _sURL = &quot;UDP&quot;;
+        ///        public static bool DisableBroadcast = false;
+        ///        p [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
