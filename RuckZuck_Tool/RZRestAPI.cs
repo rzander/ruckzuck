@@ -103,32 +103,37 @@ namespace RuckZuck_WCF
 
         public static List<GetSoftware> SWGet(string Shortname)
         {
-            /*using (var oClient = new HttpClient())
-            {
-                try
-                {
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                    response.Wait(5000);
-                    if (response.IsCompleted)
-                    {
-                        JavaScriptSerializer ser = new JavaScriptSerializer();
-                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                        return lRes;
-                    }
-                }
-                catch { }
-            }*/
+            List<GetSoftware> lResult = new List<GetSoftware>();
 
             try
             {
-                return SWResults("").Where(t => t.Shortname == Shortname).ToList();
+                lResult = SWResults("").Where(t => t.Shortname == Shortname).ToList();
             }
             catch { }
 
+            if (lResult.Count() == 0)
+            {
+                using (var oClient = new HttpClient())
+                {
+                    try
+                    {
+                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                        var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
+                        response.Wait(5000);
+                        if (response.IsCompleted)
+                        {
+                            JavaScriptSerializer ser = new JavaScriptSerializer();
+                            List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                            return lRes;
+                        }
+                    }
+                    catch { }
+                }
+            }
 
-            return new List<GetSoftware>();
+
+            return lResult;
         }
 
         public static List<GetSoftware> SWGet(string PackageName, string PackageVersion)
@@ -206,7 +211,7 @@ namespace RuckZuck_WCF
                             try
                             {
                                 DateTime dCreationDate = File.GetCreationTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                                if ((DateTime.Now - dCreationDate) < new TimeSpan(1, 0, 0))
+                                if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0))
                                 {
                                     //return cached Content
                                     string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));

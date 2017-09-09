@@ -18,6 +18,7 @@ using RuckZuck_WCF;
 using RZUpdate;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using System.Web.Script.Serialization;
 
 namespace RuckZuck_Tool
 {
@@ -427,8 +428,8 @@ namespace RuckZuck_Tool
 
         private void btSaveAsXML_Click(object sender, RoutedEventArgs e)
         {
-            string sFilename = "EXP_" + tbProductName.Text + tbVersion.Text + tbArchitecture.Text + ".xml";
-            var ofd = new Microsoft.Win32.SaveFileDialog() { Filter = "XML Files (*.xml)|*.xml" };
+            string sFilename = "EXP_" + tbProductName.Text + tbVersion.Text + tbArchitecture.Text.Trim() + ".json";
+            var ofd = new Microsoft.Win32.SaveFileDialog() { Filter = "JSON Files (*.json)|*.json" };
             ofd.FileName = sFilename;
             var result = ofd.ShowDialog();
             if (result != false)
@@ -440,8 +441,8 @@ namespace RuckZuck_Tool
         private void SaveAsXML(string sFile)
         {
             AddSoftware oSoftware = new AddSoftware();
-            oSoftware.Architecture = tbArchitecture.Text;
-            oSoftware.ContentID = tbContentId.Text;
+            oSoftware.Architecture = tbArchitecture.Text.Trim();
+            oSoftware.ContentID = tbContentId.Text.Trim();
             oSoftware.Description = tbDescription.Text;
             try
             {
@@ -458,49 +459,29 @@ namespace RuckZuck_Tool
                 oSoftware.Files = ((List<contentFiles>)dgSourceFiles.ItemsSource);
             }
             catch { }
-            oSoftware.Manufacturer = tbManufacturer.Text;
+            oSoftware.Manufacturer = tbManufacturer.Text.Trim();
             oSoftware.MSIProductID = tbMSIId.Text;
-            oSoftware.ProductName = tbProductName.Text;
-            oSoftware.ProductVersion = tbVersion.Text;
+            oSoftware.ProductName = tbProductName.Text.Trim();
+            oSoftware.ProductVersion = tbVersion.Text.Trim();
             oSoftware.PSDetection = tbPSDetection.Text;
             oSoftware.PSInstall = tbPSInstall.Text;
             oSoftware.PSPreReq = tbPSPrereq.Text;
             oSoftware.PSUninstall = tbPSUnInstall.Text;
-            oSoftware.ProductURL = tbProductURL.Text;
+            oSoftware.ProductURL = tbProductURL.Text.Trim();
             oSoftware.Author = Properties.Settings.Default.UserKey;
             oSoftware.PSPreInstall = tbPSPreInstall.Text;
             oSoftware.PSPostInstall = tbPSPostInstall.Text;
             oSoftware.PreRequisites = tbPreReq.Text.Split(';');
+            oSoftware.Shortname = tbShortname.Text.Trim();
+            oSoftware.Category = tbCategories.Text.Trim();
 
             if (imgIcon.Tag != null)
                 oSoftware.Image = imgIcon.Tag as byte[];
 
-
-            System.Xml.Serialization.XmlSerializerNamespaces ns = new System.Xml.Serialization.XmlSerializerNamespaces();
-            ns.Add("", "");
-            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(oSoftware.GetType(), "");
-
-            StreamWriter file = new System.IO.StreamWriter(sFile);
-            x.Serialize(file, oSoftware, ns);
-            file.Close();
-
-
-            //remove all namespaces
-            XDocument doc = XDocument.Load(sFile);
-            foreach (var node in doc.Root.Descendants())
-            {
-                try
-                {
-                    // If we have an empty namespace...
-                    if (node.Name.NamespaceName != "")
-                    {
-                        node.Attributes("xmlns").Remove();
-                        node.Name = node.Parent.Name.Namespace + node.Name.LocalName;
-                    }
-                }
-                catch { }
-            }
-            doc.Save(sFile);
+            //Convert to JSON
+            JavaScriptSerializer ser = new JavaScriptSerializer();
+            string sJson = ser.Serialize(oSoftware);
+            File.WriteAllText(sFile, sJson);
         }
 
         private void btOpenXML_Click(object sender, RoutedEventArgs e)
@@ -517,15 +498,13 @@ namespace RuckZuck_Tool
 
         public void OpenXML(AddSoftware oSoftware)
         {
-            tbArchitecture.Text = oSoftware.Architecture;
+            tbArchitecture.Text = oSoftware.Architecture.Trim();
             tbContentId.Text = oSoftware.ContentID;
 
             if (string.IsNullOrEmpty(tbContentId.Text))
                 tbContentId.Text = Guid.NewGuid().ToString();
 
             tbDescription.Text = oSoftware.Description;
-
-
 
             if (oSoftware.Files != null)
             {
@@ -542,8 +521,6 @@ namespace RuckZuck_Tool
                 dgSourceFiles.ItemsSource = null;
                 dgSourceFiles.Items.Clear();
             }
-
-
 
             tbManufacturer.Text = oSoftware.Manufacturer;
             tbMSIId.Text = oSoftware.MSIProductID;
@@ -567,8 +544,8 @@ namespace RuckZuck_Tool
             }
             catch { }
 
-            tbCategories.Text = oSoftware.Category;
-            tbShortname.Text = oSoftware.Shortname;
+            tbCategories.Text = oSoftware.Category ?? "";
+            tbShortname.Text = oSoftware.Shortname ?? "";
         }
 
         private void tbContentId_MouseDoubleClick(object sender, MouseButtonEventArgs e)

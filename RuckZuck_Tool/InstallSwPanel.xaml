@@ -29,12 +29,12 @@
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem x:Name="btIssue" Header="Issues" ToolTip="Get 10 Software-Items with worst success ratio" Click="btIssue_Click" Height="24">
+                            <MenuItem x:Name="btIssue" Header="Issues" ToolTip="Get 10 Software-Items with worst success ratio" Click="btIssue_Click" Height="24" Visibility="Collapsed">
                                 <MenuItem.Icon>
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem x:Name="btBadRatio" Click="btBadRatio_Click" Height="24" Header="Bad success ratio" ToolTip="Get 10 Software-Items with worst success ratio">
+                            <MenuItem x:Name="btBadRatio" Click="btBadRatio_Click" Height="24" Header="Bad success ratio" ToolTip="Get 10 Software-Items with worst success ratio" Visibility="Collapsed">
                                 <MenuItem.Icon>
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
@@ -44,7 +44,7 @@
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem x:Name="btApproval" Height="24" Header="Waiting for Approval" ToolTip="Waiting for Approval" Click="btApproval_Click">
+                            <MenuItem x:Name="btApproval" Height="24" Header="Waiting for Approval" ToolTip="Waiting for Approval" Click="btApproval_Click" Visibility="Collapsed">
                                 <MenuItem.Icon>
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>

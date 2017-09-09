@@ -563,7 +563,7 @@ namespace RuckZuck_Tool
             try
             {
                 tSearch.Stop();
-                var badSW = RZRestAPI.SWResults("--NEW--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var badSW = RZRestAPI.SWResults("--NEW--").ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...

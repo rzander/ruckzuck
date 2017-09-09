@@ -20,8 +20,8 @@
                 <DockPanel DockPanel.Dock="Bottom">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
                         <Button x:Name="btUpload"  Content="Upload" Width="130" Height="30" Click="Button_Click" IsEnabled="False" ToolTip="URL must be specified before SW upload is possible." Margin="0,0,5,0" />
-                        <Button x:Name="btSaveAsXML" Content="Save as XML..." Width="130" Height="30" ToolTip="Save settings as XML..." Click="btSaveAsXML_Click" Margin="0,0,5,0"  />
-                        <Button x:Name="btOpenXML" Content="Open an XML..." Width="130" Height="30" ToolTip="Open settings from XML..." Click="btOpenXML_Click" Margin="0,0,5,0" />
+                        <Button x:Name="btSaveAsXML" Content="Save..." Width="130" Height="30" ToolTip="Save settings as JSON file..." Click="btSaveAsXML_Click" Margin="0,0,5,0"  />
+                        <Button x:Name="btOpenXML" Content="Open..." Width="130" Height="30" ToolTip="Open settings from JSON file..." Click="btOpenXML_Click" Margin="0,0,5,0" />
                         <Button x:Name="btCreateEXE" Content="Create EXE..." Width="130" Height="30" ToolTip="Create a Setup.EXE without dependency to RuckZuck.tools" Margin="0,0,5,0" Click="btCreateEXE_Click" />
                         <Button x:Name="btTest" Content="Test Install" Width="130" Height="30" ToolTip="Open settings from XML..." Click="btTest_Click" />
                     </StackPanel>

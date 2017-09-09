@@ -311,7 +311,7 @@ namespace RZUpdate
                     ProductVersion = item.ProductVersion,
                     MSIProductID = item.MSIProductID,
                     Shortname = item.Shortname,
-                    IconId = item.IconId
+                    SWId = item.SWId
                 }).ToList();
 
                 //Only take updated Versions

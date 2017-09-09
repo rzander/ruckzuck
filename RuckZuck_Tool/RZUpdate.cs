@@ -12,6 +12,7 @@ using RuckZuck_WCF;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Xml.Linq;
+using System.Web.Script.Serialization;
 
 namespace RZUpdate
 {
@@ -37,9 +38,17 @@ namespace RZUpdate
             SoftwareUpdate = new SWUpdate(oSW);
         }
 
-        public RZUpdater(string sXMLFile)
+        public RZUpdater(string sSWFile)
         {
-            SoftwareUpdate = new SWUpdate(ParseXML(sXMLFile));
+            if (sSWFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SoftwareUpdate = new SWUpdate(ParseXML(sSWFile));
+            }
+
+            if (sSWFile.EndsWith(".json", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
+            }
         }
 
         /// <summary>
@@ -231,6 +240,23 @@ namespace RZUpdate
 
             return oSoftware;
         }
+
+        internal static AddSoftware ParseJSON(string sFile)
+        {
+            if (File.Exists(sFile))
+            {
+                try
+                {
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    AddSoftware lRes = ser.Deserialize<AddSoftware>(File.ReadAllText(sFile));
+                    return lRes;
+                }
+                catch { }
+            }
+
+
+            return new AddSoftware();
+        }
     }
 
     /// <summary>
@@ -260,6 +286,8 @@ namespace RZUpdate
             downloadTask.SWUpd = this;
             if (SW.Files == null)
                 SW.Files = new List<contentFiles>();
+            if (SW.PreRequisites == null)
+                SW.PreRequisites = new string[0];
 
             foreach (contentFiles vFile in SW.Files)
             {
@@ -506,7 +534,17 @@ namespace RZUpdate
                             else
                             {
                                 if (SendFeedback)
-                                    RZRestAPI.TrackDownloads(SW.ContentID);
+                                {
+                                    if (SW.SWId > 0)
+                                    {
+                                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture);
+                                    }
+                                    else
+                                    {
+                                        //Legacy
+                                        RZRestAPI.TrackDownloads(SW.ContentID);
+                                    }
+                                }
                             }
 
                             //Sleep 1s to complete
