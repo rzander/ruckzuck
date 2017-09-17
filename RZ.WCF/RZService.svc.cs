@@ -12,6 +12,9 @@ using System.IO;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using Newtonsoft.Json;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Runtime.Caching;
 
 namespace RuckZuck_WCF
 {
@@ -23,7 +26,7 @@ namespace RuckZuck_WCF
 
         private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
         {
-            return ConnectionMultiplexer.Connect("ruckzuck2.redis.cache.windows.net ,abortConnect=false,ssl=true,password=xxx");
+            return ConnectionMultiplexer.Connect("ruckzuck2.redis.cache.windows.net ,abortConnect=false,ssl=true,password=hXptN4dMrrAaXcDrEY0RSZUjL6/X7WWol/fMZlSgbO0=");
         });
 
         public static ConnectionMultiplexer Connection
@@ -42,12 +45,30 @@ namespace RuckZuck_WCF
 
             string Username = headers["Username"] ?? "";
             string Password = headers["Password"] ?? "";
-
+            string ipAddress = "";
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
 
             if (Username == "FreeRZ")
             {
                 try
                 {
+                    /*if (ipAddress == "193.5.178.34")
+                        return "";*/
+                    /*if (ipAddress == "5.145.85.35")
+                        return "";
+                    if (ipAddress == "212.51.142.146")
+                        return "";
+                    if (ipAddress == "195.191.241.14")
+                        return "";*/
+
+
                     byte[] data = Convert.FromBase64String(Password);
                     DateTime when = DateTime.FromBinary(BitConverter.ToInt64(data, 0));
                     if ((DateTime.UtcNow - when) <= new TimeSpan(2, 0, 10))
@@ -63,7 +84,7 @@ namespace RuckZuck_WCF
                         return token; // "deecdc6b-ad08-42ab-a743-a3c0f9033c80";
                     }
                 }
-                catch {}
+                catch { }
 
                 return "";
             }
@@ -73,7 +94,9 @@ namespace RuckZuck_WCF
                 {
                     try
                     {
-                        tcRuckZuck.SendAsync(new BrokeredMessage() { Label = "RuckZuck/WCF/Authentication/" + Username, TimeToLive = new TimeSpan(8, 0, 0) });
+                        var oMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/Authentication/" + Username, TimeToLive = new TimeSpan(8, 0, 0) };
+                        oMSG.Properties.Add("IP", ipAddress);
+                        tcRuckZuck.SendAsync(oMSG);
                     }
                     catch { }
 
@@ -82,18 +105,11 @@ namespace RuckZuck_WCF
 
                     try
                     {
-                        cache.StringSetAsync(token, Username, new TimeSpan(1,0,0));
+                        cache.StringSetAsync(token, Username, new TimeSpan(1, 0, 0));
                     }
                     catch { }
 
-                    /*HttpRuntime.Cache.Add(
-                        token,
-                        Username,
-                        null,
-                        System.Web.Caching.Cache.NoAbsoluteExpiration,
-                        TimeSpan.FromMinutes(45),
-                        System.Web.Caching.CacheItemPriority.Normal,
-                        null);*/
+
                     return token;
                 }
             }
@@ -121,7 +137,7 @@ namespace RuckZuck_WCF
                         return true;
 
                     //Do we have a cached token... ?
-                    if(cache.StringGet(sToken) != RedisValue.Null)
+                    if (cache.StringGet(sToken) != RedisValue.Null)
                     {
                         return true;
                     }
@@ -143,311 +159,269 @@ namespace RuckZuck_WCF
             return false;
         }
 
+        public List<GetSoftware> GetCatalog()
+        {
+            DateTime dStart = DateTime.Now;
+            List<GetSoftware> oResult = new List<GetSoftware>();
+            //IDatabase cache4 = Connection.GetDatabase(4);
+            ObjectCache cache = MemoryCache.Default;
+            string ipAddress = "";
+
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
+
+            try
+            {
+                //string jCatalog = cache["CATALOG"] as string;
+                List<GetSoftware> oCache = cache["ALL"] as List<GetSoftware>;
+
+                if (oCache != null)
+                    return oCache;
+
+                /*if (!string.IsNullOrEmpty(jCatalog))
+                {
+                    oResult = JsonConvert.DeserializeObject<List<GetSoftware>>(jCatalog);
+                    return oResult;
+                }*/
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            /*if (!IsUserValid())
+                return new List<GetSoftware>();*/
+
+            /*string sAll = cache4.StringGet("ALL");
+            if (!string.IsNullOrEmpty(sAll))
+            {
+                try
+                {
+                    oResult = JsonConvert.DeserializeObject<List<GetSoftware>>(sAll);
+                    return oResult;
+                }
+                catch { }
+            }*/
+
+            //Get full Catalog
+            foreach (var oItem in oSW.v_SWVersionsLatest.Where(t => t.IsLatest == true).ToList())
+            {
+                try
+                {
+                    List<string> lCategory = new List<string>() { "Other" };
+                    if (!string.IsNullOrEmpty(oItem.Category))
+                    {
+                        lCategory = oItem.Category.Split(';').ToList();
+                    }
+
+                    GetSoftware oRes = new GetSoftware()
+                    {
+                        ProductName = oItem.ProductName,
+                        ProductVersion = oItem.Version,
+                        Manufacturer = oItem.Manufacturer,
+                        Shortname = oItem.ShortName,
+                        Description = oItem.ProductDescription,
+                        IconId = oItem.Id,
+                        ProductURL = oItem.ProjectURL,
+                        Categories = lCategory,
+                        Downloads = int.Parse((oItem.Downloads ?? 0).ToString()),
+                        Quality = int.Parse((100 - (((oItem.Failures ?? 0) * 100) / ((oItem.Success ?? 1) > 0 ? oItem.Success : 1))).ToString()),
+                        isLatest = oItem.IsLatest ?? false,
+                    };
+                    oResult.Add(oRes);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+
+            //cache.Add("CATALOG", JsonConvert.SerializeObject(oResult), new DateTimeOffset(DateTime.Now.AddMinutes(90)));
+            cache.Add("ALL", oResult, new DateTimeOffset(DateTime.Now.AddMinutes(90)));
+
+            //cache4.StringSetAsync("ALL", JsonConvert.SerializeObject(oResult), new TimeSpan(1, 0, 0));
+
+            try
+            {
+                IncomingWebRequestContext request = WebOperationContext.Current.IncomingRequest;
+                WebHeaderCollection headers = request.Headers;
+                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/GetCatalog", TimeToLive = new TimeSpan(4, 0, 0) };
+                bMSG.Properties.Add("Duration", (DateTime.Now - dStart).TotalMilliseconds);
+                bMSG.Properties.Add("IP", ipAddress);
+                bMSG.Properties.Add("User", headers["Username"] ?? "");
+
+                tcRuckZuck.SendAsync(bMSG);
+            }
+            catch { }
+
+            return oResult;
+        }
         public List<GetSoftware> SWResults(string SearchPattern)
         {
+            string ipAddress = "";
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
+
+            List<GetSoftware> oCat = GetCatalog();
+
             IDatabase cache = Connection.GetDatabase();
 
             if (SearchPattern == "*")
                 SearchPattern = "";
 
-            /*if (!IsUserValid())
-               return new List<GetSoftware>();*/
+            if (string.IsNullOrEmpty(SearchPattern))
+                return oCat;
 
             List<GetSoftware> oResult = new List<GetSoftware>();
 
-            IDatabase cache4 = Connection.GetDatabase(4);
-            if (string.IsNullOrEmpty(SearchPattern))
-            {
-                string sAll = cache4.StringGet("ALL");
-                if (!string.IsNullOrEmpty(sAll))
-                {
-                    try
-                    {
-                        oResult = JsonConvert.DeserializeObject<List<GetSoftware>>(sAll);
-                        return oResult;
-                    }
-                    catch { }
-
-                }
-            }
-
-            List<vAllSWDetails> oFoundItems = new List<vAllSWDetails>();
             bool bTemplate = false;
             if (SearchPattern == "--OLD--")
             {
-                oFoundItems.AddRange(oSW.vAllSWDetails.OrderBy(t => t.LastStatus).Take(30));
-
-                oFoundItems = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
+                foreach (var oOld in oSW.v_SWVersionsOLD.Where(t => t.IsLatest == true).OrderBy(t => t.LastModified).Take(30))
                 {
-                    Categories = cl.First().Categories,
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = cl.Sum(c => c.Failed),
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().IconId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = cl.First().LastStatus,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUninstall,
-                    ShortName = cl.First().ShortName,
-                    Success = cl.Sum(c => c.Success),
-                    SuccessRatio = 100 - ((cl.Sum(c => c.Failed ?? 1) * 100) / (cl.Sum(c => c.Success ?? 1) > 0 ? (cl.Sum(c => c.Success ?? 1)) : 1)),  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = cl.Sum(c => c.Downloads)
-                }).ToList();
+                    try
+                    {
+                        GetSoftware oTemp = new GetSoftware();
+                        oTemp.ProductVersion = oOld.Version;
+                        oTemp.ProductName = oOld.ProductName;
+                        oTemp.Manufacturer = oOld.Manufacturer;
+                        oTemp.IconId = oOld.Id;
+                        oTemp.Description = oOld.ProductDescription;
+                        oTemp.ProductURL = oOld.ProjectURL;
+                        oTemp.Shortname = oOld.ShortName;
+                        oTemp.isLatest = true;
+                        oTemp.Image = null;
 
-                oFoundItems = oFoundItems.Take(20).ToList();
-                bTemplate = true;
+                        if (oOld.Downloads != null)
+                            oTemp.Downloads = int.Parse((oOld.Downloads).ToString());
+
+                        if (oOld.Category != null)
+                            oTemp.Categories = oOld.Category.Split(';').ToList();
+
+                        oResult.Add(oTemp);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                    bTemplate = true;
+                }
             }
 
             if (SearchPattern == "--BAD--")
             {
-                oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.SuccessRatio < 90).OrderBy(t => t.SuccessRatio).Take(20));
-                oFoundItems = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
-                {
-                    Categories = cl.First().Categories,
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = cl.Sum(c => c.Failed),
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().IconId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = cl.First().LastStatus,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUninstall,
-                    ShortName = cl.First().ShortName,
-                    Success = cl.Sum(c => c.Success),
-                    SuccessRatio = 100 - ((cl.Sum(c => c.Failed ?? 1) * 100) / (cl.Sum(c => c.Success ?? 1) > 0 ? (cl.Sum(c => c.Success ?? 1)) : 1)),  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = cl.Sum(c => c.Downloads)
-                }).ToList();
-                oFoundItems = oFoundItems.Take(20).ToList();
                 bTemplate = true;
             }
 
             if (SearchPattern == "--ISSUE--")
             {
-                var lIssue = oSW.vProductsWithIssues.Select(t=>t.ShortName).Distinct().ToList();
-                oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => lIssue.Contains(t.ShortName)).Take(20));
-                oFoundItems = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
-                {
-                    Categories = cl.First().Categories,
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = cl.Sum(c => c.Failed),
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().IconId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = cl.First().LastStatus,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUninstall,
-                    ShortName = cl.First().ShortName,
-                    Success = cl.Sum(c => c.Success),
-                    SuccessRatio = 100 - ((cl.Sum(c => c.Failed ?? 1) * 100) / (cl.Sum(c => c.Success ?? 1) > 0 ? (cl.Sum(c => c.Success ?? 1)) : 1)),  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = cl.Sum(c => c.Downloads)
-                }).ToList();
-                oFoundItems = oFoundItems.Take(20).ToList();
                 bTemplate = true;
             }
 
             if (SearchPattern == "--NEW--")
             {
-                oFoundItems.AddRange(oSW.vAllSWDetails.OrderByDescending(t => t.LastModified).Take(30));
-                oFoundItems = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
+                foreach (var oOld in oSW.v_SWVersions.Where(t=>t.IsLatest == true).OrderByDescending(t => t.LastModified).Take(30))
                 {
-                    Categories = cl.First().Categories,
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = cl.Sum(c => c.Failed),
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().IconId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = cl.First().LastStatus,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUninstall,
-                    ShortName = cl.First().ShortName,
-                    Success = cl.Sum(c => c.Success),
-                    SuccessRatio = 100 - ((cl.Sum(c => c.Failed ?? 1) * 100) / (cl.Sum(c => c.Success ?? 1) > 0 ? (cl.Sum(c => c.Success ?? 1)) : 1)),  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = cl.Sum(c => c.Downloads)
-                }).ToList();
-                oFoundItems = oFoundItems.Take(20).ToList();
+                    try
+                    {
+                        GetSoftware oTemp = new GetSoftware();
+                        oTemp.ProductVersion = oOld.Version;
+                        oTemp.ProductName = oOld.ProductName;
+                        oTemp.Manufacturer = oOld.Manufacturer;
+                        oTemp.IconId = oOld.Id;
+                        oTemp.Description = oOld.ProductDescription;
+                        oTemp.ProductURL = oOld.ProjectURL;
+                        oTemp.Shortname = oOld.ShortName;
+                        oTemp.isLatest = true;
+                        oTemp.Image = null;
+
+                        if (oOld.Downloads != null)
+                            oTemp.Downloads = int.Parse((oOld.Downloads).ToString());
+
+                        if (oOld.Category != null)
+                            oTemp.Categories = oOld.Category.Split(';').ToList();
+
+                        oResult.Add(oTemp);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                }
                 bTemplate = true;
             }
 
             if (SearchPattern == "--APPROVE--")
             {
-                var oRes = oSW.vPendingSoftwareRequests.Take(30).ToList(); 
-
-                oFoundItems = oRes.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
-                {
-                    Categories = "",
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = 0,
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().ProductVersionId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = DateTime.Now,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUnInstall,
-                    ShortName = cl.First().ShortName,
-                    Success = 0,
-                    SuccessRatio = 0,  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = 0
-                }).ToList();
-                oFoundItems = oFoundItems.Take(20).ToList();
                 bTemplate = true;
             }
 
             if (!bTemplate)
             {
                 int iCount = 1;
-                oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ShortName.Contains(SearchPattern)));
-                if (!string.IsNullOrEmpty(SearchPattern))
+
+                if (string.IsNullOrEmpty(SearchPattern))
                 {
-                    oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ProductName.Contains(SearchPattern)));
-                    iCount++;
                 }
+                else
+                {
 
-                if (oFoundItems.Count == 0)
-                {
-                    iCount = 1;
-                    oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ProductDescription.Contains(SearchPattern)));
-                }
-                oFoundItems = oFoundItems.GroupBy(x => new { x.ProductName, x.Version, x.Manufacturer }).Select(cl => new vAllSWDetails
-                {
-                    Categories = cl.First().Categories,
-                    DownloadURL = cl.First().DownloadURL,
-                    Failed = cl.Sum(c => c.Failed),
-                    FileHash = cl.First().FileHash,
-                    Filename = cl.First().Filename,
-                    //Icon = cl.First().Icon,
-                    IconId = cl.First().IconId,
-                    IsLatest = cl.First().IsLatest,
-                    LastStatus = cl.First().LastStatus,
-                    Manufacturer = cl.First().Manufacturer,
-                    ProductName = cl.First().ProductName,
-                    ProductDescription = cl.First().ProductDescription,
-                    ProjectURL = cl.First().ProjectURL,
-                    PSDetection = cl.First().PSDetection,
-                    PSInstall = cl.First().PSInstall,
-                    PSPostInstall = cl.First().PSPostInstall,
-                    PSPreInstall = cl.First().PSPreInstall,
-                    PSPreReq = cl.First().PSPreReq,
-                    PSUninstall = cl.First().PSUninstall,
-                    ShortName = cl.First().ShortName,
-                    Success = cl.Sum(c => c.Success),
-                    SuccessRatio = 100 - ((cl.Sum(c => c.Failed ?? 1) * 100) / (cl.Sum(c => c.Success ?? 1) > 0 ? (cl.Sum(c => c.Success ?? 1)) : 1)),  //Convert.ToInt32(cl.Average(c => c.SuccessRatio) ?? 0),
-                    Type = cl.First().Type,
-                    Version = cl.First().Version,
-                    Downloads = cl.Sum(c => c.Downloads) / iCount
-                }).ToList();
-            }
-
-            foreach (vAllSWDetails oItem in oFoundItems)
-            {
-                try
-                {
-                    GetSoftware oRItem = new GetSoftware()
+                    if (SearchPattern.Contains("*"))
                     {
-                        Description = oItem.ProductDescription,
-                        //Image = oItem.Icon,
-                        Manufacturer = oItem.Manufacturer,
-                        ProductName = oItem.ProductName,
-                        ProductURL = oItem.ProjectURL,
-                        ProductVersion = oItem.Version,
-                        Shortname = oItem.ShortName,
-                        Quality = oItem.SuccessRatio,
-                        Downloads = oItem.Downloads,
-                        IconId = oItem.IconId
-                    };
+                        SearchPattern = SearchPattern.Replace("*", "");
+                        oResult = oCat.Where(t => t.Shortname == SearchPattern).ToList();
+                        //oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ShortName == SearchPattern));
+                    }
 
-                    try
+                    if (oResult.Count == 0)
                     {
-                        if (oItem.Categories != null)
+                        oResult = oCat.Where(t => t.Shortname.Contains(SearchPattern)).ToList();
+                        //oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ShortName.Contains(SearchPattern)));
+                    }
+
+                    if (oResult.Count == 0)
+                    {
+                        if (!string.IsNullOrEmpty(SearchPattern))
                         {
-                            oRItem.Categories = oItem.Categories.Split(',').ToList();
-                            if (oRItem.Categories.Count == 0)
-                                oRItem.Categories.Add("Other");
-                        }
-                        else
-                        {
-                            oRItem.Categories = new List<string>();
-                            oRItem.Categories.Add("Other");
+                            oResult = oCat.Where(t => t.ProductName.Contains(SearchPattern)).ToList();
+                            //oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ProductName.Contains(SearchPattern)));
+                            iCount++;
                         }
                     }
-                    catch { }
 
-                    oResult.Add(oRItem);
+                    if (oResult.Count == 0)
+                    {
+                        iCount = 1;
+                        oResult = oCat.Where(t => t.Description.Contains(SearchPattern)).ToList();
+                        //oFoundItems.AddRange(oSW.vAllSWDetails.Where(t => t.ProductDescription.Contains(SearchPattern)));
+                    }
                 }
-                catch { }
             }
 
             try
             {
+                IncomingWebRequestContext request = WebOperationContext.Current.IncomingRequest;
+                WebHeaderCollection headers = request.Headers;
                 BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWResults/" + SearchPattern, TimeToLive = new TimeSpan(4, 0, 0) };
                 bMSG.Properties.Add("Count", oResult.Count);
+                bMSG.Properties.Add("IP", ipAddress);
+                bMSG.Properties.Add("User", headers["Username"] ?? "");
+
                 tcRuckZuck.SendAsync(bMSG);
             }
             catch { }
-
-            if (string.IsNullOrEmpty(SearchPattern))
-            {
-                cache4.StringSetAsync("ALL", JsonConvert.SerializeObject(oResult), new TimeSpan(1, 0, 0));
-            }
 
             return oResult;
         }
@@ -459,6 +433,58 @@ namespace RuckZuck_WCF
 
         public List<GetSoftware> SWGetByPkgNameAndVersion(string PkgName, string PkgVersion = "")
         {
+            DateTime dStart = DateTime.Now;
+            string ipAddress = "";
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
+
+            var oCat = GetCatalog();
+
+
+
+            List<GetSoftware> lResult = new List<GetSoftware>();
+
+            if (string.IsNullOrEmpty(PkgVersion))
+            {
+                lResult = oCat.Where(t => t.ProductName == PkgName).ToList();
+            }
+            else
+            {
+                lResult = oCat.Where(t => t.ProductName == PkgName & t.ProductVersion == PkgVersion).ToList();
+            }
+
+            if (lResult.Count() == 0)
+            {
+                lResult = oCat.Where(t => t.Shortname == PkgName & t.isLatest).ToList();
+            }
+
+            try
+            {
+                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWGet/" + PkgName + ";" + PkgVersion, TimeToLive = new TimeSpan(4, 0, 0) };
+                bMSG.Properties.Add("Duration", (DateTime.Now - dStart).TotalMilliseconds);
+                bMSG.Properties.Add("IP", ipAddress);
+                tcRuckZuck.SendAsync(bMSG);
+            }
+            catch { }
+
+            return lResult;
+            /*
+            string ipAddress = "";
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
+
             if (!IsUserValid())
                 return new List<GetSoftware>();
 
@@ -515,17 +541,61 @@ namespace RuckZuck_WCF
             }
             try
             {
-                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWGet/" + PkgName + ";" + PkgVersion , TimeToLive = new TimeSpan(4, 0, 0) };
+                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWGet/" + PkgName + ";" + PkgVersion, TimeToLive = new TimeSpan(4, 0, 0) };
                 bMSG.Properties.Add("Count", oResult.Count);
+                bMSG.Properties.Add("IP", ipAddress);
                 tcRuckZuck.SendAsync(bMSG);
             }
             catch { }
 
-            return oResult;
+            return oResult;*/
         }
 
         public List<GetSoftware> SWGetByPkg(string PkgName, string Manufacturer, string PkgVersion = "")
         {
+            DateTime dStart = DateTime.Now;
+            string ipAddress = "";
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ipAddress = endpoint.Address.ToString();
+            }
+            catch { }
+
+            var oCat = GetCatalog();
+
+
+
+            List<GetSoftware> lResult = new List<GetSoftware>();
+
+            if (string.IsNullOrEmpty(PkgVersion))
+            {
+                lResult = oCat.Where(t => t.ProductName == PkgName & t.Manufacturer == Manufacturer).ToList();
+            }
+            else
+            {
+                lResult = oCat.Where(t => t.ProductName == PkgName & t.ProductVersion == PkgVersion & t.Manufacturer == Manufacturer).ToList();
+            }
+
+            if(lResult.Count() == 0)
+            {
+                oCat.Where(t => t.Shortname == PkgName & t.isLatest).ToList();
+            }
+
+            try
+            {
+                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/SWGet/" + PkgName + ";" + PkgVersion, TimeToLive = new TimeSpan(4, 0, 0) };
+                bMSG.Properties.Add("Duration", (DateTime.Now - dStart).TotalMilliseconds);
+                bMSG.Properties.Add("IP", ipAddress);
+                tcRuckZuck.SendAsync(bMSG);
+            }
+            catch { }
+
+            return lResult;
+
+            /*
             if (!IsUserValid())
                 return new List<GetSoftware>();
 
@@ -588,35 +658,58 @@ namespace RuckZuck_WCF
             }
             catch { }
 
-            return oResult;
+            return oResult;*/
         }
 
         public bool UploadSWEntry(AddSoftware SoftwareItem)
         {
-            if (!IsUserValid())
-                return false;
+            /*if (!IsUserValid())
+                return false;*/
             try
             {
-                Product oProduct;
-                ProductVersion oProductVersion;
-                WindowsInstallerIDs oMSI;
-                DeploymentType oDT = new DeploymentType();
+                SWVersions oProd = null;
 
                 try
                 {
-                    BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/UploadSWEntry/" + SoftwareItem.ProductName + ";" + SoftwareItem.ProductVersion, TimeToLive = new TimeSpan(24, 0, 0) };
-                    bMSG.Properties.Add("User", SoftwareItem.Author);
-                    tcRuckZuck.SendAsync(bMSG);
+                    oProd = oSW.SWVersions.FirstOrDefault(t => t.ProductName == SoftwareItem.ProductName & t.Version == SoftwareItem.ProductVersion & t.Manufacturer == SoftwareItem.Manufacturer);
+                    if (oProd == null)
+                    {
+                        oProd = oSW.SWVersions.Add(new SWVersions() { ProductName = SoftwareItem.ProductName, Version = SoftwareItem.ProductVersion, Manufacturer = SoftwareItem.Manufacturer, LastModified = DateTime.Now.ToUniversalTime(), ProductDescription = SoftwareItem.Description, ProjectURL = SoftwareItem.ProductURL, Category = SoftwareItem.Category, ShortName = SoftwareItem.Shortname ?? "" });
+                        oSW.SaveChanges();
+
+                        try
+                        {
+                            BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/UploadSWEntry/" + SoftwareItem.ProductName + ";" + SoftwareItem.ProductVersion, TimeToLive = new TimeSpan(24, 0, 0) };
+                            bMSG.Properties.Add("User", SoftwareItem.Author);
+                            tcRuckZuck.SendAsync(bMSG);
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        if(oProd.IsLatest != true )
+                        {
+                            if (string.IsNullOrEmpty(oProd.ProductDescription) & !string.IsNullOrEmpty(SoftwareItem.Description))
+                                oProd.ProductDescription = SoftwareItem.Description;
+                            if (string.IsNullOrEmpty(oProd.ProjectURL) & !string.IsNullOrEmpty(SoftwareItem.ProductURL))
+                                oProd.ProjectURL = SoftwareItem.ProductURL;
+                            if(string.IsNullOrEmpty(oProd.Category) & !string.IsNullOrEmpty(SoftwareItem.Category))
+                                oProd.Category = SoftwareItem.Category;
+                            if (string.IsNullOrEmpty(oProd.ShortName) & !string.IsNullOrEmpty(SoftwareItem.Shortname))
+                                oProd.ShortName = SoftwareItem.Shortname;
+                            
+                            oSW.SaveChanges();
+                        }
+                    }
+
+                    SoftwareItem.IconId = oProd.Id;
                 }
-                catch { }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
 
-                //Check if Product already exists
-                if (string.IsNullOrEmpty(SoftwareItem.Manufacturer))
-                    oProduct = oSW.Product.FirstOrDefault(t => t.ProductName == SoftwareItem.ProductName);
-                else
-                    oProduct = oSW.Product.FirstOrDefault(t => t.ProductName == SoftwareItem.ProductName & t.Manufacturer == SoftwareItem.Manufacturer);
-
-                if (oProduct == null)
+                if (string.IsNullOrEmpty(oProd.ShortName))
                 {
                     string sShortName = "";
 
@@ -930,70 +1023,34 @@ namespace RuckZuck_WCF
                     if (SoftwareItem.ProductName.StartsWith("Sandboxie "))
                         sShortName = "Sandboxie";
 
-                    if (string.IsNullOrEmpty(sShortName))
-                        oProduct = oSW.Product.Add(new Product() { ProductName = SoftwareItem.ProductName, Manufacturer = SoftwareItem.Manufacturer, ProductDescription = SoftwareItem.Description, ProjectURL = SoftwareItem.ProductURL });
-                    else
-                        oProduct = oSW.Product.Add(new Product() { ProductName = SoftwareItem.ProductName, Manufacturer = SoftwareItem.Manufacturer, ProductDescription = SoftwareItem.Description, ProjectURL = SoftwareItem.ProductURL, ShortName = sShortName });
+                    //8.9.2017
+                    if (SoftwareItem.ProductName.StartsWith("Git Extensions "))
+                        sShortName = "Git Extensions";
+                    if (SoftwareItem.ProductName == "RuckZuck")
+                        sShortName = "RuckZuck";
+                    if (SoftwareItem.ProductName == "Google Chrome ")
+                        sShortName = "Google Chrome ";
+                    if (SoftwareItem.ProductName == "CDBurnerXP")
+                        sShortName = "CDBurnerXP";
+
+                    if (SoftwareItem.ProductName == "Sublime Text Build ")
+                        sShortName = "SublimeText";
+                    if (SoftwareItem.ProductName == "Microsoft Visio Viewer ")
+                        sShortName = "Visio Viewer";
+                    if (SoftwareItem.ProductName == "Adobe Flash Player 27 NPAPI")
+                        sShortName = "FlashPlayerPlugin";
+
+                    if (!string.IsNullOrEmpty(sShortName))
+                    {
+                        SoftwareItem.Shortname = sShortName;
+
+                        if (oProd != null)
+                            oProd.ShortName = sShortName;
+
+                    }
                 }
                 else
                 {
-                    try
-                    {
-                        //if (SoftwareItem.Architecture == "X86" | SoftwareItem.Architecture == "X64" | string.IsNullOrEmpty(oProduct.ShortName))
-
-                        bool bChange = false;
-                        if (!string.IsNullOrEmpty(SoftwareItem.ProductURL))
-                        {
-                            oProduct.ProjectURL = SoftwareItem.ProductURL;
-                            bChange = true;
-                        }
-                        if (!string.IsNullOrEmpty(SoftwareItem.Description))
-                        {
-                            oProduct.ProductDescription = SoftwareItem.Description;
-                            bChange = true;
-                        }
-
-                        if (bChange)
-                            oSW.SaveChanges();
-
-                    }
-                    catch { }
-                }
-
-                //Check if version already exists
-                oProductVersion = oSW.ProductVersion.FirstOrDefault(t => t.Version == SoftwareItem.ProductVersion & t.ProductId == oProduct.Id);
-                if (oProductVersion == null)
-                {
-                    oProductVersion = oSW.ProductVersion.Add(new ProductVersion() { ProductId = oProduct.Id, Version = SoftwareItem.ProductVersion, Icon = SoftwareItem.Image, LastModified = DateTime.Now });
-                    oSW.SaveChanges();
-                }
-                else
-                {
-                    //Do not update published Versions
-                    if (oProductVersion.IsLatest != true)
-                    {
-                        if (SoftwareItem.Image != null)
-                            oProductVersion.Icon = SoftwareItem.Image;
-
-                        oProductVersion.LastModified = DateTime.Now;
-
-                        oSW.SaveChanges();
-                    }
-                }
-
-                //Check if MSI ID exists
-                if (!string.IsNullOrEmpty(SoftwareItem.MSIProductID))
-                {
-                    try
-                    {
-                        Guid oMSIID = Guid.Parse(SoftwareItem.MSIProductID);
-                        oMSI = oSW.WindowsInstallerIDs.FirstOrDefault(t => t.ProductVersionId == oProductVersion.Id & t.MSIProductID == oMSIID);
-                        if (oMSI == null)
-                        {
-                            oMSI = oSW.WindowsInstallerIDs.Add(new WindowsInstallerIDs() { ProductVersionId = oProductVersion.Id, MSIProductID = oMSIID, MSIVersion = SoftwareItem.ProductVersion, ARPDisplayName = SoftwareItem.ProductName, MSIProductName = SoftwareItem.ProductName });
-                        }
-                    }
-                    catch { }
                 }
 
                 try
@@ -1005,156 +1062,61 @@ namespace RuckZuck_WCF
                 }
                 catch { SoftwareItem.Architecture = "NEW"; }
 
-                //Check InstallType
-                try
-                {
-                    if (SoftwareItem.Files.ToList().Count > 0)
-                    {
-                        if (SoftwareItem.Files.Where(t => !string.IsNullOrEmpty(t.URL)).Count() > 0)
-                        {
-                            oDT = oSW.DeploymentType.FirstOrDefault(t => t.ProductVersionId == oProductVersion.Id & t.Type == SoftwareItem.Architecture);
-                            if (oDT == null)
-                            {
-                                Guid gContet = Guid.NewGuid();
-                                try
-                                {
-                                    gContet = Guid.Parse(SoftwareItem.ContentID);
-                                }
-                                catch { }
-                                oDT = oSW.DeploymentType.Add(new DeploymentType() { ProductVersionId = oProductVersion.Id, PSInstall = SoftwareItem.PSInstall, PSUninstall = SoftwareItem.PSUninstall, Type = SoftwareItem.Architecture, PSDetection = SoftwareItem.PSDetection, ContentID = gContet, PSPreReq = SoftwareItem.PSPreReq, LastModified = DateTime.Now, IsSealed = false, Author = SoftwareItem.Author, PSPreInstall = SoftwareItem.PSPreInstall, PSPostInstall = SoftwareItem.PSPostInstall });
-                            }
-                            else
-                            {
-                                if (oDT.IsSealed != true)
-                                {
-                                    if (oDT.Type == "NEW")
-                                    {
-                                        //Allow full update if Item is 'NEW'
-                                        oDT.PSDetection = SoftwareItem.PSDetection;
-                                        oDT.PSInstall = SoftwareItem.PSInstall;
-                                        oDT.PSPreReq = SoftwareItem.PSPreReq;
-                                        oDT.PSUninstall = SoftwareItem.PSUninstall;
-                                        oDT.Type = SoftwareItem.Architecture;
-                                        oDT.Author = SoftwareItem.Author;
-                                        oDT.PSPreInstall = SoftwareItem.PSPreInstall;
-                                        oDT.PSPostInstall = SoftwareItem.PSPostInstall;
 
-                                        if (SoftwareItem.ContentID != null)
-                                        {
-                                            try
-                                            {
-                                                oDT.ContentID = Guid.Parse(SoftwareItem.ContentID);
-                                            }
-                                            catch { }
-                                        }
-
-                                        //oSW.SaveChanges();
-                                    }
-                                    else
-                                    {
-                                        //Only update missing Items
-                                        //??? Does this make sense ?
-                                        if (!string.IsNullOrEmpty(SoftwareItem.PSDetection))
-                                            oDT.PSDetection = SoftwareItem.PSDetection;
-                                        if (!string.IsNullOrEmpty(SoftwareItem.PSInstall))
-                                            oDT.PSInstall = SoftwareItem.PSInstall;
-                                        if (!string.IsNullOrEmpty(SoftwareItem.PSPreReq))
-                                            oDT.PSPreReq = SoftwareItem.PSPreReq;
-                                        if (!string.IsNullOrEmpty(SoftwareItem.PSUninstall))
-                                            oDT.PSUninstall = SoftwareItem.PSUninstall;
-                                        if (string.IsNullOrEmpty(oDT.Author) & !string.IsNullOrEmpty(SoftwareItem.Author))
-                                            oDT.Author = SoftwareItem.Author;
-
-                                        oDT.PSPreInstall = SoftwareItem.PSPreInstall;
-                                        oDT.PSPostInstall = SoftwareItem.PSPostInstall;
-                                    }
-                                    oDT.LastModified = DateTime.Now;
-                                    oSW.SaveChanges();
-                                }
-                            }
-                        }
-                    }
-                    else
-                    { }
-
-                }
-                catch { }
-
-                if (oDT.IsSealed == null)
-                    oDT.IsSealed = false;
-
-                if (oDT.IsSealed == false)
-                {
-                    foreach (contentFiles fs in SoftwareItem.Files)
-                    {
-                        try
-                        {
-                            if (oSW.Content.Count(t => t.DownloadURL == fs.URL & t.DeploymentTypeID == oDT.Id) == 0)
-                            {
-                                oSW.Content.Add(new Content() { DeploymentTypeID = oDT.Id, DownloadURL = fs.URL, Filename = fs.FileName, FileHash = fs.FileHash, HashType = fs.HashType });
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    Content oContent = oSW.Content.First(t => t.DownloadURL == fs.URL & t.DeploymentTypeID == oDT.Id);
-                                    oContent.Filename = fs.FileName;
-                                    oContent.FileHash = fs.FileHash;
-                                    oContent.HashType = fs.HashType;
-
-                                    //oSW.SaveChanges();
-                                }
-                                catch { }
-                            }
-                        }
-                        catch { }
-                    }
-                }
-
-                //only add if no prereq exists
-                if (oSW.PreRequisite.FirstOrDefault(t => t.ProductId == oProduct.Id) == null && oDT.IsSealed == false)
-                {
-                    //PreReq
-                    if (SoftwareItem.PreRequisites != null)
-                    {
-                        if (SoftwareItem.PreRequisites.Length > 0)
-                        {
-                            int i = 0;
-                            foreach (string sName in SoftwareItem.PreRequisites)
-                            {
-                                if (!string.IsNullOrEmpty(sName))
-                                {
-                                    try
-                                    {
-                                        PreRequisite oPreReq = new PreRequisite() { ProductName = sName.Trim(), ProductId = oProduct.Id, Enabled = true, ProductVersion = "", Position = i * 10 };
-                                        oSW.PreRequisite.Add(oPreReq);
-                                        oSW.SaveChanges();
-                                        i++;
-                                    }
-                                    catch { }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                oSW.SaveChanges();
+                //oSW.SaveChanges();
 
                 if (SoftwareItem.Architecture != "NEW")
                 {
                     try
                     {
-                        System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(SoftwareItem.GetType());
-                        System.IO.StreamWriter file = new System.IO.StreamWriter(System.IO.Path.Combine(HttpContext.Current.Server.MapPath("Data"), "Imp_" + SoftwareItem.ProductName + SoftwareItem.ProductVersion + SoftwareItem.Architecture + DateTime.Now.ToUniversalTime().Ticks.ToString() + ".xml"));
-                        x.Serialize(file, SoftwareItem);
-                        file.Close();
+                        string jItem = JsonConvert.SerializeObject(SoftwareItem);
+                        File.WriteAllText(System.IO.Path.Combine(HttpContext.Current.Server.MapPath("Data"), "Imp_" + SoftwareItem.ProductName + SoftwareItem.ProductVersion + SoftwareItem.Architecture.Trim() + DateTime.Now.ToUniversalTime().Ticks.ToString() + ".json"), jItem);
 
-                        PushBullet(SoftwareItem.ProductName + " " + SoftwareItem.ProductVersion + " is waiting for approval.", SoftwareItem.ProductURL);
+                        if (oProd.IsLatest != true) //Do not overwrite Latest Versions
+                        {
+                            if (SoftwareItem.IconId > 0)
+                            {
+                                try
+                                {
+                                    SWDetails oDetail = oSW.SWDetails.FirstOrDefault(t => t.SWId == oProd.Id);
+                                    if (oDetail == null)
+                                    {
+                                        oSW.SWDetails.Add(new SWDetails() { SWId = SoftwareItem.IconId, ShortName = SoftwareItem.Shortname ?? "", Architecture = SoftwareItem.Architecture.Trim(), CreationDate = DateTime.Now.ToUniversalTime(), Definition = jItem, Downloads = 0, Failures = 0, Success = 0 });
+                                        oSW.SaveChanges();
+                                    }
+                                    else
+                                    {
+                                        oDetail.ShortName = SoftwareItem.Shortname;
+                                        oDetail.Architecture = SoftwareItem.Architecture;
+                                        oDetail.Definition = jItem;
+                                        oSW.SaveChanges();
+                                    }
+
+                                }
+                                catch { }
+                            }
+
+                            PushBullet(SoftwareItem.ProductName + " " + SoftwareItem.ProductVersion + " is waiting for approval.", SoftwareItem.ProductURL);
+
+                            oSW.SWPending.Add(new SWPending() { Architecture = SoftwareItem.Architecture, ProductName = SoftwareItem.ProductName, Username = SoftwareItem.Author, SWId = SoftwareItem.IconId });
+                            oSW.SaveChangesAsync();
+                        }
 
                         try
                         {
+                            var oUsr = System.Web.Security.Membership.GetUser(SoftwareItem.Author.Trim());
+                            
                             BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/PendingApproval/" + SoftwareItem.ProductName + ";" + SoftwareItem.ProductVersion, TimeToLive = new TimeSpan(24, 0, 0) };
                             bMSG.Properties.Add("User", SoftwareItem.Author);
+
+                            if(oUsr != null)
+                                bMSG.Properties.Add("Mail", oUsr.Email.Trim() ?? "");
+
+                            bMSG.Properties.Add("SWId", SoftwareItem.IconId.ToString());
+                            bMSG.Properties.Add("Shortname", SoftwareItem.Shortname ?? "");
+                            bMSG.Properties.Add("Version", SoftwareItem.ProductVersion ?? "");
+                            bMSG.Properties.Add("Architecture", SoftwareItem.Architecture ?? "");
+                            bMSG.Properties.Add("Body", jItem ?? "");
                             tcRuckZuck.SendAsync(bMSG);
                         }
                         catch { }
@@ -1164,8 +1126,9 @@ namespace RuckZuck_WCF
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 return false;
             }
 
@@ -1179,98 +1142,35 @@ namespace RuckZuck_WCF
             List<AddSoftware> lResult = new List<AddSoftware>();
             IDatabase cache5 = Connection.GetDatabase(5);
 
-            //productName = WebUtility.UrlDecode(productName);
-            //productVersion = WebUtility.UrlDecode(productVersion);
-            //manufacturer = WebUtility.UrlDecode(manufacturer);
-
             string sResult = cache5.StringGet(manufacturer + ";" + productName + ";" + productVersion);
             if (!string.IsNullOrEmpty(sResult))
             {
                 try
                 {
                     lResult = JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+
+                    //Send Status
+                    try
+                    {
+                        BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/GetSWDefinitions/" + productName, TimeToLive = new TimeSpan(4, 0, 0) };
+                        bMSG.Properties.Add("Count", lResult.Count);
+                        bMSG.Properties.Add("ProductName", productName);
+                        bMSG.Properties.Add("ProductVersion", productVersion);
+                        bMSG.Properties.Add("Manufacturer", manufacturer);
+                        tcRuckZuck.SendAsync(bMSG);
+                    }
+                    catch { }
+
                     return lResult.OrderBy(t => t.Architecture).ToList();
                 }
                 catch { }
 
             }
 
-            //ProductVersion oProdVer = oSW.ProductVersion.First(t => t.Version == productVersion & t.Product.ProductName == productName & t.Product.Manufacturer == manufacturer);
-            foreach (ProductVersion oProdVer in oSW.ProductVersion.Where(t => t.Version == productVersion & t.Product.ProductName == productName & t.Product.Manufacturer == manufacturer))
+            var oSWVer =  oSW.v_SWVersions.FirstOrDefault(t => t.ProductName == productName & t.Version == productVersion & t.Manufacturer == manufacturer);
+            if(oSWVer != null)
             {
-                try
-                {
-                    foreach (DeploymentType oDT in oProdVer.DeploymentType)
-                    {
-                        try
-                        {
-                            AddSoftware SoftwareItem = new AddSoftware()
-                            {
-                                Architecture = oDT.Type,
-                                ContentID = oDT.ContentID.ToString(),
-                                Description = oProdVer.Product.ProductDescription,
-                                Manufacturer = oProdVer.Product.Manufacturer,
-                                ProductName = oProdVer.Product.ProductName,
-                                ProductURL = oProdVer.Product.ProjectURL,
-                                ProductVersion = oProdVer.Version,
-                                Shortname = oProdVer.Product.ShortName,
-                                Image = oProdVer.Icon,
-                                PSDetection = oDT.PSDetection,
-                                PSInstall = oDT.PSInstall,
-                                PSPreReq = oDT.PSPreReq,
-                                PSUninstall = oDT.PSUninstall,
-                                PSPreInstall = oDT.PSPreInstall,
-                                PSPostInstall = oDT.PSPostInstall,
-                                Author = oDT.Author
-                            };
-
-                            List<string> lPreReqs = new List<string>();
-
-                            foreach (var oPreReq in oSW.PreRequisite.Where(t => t.ProductId == oProdVer.ProductId & t.Enabled).OrderBy(t => t.Position))
-                            {
-                                try
-                                {
-                                    string sShortname = oPreReq.ProductName;
-                                    if (!string.IsNullOrEmpty(oPreReq.ProductVersion))
-                                    {
-                                        var oLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ProductName == oPreReq.ProductName & t.Version == oPreReq.ProductVersion);
-                                        if (oLatest != null)
-                                            sShortname = oLatest.ShortName;
-                                    }
-
-                                    lPreReqs.Add(sShortname);
-                                }
-                                catch { }
-                            }
-
-                            SoftwareItem.PreRequisites = lPreReqs.ToArray();
-
-                            List<contentFiles> oFile = new List<contentFiles>();
-                            foreach (Content oCont in oDT.Content)
-                            {
-                                oFile.Add(new contentFiles() { URL = oCont.DownloadURL, FileHash = oCont.FileHash, FileName = oCont.Filename, HashType = oCont.HashType });
-                            }
-
-                            SoftwareItem.Files = oFile;
-
-                            WindowsInstallerIDs oWin = oProdVer.WindowsInstallerIDs.FirstOrDefault();
-                            if (oWin != null)
-                            {
-                                if (oWin.MSIProductID != null)
-                                {
-                                    SoftwareItem.MSIProductID = oWin.MSIProductID.ToString();
-                                }
-                            }
-
-                            lResult.Add(SoftwareItem);
-                        }
-                        catch (Exception ex)
-                        {
-                            ex.Message.ToString();
-                        }
-                    }
-                }
-                catch { }
+                lResult = GetSWDetails(oSWVer.Id);
             }
 
             try
@@ -1305,6 +1205,9 @@ namespace RuckZuck_WCF
             }
             catch { }
 
+            if (ipAddress == "193.5.178.34") //Skip because of failure loops from this address
+                return;
+
             Task task = new Task(() =>
             {
                 try
@@ -1316,9 +1219,6 @@ namespace RuckZuck_WCF
                             working = "false";
 
                         bool.TryParse(working, out bWorking);
-
-
-
 
                         BrokeredMessage bMSG;
                         if (bWorking)
@@ -1344,7 +1244,7 @@ namespace RuckZuck_WCF
                         //We do not save status as it's from the upgrade process
                         bWriteToDB = false;
                     }
-                    
+
                     if (feedback.Contains("Product not detected after installation."))
                     {
                         //We do not save status as it's from the upgrade process
@@ -1363,15 +1263,35 @@ namespace RuckZuck_WCF
                         bWriteToDB = false;
                     }
 
+                    if (feedback == "ok")
+                        bWriteToDB = false;
+                    if (feedback == "ok..")
+                        bWriteToDB = false;
+
 
                     if (bWriteToDB)
                     {
-                        ProductVersion PV = oSW.ProductVersion.First(t => t.Version == productVersion & t.Product.ProductName == productName & t.IsLatest == true);
+                        var oCat = GetCatalog();
 
-                        oSW.ProductVersionFeedback.Add(new ProductVersionFeedback() { CreationDateTime = DateTime.Now, ProductVersionId = PV.Id, Working = bWorking, UserKey = userKey, Feedback = feedback });
-                        oSW.SaveChanges();
+                        var oProd = oCat.FirstOrDefault(t => t.ProductName == productName & t.ProductVersion == productVersion & t.Manufacturer == manufacturer);
+                        if(oProd != null)
+                        {
+                            var oDet = GetSWDetail(oProd.IconId);
+                            if(oDet != null)
+                            {
+                                if (bWorking)
+                                    FeedbackSuccess(oProd.IconId, oDet.Architecture);
+                                else
+                                    FeedbackFailure(oProd.IconId, oDet.Architecture);
+                            }
+
+                            oSW.SWFeedback.Add(new SWFeedback() { SWId = oProd.IconId, ReceivedDate = DateTime.Now.ToUniversalTime(), Success = bWorking, Feedback = feedback, Username = userKey });
+                            oSW.SaveChangesAsync();
+                        }
+
+
                     }
-                    
+
                 }
                 catch { }
             });
@@ -1380,199 +1300,208 @@ namespace RuckZuck_WCF
 
         public List<AddSoftware> CheckForUpdateJ(List<AddSoftware> lSoftware)
         {
-            return CheckForUpdate(lSoftware);
+            return CheckForUpdate2(lSoftware);
         }
 
         public List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
         {
-            IDatabase cache = Connection.GetDatabase(1);
-            IDatabase cache2 = Connection.GetDatabase(2);
-            IDatabase cache3 = Connection.GetDatabase(3);
+            return CheckForUpdate2(lSoftware);
+        }
 
-            if (!IsUserValid())
-                return new List<AddSoftware>();
+        public List<AddSoftware> CheckForUpdate2(List<AddSoftware> lSoftware)
+        {
+            DateTime tStart = DateTime.Now;
 
-            List<AddSoftware> oResult = new List<AddSoftware>();
-            DateTime dStart = DateTime.Now;
-            //List<vActiveLatestProducts> oActive = oSW.vActiveLatestProducts.ToList();
-            
-            //Check if SW Exists
+            IDatabase cache6 = Connection.GetDatabase(6); // Latest Versions
+            IDatabase cache7 = Connection.GetDatabase(7); // NoUpdates
+
+            List<AddSoftware> lResult = new List<AddSoftware>();
+
             foreach (AddSoftware oCheckSW in lSoftware)
             {
-                string sShortName = "";
-                vActiveLatestProducts oLatest = null;
-                string sLatestVersion = "";
-
-                //Check if it's a known product
-                if (cache.StringGet(oCheckSW.ProductName + ";" + oCheckSW.ProductVersion) != RedisValue.Null)
-                {
-                    continue;
-                }
-
-                //Check if Product is already the latest Version
-                var oActiveLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion);
-                if (oActiveLatest != null)
-                {
-                    if (!string.IsNullOrEmpty(oActiveLatest.ShortName))
-                    {
-                        //Cache latest ProductName and Version
-                        cache.StringSetAsync(oActiveLatest.ProductName + ";" + oActiveLatest.Version, oActiveLatest.ShortName, new TimeSpan(1, 0, 0));
-                        continue;
-                    }
-                }
-
-                /*
-                if (oActive.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion) != null)
-                    continue;
-                    */
                 try
                 {
-                    var rShortName = cache2.StringGet(oCheckSW.Manufacturer + ";" + oCheckSW.ProductName + ";" + oCheckSW.ProductVersion);
-                    if (string.IsNullOrEmpty(rShortName))
+                    if (!string.IsNullOrEmpty(cache7.StringGet(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer))) //is SW marked for no Updates in Redis?
                     {
-                        var oProd = oSW.vListProducts.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion & t.Manufacturer == oCheckSW.Manufacturer);
-                        if (oProd == null)
+                        continue; //Skip
+                    }
+
+                    var oRes = oSW.v_SWVersions.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion & t.Manufacturer == oCheckSW.Manufacturer); //Check in DB
+                    if (oRes != null)
+                    {
+                        if (oRes.IsLatest == true) //Is it the Latest?
                         {
-                            //Only upload if Productname and Version do not exists...
-                            oProd = oSW.vListProducts.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion);
-                            if (oProd == null)
-                            {
-                                //Add SW to DB...
-                                UploadSWEntry(new AddSoftware() { Manufacturer = oCheckSW.Manufacturer, ProductName = oCheckSW.ProductName, ProductVersion = oCheckSW.ProductVersion });
-                            }
+                            cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
+                            continue; //It's alreday the latest
+                        }
 
-                            //Reload the uploaded Version (as UploadSWEntry can automatically assign Shortnames)
-                            try
-                            {
-                                oProd = oSW.vListProducts.FirstOrDefault(t => t.ProductName == oCheckSW.ProductName & t.Version == oCheckSW.ProductVersion);
-                                //Get Shortname
-                                sShortName = oProd.ShortName;
+                        string sShortname = oRes.ShortName;
 
-                                if (!string.IsNullOrEmpty(sShortName))
-                                {
-                                    cache2.StringSetAsync(oCheckSW.Manufacturer + ";" + oCheckSW.ProductName + ";" + oCheckSW.ProductVersion, sShortName, new TimeSpan(4, 0, 0));
-                                }
 
-                            }
-                            catch { }
+                        if (string.IsNullOrEmpty(sShortname)) //is it a known Product ?
+                        {
+                            cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
+                            continue; //No -> skip
+                        }
+
+                        //Check if it's a known product in Redis
+                        string jLatest = cache6.StringGet(sShortname);
+
+
+                        v_SWVersions oLatest;
+
+                        if (!string.IsNullOrEmpty(jLatest)) //SW was found in Redis
+                        {
+                            oLatest = JsonConvert.DeserializeObject<v_SWVersions>(jLatest, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                         }
                         else
                         {
-                            //Get Shortname
-                            sShortName = oProd.ShortName;
-                            if (!string.IsNullOrEmpty(sShortName))
+                            oLatest = oSW.v_SWVersions.FirstOrDefault(t => t.IsLatest == true & t.ShortName == sShortname);
+                            if (oLatest != null)
                             {
-                                cache2.StringSetAsync(oCheckSW.Manufacturer + ";" + oCheckSW.ProductName + ";" + oCheckSW.ProductVersion, sShortName, new TimeSpan(4, 0, 0));
+                                cache6.StringSetAsync(sShortname, JsonConvert.SerializeObject(oLatest), new TimeSpan(1, 0, 0));
                             }
                         }
-                    }
-                    else
-                    {
-                        sShortName = rShortName;
-                    }
 
-                    if (!string.IsNullOrEmpty(sShortName))
-                    {
-                        string sLatest = cache3.StringGet(sShortName);
+                        if (oLatest == null) //no latest Version available?
+                        {
+                            cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
+                            continue; //no latest version -> skip
+                        }
+
+                        if (oLatest.Version == oCheckSW.ProductVersion) //There are cases where ProductNames are different but Version is latest.
+                        {
+                            cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
+                            continue; //no latest version -> skip
+                        }
+
                         try
                         {
-                            if (string.IsNullOrEmpty(sLatest))
+                            if (Version.Parse(oLatest.Version) <= Version.Parse(oCheckSW.ProductVersion)) //Try to compare Version
                             {
-                                oLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ShortName == sShortName);
-
-                                if (oLatest != null)
+                                if (oRes.ProductName != "SCCM Client Center")
                                 {
-                                    sLatestVersion = oLatest.Version;
-                                    //cache3.StringSet(sShortName, sLatestVersion);
-                                    cache3.StringSetAsync(sShortName, JsonConvert.SerializeObject(oLatest), new TimeSpan(1,0,0));
-                                }
-                                else
-                                    continue;
-                            }
-                            else
-                            {
-                                oLatest = JsonConvert.DeserializeObject<vActiveLatestProducts>(sLatest);
-                                sLatestVersion = oLatest.Version;
-                            }
-                        }
-                        catch(Exception ex)
-                        {
-                            //cache.StringSet(sShortName, ex.Message);
-                            //oLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ShortName == sShortName);
-                            //sLatestVersion = oLatest.Version;
-                        }
+                                    //Installed Version is newer...
+                                    cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
 
-                        //Compare Versions...
-                        try
-                        {
-                            if (Version.Parse(oCheckSW.ProductVersion) < Version.Parse(sLatestVersion))
-                            {
-                                //We need the full value;
-                                if (oLatest == null)
-                                    oLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ShortName == sShortName); 
-                                oResult.Add(new AddSoftware() { Shortname = sShortName, ProductName = oLatest.ProductName, ProductVersion = oLatest.Version, Manufacturer = oLatest.Manufacturer, Image = oSW.ProductVersion.First(t => t.Id == oLatest.Id).Icon, Description = oLatest.ProductDescription, MSIProductID = oCheckSW.ProductVersion });
-                            }
-                        }
-                        catch
-                        {
-                            //String compare if version compare is not possible
-                            try
-                            {
-                                List<string> LVer = new List<string>() { sLatestVersion, oCheckSW.ProductVersion };
-                                if (oCheckSW.ProductVersion != LVer.OrderByDescending(t => t).First())
-                                {
-                                    //We need the full value;
-                                    if (oLatest == null)
-                                        oLatest = oSW.vActiveLatestProducts.FirstOrDefault(t => t.ShortName == sShortName);
-                                    oResult.Add(new AddSoftware() { Shortname = sShortName, ProductName = oLatest.ProductName, ProductVersion = oLatest.Version, Manufacturer = oLatest.Manufacturer, Image = oSW.ProductVersion.First(t => t.Id == oLatest.Id).Icon, Description = oLatest.ProductDescription, MSIProductID = oCheckSW.ProductVersion });
+                                    try
+                                    {
+                                        BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/NEW/" + oCheckSW.ProductName + "/" + oCheckSW.ProductVersion, TimeToLive = new TimeSpan(4, 0, 0) };
+                                        bMSG.Properties.Add("ProductName", oCheckSW.ProductName);
+                                        bMSG.Properties.Add("NewVersion", oCheckSW.ProductVersion);
+                                        tcRuckZuck.SendAsync(bMSG);
+                                    }
+                                    catch { }
+
+                                    continue; //no latest version -> skip
                                 }
                             }
-                            catch { }
                         }
+                        catch (Exception ex)
+                        {
+                            ex.Message.ToString();
+                        }
+
+                        AddSoftware oReturn = new AddSoftware()
+                        {
+                            ProductName = oLatest.ProductName,
+                            ProductVersion = oLatest.Version,
+                            Manufacturer = oLatest.Manufacturer,
+                            Shortname = oLatest.ShortName,
+                            Description = oLatest.ProductDescription,
+                            Image = convertStream(GetIcon(oLatest.Id.ToString())), //can be removed after 16.0.0.2
+                            IconId = oLatest.Id,
+                            MSIProductID = oCheckSW.ProductVersion
+                        };
+
+                        lResult.Add(oReturn);
+                    }
+                    else //add SW to the DB
+                    {
+                        //Upload SW
+                        Task.Run(() =>
+                        {
+                            UploadSWEntry(new AddSoftware() { Manufacturer = oCheckSW.Manufacturer, ProductName = oCheckSW.ProductName, ProductVersion = oCheckSW.ProductVersion });
+                        });
+
+                        cache7.StringSetAsync(oCheckSW.ProductName + oCheckSW.ProductVersion + oCheckSW.Manufacturer, "noUpdate", new TimeSpan(0, 30, 0));
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
             }
-            TimeSpan tDuration = DateTime.Now - dStart;
 
-            try
+            TimeSpan tDuration = DateTime.Now - tStart;
+            return lResult;
+        }
+
+        public byte[] convertStream(Stream input)
+        {
+            using (MemoryStream ms = new MemoryStream())
             {
-                BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/CheckForUpdate", TimeToLive = new TimeSpan(4, 0, 0) };
-                bMSG.Properties.Add("ResultCount", oResult.Count);
-                bMSG.Properties.Add("InputCount", lSoftware.Count);
-                bMSG.Properties.Add("Duration", tDuration.TotalMilliseconds);
-                tcRuckZuck.SendAsync(bMSG);
+                input.CopyTo(ms);
+                return ms.ToArray();
             }
-            catch { }
-
-            return oResult;
-
         }
 
         public void TrackDownloads(string contentId)
         {
-            Task task = new Task(() => 
-            {
-                /*if (!IsUserValid())
-                    return;*/
+            //depreciated
+        }
 
+        public void TrackDownloads2(string sSWId, string Architecture)
+        {
+            Task task = new Task(() =>
+            {
                 //Track download..
                 try
                 {
-                    Guid gID = Guid.Parse(contentId);
-                    var oDT = oSW.DeploymentType.FirstOrDefault(t => t.ContentID == gID);
+                    long SWId = long.Parse(sSWId);
+                    var oSWDetail = oSW.SWDetails.FirstOrDefault(t => t.SWId == SWId & t.Architecture == Architecture);
+                    oSWDetail.Downloads++;
+                    oSW.SaveChangesAsync();
 
-                    oSW.ProductVersionDownloads.Add(new ProductVersionDownloads() { DownloadDateTime = DateTime.Now, ProductVersionId = oDT.ProductVersionId, InstallTypeId = oDT.Id });
-                    oSW.SaveChanges();
-
-                    //oMQTT.Publish("RuckZuck/API/getContentFiles/" + sMQName, System.Text.Encoding.UTF8.GetBytes(oCont.DownloadURL), 0, false);
                     BrokeredMessage bMSG;
-                    bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/downloaded/" + contentId, TimeToLive = new TimeSpan(24, 0, 0) };
+                    bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/downloaded/" + sSWId, TimeToLive = new TimeSpan(24, 0, 0) };
 
-                    bMSG.Properties.Add("contentId", contentId);
-                    bMSG.Properties.Add("ProductVersionID", oDT.ProductVersionId);
+                    bMSG.Properties.Add("SWId", sSWId);
+                    bMSG.Properties.Add("Architecture", Architecture);
 
                     tcRuckZuck.SendAsync(bMSG);
+                }
+                catch { }
+            });
+            task.Start();
+        }
+
+        public void FeedbackSuccess(long SWId, string Architecture)
+        {
+            Task task = new Task(() =>
+            {
+                //Track download..
+                try
+                {
+                    var oSWDetail = oSW.SWDetails.FirstOrDefault(t => t.SWId == SWId & t.Architecture == Architecture);
+                    oSWDetail.Success++;
+                    oSW.SaveChangesAsync();
+                }
+                catch { }
+            });
+            task.Start();
+        }
+
+        public void FeedbackFailure(long SWId, string Architecture)
+        {
+            Task task = new Task(() =>
+            {
+                //Track download..
+                try
+                {
+                    var oSWDetail = oSW.SWDetails.FirstOrDefault(t => t.SWId == SWId & t.Architecture == Architecture);
+                    oSWDetail.Failures++;
+                    oSW.SaveChangesAsync();
                 }
                 catch { }
             });
@@ -1585,7 +1514,7 @@ namespace RuckZuck_WCF
             {
                 WebRequest request = WebRequest.Create("https://api.pushbullet.com/v2/pushes");
                 request.Method = "POST";
-                request.Headers.Add("Authorization", "Bearer o.xxxx");
+                request.Headers.Add("Authorization", "Bearer o.WP944MGzspDyIxmiT61zv7S7Lrxnnx5c");
                 request.ContentType = "application/json; charset=UTF-8";
                 string postData =
                     "{\"channel_tag\": \"ruckzuck\",  \"type\": \"note\", \"title\": \"" + Message + "\", \"body\": \"" + Body + "\"}";
@@ -1596,6 +1525,187 @@ namespace RuckZuck_WCF
                 dataStream.Close();
             }
             catch { }
+        }
+
+        public Stream GetIcon(string iconid)
+        {
+            try
+            {
+                if (File.Exists(@".\Data\Icons\" + iconid.ToString() + ".jpg"))
+                {
+                    return File.Open(HttpContext.Current.Server.MapPath("~") + @"\Data\Icons\" + iconid.ToString() + ".jpg", FileMode.Open);
+                }
+                else
+                {
+                    int id = Convert.ToInt32(iconid);
+
+                    var oSW = GetSWDetail(id);
+                    if(oSW.Image != null)
+                    {
+                        byte[] image = oSW.Image;
+
+                        MemoryStream ms = new MemoryStream(image);
+                        try
+                        {
+                            var sIcon = new System.IO.FileStream(HttpContext.Current.Server.MapPath("~") + @"\Data\Icons\" + iconid.ToString() + ".jpg", FileMode.Create);
+                            ms.CopyTo(sIcon);
+                            sIcon.FlushAsync();
+                        }
+                        catch { }
+                        ms.Position = 0;
+                        return ms;
+                    }
+
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        public AddSoftware GetSWDetail(long SWId)
+        {
+            var oDet = oSW.SWDetails.FirstOrDefault(t => t.SWId == SWId);
+            if (oDet != null)
+            {
+                JsonSerializerSettings oJSet = new JsonSerializerSettings();
+                oJSet.NullValueHandling = NullValueHandling.Ignore;
+
+                string jSW = oDet.Definition;
+                if (!string.IsNullOrEmpty(jSW))
+                {
+                    var oItem = JsonConvert.DeserializeObject<AddSoftware>(jSW, oJSet);
+                    if (oItem.PreRequisites == null)
+                        oItem.PreRequisites = new string[0];
+                    return oItem;
+                }
+            }
+
+            return new AddSoftware();
+        }
+
+        public List<AddSoftware> GetSWDetails(long SWId)
+        {
+            List<AddSoftware> lResult = new List<AddSoftware>();
+            var oDets = oSW.SWDetails.Where(t => t.SWId == SWId);
+
+            JsonSerializerSettings oJSet = new JsonSerializerSettings();
+            oJSet.NullValueHandling = NullValueHandling.Ignore;
+
+            foreach (var oDet in oDets)
+            {
+                try
+                {
+                    string jSW = oDet.Definition;
+                    if (!string.IsNullOrEmpty(jSW))
+                    {
+                        var oItem = JsonConvert.DeserializeObject<AddSoftware>(jSW, oJSet);
+                        if (oItem.PreRequisites == null)
+                            oItem.PreRequisites = new string[0];
+                        lResult.Add(oItem);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+
+            return lResult;
+        }
+
+        public void SyncSW(string s1)
+        {
+            foreach(var oLatest in oSW.v_SWVersionsLatest.ToList())
+            {
+               foreach(var oDet in GetSWDetails(oLatest.Id))
+               {
+                    if (oDet.IconId != oLatest.Id)
+                    {
+                        oDet.IconId = oLatest.Id;
+                        oDet.Category = oLatest.Category;
+
+                        
+
+                        var oDBItem = oSW.SWDetails.FirstOrDefault(t => t.SWId == oLatest.Id & t.Architecture == oDet.Architecture);
+                        if(oDBItem != null)
+                        {
+                            string jItem = JsonConvert.SerializeObject(oDet);
+                            oDBItem.Definition = jItem;
+                            oSW.SaveChanges();
+                        }
+                        
+                    }
+               }
+
+            }
+
+        }
+
+        public string UpdateCatalog()
+        {
+            try
+            {
+                ObjectCache cache = MemoryCache.Default;
+                cache.Remove("ALL");
+                cache.Remove("CATALOG");
+                GetCatalog();
+
+                return "Done.";
+            }
+            catch { }
+
+            return "Failure..";
+        }
+
+        public bool ApproveSW(long SWId, string Architecture)
+        {
+            try
+            {
+                IncomingWebRequestContext request = WebOperationContext.Current.IncomingRequest;
+                WebHeaderCollection headers = request.Headers;
+                IDatabase cache = Connection.GetDatabase();
+
+                string sToken = headers["AuthenticatedToken"] ?? "";
+                string sUsername = headers["Username"] ?? "xxxx";
+                string sPassword = headers["Password"] ?? "xxxx";
+
+                if (System.Web.Security.Membership.ValidateUser(sUsername, sPassword))
+                {
+                    if (System.Web.Security.Roles.IsUserInRole(sUsername, "Admin"))
+                    {
+                        var oNewVersion = oSW.SWVersions.FirstOrDefault(t => t.Id == SWId);
+                        if (oNewVersion != null)
+                        {
+                            oNewVersion.IsLatest = true;
+                            oSW.SaveChanges();
+                        }
+
+                        var oOldVersion = oSW.SWVersions.FirstOrDefault(t => t.ShortName == oNewVersion.ShortName & t.IsLatest == true);
+                        if(oOldVersion != null)
+                        {
+                            if(oNewVersion != null)
+                            {
+                                if (oNewVersion.Id != oOldVersion.Id) //in case of a resubmit
+                                {
+                                    oOldVersion.IsLatest = false;
+                                    oSW.SaveChanges();
+                                }
+
+                                UpdateCatalog();
+
+                                oSW.SWPending.Remove(oSW.SWPending.FirstOrDefault(t => t.SWId == SWId));
+                                oSW.SaveChangesAsync();
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+
         }
     }
 }

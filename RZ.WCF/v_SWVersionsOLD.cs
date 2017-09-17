@@ -12,23 +12,20 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class ProductVersion
+    public partial class v_SWVersionsOLD
     {
-        public ProductVersion()
-        {
-            this.DeploymentType = new HashSet<DeploymentType>();
-            this.WindowsInstallerIDs = new HashSet<WindowsInstallerIDs>();
-        }
-    
         public long Id { get; set; }
-        public long ProductId { get; set; }
-        public byte[] Icon { get; set; }
+        public string ProductName { get; set; }
         public string Version { get; set; }
+        public string Manufacturer { get; set; }
+        public string ShortName { get; set; }
         public Nullable<bool> IsLatest { get; set; }
         public Nullable<System.DateTime> LastModified { get; set; }
-    
-        public virtual ICollection<DeploymentType> DeploymentType { get; set; }
-        public virtual Product Product { get; set; }
-        public virtual ICollection<WindowsInstallerIDs> WindowsInstallerIDs { get; set; }
+        public string ProductDescription { get; set; }
+        public string ProjectURL { get; set; }
+        public string Category { get; set; }
+        public Nullable<long> Downloads { get; set; }
+        public Nullable<long> Success { get; set; }
+        public Nullable<long> Failures { get; set; }
     }
 }

@@ -12,15 +12,13 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class Content
+    public partial class SWFeedback
     {
         public long Id { get; set; }
-        public long DeploymentTypeID { get; set; }
-        public string DownloadURL { get; set; }
-        public string Filename { get; set; }
-        public string FileHash { get; set; }
-        public string HashType { get; set; }
-    
-        public virtual DeploymentType DeploymentType { get; set; }
+        public Nullable<long> SWId { get; set; }
+        public string Feedback { get; set; }
+        public string Username { get; set; }
+        public Nullable<System.DateTime> ReceivedDate { get; set; }
+        public Nullable<bool> Success { get; set; }
     }
 }

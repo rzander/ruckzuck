@@ -12,10 +12,17 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class ProductCategory
+    public partial class SWDetails
     {
         public long Id { get; set; }
+        public long SWId { get; set; }
+        public string Architecture { get; set; }
         public string ShortName { get; set; }
-        public long CategoryId { get; set; }
+        public string Definition { get; set; }
+        public Nullable<System.DateTime> LastModified { get; set; }
+        public long Downloads { get; set; }
+        public long Failures { get; set; }
+        public System.DateTime CreationDate { get; set; }
+        public long Success { get; set; }
     }
 }

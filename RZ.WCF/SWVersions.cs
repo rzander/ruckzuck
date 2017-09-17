@@ -12,13 +12,17 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class ProductVersionFeedback
+    public partial class SWVersions
     {
         public long Id { get; set; }
-        public long ProductVersionId { get; set; }
-        public bool Working { get; set; }
-        public string UserKey { get; set; }
-        public string Feedback { get; set; }
-        public System.DateTime CreationDateTime { get; set; }
+        public string ProductName { get; set; }
+        public string Version { get; set; }
+        public string Manufacturer { get; set; }
+        public string ShortName { get; set; }
+        public Nullable<bool> IsLatest { get; set; }
+        public Nullable<System.DateTime> LastModified { get; set; }
+        public string ProductDescription { get; set; }
+        public string ProjectURL { get; set; }
+        public string Category { get; set; }
     }
 }

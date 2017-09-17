@@ -12,20 +12,12 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class Product
+    public partial class SWPending
     {
-        public Product()
-        {
-            this.ProductVersion = new HashSet<ProductVersion>();
-        }
-    
         public long Id { get; set; }
+        public long SWId { get; set; }
         public string ProductName { get; set; }
-        public string Manufacturer { get; set; }
-        public string ProductDescription { get; set; }
-        public string ShortName { get; set; }
-        public string ProjectURL { get; set; }
-    
-        public virtual ICollection<ProductVersion> ProductVersion { get; set; }
+        public string Architecture { get; set; }
+        public string Username { get; set; }
     }
 }
