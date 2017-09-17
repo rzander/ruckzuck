@@ -46,37 +46,39 @@ namespace RuckZuck_WCF
 
                 if (!_cache.TryGetValue("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out Token))
                 {
-                    HttpClientHandler handler = new HttpClientHandler();
-
-                    if (!string.IsNullOrEmpty(Proxy))
+                    using (HttpClientHandler handler = new HttpClientHandler())
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
-                    }
 
-                    using (var oClient = new HttpClient(handler))
-                    {
-                        if (!string.IsNullOrEmpty(ProxyUserPW))
+                        if (!string.IsNullOrEmpty(Proxy))
                         {
-                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                            handler.Proxy = new WebProxy(Proxy, true);
+                            handler.UseProxy = true;
                         }
-                        oClient.DefaultRequestHeaders.Add("Username", Username);
-                        oClient.DefaultRequestHeaders.Add("Password", Password);
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
-                        response.Wait(5000);
-                        if (response.IsCompleted)
+
+                        using (var oClient = new HttpClient(handler))
                         {
-                            Token = response.Result.Replace("\"", "");
+                            if (!string.IsNullOrEmpty(ProxyUserPW))
+                            {
+                                oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                            }
+                            oClient.DefaultRequestHeaders.Add("Username", Username);
+                            oClient.DefaultRequestHeaders.Add("Password", Password);
+                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
+                            response.Wait(7000);
+                            if (response.IsCompleted)
+                            {
+                                Token = response.Result.Replace("\"", "");
 
-                            // Set cache options.
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                // Keep in cache for this time, reset time if accessed.
-                                .SetSlidingExpiration(TimeSpan.FromSeconds(300));
+                                // Set cache options.
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    // Keep in cache for this time, reset time if accessed.
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(300));
 
-                            _cache.Set("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), Token, cacheEntryOptions);
+                                _cache.Set("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), Token, cacheEntryOptions);
 
-                            return Token;
+                                return Token;
+                            }
                         }
                     }
                 }
@@ -145,7 +147,7 @@ namespace RuckZuck_WCF
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                         var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                        response.Wait(7000); //7s max.
+                        response.Wait(10000); //10s max.
                         if (response.IsCompleted)
                         {
                             sResult = response.Result;
@@ -181,27 +183,38 @@ namespace RuckZuck_WCF
             string sResult = "";
             if (!_cache.TryGetValue("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
             {
-                try
+                using (var handler = new HttpClientHandler())
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                    response.Wait(5000);
-                    if (response.IsCompleted)
+                    if (!string.IsNullOrEmpty(Proxy))
                     {
-                        sResult = response.Result;
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
+                    using (var oClient = new HttpClient(handler))
+                    {
+                        try
+                        {
+                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                            var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
+                            response.Wait(5000);
+                            if (response.IsCompleted)
+                            {
+                                sResult = response.Result;
 
-                        // Set cache options.
-                        var cacheEntryOptions = new MemoryCacheEntryOptions()
-                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                                // Set cache options.
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
 
-                        _cache.Set("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                                _cache.Set("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
 
-                        return sResult;
+                                return sResult;
+                            }
+                        }
+                        catch { }
                     }
                 }
-                catch { }
+
             }
 
             return sResult;
@@ -214,21 +227,31 @@ namespace RuckZuck_WCF
             {
                 try
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
-                    response.Wait(5000);
-                    if (response.IsCompleted)
+                    using (var handler = new HttpClientHandler())
                     {
-                        sResult = response.Result;
+                        if (!string.IsNullOrEmpty(Proxy))
+                        {
+                            handler.Proxy = new WebProxy(Proxy, true);
+                            handler.UseProxy = true;
+                        }
+                        using (var oClient = new HttpClient(handler))
+                        {
+                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                            var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
+                            response.Wait(5000);
+                            if (response.IsCompleted)
+                            {
+                                sResult = response.Result;
 
-                        // Set cache options.
-                        var cacheEntryOptions = new MemoryCacheEntryOptions()
-                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
-                        sResult = response.Result;
-                        _cache.Set("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-                        return sResult;
+                                // Set cache options.
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                                sResult = response.Result;
+                                _cache.Set("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                                return sResult;
+                            }
+                        }
                     }
                 }
                 catch { }
@@ -244,21 +267,31 @@ namespace RuckZuck_WCF
             {
                 try
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
-                    response.Wait(5000);
-                    if (response.IsCompleted)
+                    using (var handler = new HttpClientHandler())
                     {
-                        sResult = response.Result;
+                        if (!string.IsNullOrEmpty(Proxy))
+                        {
+                            handler.Proxy = new WebProxy(Proxy, true);
+                            handler.UseProxy = true;
+                        }
+                        using (var oClient = new HttpClient(handler))
+                        {
+                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                            var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
+                            response.Wait(5000);
+                            if (response.IsCompleted)
+                            {
+                                sResult = response.Result;
 
-                        // Set cache options.
-                        var cacheEntryOptions = new MemoryCacheEntryOptions()
-                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
-                        sResult = response.Result;
-                        _cache.Set("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-                        return sResult;
+                                // Set cache options.
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                                sResult = response.Result;
+                                _cache.Set("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                                return sResult;
+                            }
+                        }
                     }
                 }
                 catch { }
@@ -327,7 +360,7 @@ namespace RuckZuck_WCF
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                         var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                        response.Wait(5000);
+                        response.Wait(10000);
                         if (response.IsCompleted)
                         {
                             string sResult = response.Result;
@@ -659,23 +692,22 @@ namespace RuckZuck_WCF
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                         HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-                        if (contentType == "application/xml")
-                        {
-                            var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
-                            response.Wait(5000);
 
-                            if (response.IsCompleted)
+                        var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
+                        response.Wait(5000);
+
+                        if (response.IsCompleted)
+                        {
+                            if (response.Result.StatusCode == HttpStatusCode.OK)
                             {
-                                if (response.Result.StatusCode == HttpStatusCode.OK)
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    return false;
-                                }
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
                             }
                         }
+
                     }
                 }
 
