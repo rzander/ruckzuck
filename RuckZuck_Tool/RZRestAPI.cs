@@ -252,7 +252,7 @@ namespace RuckZuck_WCF
             return new List<GetSoftware>();
         }
 
-        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback)
+        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string architecture, string working, string userKey, string feedback)
         {
             if (!string.IsNullOrEmpty(feedback))
             {
@@ -263,7 +263,7 @@ namespace RuckZuck_WCF
                     {
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                        var oRes = await oClient.GetStringAsync(sURL + "/rest/Feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
+                        var oRes = await oClient.GetStringAsync(sURL + "/rest/Feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&arch=" + WebUtility.UrlEncode(architecture) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
                         return oRes;
                     }
                     catch { }
@@ -358,16 +358,7 @@ namespace RuckZuck_WCF
 
         public static async void TrackDownloads(string contentID)
         {
-            using (var oClient = new HttpClient())
-            {
-                try
-                {
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloads/" + WebUtility.UrlEncode(contentID));
-                }
-                catch { }
-            }
+            //depreciated
         }
 
 
@@ -380,7 +371,7 @@ namespace RuckZuck_WCF
                 {
                     oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                     oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() +"&arch=" + WebUtility.UrlEncode(Architecture));
+                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + "&arch=" + WebUtility.UrlEncode(Architecture));
                 }
                 catch { }
             }
@@ -396,6 +387,25 @@ namespace RuckZuck_WCF
             }
 
             return lResult.Distinct().OrderBy(t => t).ToList();
+        }
+
+        public static byte[] GetIcon(long SWId)
+        {
+            using (var oClient = new HttpClient())
+            {
+                var response = oClient.GetStreamAsync(RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString());
+                response.Wait(5000);
+                if (response.IsCompleted)
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        response.Result.CopyTo(ms);
+                        return ms.ToArray();
+                    }
+                }
+
+                return null;
+            }
         }
     }
 
@@ -603,3 +613,4 @@ namespace RuckZuck_WCF
         public long TotalBytes { get; set; }
     }
 }
+
