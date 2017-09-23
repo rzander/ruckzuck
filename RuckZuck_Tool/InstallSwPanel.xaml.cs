@@ -14,8 +14,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using RuckZuck_WCF;
 using RZUpdate;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
 using System.IO;
 
 namespace RuckZuck_Tool
@@ -97,7 +95,7 @@ namespace RuckZuck_Tool
         {
             AnonymousDelegate update = delegate ()
             {
-                if(tbSearch.IsFocused)
+                if (tbSearch.IsFocused)
                     tbSearch_Search(sender, null);
                 else
                     tSearch.Stop();
@@ -405,7 +403,7 @@ namespace RuckZuck_Tool
 
                                 if (oFeedBack.hasFeedback)
                                 {
-                                    RZRestAPI.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.UserKey, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
+                                    RZRestAPI.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, "", oFeedBack.isWorking.ToString(), Properties.Settings.Default.UserKey, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
                                 }
                             };
                             Dispatcher.Invoke(update);
@@ -483,8 +481,7 @@ namespace RuckZuck_Tool
             if (lvSW.SelectedItems.Count > 0)
             {
                 GetSoftware oSelectedItem = lvSW.SelectedItems[0] as GetSoftware;
-                if (onEdit != null)
-                    onEdit(oSelectedItem, EventArgs.Empty);
+                onEdit?.Invoke(oSelectedItem, EventArgs.Empty);
             }
         }
 
@@ -844,3 +841,4 @@ namespace RuckZuck_Tool
         }
     }
 }
+

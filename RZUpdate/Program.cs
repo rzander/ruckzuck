@@ -94,21 +94,24 @@ namespace RZUpdate
                                 Console.Write("Downloading...");
                                 foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
                                 {
-                                    RZUpdater oRZSWPreReq = new RZUpdater();
-                                    oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
-                                    Console.WriteLine();
-                                    Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
-                                    if (oRZSWPreReq.SoftwareUpdate.Download().Result)
+                                    if (!string.IsNullOrEmpty(sPreReq))
                                     {
-                                        Console.WriteLine("... done.");
-                                        Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
-                                        if (oRZSWPreReq.SoftwareUpdate.Install(false,true).Result)
+                                        RZUpdater oRZSWPreReq = new RZUpdater();
+                                        oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
+                                        Console.WriteLine();
+                                        Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                        if (oRZSWPreReq.SoftwareUpdate.Download().Result)
                                         {
                                             Console.WriteLine("... done.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("... Error. The installation failed.");
+                                            Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                            if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
+                                            {
+                                                Console.WriteLine("... done.");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("... Error. The installation failed.");
+                                            }
                                         }
                                     }
 

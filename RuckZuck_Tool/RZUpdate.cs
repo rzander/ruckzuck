@@ -50,6 +50,12 @@ namespace RZUpdate
             {
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
             }
+
+            if (sSWFile.TrimStart().StartsWith("{", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SoftwareUpdate = new SWUpdate(Parse(sSWFile));
+            }
+
         }
 
         /// <summary>
@@ -251,10 +257,27 @@ namespace RZUpdate
                 {
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     AddSoftware lRes = ser.Deserialize<AddSoftware>(File.ReadAllText(sFile));
+                    lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     return lRes;
                 }
                 catch { }
             }
+
+            return new AddSoftware();
+        }
+
+        internal static AddSoftware Parse(string sJSON)
+        {
+
+            try
+            {
+                JavaScriptSerializer ser = new JavaScriptSerializer();
+                AddSoftware lRes = ser.Deserialize<AddSoftware>(sJSON);
+                lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                return lRes;
+            }
+            catch { }
+
 
 
             return new AddSoftware();

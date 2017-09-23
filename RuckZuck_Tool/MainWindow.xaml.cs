@@ -10,7 +10,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 
 using System.IO;
-using Microsoft.Win32;
 using System.Reflection;
 using System.Globalization;
 using System.Diagnostics;

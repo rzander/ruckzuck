@@ -11,7 +11,6 @@ using WindowsInstaller;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
-using System.Xml.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RuckZuck_WCF;
@@ -434,11 +433,11 @@ namespace RuckZuck_Tool
             var result = ofd.ShowDialog();
             if (result != false)
             {
-                SaveAsXML(ofd.FileName);
+                SaveAsJSON(ofd.FileName);
             }
         }
 
-        private void SaveAsXML(string sFile)
+        private void SaveAsJSON(string sFile)
         {
             AddSoftware oSoftware = new AddSoftware();
             oSoftware.Architecture = tbArchitecture.Text.Trim();
@@ -621,9 +620,9 @@ namespace RuckZuck_Tool
             try
             {
                 string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName());
-                SaveAsXML(sTempFile);
+                SaveAsJSON(sTempFile);
 
-                string xmlSW = File.ReadAllText(sTempFile);
+                string jSW = File.ReadAllText(sTempFile);
                 File.Delete(sTempFile);
 
                 CreateExe oExe = new CreateExe(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, tbProductName.Text + "_" + tbVersion.Text + "_" + tbArchitecture.Text + "_setup.exe"));
@@ -635,7 +634,7 @@ namespace RuckZuck_Tool
                 oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", tbProductName.Text).Replace("[assembly: AssemblyFileVersion(\"1.0.0.0\")]", "[assembly: AssemblyFileVersion(\"" + tbVersion.Text + "\")]"));
 
                 System.Resources.ResourceWriter writer = new System.Resources.ResourceWriter("Resources.resx");
-                writer.AddResource("xmlSW.xml", xmlSW);
+                writer.AddResource("SW.json", jSW);
                 writer.Generate();
                 writer.Close();
                 oExe.cp.EmbeddedResources.Add("Resources.resx");
@@ -652,7 +651,7 @@ namespace RuckZuck_Tool
         private void btTest_Click(object sender, RoutedEventArgs e)
         {
             string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName());
-            SaveAsXML(sTempFile);
+            SaveAsJSON(sTempFile);
 
             if (!AttachConsole(-1))  // Attach to a parent process console
                 AllocConsole(); // Alloc a new console if none available

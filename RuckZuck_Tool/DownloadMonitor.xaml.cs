@@ -15,6 +15,7 @@ using RuckZuck_WCF;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Diagnostics;
+using static RuckZuck_WCF.RZRestAPI;
 
 namespace RuckZuck_Tool
 {
