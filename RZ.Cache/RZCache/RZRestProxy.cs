@@ -502,7 +502,7 @@ namespace RuckZuck_WCF
 
                 if (File.Exists(@"wwwroot/icons/" + iconid.ToString() + ".jpg"))
                 {
-                    return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open);
+                    return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open, FileAccess.Read, FileShare.Read);
                 }
                 else
                 {
@@ -534,7 +534,7 @@ namespace RuckZuck_WCF
                                     sIcon.Flush();
                                     sIcon.Dispose();
                                 }
-                                return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open);
+                                return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open, FileAccess.Read, FileShare.Read);
                             }
                         }
                     }
@@ -553,7 +553,7 @@ namespace RuckZuck_WCF
 
                 if (File.Exists(@"wwwroot/files/" + filename))
                 {
-                    return File.Open(@"wwwroot/files/" + filename, FileMode.Open);
+                    return File.Open(@"wwwroot/files/" + filename, FileMode.Open, FileAccess.Read, FileShare.Read);
                 }
             }
             catch { }
