@@ -573,6 +573,18 @@ namespace RuckZuck_WCF
             catch { }
         }
 
+        public static async void TrackDownloadsNew(string SWId, string Architecture)
+        {
+            try
+            {
+                var oClient = new HttpClient();
+                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + " & arch = " + WebUtility.UrlEncode(Architecture));
+            }
+            catch { }
+        }
+
         public static string CheckForUpdate(string lSoftware)
         {
             string sResult = "";
@@ -859,6 +871,25 @@ namespace RuckZuck_WCF
         public string Category { get; set; }
 
         public string[] PreRequisites { get; set; }
+
+        //vNext 5.9.2017
+        public long SWId { get { return IconId; } set { IconId = value; } }
+
+        //remove if SWId is in place 5.9.2017
+        public long IconId { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                if (SWId > 0)
+                {
+                    string URL = sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    return URL;
+                }
+                return "";
+            }
+        }
     }
 
     public class contentFiles
