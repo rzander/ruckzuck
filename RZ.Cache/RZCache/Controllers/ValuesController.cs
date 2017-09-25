@@ -70,6 +70,8 @@ namespace RZWCF.Controllers
             RuckZuck_WCF.RZRestProxy.CatalogTTL =  int.Parse(_config.GetSection("CatalogTTL").Value ?? _config.GetSection("RuckZuck:CatalogTTL").Value);
             RuckZuck_WCF.RZRestProxy.localURL = config.GetSection("localURL").Value ?? _config.GetSection("RuckZuck:localURL").Value;
             RuckZuck_WCF.RZRestProxy._cache = _cache;
+            RuckZuck_WCF.RZRestProxy.Proxy = config.GetSection("Proxy").Value ?? _config.GetSection("RuckZuck:Proxy").Value;
+            RuckZuck_WCF.RZRestProxy.ProxyUserPW = config.GetSection("ProxyUserPW ").Value ?? _config.GetSection("RuckZuck:ProxyUserPW").Value;
         }
 
         [Route("AuthenticateUser")]
@@ -159,11 +161,11 @@ namespace RZWCF.Controllers
 
         [HttpGet]
         [Route("Feedback")]
-        [Route("Feedback/{name}/{ver}/{man}/{ok}/{user}/{text}")]
-        public ActionResult Feedback(string name, string ver, string man = "", string ok = "", string user = "", string text = "")
+        [Route("Feedback/{name}/{ver}/{man}/{arch}/{ok}/{user}/{text}")]
+        public ActionResult Feedback(string name, string ver, string man = "", string arch = "", string ok = "", string user = "", string text = "")
         {
             RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
-            return Content(RuckZuck_WCF.RZRestProxy.Feedback(name, ver, man, ok, user, text).Result, "text/xml");
+            return Content(RuckZuck_WCF.RZRestProxy.Feedback(name, ver, man, arch, ok, user, text).Result, "text/xml");
         }
 
         [HttpGet]
@@ -182,6 +184,15 @@ namespace RZWCF.Controllers
         {
             RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
             RuckZuck_WCF.RZRestProxy.TrackDownloads(id);
+        }
+
+        [HttpGet]
+        [Route("TrackDownloadsNew")]
+        [Route("TrackDownloadsNew/{SWId}/{arch}")]
+        public void TrackDownloadsNew(string SWId, string arch)
+        {
+            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            RuckZuck_WCF.RZRestProxy.TrackDownloadsNew(SWId, arch);
         }
 
         [HttpPost]
