@@ -64,7 +64,7 @@ namespace RZUpdate
         /// <param name="ProductName">Name of the Software Product (must be in the RuckZuck Repository !)</param>
         /// <param name="Version">>Current Version of the Software</param>
         /// <returns>SWUpdate if an Update is available otherwise null</returns>
-        public SWUpdate CheckForUpdate(string ProductName, string Version)
+        public SWUpdate CheckForUpdate(string ProductName, string Version, string Manufacturer = "")
         {
             try
             {
@@ -72,6 +72,7 @@ namespace RZUpdate
 
                 oSW.ProductName = ProductName; // ;
                 oSW.ProductVersion = Version; // ;
+                oSW.Manufacturer = Manufacturer ?? "";
 
                 List<AddSoftware> oResult = RZRestAPI.CheckForUpdate(new List<AddSoftware>() { oSW }).ToList();
                 if (oResult.Count > 0)

@@ -358,6 +358,7 @@ namespace RuckZuck_WCF
 
         public static async void TrackDownloads(string contentID)
         {
+            contentID.ToString();
             //depreciated
         }
 
@@ -511,7 +512,8 @@ namespace RuckZuck_WCF
             {
                 if (SWId > 0)
                 {
-                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    return sURL;
                 }
                 return "";
             }

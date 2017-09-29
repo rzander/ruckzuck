@@ -280,60 +280,6 @@ namespace RZUpdate
         /// Check for updated Version in the RuckZuck Repository
         /// </summary>
         /// <param name="aSWCheck">null = all Installed SW</param>
-        internal void CheckUpdatesOld(List<AddSoftware> aSWCheck)
-        {
-            var tCheckUpd = Task.Run(() =>
-            {
-                try
-                {
-                    if (aSWCheck == null || aSWCheck.Count() == 0)
-                        aSWCheck = InstalledSoftware.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
-
-                    var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
-                    List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(vSWCheck).ToList();
-
-                    var lResult = lCheckResult.Select(item => new AddSoftware()
-                    {
-                        Architecture = item.Architecture,
-                        Category = item.Category,
-                        Description = item.Description,
-                        Image = item.Image,
-                        Manufacturer = item.Manufacturer,
-                        ProductName = item.ProductName,
-                        ProductURL = item.ProductURL,
-                        ProductVersion = item.ProductVersion,
-                        MSIProductID = item.MSIProductID,
-                        Shortname = item.Shortname
-                    }).ToList();
-
-                    //Only take updated Versions
-                    var lNew = lResult.Where(t => t.Shortname != "new").ToList();
-
-
-                    lock (NewSoftwareVersions)
-                    {
-                        //Store new Versions of existing SW
-                        NewSoftwareVersions.AddRange(lNew);
-
-                        //Remove duplicates
-                        NewSoftwareVersions = NewSoftwareVersions.GroupBy(x => x.Shortname).Select(y => y.First()).ToList();
-                    }
-                    if (lNew.Count > 0)
-                        OnUpdatesDetected(lNew, new EventArgs());
-                }
-                catch (Exception ex)
-                {
-                    ex.ToString();
-                }
-
-                OnUpdScanCompleted(this, new EventArgs());
-            });
-        }
-
-        /// <summary>
-        /// Check for updated Version in the RuckZuck Repository
-        /// </summary>
-        /// <param name="aSWCheck">null = all Installed SW</param>
         internal async Task CheckUpdates(List<AddSoftware> aSWCheck)
         {
             await Task.Run(() => _CheckUpdates(aSWCheck));
@@ -347,20 +293,25 @@ namespace RZUpdate
                     aSWCheck = InstalledSoftware.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
 
                 var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
-                List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(vSWCheck).ToList();
+
+                //we do not have to check for updates if it's in the Catalog
+                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.FirstOrDefault(r => r.ProductName == t.ProductName & r.ProductVersion == t.ProductVersion & r.Manufacturer == t.Manufacturer) == null).ToList();
+
+                List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(tRes).ToList();
 
                 var lResult = lCheckResult.Select(item => new AddSoftware()
                 {
                     Architecture = item.Architecture,
                     Category = item.Category,
                     Description = item.Description,
-                    Image = item.Image,
+                    //Image = item.Image,
                     Manufacturer = item.Manufacturer,
                     ProductName = item.ProductName,
                     ProductURL = item.ProductURL,
                     ProductVersion = item.ProductVersion,
                     MSIProductID = item.MSIProductID,
-                    Shortname = item.Shortname
+                    Shortname = item.Shortname,
+                    SWId = item.SWId
                 }).ToList();
 
                 //Only take updated Versions

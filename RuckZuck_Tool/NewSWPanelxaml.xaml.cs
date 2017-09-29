@@ -97,68 +97,69 @@ namespace RuckZuck_Tool
                 {
                     // Open document 
                     string sMSIfilename = dlg.FileName;
-                    MSInstaller iMSI = new MSInstaller(sMSIfilename);
-                    tbMSIId.Text = iMSI.Property("ProductCode");
-                    string sHashType = "";
-                    string sFileHash = "";
-                    //Try to get File Signature...
-                    try
+                    using (MSInstaller iMSI = new MSInstaller(sMSIfilename))
                     {
-                        var Cert = X509Certificate.CreateFromSignedFile(dlg.FileName);
+                        tbMSIId.Text = iMSI.Property("ProductCode");
+                        string sHashType = "";
+                        string sFileHash = "";
+                        //Try to get File Signature...
+                        try
+                        {
+                            var Cert = X509Certificate.CreateFromSignedFile(dlg.FileName);
 
-                        sFileHash = Cert.GetCertHashString().ToLower().Replace(" ", "");
-                        sHashType = "X509";
+                            sFileHash = Cert.GetCertHashString().ToLower().Replace(" ", "");
+                            sHashType = "X509";
+                        }
+                        catch
+                        {
+                            sFileHash = GetMD5Hash(dlg.FileName);
+                            sHashType = "MD5";
+                        }
+
+                        lFiles.Add(new contentFiles() { FileName = iMSI.FileName, FileHash = sFileHash, HashType = sHashType });
+                        dgSourceFiles.ItemsSource = lFiles.ToList();
+                        dgSourceFiles.Items.Refresh();
+
+                        if (tbPSDetection.Text.Contains("\\Classes\\Installer\\Products"))
+                            tbPSDetection.Text = "";
+                        if (tbPSInstall.Text.Contains("-FilePath \"msiexec.exe\""))
+                            tbPSInstall.Text = "";
+                        if (tbPSUnInstall.Text.Contains("-FilePath \"msiexec.exe\""))
+                            tbPSUnInstall.Text = "";
+
+                        tbMSIId_LostFocus(this, e);
+
+                        tbProductName.Text = iMSI.Property("ProductName");
+                        tbVersion.Text = iMSI.Property("ProductVersion");
+                        tbManufacturer.Text = iMSI.Property("Manufacturer");
+                        tbArchitecture.Text = iMSI.MSIArchitecture.ToUpper();
+
+
+                        if (string.IsNullOrEmpty(tbArchitecture.Text))
+                            tbArchitecture.Text = "X86";
+
+                        if (tbArchitecture.Text == "INTEL")
+                            tbArchitecture.Text = "X86";
+
+                        if (tbArchitecture.Text == "X64")
+                        {
+                            tbPSPrereq.Text = "[Environment]::Is64BitProcess";
+                        }
+                        else
+                        {
+                            tbPSPrereq.Text = "$true";
+                        }
+
+                        tbPSInstall.Text = tbPSInstall.Text.Replace("<name of the msi file>", iMSI.FileName);
+                        tbContentId.Text = Guid.NewGuid().ToString();
+
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(iMSI.Property("ARPURLINFOABOUT")))
+                                tbProductURL.Text = iMSI.Property("ARPURLINFOABOUT");
+                        }
+                        catch { }
                     }
-                    catch
-                    {
-                        sFileHash = GetMD5Hash(dlg.FileName);
-                        sHashType = "MD5";
-                    }
-
-                    lFiles.Add(new contentFiles() { FileName = iMSI.FileName, FileHash = sFileHash, HashType = sHashType });
-                    dgSourceFiles.ItemsSource = lFiles.ToList();
-                    dgSourceFiles.Items.Refresh();
-
-                    if (tbPSDetection.Text.Contains("\\Classes\\Installer\\Products"))
-                        tbPSDetection.Text = "";
-                    if (tbPSInstall.Text.Contains("-FilePath \"msiexec.exe\""))
-                        tbPSInstall.Text = "";
-                    if (tbPSUnInstall.Text.Contains("-FilePath \"msiexec.exe\""))
-                        tbPSUnInstall.Text = "";
-
-                    tbMSIId_LostFocus(this, e);
-
-                    tbProductName.Text = iMSI.Property("ProductName");
-                    tbVersion.Text = iMSI.Property("ProductVersion");
-                    tbManufacturer.Text = iMSI.Property("Manufacturer");
-                    tbArchitecture.Text = iMSI.MSIArchitecture.ToUpper();
-
-                    if (string.IsNullOrEmpty(tbArchitecture.Text))
-                        tbArchitecture.Text = "X86";
-
-                    if (tbArchitecture.Text == "INTEL")
-                        tbArchitecture.Text = "X86";
-
-                    if (tbArchitecture.Text == "X64")
-                    {
-                        tbPSPrereq.Text = "[Environment]::Is64BitProcess";
-                    }
-                    else
-                    {
-                        tbPSPrereq.Text = "$true";
-                    }
-
-                    tbPSInstall.Text = tbPSInstall.Text.Replace("<name of the msi file>", iMSI.FileName);
-                    tbContentId.Text = Guid.NewGuid().ToString();
-
-                    try
-                    {
-                        if(!string.IsNullOrEmpty(iMSI.Property("ARPURLINFOABOUT")))
-                            tbProductURL.Text = iMSI.Property("ARPURLINFOABOUT");
-                    }
-                    catch { }
-
-                    iMSI.Dispose();
                 }
                 catch { }
             }
@@ -751,10 +752,15 @@ namespace RuckZuck_Tool
         /// </summary>
         public void Dispose()
         {
+            try
+            {
+                Marshal.FinalReleaseComObject(msiDatabase);
+                Marshal.FinalReleaseComObject(msiInstaller);
+            }
+            catch { }
             msiDatabase = null;
             msiInstaller = null;
             GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         #region MSI Functions
