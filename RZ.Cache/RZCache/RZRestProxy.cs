@@ -26,7 +26,7 @@ namespace RuckZuck_WCF
 
         public static string Token = "deecdc6b-ad08-42ab-a743-a3c0f9033c80";
         public static int CatalogTTL = 1;
-        public static string contentType = "application/xml";
+        public static string contentType = "application/json";
         public static string localURL = "http://localhost:5000";
         public static string Proxy = "";
         public static string ProxyUserPW = "";
@@ -320,6 +320,7 @@ namespace RuckZuck_WCF
 
         public static string GetSWDefinitions(string productName, string productVersion, string manufacturer)
         {
+            Console.WriteLine("GET SW:" + productName);
             string s1 = NormalizeString(productName + productVersion + manufacturer);
             string sSWFile = @"wwwroot/rzsw/" + s1 + ".xml";
             try
@@ -360,46 +361,60 @@ namespace RuckZuck_WCF
                         oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                         oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                         var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                        response.Wait(10000);
+                        response.Wait(15000);
                         if (response.IsCompleted)
                         {
                             string sResult = response.Result;
 
-                            Task.Run(() =>
+
+                            try
                             {
-                                try
+                                if (contentType.ToLower() == "application/json")
                                 {
-                                    if (contentType.ToLower() == "application/json")
+                                    var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                                    bool isReady = true;
+                                    foreach (var oSW in oAddSW)
                                     {
-                                        var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
-                                        foreach (var oSW in oAddSW)
+                                        foreach (var oDL in oSW.Files)
                                         {
-                                            foreach (var oDL in oSW.Files)
+                                            string sDir = @"wwwroot/files/" + oSW.ContentID;
+                                            if (!Directory.Exists(sDir))
                                             {
-                                                string sDir = @"wwwroot/files/" + oSW.ContentID;
-                                                if (!Directory.Exists(sDir))
+                                                Directory.CreateDirectory(sDir);
+                                            }
+
+                                            if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
+                                            {
+                                                if (!File.Exists(sDir + "/" + oDL.FileName))
                                                 {
-                                                    Directory.CreateDirectory(sDir);
+                                                    isReady = false;
+
+                                                    var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName);
+                                                    Thread.Sleep(500);
+
                                                 }
 
-                                                if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
+                                                if (!IsFileLocked(new FileInfo(sDir + "/" + oDL.FileName)))
                                                 {
-                                                    if (!File.Exists(sDir + "/" + oDL.FileName))
-                                                    {
-                                                        var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName).Status;
-                                                    }
-
                                                     oDL.URL = localURL + "/rest/dl/" + oSW.ContentID + "/" + oDL.FileName;
-
                                                 }
+                                                else
+                                                {
+                                                    isReady = false;
+                                                }
+
                                             }
                                         }
+                                    }
+                                    if (isReady)
+                                    {
                                         sResult = Newtonsoft.Json.JsonConvert.SerializeObject(oAddSW);
                                         File.WriteAllText(sSWFile, sResult);
                                     }
                                 }
-                                catch { }
-                            });
+                            }
+                            catch { }
+
 
                             return sResult;
                         }
@@ -550,7 +565,7 @@ namespace RuckZuck_WCF
             try
             {
                 filename = filename.Replace('\\', '/');
-
+                Console.WriteLine("GET File:" + filename);
                 if (File.Exists(@"wwwroot/files/" + filename))
                 {
                     return File.Open(@"wwwroot/files/" + filename, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -758,7 +773,7 @@ namespace RuckZuck_WCF
                         handler.UseProxy = true;
                     }
 
-                    using (var httpClient = new HttpClient(handler))
+                    /*using (var httpClient = new HttpClient(handler))
                     {
                         httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
                         httpClient.Timeout = new TimeSpan(0, 15, 0);
@@ -772,6 +787,22 @@ namespace RuckZuck_WCF
                             Console.WriteLine("Donwloaded: " + URL);
                         }
 
+                    }*/
+
+                    using (HttpClient httpClient = new HttpClient(handler))
+                    {
+                        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+
+                        using (HttpResponseMessage response = await httpClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+                        using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                        {
+                            string fileToWriteTo = FileName; // Path.GetTempFileName();
+                            using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
+                            {
+                                await streamToReadFrom.CopyToAsync(streamToWriteTo);
+                            }
+                            Console.WriteLine("Donwloaded: " + URL);
+                        }
                     }
                 }
             }
@@ -782,6 +813,28 @@ namespace RuckZuck_WCF
             }
 
             return true;
+        }
+
+        private static bool IsFileLocked(FileInfo file)
+        {
+            FileStream stream = null;
+
+            try
+            {
+                stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None);
+            }
+            catch (IOException)
+            {
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+            }
+
+            //file is not locked
+            return false;
         }
     }
 

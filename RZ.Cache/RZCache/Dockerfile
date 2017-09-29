@@ -3,7 +3,7 @@ ARG source
 WORKDIR /app
 EXPOSE 5000:5000/tcp
 EXPOSE 5001:5001/udp
-ENTRYPOINT ["dotnet", "RZWCF.dll"]
+ENTRYPOINT ["dotnet", "RZCache.dll"]
 COPY ${source:-obj/Docker/publish} .
 ENV localURL "https://rzproxy.azurewebsites.net"
 ENV RZUser ""
