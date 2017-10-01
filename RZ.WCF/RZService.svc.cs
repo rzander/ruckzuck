@@ -1851,8 +1851,8 @@ namespace RuckZuck_WCF
                 IDatabase cache = Connection.GetDatabase();
 
                 string sToken = headers["AuthenticatedToken"] ?? "";
-                string sUsername = headers["Username"] ?? "rzander";
-                string sPassword = headers["Password"] ?? "kerb7eros";
+                string sUsername = headers["Username"] ?? "";
+                string sPassword = headers["Password"] ?? "";
 
                 if (System.Web.Security.Membership.ValidateUser(sUsername, sPassword))
                 {
