@@ -14,6 +14,7 @@ using System.Threading;
 using System.Xml.Linq;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace RZUpdate
 {
@@ -302,6 +303,7 @@ namespace RZUpdate
         private ReaderWriterLockSlim UILock = new ReaderWriterLockSlim();
         public string sUserName = "FreeRZ";
         public bool SendFeedback = true;
+        public string ContentPath = "";
 
         //Constructor
         public SWUpdate(AddSoftware Software)
@@ -480,7 +482,7 @@ namespace RZUpdate
         private bool _Download(bool Enforce, string DLPath)
         {
             bool bError = false;
-
+            ContentPath = DLPath;
             if (!Enforce)
             {
                 //Check if it's still required
@@ -514,12 +516,6 @@ namespace RZUpdate
                         }
 
                         string sDir = DLPath; // Path.Combine(Environment.ExpandEnvironmentVariables(DLPath), SW.ContentID);
-
-                        //Check if Path already constins ContentID
-                        /*if (DLPath.ToLower().Contains(SW.ContentID.ToLower()))
-                        {
-                            sDir = DLPath;
-                        }*/
 
                         string sFile = Path.Combine(sDir, vFile.FileName);
 
@@ -586,6 +582,7 @@ namespace RZUpdate
 
                             if (!_DownloadFile2(vFile.URL, sFile))
                             {
+
                                 downloadTask.Error = true;
                                 downloadTask.PercentDownloaded = 0;
                                 downloadTask.ErrorMessage = "ERROR: download failed... " + vFile.FileName;
@@ -596,6 +593,7 @@ namespace RZUpdate
                             }
                             else
                             {
+
                                 if (SendFeedback)
                                 {
                                     if (SW.SWId > 0)
@@ -608,6 +606,7 @@ namespace RZUpdate
                                         //RZRestAPI.TrackDownloads(SW.ContentID);
                                     }
                                 }
+
                             }
 
                             //Sleep 1s to complete
@@ -664,8 +663,6 @@ namespace RZUpdate
                                         if (SendFeedback)
                                             RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, SW.Architecture, "false", sUserName, "Hash mismatch").ConfigureAwait(false);
                                         bError = true;
-                                        //No Feedback since the XML is not always a known product..
-                                        //oAPI.Feedback(SW.ProductName, SW.ProductVersion, false, "RZUpdate", "Hash mismatch");
                                     }
                                     else
                                     {
@@ -917,9 +914,15 @@ namespace RZUpdate
 
                 downloadTask.Installing = true;
 
+
                 //Set CurrentDir and $Folder variable
-                string sLocalPath = Environment.ExpandEnvironmentVariables("%TEMP%");
-                string sFolder = Path.Combine(sLocalPath, SW.ContentID.ToString());
+                string sFolder = ContentPath;
+                if (string.IsNullOrEmpty(ContentPath))
+                {
+                    string sLocalPath = Environment.ExpandEnvironmentVariables("%TEMP%");
+                    sFolder = Path.Combine(sLocalPath, SW.ContentID.ToString());
+                }
+
                 string psPath = string.Format("Set-Location -Path \"{0}\" -ErrorAction SilentlyContinue; $Folder = \"{0}\";", sFolder);
                 int iExitCode = -1;
 
@@ -1376,6 +1379,7 @@ namespace RZUpdate
 
                 if (URL.StartsWith("http"))
                 {
+                    //_DownloadFile(URL, FileName).Result.ToString();
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
                     httpRequest.UserAgent = "chocolatey command line";
                     httpRequest.AllowAutoRedirect = true;
@@ -1459,6 +1463,45 @@ namespace RZUpdate
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> _DownloadFile(string URL, string FileName)
+        {
+            try
+            {
+                HttpClientHandler handler = new HttpClientHandler();
+                handler.AllowAutoRedirect = true;
+                handler.MaxAutomaticRedirections = 5;
+
+                //DotNetCore2.0
+                //handler.CheckCertificateRevocationList = false;
+                //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+
+                using (HttpClient oClient = new HttpClient(handler))
+                {
+                    oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+
+                    using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+                    using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                    {
+                        string fileToWriteTo = FileName; // Path.GetTempFileName();
+
+                        using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
+                        {
+                            await streamToReadFrom.CopyToAsync(streamToWriteTo);
+                        }
+                        Console.WriteLine("Donwloaded: " + URL);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
                 return false;
             }

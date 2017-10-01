@@ -412,10 +412,19 @@ namespace PackageManagement
             _reAuthenticate(request); //Check if AuthToken is still valid
 
             bool bSkipDep = false;
+            bool bDLPath = false;
+            string sDLPath = "";
+
             if (request.OptionKeys.Contains("SkipDependencies"))
             {
                 request.Message("Skip all dependencies.");
                 bSkipDep = true;
+            }
+            if (request.OptionKeys.Contains("LocalPath"))
+            {
+                sDLPath = request.GetOptionValue("LocalPath");
+                request.Message("Download-Path set to:" + sDLPath);
+                bDLPath = true;
             }
 
             string sProd = fastPackageReference;
@@ -439,7 +448,10 @@ namespace PackageManagement
 
             oUpdate.SoftwareUpdate.GetInstallType();
 
-            oUpdate.SoftwareUpdate.Download(false).Result.ToString();
+            if(!bDLPath)
+                oUpdate.SoftwareUpdate.Download(false).Result.ToString();
+            else
+                oUpdate.SoftwareUpdate.Download(false, sDLPath).Result.ToString();
 
             if (oUpdate.SoftwareUpdate.Install(false, true).Result)
                 request.Verbose(sManu + " " + sProd + " " + sVer + " installed.");
@@ -522,7 +534,7 @@ namespace PackageManagement
             oUpdate.SoftwareUpdate.SW.Manufacturer = sManu;
 
             oUpdate.SoftwareUpdate.GetInstallType();
-            if(oUpdate.SoftwareUpdate.Download(false).Result)
+            if(oUpdate.SoftwareUpdate.Download(false, location).Result)
                 request.Verbose(sManu + " " + sProd + " " + sVer + " downloaded.");
             else
                 request.Verbose(sManu + " " + sProd + " " + sVer + " NOT downloaded.");
