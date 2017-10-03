@@ -259,7 +259,12 @@ namespace RZUpdate
                 {
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     AddSoftware lRes = ser.Deserialize<AddSoftware>(File.ReadAllText(sFile));
-                    lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    if (lRes.PreRequisites != null)
+                    {
+                        lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    }
+                    else
+                        lRes.PreRequisites = new string[0];
                     return lRes;
                 }
                 catch { }
@@ -1555,7 +1560,7 @@ namespace RZUpdate
         {
             try
             {
-                using (var sha256 = System.Security.Cryptography.SHA1.Create())
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
                 {
                     using (var stream = File.OpenRead(FilePath))
                     {
