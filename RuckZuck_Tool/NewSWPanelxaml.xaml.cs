@@ -498,7 +498,7 @@ namespace RuckZuck_Tool
 
         public void OpenXML(AddSoftware oSoftware)
         {
-            tbArchitecture.Text = oSoftware.Architecture.Trim();
+            tbArchitecture.Text = (oSoftware.Architecture ?? "").Trim();
             tbContentId.Text = oSoftware.ContentID;
 
             if (string.IsNullOrEmpty(tbContentId.Text))
@@ -620,7 +620,7 @@ namespace RuckZuck_Tool
         {
             try
             {
-                string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName());
+                string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName() + ".json");
                 SaveAsJSON(sTempFile);
 
                 string jSW = File.ReadAllText(sTempFile);
@@ -639,19 +639,18 @@ namespace RuckZuck_Tool
                 writer.Generate();
                 writer.Close();
                 oExe.cp.EmbeddedResources.Add("Resources.resx");
-
                 if (!oExe.Compile())
                 {
-                    //MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
+                File.Delete("Resources.resx");
             }
             catch { }
         }
 
         private void btTest_Click(object sender, RoutedEventArgs e)
         {
-            string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName());
+            string sTempFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Path.GetRandomFileName() + ".json");
             SaveAsJSON(sTempFile);
 
             if (!AttachConsole(-1))  // Attach to a parent process console

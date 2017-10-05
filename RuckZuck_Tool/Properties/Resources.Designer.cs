@@ -70,7 +70,7 @@ namespace RuckZuck_Tool.Properties {
         ///[assembly: AssemblyConfiguration(&quot;&quot;)]
         ///[assembly: AssemblyCompany(&quot;RuckZuck.tools&quot;)]
         ///[assembly: AssemblyProduct(&quot;RZRZRZ&quot;)]
-        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2016 by Roger Zander&quot;)]
+        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2017 by Roger Zander&quot;)]
         ///[assembly: AssemblyTrademark(&quot;&quot;)]
         ///[assembly: AssemblyCulture(&quot;&quot;)]
         ///[ [rest of string was truncated]&quot;;.
@@ -125,15 +125,14 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Security.Cryptography.X509Certificates;
         ///using System.Threading;
         ///using System.Xml.Linq;
+        ///using System.Web.Script.Serialization;
+        ///using System.Diagnostics;
+        ///using System.Net.Http;
         ///
         ///namespace RZUpdate
         ///{
         ///    /// &lt;summary&gt;
-        ///    /// Updater Class
-        ///    /// &lt;/summary&gt;
-        ///    public class RZUpdater
-        ///    {
-        ///        static string sAuthToke [rest of string was truncated]&quot;;.
+        ///    /// Updater Cl [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {
@@ -162,9 +161,8 @@ namespace RuckZuck_Tool.Properties {
         ///            try
         ///            {
         ///                Assembly _assembly = Assembly.GetExecutingAssembly();
-        ///
         ///                var stream = _assembly.GetManifestResourceStream(&quot;Resources.resx&quot;);
-        /// [rest of string was truncated]&quot;;.
+        ///   [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {

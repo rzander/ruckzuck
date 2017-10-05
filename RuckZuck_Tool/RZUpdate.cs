@@ -52,7 +52,7 @@ namespace RZUpdate
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
             }
 
-            if (sSWFile.TrimStart().StartsWith("{", StringComparison.CurrentCultureIgnoreCase))
+            if(!File.Exists(sSWFile))
             {
                 SoftwareUpdate = new SWUpdate(Parse(sSWFile));
             }
@@ -275,7 +275,6 @@ namespace RZUpdate
 
         internal static AddSoftware Parse(string sJSON)
         {
-
             try
             {
                 JavaScriptSerializer ser = new JavaScriptSerializer();
@@ -283,7 +282,10 @@ namespace RZUpdate
                 lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 return lRes;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
 
 
