@@ -18,6 +18,8 @@ namespace RuckZuck_WCF
     {
         private static string _sURL = "UDP";
         public static bool DisableBroadcast = false;
+        public static string ipfs_GW_URL = "https://gateway.ipfs.io/ipfs";
+
         public static string sURL
         {
             get
@@ -353,6 +355,29 @@ namespace RuckZuck_WCF
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get IPFS.io hash
+        /// </summary>
+        /// <param name="contentID"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string GetIPFS(string contentID, string fileName)
+        {
+            try
+            {
+                var response = oClient.GetStringAsync(sURL + "/rest/GetIPFS?Id=" + contentID + "&file=" + fileName);
+                response.Wait(5000);
+
+                if (response.IsCompleted)
+                {
+                    return response.Result.Trim('"');
+                }
+            }
+            catch { }
+
+            return "";
         }
     }
 

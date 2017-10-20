@@ -635,8 +635,8 @@
                                     <Button x:Name="btSettingsSave" Grid.Row="2" Grid.Column="1" Content="Save" Width="80" Height="20" Click="btSettingsSave_Click" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                     <Label Grid.Column="0" Grid.Row="3" Content="Web-API:" />
                                     <TextBox x:Name="tbSVC" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="True" IsEnabled="False"/>
-                                    <Label Grid.Column="0" Grid.Row="4" Content="local Repository:" />
-                                    <TextBox x:Name="tbRepository" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="False" IsEnabled="False" ToolTip="a local or shared directoy with RZ XML-Files"/>
+                                    <Label Grid.Column="0" Grid.Row="4" Content="IPFS Gateway:" />
+                                    <TextBox x:Name="tbIPFSGW" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="False" IsEnabled="False" ToolTip="Gateway to download IPFS files."/>
                                     <Label Grid.Column="0" Grid.Row="5" Content="Update Exclusion:" />
                                     <Button x:Name="btUpdExclusion" Grid.Row="5" Grid.Column="1" Content="Clear All" Width="80" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="clear List of Update-Exclusion. Restart the Tool to rescan for Software-Updates." Click="btUpdExclusion_Click"/>
                                     <Label Grid.Column="0" Grid.Row="6" Content="RZCache discovery:" />

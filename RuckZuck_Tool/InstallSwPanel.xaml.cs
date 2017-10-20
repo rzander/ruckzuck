@@ -471,6 +471,70 @@ namespace RuckZuck_Tool
 
         }
 
+        private void miDownloadIpfs_Click(object sender, RoutedEventArgs e)
+        {
+            if (lvSW.SelectedItem != null)
+            {
+                try
+                {
+                    foreach (var oItem in lvSW.SelectedItems)
+                    {
+                        try
+                        {
+                            SWUpdate oSW = null;
+                            if (oItem.GetType() == typeof(GetSoftware))
+                            {
+                                GetSoftware dgr = oItem as GetSoftware;
+                                //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
+                                oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
+                            }
+
+
+                            if (oItem.GetType() == typeof(AddSoftware))
+                            {
+                                AddSoftware dgr = oItem as AddSoftware;
+                                //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
+                                oSW = new SWUpdate(dgr);
+                            }
+
+                            oSW.sUserName = Properties.Settings.Default.UserKey;
+
+                            //lDLTasks.Add(oSW.downloadTask);
+                            if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
+                            {
+                                //oSW.Downloaded += OSW_Downloaded;
+                                oSW.ProgressDetails += OSW_ProgressDetails;
+                                oSW.downloadTask.AutoInstall = false;
+                                oSW.Download(false).ConfigureAwait(false);
+                                foreach (var oFile in oSW.SW.Files.ToList())
+                                {
+                                    //Check if there is a known IPFS hash and update URL if there is...
+                                    string sHash = RuckZuck_WCF.RZRestAPI.GetIPFS(oSW.SW.ContentID, oFile.FileName);
+                                    if(sHash.Length > 12)
+                                    {
+                                        oFile.URL = RuckZuck_WCF.RZRestAPI.ipfs_GW_URL + "/" + sHash + "/";
+                                    }
+                                }
+                                dm.lDLTasks.Add(oSW.downloadTask);
+
+                            }
+                            dm.Show();
+
+                            continue;
+
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                        }
+                    }
+                }
+                catch { }
+                OnSWUpdated(this, new EventArgs());
+
+            }
+        }
+
         private void miEdit_Click(object sender, RoutedEventArgs e)
         {
             lvSW.ContextMenu.IsOpen = false;
@@ -839,6 +903,8 @@ namespace RuckZuck_Tool
                 Mouse.OverrideCursor = null;
             }
         }
+
+
     }
 }
 

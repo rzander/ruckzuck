@@ -146,37 +146,13 @@ namespace RuckZuck_Tool
             oSCAN.OnUpdScanCompleted += OSCAN_OnUpdScanCompleted;
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
-            if(!string.IsNullOrEmpty(tbRepository.Text))
-            {
-                if (Directory.Exists(tbRepository.Text))
-                {
-                    oSCAN.GetSWRepository(tbRepository.Text).ConfigureAwait(false);
-                }
-                else
-                {
-                    oSCAN.GetSWRepository().ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                oSCAN.GetSWRepository().ConfigureAwait(false);
-            }
-            
+
+            oSCAN.GetSWRepository().ConfigureAwait(false);
 
             //oSCAN.tRegCheck.Start();
 
             if (CommandArgs.Count > 0)
             {
-                //TBD to load XML File shere...
-
-                foreach(string sArg in CommandArgs)
-                {
-                    if(File.Exists(sArg))
-                    {
-
-                    }
-                }
-
                 oInstPanel.EnableFeedback = false;
                 oInstPanel.EnableEdit = false;
                 oInstPanel.EnableSupport = false;
@@ -222,10 +198,10 @@ namespace RuckZuck_Tool
                         Guid.Parse(sResponse);
                         sAuthToken = sResponse;
                         //tbURL.Text = Properties.Settings.Default.InternalURL;
-                        tbRepository.Text = Properties.Settings.Default.LocallRepository;
+                        tbIPFSGW.Text = Properties.Settings.Default.IPFSGW;
                         //oInstPanel.sInternalURL = Properties.Settings.Default.InternalURL;
                         tbURL.IsEnabled = true;
-                        tbRepository.IsEnabled = true;
+                        tbIPFSGW.IsEnabled = true;
                     }
                     catch { }
                 }
@@ -838,13 +814,14 @@ namespace RuckZuck_Tool
 
                 //Enable InternalURL
                 //tbURL.IsEnabled = true;
-                tbRepository.IsEnabled = true;
+                tbIPFSGW.IsEnabled = true;
 
                 //Update and save new username and password
                 Properties.Settings.Default.UserKey = tbUsername.Text;
                 Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
                 //Properties.Settings.Default.InternalURL = tbURL.Text;
-                Properties.Settings.Default.LocallRepository = tbRepository.Text;
+                Properties.Settings.Default.IPFSGW = tbIPFSGW.Text;
+                RuckZuck_WCF.RZRestAPI.ipfs_GW_URL = tbIPFSGW.Text;
                 Properties.Settings.Default.Save();
 
                 //oInstPanel.sInternalURL = tbURL.Text;
@@ -858,21 +835,7 @@ namespace RuckZuck_Tool
                 oInstPanel.EnableSupport = true;
 
                 oSCAN.SoftwareRepository = new List<GetSoftware>();
-                if (!string.IsNullOrEmpty(tbRepository.Text))
-                {
-                    if (Directory.Exists(tbRepository.Text))
-                    {
-                        oSCAN.GetSWRepository(tbRepository.Text).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        oSCAN.GetSWRepository().ConfigureAwait(false);
-                    }
-                }
-                else
-                {
-                    oSCAN.GetSWRepository().ConfigureAwait(false);
-                }
+                oSCAN.GetSWRepository().ConfigureAwait(false);
 
             }
             catch 
