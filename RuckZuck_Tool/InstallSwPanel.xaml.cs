@@ -494,7 +494,8 @@ namespace RuckZuck_Tool
                             {
                                 AddSoftware dgr = oItem as AddSoftware;
                                 //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
-                                oSW = new SWUpdate(dgr);
+                                oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
+                                //oSW = new SWUpdate(dgr);
                             }
 
                             oSW.sUserName = Properties.Settings.Default.UserKey;
@@ -505,15 +506,18 @@ namespace RuckZuck_Tool
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = false;
-                                oSW.Download(false).ConfigureAwait(false);
+                                
                                 foreach (var oFile in oSW.SW.Files.ToList())
                                 {
                                     //Check if there is a known IPFS hash and update URL if there is...
                                     string sHash = RuckZuck_WCF.RZRestAPI.GetIPFS(oSW.SW.ContentID, oFile.FileName);
-                                    if(sHash.Length > 12)
+                                    if (sHash.Length > 12)
                                     {
                                         oFile.URL = RuckZuck_WCF.RZRestAPI.ipfs_GW_URL + "/" + sHash + "/";
+                                        oSW.Download(false).ConfigureAwait(false);
                                     }
+                                    else
+                                        return;
                                 }
                                 dm.lDLTasks.Add(oSW.downloadTask);
 

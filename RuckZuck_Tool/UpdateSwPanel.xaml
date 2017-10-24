@@ -95,6 +95,11 @@
                             <Image Source="Images/Announcements.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
+                    <MenuItem Name="miDownloadIpfs" Header="Download from IPFS"  ToolTip="Download the required files from IPFS.io to %TEMP%\{ContentID}." Height="24px" Click="miDownloadIpfs_Click">
+                        <MenuItem.Icon>
+                            <Image Source="Images/Download.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
