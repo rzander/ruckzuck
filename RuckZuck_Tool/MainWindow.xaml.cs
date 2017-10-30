@@ -82,6 +82,7 @@ namespace RuckZuck_Tool
             //RZRestAPI.sURL = Properties.Settings.Default.WebService;
             RZRestAPI.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
             tbSVC.Text = RZRestAPI.sURL;
+            tbIPFSGW.Text = Properties.Settings.Default.IPFSGW;
             cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
 
             //Authenticate;
@@ -198,7 +199,6 @@ namespace RuckZuck_Tool
                         Guid.Parse(sResponse);
                         sAuthToken = sResponse;
                         //tbURL.Text = Properties.Settings.Default.InternalURL;
-                        tbIPFSGW.Text = Properties.Settings.Default.IPFSGW;
                         //oInstPanel.sInternalURL = Properties.Settings.Default.InternalURL;
                         tbURL.IsEnabled = true;
                         tbIPFSGW.IsEnabled = true;
