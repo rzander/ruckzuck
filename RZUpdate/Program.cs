@@ -28,7 +28,7 @@ namespace RZUpdate
             {
                 Console.WriteLine("RuckZuck Update Tool (c) 2017 by Roger Zander");
                 Console.WriteLine("Usage:");
-                Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\"");
+                Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\" [\"Manufacturer\"]");
                 Console.WriteLine("Install a Software from Shortname : RZUpdate.exe \"<Shortname>\"[;\"<Shortname2>\"]");
                 Console.WriteLine("Install a Software from XML-File: RZUpdate.exe \"<RZXML File.xml>\"");
                 Console.WriteLine("Update all installed Software-Versions: RZUpdate.exe /Update");
@@ -143,6 +143,35 @@ namespace RZUpdate
             {
                 RZUpdater oRZUpdate = new RZUpdater();
                 var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1]);
+                if (oUpdate != null)
+                {
+                    Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
+                    Console.Write("Downloading...");
+
+                    if (oUpdate.Download().Result)
+                    {
+                        Console.WriteLine("... done.");
+                        Console.Write("Installing...");
+                        if (oUpdate.Install(false, true).Result)
+                        {
+                            Console.WriteLine("... done.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("... Error. The update installation failed.");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No Update found...");
+                }
+            }
+
+            if (lArgs.Count == 3)
+            {
+                RZUpdater oRZUpdate = new RZUpdater();
+                var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1], lArgs[2]);
                 if (oUpdate != null)
                 {
                     Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
