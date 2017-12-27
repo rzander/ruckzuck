@@ -6,7 +6,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="500">
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
