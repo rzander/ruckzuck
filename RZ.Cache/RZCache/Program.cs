@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Diagnostics;
+using System.Threading;
 
 namespace RZWCF
 {
@@ -15,7 +17,40 @@ namespace RZWCF
     {
         public static void Main(string[] args)
         {
-            var Server = new UdpClient(5001);
+            var Server = new UdpClient(int.Parse(Environment.GetEnvironmentVariable("UDPPort") ?? "5001"));
+
+            if (Environment.GetEnvironmentVariable("UseIPFS") == "1")
+            {
+                try
+                {
+                    if (!Directory.Exists("/app/.ipfs"))
+                    {
+                        var oInit = Process.Start("ipfs", @"init"); //>/dev/null 2>/dev/null
+                        oInit.StartInfo.RedirectStandardOutput = false;
+                        oInit.WaitForExit(5000);
+                        Thread.Sleep(3000);
+                    }
+                    Process.Start("ipfs", "config --json Experimental.FilestoreEnabled true").WaitForExit();
+                    Process.Start("ipfs", "config Addresses.API /ip4/0.0.0.0/tcp/5002").WaitForExit();
+                    Process.Start("ipfs", "config Addresses.Gateway /ip4/0.0.0.0/tcp/8080").WaitForExit();
+                    //Process.Start("ipfs", "config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"*\"]'").WaitForExit(); ;
+                    //Process.Start("ipfs", "config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"PUT\",\"GET\",\"POST\"]'").WaitForExit();
+                    //Process.Start("ipfs", "add -r --nocopy /app/wwwroot/files").WaitForExit();
+
+                    Thread.Sleep(2000);
+                    Process.Start("ipfs", "daemon").WaitForExit(7000);
+                    Thread.Sleep(2000);
+
+                    RuckZuck_WCF.RZRestProxy.IPFSAdd("/app/RZCache.dll");
+
+                }
+                catch (Exception ex)
+                {
+                    RuckZuck_WCF.RZRestProxy.RedirectToIPFS = true;
+                    RuckZuck_WCF.RZRestProxy.UseIPFS = 0;
+                    Console.WriteLine("IPFS ERROR:" + ex.Message);
+                }
+            }
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("localURL")))
             {
@@ -42,7 +77,7 @@ namespace RZWCF
                     .UseStartup<Startup>()
                     //.UseApplicationInsights()
                     .UseWebRoot("wwwroot")
-                    .UseUrls("http://*:5000")
+                    .UseUrls("http://*:" + Environment.GetEnvironmentVariable("WebPort") ?? "5000")
                     .Build();
             host.Run();
         }

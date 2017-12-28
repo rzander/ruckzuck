@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using static RuckZuck_WCF.RZRestProxy;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
+using System.Diagnostics;
 
 namespace RuckZuck_WCF
 {
@@ -28,8 +29,13 @@ namespace RuckZuck_WCF
         public static int CatalogTTL = 1;
         public static string contentType = "application/json";
         public static string localURL = "http://localhost:5000";
+        public static string ipfs_GW_URL = "https://gateway.ipfs.io/ipfs";
         public static string Proxy = "";
         public static string ProxyUserPW = "";
+        public static int UseIPFS = 0;
+        public static bool RedirectToIPFS = false;
+        private static HttpClient oClient = new HttpClient();
+        private static HttpClientHandler handler;
 
         private static byte[] bProxyUser
         {
@@ -44,48 +50,63 @@ namespace RuckZuck_WCF
             try
             {
 
+
+                if (handler == null)
+                {
+
+                    handler = new HttpClientHandler();
+                    if (!string.IsNullOrEmpty(Proxy))
+                    {
+                        handler.Proxy = new WebProxy(Proxy, true);
+                        handler.UseProxy = true;
+                    }
+
+                    handler.AllowAutoRedirect = true;
+                    handler.MaxAutomaticRedirections = 5;
+                    handler.CheckCertificateRevocationList = false;
+                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+                    oClient = new HttpClient(handler);
+                }
+
                 if (!_cache.TryGetValue("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), out Token))
                 {
-                    using (HttpClientHandler handler = new HttpClientHandler())
+                    oClient.DefaultRequestHeaders.Clear();
+                    oClient.DefaultRequestHeaders.Accept.Clear();
+
+                    if (!string.IsNullOrEmpty(ProxyUserPW))
                     {
-
-                        if (!string.IsNullOrEmpty(Proxy))
+                        oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
+                    }
+                    oClient.DefaultRequestHeaders.Add("Username", Username);
+                    oClient.DefaultRequestHeaders.Add("Password", Password);
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
+                    response.Wait(15000);
+                    if (response.IsCompleted)
+                    {
+                        Token = response.Result.Replace("\"", "");
+                        if (!string.IsNullOrEmpty(Token))
                         {
-                            handler.Proxy = new WebProxy(Proxy, true);
-                            handler.UseProxy = true;
-                        }
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                // Keep in cache for this time, reset time if accessed.
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(300));
 
-                        using (var oClient = new HttpClient(handler))
-                        {
-                            if (!string.IsNullOrEmpty(ProxyUserPW))
-                            {
-                                oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
-                            }
-                            oClient.DefaultRequestHeaders.Add("Username", Username);
-                            oClient.DefaultRequestHeaders.Add("Password", Password);
-                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                            var response = oClient.GetStringAsync(sURL + "/rest/AuthenticateUser");
-                            response.Wait(7000);
-                            if (response.IsCompleted)
-                            {
-                                Token = response.Result.Replace("\"", "");
-
-                                // Set cache options.
-                                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                    // Keep in cache for this time, reset time if accessed.
-                                    .SetSlidingExpiration(TimeSpan.FromSeconds(300));
-
-                                _cache.Set("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), Token, cacheEntryOptions);
-
-                                return Token;
-                            }
+                            _cache.Set("PW" + (Username + Password).GetHashCode(StringComparison.InvariantCultureIgnoreCase), Token, cacheEntryOptions);
+                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                            oClient.DefaultRequestHeaders.Remove("Username");
+                            oClient.DefaultRequestHeaders.Remove("Password");
+                            return Token;
                         }
                     }
                 }
                 else
+                {
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
                     return Token;
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("Auth. Error: " + ex.Message);
             }
@@ -96,16 +117,15 @@ namespace RuckZuck_WCF
 
         public static string SWResults(string Searchstring)
         {
-            string sCatFile = @"wwwroot/rzcat.xml";
+            string sCatFile = @"wwwroot/rzcat.json";
             string sResult = "";
-            if (contentType.ToLower() == "application/json")
+
+            if (_cache.TryGetValue("SWResult-" + Searchstring, out sResult))
             {
-                if (_cache.TryGetValue("SWResult-" + Searchstring, out sResult))
-                {
-                    return sResult;
-                }
-                sCatFile = @"wwwroot/rzcat.json";
+                return sResult;
             }
+            sCatFile = @"wwwroot/rzcat.json";
+
 
             try
             {
@@ -116,10 +136,13 @@ namespace RuckZuck_WCF
                         if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sCatFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
                         {
                             sResult = File.ReadAllText(sCatFile);
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
-                            _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
-                            return sResult;
+                            if (sResult.StartsWith("[") & sResult.Length > 64) //check if it's JSON
+                            {
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                                _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
+                                return sResult;
+                            }
                         }
                     }
                 }
@@ -128,41 +151,31 @@ namespace RuckZuck_WCF
 
                 }
 
-                using (var handler = new HttpClientHandler())
+                //oClient.DefaultRequestHeaders.Remove("AuthenticatedToken"); //Remove existing Token
+                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                oClient.DefaultRequestHeaders.Accept.Clear();
+                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
+                response.Wait(10000); //10s max.
+                if (response.IsCompleted)
                 {
-                    //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
-
-                    if (!string.IsNullOrEmpty(Proxy))
+                    sResult = response.Result;
+                    if (sResult.StartsWith('[') & sResult.Length > 64)
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
-                    }
+                        // Set cache options.
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                        _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
 
-                    using (var oClient = new HttpClient(handler))
-                    {
-                        if (!string.IsNullOrEmpty(ProxyUserPW))
-                        {
-                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
-                        }
-                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                        var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                        response.Wait(10000); //10s max.
-                        if (response.IsCompleted)
-                        {
-                            sResult = response.Result;
-                            // Set cache options.
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                .SetSlidingExpiration(TimeSpan.FromSeconds(60));
-                            _cache.Set("SWResult-" + Searchstring, sResult, cacheEntryOptions);
+                        if (string.IsNullOrEmpty(Searchstring))
+                            File.WriteAllText(sCatFile, sResult);
 
-                            if (string.IsNullOrEmpty(Searchstring))
-                                File.WriteAllText(sCatFile, sResult);
-
-                            return sResult;
-                        }
+                        return sResult;
                     }
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -183,38 +196,32 @@ namespace RuckZuck_WCF
             string sResult = "";
             if (!_cache.TryGetValue("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), out sResult))
             {
-                using (var handler = new HttpClientHandler())
+
+                try
                 {
-                    if (!string.IsNullOrEmpty(Proxy))
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    oClient.DefaultRequestHeaders.Accept.Clear();
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
+                    response.Wait(15000);
+                    if (response.IsCompleted)
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
-                    }
-                    using (var oClient = new HttpClient(handler))
-                    {
-                        try
+                        sResult = response.Result;
+
+                        if (sResult.StartsWith('[') & sResult.Length > 64)
                         {
-                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                            var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                            response.Wait(5000);
-                            if (response.IsCompleted)
-                            {
-                                sResult = response.Result;
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(330));
 
-                                // Set cache options.
-                                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                            _cache.Set("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
 
-                                _cache.Set("SWGET1-" + Shortname.GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-
-                                return sResult;
-                            }
+                            return sResult;
                         }
-                        catch { }
                     }
                 }
-
+                catch { }
             }
 
             return sResult;
@@ -227,30 +234,24 @@ namespace RuckZuck_WCF
             {
                 try
                 {
-                    using (var handler = new HttpClientHandler())
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    oClient.DefaultRequestHeaders.Accept.Clear();
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
+                    response.Wait(15000);
+                    if (response.IsCompleted)
                     {
-                        if (!string.IsNullOrEmpty(Proxy))
-                        {
-                            handler.Proxy = new WebProxy(Proxy, true);
-                            handler.UseProxy = true;
-                        }
-                        using (var oClient = new HttpClient(handler))
-                        {
-                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                            var response = oClient.GetStringAsync(sURL + "/rest/SWGet?name=" + WebUtility.UrlEncode(PackageName) + "&ver=" + PackageVersion);
-                            response.Wait(5000);
-                            if (response.IsCompleted)
-                            {
-                                sResult = response.Result;
+                        sResult = response.Result;
 
-                                // Set cache options.
-                                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
-                                sResult = response.Result;
-                                _cache.Set("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-                                return sResult;
-                            }
+                        if (sResult.StartsWith('[') & sResult.Length > 64)
+                        {
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                            sResult = response.Result;
+                            _cache.Set("SWGET2-" + (PackageName + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                            return sResult;
                         }
                     }
                 }
@@ -267,30 +268,25 @@ namespace RuckZuck_WCF
             {
                 try
                 {
-                    using (var handler = new HttpClientHandler())
-                    {
-                        if (!string.IsNullOrEmpty(Proxy))
-                        {
-                            handler.Proxy = new WebProxy(Proxy, true);
-                            handler.UseProxy = true;
-                        }
-                        using (var oClient = new HttpClient(handler))
-                        {
-                            oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                            var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
-                            response.Wait(5000);
-                            if (response.IsCompleted)
-                            {
-                                sResult = response.Result;
 
-                                // Set cache options.
-                                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                    .SetSlidingExpiration(TimeSpan.FromSeconds(330));
-                                sResult = response.Result;
-                                _cache.Set("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
-                                return sResult;
-                            }
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    oClient.DefaultRequestHeaders.Accept.Clear();
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var response = oClient.GetStringAsync(sURL + "/rest/SWGetPkg?name=" + WebUtility.UrlEncode(PackageName) + "&manuf=" + WebUtility.UrlEncode(Manufacturer) + "&ver=" + PackageVersion);
+                    response.Wait(5000);
+                    if (response.IsCompleted)
+                    {
+                        sResult = response.Result;
+
+                        if (sResult.StartsWith('[') & sResult.Length > 64)
+                        {
+                            // Set cache options.
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromSeconds(330));
+                            sResult = response.Result;
+                            _cache.Set("SWGET3-" + (PackageName + Manufacturer + PackageVersion).GetHashCode(StringComparison.InvariantCultureIgnoreCase), sResult, cacheEntryOptions);
+                            return sResult;
                         }
                     }
                 }
@@ -306,9 +302,8 @@ namespace RuckZuck_WCF
             {
                 try
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                     var oRes = await oClient.GetStringAsync(sURL + "/rest/Feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&arch=" + architecture + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
                     return oRes;
                 }
@@ -322,106 +317,134 @@ namespace RuckZuck_WCF
         {
             Console.WriteLine("GET SW:" + productName);
             string s1 = NormalizeString(productName + productVersion + manufacturer);
-            string sSWFile = @"wwwroot/rzsw/" + s1 + ".xml";
+            string sSWFile = @"wwwroot/rzsw/" + s1 + ".json";
+            contentType = "application/json";
             try
             {
-
-
                 if (!Directory.Exists("wwwroot/rzsw"))
                     Directory.CreateDirectory("wwwroot/rzsw");
                 if (!Directory.Exists("wwwroot/files"))
                     Directory.CreateDirectory("wwwroot/files");
 
 
-                if (contentType.ToLower() == "application/json")
-                    sSWFile = @"wwwroot/rzsw/" + s1 + ".json";
-
                 if (File.Exists(sSWFile))
                 {
                     if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sSWFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
                     {
-                        return File.ReadAllText(sSWFile);
-                    }
-                }
-
-                using (var handler = new HttpClientHandler())
-                {
-                    handler.AllowAutoRedirect = true;
-                    handler.MaxAutomaticRedirections = 5;
-                    handler.CheckCertificateRevocationList = false;
-
-                    if (!string.IsNullOrEmpty(Proxy))
-                    {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
-                    }
-
-                    using (var oClient = new HttpClient(handler))
-                    {
-                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                        var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                        response.Wait(15000);
-                        if (response.IsCompleted)
+                        string sContent = File.ReadAllText(sSWFile);
+                        if (sContent.Length > 64)
                         {
-                            string sResult = response.Result;
-
-
-                            try
-                            {
-                                if (contentType.ToLower() == "application/json")
-                                {
-                                    var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
-                                    bool isReady = true;
-                                    foreach (var oSW in oAddSW)
-                                    {
-                                        foreach (var oDL in oSW.Files)
-                                        {
-                                            string sDir = @"wwwroot/files/" + oSW.ContentID;
-                                            if (!Directory.Exists(sDir))
-                                            {
-                                                Directory.CreateDirectory(sDir);
-                                            }
-
-                                            if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
-                                            {
-                                                if (!File.Exists(sDir + "/" + oDL.FileName))
-                                                {
-                                                    isReady = false;
-
-                                                    var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName);
-                                                    Thread.Sleep(500);
-
-                                                }
-
-                                                if (!IsFileLocked(new FileInfo(sDir + "/" + oDL.FileName)))
-                                                {
-                                                    oDL.URL = localURL + "/rest/dl/" + oSW.ContentID + "/" + oDL.FileName;
-                                                }
-                                                else
-                                                {
-                                                    isReady = false;
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                    if (isReady)
-                                    {
-                                        sResult = Newtonsoft.Json.JsonConvert.SerializeObject(oAddSW);
-                                        File.WriteAllText(sSWFile, sResult);
-                                    }
-                                }
-                            }
-                            catch { }
-
-
-                            return sResult;
+                            return sContent;
+                        }
+                        else
+                        {
+                            File.Delete(sSWFile);
                         }
                     }
                 }
+
+                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                oClient.DefaultRequestHeaders.Accept.Clear();
+                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                response.Wait(15000);
+                if (response.IsCompleted)
+                {
+                    string sResult = response.Result;
+
+                    try
+                    {
+                        var oAddSW = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                        bool isReady = true;
+                        foreach (var oSW in oAddSW)
+                        {
+                            foreach (var oDL in oSW.Files)
+                            {
+                                string sDir = @"wwwroot/files/" + oSW.ContentID;
+                                if (!Directory.Exists(sDir))
+                                {
+                                    Directory.CreateDirectory(sDir);
+                                }
+
+                                if (oDL.URL.StartsWith("http") || oDL.URL.StartsWith("ftp"))
+                                {
+                                    if (!File.Exists(sDir + "/" + oDL.FileName))
+                                    {
+                                        isReady = false;
+                                        if (!RedirectToIPFS)
+                                        {
+                                            var oRes = _DownloadFile(oDL.URL, sDir + "/" + oDL.FileName);
+                                            Thread.Sleep(500);
+                                        }
+                                        else
+                                            isReady = true;
+
+                                    }
+
+                                    if (!IsFileLocked(new FileInfo(sDir + "/" + oDL.FileName)))
+                                    {
+                                        string sHash = "";
+                                        if (UseIPFS == 1)
+                                        {
+                                            sHash = IPFSAdd(sDir + "/" + oDL.FileName);
+                                        }
+                                        if(RedirectToIPFS)
+                                        {
+                                            sHash = GetIPFS(oSW.ContentID, oDL.FileName).Trim('"');
+                                        }
+                                        if(!string.IsNullOrEmpty(sHash))
+                                        {
+                                            if (!RedirectToIPFS)
+                                            {
+                                                long lSize = new FileInfo(sDir + "/" + oDL.FileName).Length;
+                                                if (lSize > 8100 & sHash.StartsWith("Qm"))
+                                                {
+                                                    AddIPFS(oSW.ContentID, oDL.FileName, sHash, lSize, true);
+                                                }
+                                            }
+                                            //https://gateway.ipfs.io/ipfs/QmNMKonBPBuE8NyGPcu1prkaE9MaJBHTGMLB9JX6sFMStQ/
+                                            oDL.URL = ipfs_GW_URL + "/" + sHash + "/";
+                                        }
+                                        else
+                                        {
+                                            oDL.URL = localURL + "/rest/dl/" + oSW.ContentID + "/" + oDL.FileName;
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        isReady = false;
+                                    }
+
+                                }
+                            }
+                        }
+                        if (isReady)
+                        {
+                            sResult = Newtonsoft.Json.JsonConvert.SerializeObject(oAddSW);
+                            if (sResult.StartsWith('[') & sResult.Length > 64)
+                            {
+                                File.WriteAllText(sSWFile, sResult);
+                            }
+                        }
+
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("Error:" + ex.Message);
+                    }
+
+
+                    return sResult;
+                }
+
+
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Console.WriteLine("ERROR: " + ex.Message);
+            }
 
             if (File.Exists(sSWFile))
             {
@@ -521,38 +544,23 @@ namespace RuckZuck_WCF
                 }
                 else
                 {
-                    using (var handler = new HttpClientHandler())
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/jpeg"));
+                    var response = oClient.GetStreamAsync(sURL + "/rest/GetIcon?id=" + iconid.ToString());
+                    response.Wait(5000);
+                    if (response.IsCompleted)
                     {
-                        handler.AllowAutoRedirect = true;
-                        handler.MaxAutomaticRedirections = 5;
-                        handler.CheckCertificateRevocationList = false;
-
-                        if (!string.IsNullOrEmpty(Proxy))
+                        var oRet = response.Result;
+                        using (var sIcon = new FileStream(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Create))
                         {
-                            handler.Proxy = new WebProxy(Proxy, true);
-                            handler.UseProxy = true;
+                            response.Result.CopyTo(sIcon);
+                            sIcon.Flush();
+                            sIcon.Dispose();
                         }
-
-                        using (var oClient = new HttpClient(handler))
-                        {
-
-                            //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/jpeg"));
-                            var response = oClient.GetStreamAsync(sURL + "/rest/GetIcon?id=" + iconid.ToString());
-                            response.Wait(5000);
-                            if (response.IsCompleted)
-                            {
-                                var oRet = response.Result;
-                                using (var sIcon = new FileStream(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Create))
-                                {
-                                    response.Result.CopyTo(sIcon);
-                                    sIcon.Flush();
-                                    sIcon.Dispose();
-                                }
-                                return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open, FileAccess.Read, FileShare.Read);
-                            }
-                        }
+                        return File.Open(@"wwwroot/icons/" + iconid.ToString() + ".jpg", FileMode.Open, FileAccess.Read, FileShare.Read);
                     }
+
+
                 }
             }
             catch { }
@@ -576,27 +584,14 @@ namespace RuckZuck_WCF
             return null;
         }
 
-        public static async void TrackDownloads(string contentID)
-        {
-            try
-            {
-                var oClient = new HttpClient();
-                oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                await oClient.GetStringAsync(sURL + "/rest/TrackDownloads/" + WebUtility.UrlEncode(contentID));
-            }
-            catch { }
-        }
-
         public static async void TrackDownloadsNew(string SWId, string Architecture)
         {
             try
             {
                 if (!string.IsNullOrEmpty(SWId) & !string.IsNullOrEmpty(Architecture))
                 {
-                    var oClient = new HttpClient();
-                    oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                     await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + "&arch=" + WebUtility.UrlEncode(Architecture));
                 }
             }
@@ -614,83 +609,53 @@ namespace RuckZuck_WCF
                 oJSet.NullValueHandling = NullValueHandling.Ignore;
                 var oSWUpload = JsonConvert.DeserializeObject<List<AddSoftware>>(lSoftware, oJSet);
                 List<AddSoftware> lSWToCheck = new List<AddSoftware>();
-                foreach(AddSoftware oSW in oSWUpload ) 
+                foreach (AddSoftware oSW in oSWUpload)
                 {
                     AddSoftware oCheck;
-                    if(!_cache.TryGetValue("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, out oCheck))
+                    if (!_cache.TryGetValue("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, out oCheck))
                     {
                         lSWToCheck.Add(oSW);
                     }
                 }
-                if (lSWToCheck.Count > 0) 
+                if (lSWToCheck.Count > 0)
                 {
                     lSoftware = JsonConvert.SerializeObject(lSWToCheck);
                 }
                 else return ""; //no updates required
 
-                using (var handler = new HttpClientHandler())
+                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                using (HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType))
                 {
-                    handler.AllowAutoRedirect = true;
-                    handler.MaxAutomaticRedirections = 5;
-                    handler.CheckCertificateRevocationList = false;
 
-                    if (!string.IsNullOrEmpty(Proxy))
+                    var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
+                    response.Wait(10000);
+                    if (response.IsCompleted)
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
-                    }
+                        string responseBody = response.Result.Content.ReadAsStringAsync().Result;
 
-                    using (var oClient = new HttpClient(handler))
-                    {
-                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                        HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-                        if (contentType == "application/xml")
+                        sResult = responseBody;
+
+                        try
                         {
-                            var response = oClient.PostAsync(sURL + "/rest/CheckForUpdateXml", oCont);
-                            response.Wait(10000);
-                            if (response.IsCompleted)
+                            var lSWUpd = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
+                            if (lSWUpd.Count == 0) //No Updates found -> cache all SW Items to prevent further check
                             {
-                                string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-                                sResult = responseBody;
-                                return sResult;
-                            }
-                        }
+                                // Set cache options.
+                                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(new TimeSpan(4, 0, 0)); //Cache 4h
 
-                        if (contentType == "application/json")
-                        {
-                            var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
-                            response.Wait(10000);
-                            if (response.IsCompleted)
-                            {
-                                string responseBody = response.Result.Content.ReadAsStringAsync().Result;
-
-                                sResult = responseBody;
-
-                                try
+                                foreach (AddSoftware oSW in lSWToCheck)
                                 {
-                                    var lSWUpd = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AddSoftware>>(sResult);
-                                    if (lSWUpd.Count == 0) //No Updates found -> cache all SW Items to prevent further check
-                                    {
-                                        // Set cache options.
-                                        var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                            .SetSlidingExpiration(new TimeSpan(4, 0, 0)); //Cache 4h
-
-                                        foreach (AddSoftware oSW in lSWToCheck)
-                                        {
-                                            _cache.Set("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, oSW, cacheEntryOptions);
-                                        }
-                                    }
+                                    _cache.Set("noUpd" + oSW.ProductName + oSW.ProductVersion + oSW.Manufacturer, oSW, cacheEntryOptions);
                                 }
-                                catch { }
-
-                                return sResult;
                             }
                         }
+                        catch { }
+
+                        return sResult;
                     }
                 }
-
-
             }
             catch { }
 
@@ -701,50 +666,71 @@ namespace RuckZuck_WCF
         {
             try
             {
-                using (var handler = new HttpClientHandler())
+
+                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+                HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
+
+                var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
+                response.Wait(5000);
+
+                if (response.IsCompleted)
                 {
-                    handler.AllowAutoRedirect = true;
-                    handler.MaxAutomaticRedirections = 5;
-                    handler.CheckCertificateRevocationList = false;
-
-                    if (!string.IsNullOrEmpty(Proxy))
+                    if (response.Result.StatusCode == HttpStatusCode.OK)
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
+                        return true;
                     }
-
-                    using (var oClient = new HttpClient(handler))
+                    else
                     {
-                        if (!string.IsNullOrEmpty(ProxyUserPW))
-                        {
-                            oClient.DefaultRequestHeaders.ProxyAuthorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bProxyUser));
-                        }
-                        oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                        HttpContent oCont = new StringContent(lSoftware, Encoding.UTF8, contentType);
-
-                        var response = oClient.PostAsync(sURL + "/rest/UploadSWEntry", oCont);
-                        response.Wait(5000);
-
-                        if (response.IsCompleted)
-                        {
-                            if (response.Result.StatusCode == HttpStatusCode.OK)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-
+                        return false;
                     }
                 }
-
             }
             catch { }
 
             return false;
+        }
+
+        public static bool AddIPFS(string contentID, string fileName, string iPFS, long size, bool update)
+        {
+            try
+            {
+                var response = oClient.GetAsync(sURL + "/rest/AddIPFS?Id=" + contentID + "&file=" + fileName + "&hash=" + iPFS + "&size=" + size + "&upd=" + update);
+                response.Wait(5000);
+
+                if (response.IsCompleted)
+                {
+                    if (response.Result.StatusCode == HttpStatusCode.OK)
+                    {
+                        //Console.WriteLine("AddIPFS:" + contentID + "/" + fileName + "/" + iPFS);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        public static string GetIPFS(string contentID, string fileName)
+        {
+            try
+            {
+                var response = oClient.GetStringAsync(sURL + "/rest/GetIPFS?Id=" + contentID + "&file=" + fileName);
+                response.Wait(5000);
+
+                if (response.IsCompleted)
+                {
+                    return response.Result.Trim('"');
+                }
+            }
+            catch { }
+
+            return "";
         }
 
         public static string NormalizeString(string Input)
@@ -760,51 +746,21 @@ namespace RuckZuck_WCF
         {
             try
             {
-                using (HttpClientHandler handler = new HttpClientHandler())
+                oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+
+                using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+                using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
                 {
-                    handler.AllowAutoRedirect = true;
-                    handler.MaxAutomaticRedirections = 5;
-                    handler.CheckCertificateRevocationList = false;
-                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
-
-                    if (!string.IsNullOrEmpty(Proxy))
+                    string fileToWriteTo = FileName; // Path.GetTempFileName();
+                    
+                    using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
                     {
-                        handler.Proxy = new WebProxy(Proxy, true);
-                        handler.UseProxy = true;
+                        await streamToReadFrom.CopyToAsync(streamToWriteTo);
                     }
-
-                    /*using (var httpClient = new HttpClient(handler))
-                    {
-                        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
-                        httpClient.Timeout = new TimeSpan(0, 15, 0);
-                        using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(URL)))
-                        {
-                            using (Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                            stream = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None, 32768, true))
-                            {
-                                await contentStream.CopyToAsync(stream);
-                            }
-                            Console.WriteLine("Donwloaded: " + URL);
-                        }
-
-                    }*/
-
-                    using (HttpClient httpClient = new HttpClient(handler))
-                    {
-                        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
-
-                        using (HttpResponseMessage response = await httpClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
-                        using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                        {
-                            string fileToWriteTo = FileName; // Path.GetTempFileName();
-                            using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                            {
-                                await streamToReadFrom.CopyToAsync(streamToWriteTo);
-                            }
-                            Console.WriteLine("Donwloaded: " + URL);
-                        }
-                    }
+                    Console.WriteLine("Donwloaded: " + URL);
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -817,6 +773,9 @@ namespace RuckZuck_WCF
 
         private static bool IsFileLocked(FileInfo file)
         {
+            if (!file.Exists)
+                return false;
+
             FileStream stream = null;
 
             try
@@ -835,6 +794,40 @@ namespace RuckZuck_WCF
 
             //file is not locked
             return false;
+        }
+
+        /// <summary>
+        /// Add file to IPFS
+        /// </summary>
+        /// <param name="path">File</param>
+        /// <returns>IPFS Hash</returns>
+        public static string IPFSAdd(string path)
+        {
+            string sResult = "";
+            try
+            {
+                if (UseIPFS > 0)
+                {
+                    var oProc = System.Diagnostics.Process.Start("ipfs", "add --nocopy \"" + path + "\"");
+                    oProc.StartInfo.RedirectStandardOutput = true;
+                    oProc.StartInfo.UseShellExecute = false;
+                    List<string> output = new List<string>();
+                    oProc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+                    {
+                        output.Add(e.Data);
+                    });
+                    oProc.Start();
+                    oProc.BeginOutputReadLine();
+                    oProc.WaitForExit(30000);
+                    sResult = output.First().Split(' ')[1];
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("ERROR: " + ex.Message);
+            }
+
+            return sResult;
         }
     }
 

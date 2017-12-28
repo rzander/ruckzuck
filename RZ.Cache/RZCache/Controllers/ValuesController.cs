@@ -28,7 +28,7 @@ namespace RZWCF.Controllers
         {
             string sVersion = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
-            return "RuckZuck-Proxy (c) 2017 by Roger Zander; Version: " + sVersion;
+            return "RuckZuck-Proxy (c) 2018 by Roger Zander; Version: " + sVersion;
         }
 
 
@@ -69,21 +69,37 @@ namespace RZWCF.Controllers
             RuckZuck_WCF.RZRestProxy.sURL = config.GetSection("ParentServer").Value ?? _config.GetSection("RuckZuck:ParentServer").Value;
             RuckZuck_WCF.RZRestProxy.CatalogTTL =  int.Parse(_config.GetSection("CatalogTTL").Value ?? _config.GetSection("RuckZuck:CatalogTTL").Value);
             RuckZuck_WCF.RZRestProxy.localURL = config.GetSection("localURL").Value ?? _config.GetSection("RuckZuck:localURL").Value;
+            RuckZuck_WCF.RZRestProxy.ipfs_GW_URL = config.GetSection("IPFS_GW_URL").Value ?? _config.GetSection("RuckZuck:ipfs_GW_URL").Value;
             RuckZuck_WCF.RZRestProxy._cache = _cache;
             RuckZuck_WCF.RZRestProxy.Proxy = config.GetSection("Proxy").Value ?? _config.GetSection("RuckZuck:Proxy").Value;
-            RuckZuck_WCF.RZRestProxy.ProxyUserPW = config.GetSection("ProxyUserPW ").Value ?? _config.GetSection("RuckZuck:ProxyUserPW").Value;
+            RuckZuck_WCF.RZRestProxy.ProxyUserPW = config.GetSection("ProxyUserPW").Value ?? _config.GetSection("RuckZuck:ProxyUserPW").Value;
+            if (RuckZuck_WCF.RZRestProxy.RedirectToIPFS == false)
+            {
+                RuckZuck_WCF.RZRestProxy.UseIPFS = int.Parse(_config.GetSection("UseIPFS").Value ?? _config.GetSection("RuckZuck:UseIPFS").Value);
+            }
+
         }
 
         [Route("AuthenticateUser")]
         public ActionResult AuthenticateUser()
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            if(RuckZuck_WCF.RZRestProxy.contentType == "*/*")
+            {
+                RuckZuck_WCF.RZRestProxy.contentType = "application/json";
+            }
             string Username = _config.GetSection("RZUser").Value ?? Request.Headers["Username"];
             string Password = _config.GetSection("RZPW").Value ?? Request.Headers["Password"];
 
             if (string.IsNullOrEmpty(Username))
             {
-                return Content("deecdc6b-ad08-42ab-a743-a3c0f9033c80", "text/xml"); ;
+                Username = Request.Headers["Username"];
+                Password = Request.Headers["Password"];
+            }
+
+            if (string.IsNullOrEmpty(Username))
+            {
+                return Content("", "text/xml");
             }
             else
             {
@@ -107,7 +123,7 @@ namespace RZWCF.Controllers
                 }
                 else
                 {
-                    return Content(RuckZuck_WCF.RZRestProxy.GetAuthToken(Username, Password), "text/xml") ;
+                    return Content(RuckZuck_WCF.RZRestProxy.GetAuthToken(Username, Password), "text/xml"); ;
                 }
             }
 
@@ -118,7 +134,9 @@ namespace RZWCF.Controllers
         [Route("SWResults/{search}")]
         public ActionResult SWResults(string search = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            //RuckZuck_WCF.RZRestProxy.contentType = "application/json";
+
             string sRes = RuckZuck_WCF.RZRestProxy.SWResults(search);
             return Content(sRes, "text/xml");
         }
@@ -128,7 +146,8 @@ namespace RZWCF.Controllers
         [Route("SWGetShort/{name}")]
         public ActionResult SWGet(string name = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             return Content(RuckZuck_WCF.RZRestProxy.SWGet(name), "text/xml");
         }
 
@@ -137,7 +156,8 @@ namespace RZWCF.Controllers
         [Route("SWGet/{name}/{ver}")]
         public ActionResult SWGet(string name = "", string ver = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             return Content(RuckZuck_WCF.RZRestProxy.SWGet(name, ver), "text/xml");
         }
 
@@ -146,7 +166,8 @@ namespace RZWCF.Controllers
         [Route("SWGet/{name}/{manuf}/{ver}")]
         public ActionResult SWGet(string name = "", string manuf = "", string ver = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             return Content(RuckZuck_WCF.RZRestProxy.SWGet(name, manuf, ver), "text/xml");
         }
 
@@ -155,7 +176,8 @@ namespace RZWCF.Controllers
         [Route("GetSWDefinition/{name}/{ver}/{man}")]
         public ActionResult GetSWDefinition(string name = "", string ver = "", string man = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             return Content(RuckZuck_WCF.RZRestProxy.GetSWDefinitions(name, ver, man), "text/xml");
         }
 
@@ -164,7 +186,8 @@ namespace RZWCF.Controllers
         [Route("Feedback/{name}/{ver}/{man}/{arch}/{ok}/{user}/{text}")]
         public ActionResult Feedback(string name, string ver, string man = "", string arch = "", string ok = "", string user = "", string text = "")
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             return Content(RuckZuck_WCF.RZRestProxy.Feedback(name, ver, man, arch, ok, user, text).Result, "text/xml");
         }
 
@@ -176,22 +199,13 @@ namespace RZWCF.Controllers
             return RuckZuck_WCF.RZRestProxy.GetIcon(id);
         }
 
-
-        [HttpGet]
-        [Route("TrackDownloads")]
-        [Route("TrackDownloads/{id}")]
-        public void TrackDownloads(string id)
-        {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
-            RuckZuck_WCF.RZRestProxy.TrackDownloads(id);
-        }
-
         [HttpGet]
         [Route("TrackDownloadsNew")]
         [Route("TrackDownloadsNew/{SWId}/{arch}")]
         public void TrackDownloadsNew(string SWId, string arch)
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             RuckZuck_WCF.RZRestProxy.TrackDownloadsNew(SWId, arch);
         }
 
@@ -199,7 +213,8 @@ namespace RZWCF.Controllers
         [Route("CheckForUpdateXml")]
         public ActionResult CheckForUpdateXml()
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             
             return Content(RuckZuck_WCF.RZRestProxy.CheckForUpdate(oGet.Result.ToString()), "text/xml");
@@ -209,7 +224,8 @@ namespace RZWCF.Controllers
         [Route("CheckForUpdate")]
         public ActionResult CheckForUpdate()
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
 
             return Content(RuckZuck_WCF.RZRestProxy.CheckForUpdate(oGet.Result.ToString()), "text/xml");
@@ -219,7 +235,8 @@ namespace RZWCF.Controllers
         [Route("UploadSWEntry")]
         public bool UploadSWEntry()
         {
-            RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/xml";
+            //RuckZuck_WCF.RZRestProxy.contentType = (string)Request.Headers["Accept"] ?? "application/json";
+            RuckZuck_WCF.RZRestProxy.contentType = "application/json";
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
 
             return RuckZuck_WCF.RZRestProxy.UploadSWEntry(oGet.Result.ToString());
