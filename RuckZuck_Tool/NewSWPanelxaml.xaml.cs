@@ -190,6 +190,12 @@ namespace RuckZuck_Tool
                     return;
             }
 
+            if(((List<contentFiles>)dgSourceFiles.ItemsSource).Count(t=>!string.IsNullOrEmpty(t.URL)) == 0)
+            {
+                if (MessageBox.Show("one File-URL is empty !", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
+                    return;
+            }
+
             AddSoftware oSoftware = new AddSoftware();
             oSoftware.Architecture = tbArchitecture.Text;
             oSoftware.ContentID = tbContentId.Text;
@@ -197,7 +203,7 @@ namespace RuckZuck_Tool
 
             try
             {
-                oSoftware.Files = ((List<contentFiles>)dgSourceFiles.ItemsSource);
+                oSoftware.Files = ((List<contentFiles>)dgSourceFiles.ItemsSource).Where(t=> !string.IsNullOrEmpty(t.URL)).ToList();
             }
             catch { }
             try

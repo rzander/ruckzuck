@@ -829,7 +829,7 @@ namespace RuckZuck_Tool
             }
         }
 
-        private void miCreateArtifact_Click(object sender, RoutedEventArgs e)
+        /*private void miCreateArtifact_Click(object sender, RoutedEventArgs e)
         {
             Mouse.OverrideCursor = Cursors.Wait;
             try
@@ -906,7 +906,7 @@ namespace RuckZuck_Tool
             {
                 Mouse.OverrideCursor = null;
             }
-        }
+        }*/
 
 
     }

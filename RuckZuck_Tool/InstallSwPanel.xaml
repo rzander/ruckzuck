@@ -169,11 +169,11 @@
                             <Image Source="Images/star.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="miCreateArtifact" Header="Create Artifact" IsEnabled="true" ToolTip="Create an Artifact for AzureLab"  Height="24px" Click="miCreateArtifact_Click">
+                    <!--<MenuItem Name="miCreateArtifact" Header="Create Artifact" IsEnabled="true" ToolTip="Create an Artifact for AzureLab"  Height="24px" Click="miCreateArtifact_Click">
                         <MenuItem.Icon>
                             <Image Source="Images/star.ico" />
                         </MenuItem.Icon>
-                    </MenuItem>
+                    </MenuItem>-->
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
