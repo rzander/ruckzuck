@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
-    <FileVersion>1.0.3.0</FileVersion>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.1</FileVersion>
+    <AssemblyVersion>1.0.3.1</AssemblyVersion>
     <Authors>Roger Zander</Authors>
     <Company>Zander Tools</Company>
     <Product>RZWCF Proxy Service</Product>

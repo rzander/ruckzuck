@@ -133,7 +133,7 @@ namespace RuckZuck_WCF
                 {
                     if (File.Exists(sCatFile))
                     {
-                        if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sCatFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
+                        if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetLastWriteTimeUtc(sCatFile) <= new TimeSpan(CatalogTTL, 0, 1))
                         {
                             sResult = File.ReadAllText(sCatFile);
                             if (sResult.StartsWith("[") & sResult.Length > 64) //check if it's JSON
@@ -329,7 +329,7 @@ namespace RuckZuck_WCF
 
                 if (File.Exists(sSWFile))
                 {
-                    if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetCreationTime(sSWFile).ToUniversalTime() <= new TimeSpan(CatalogTTL, 0, 1))
+                    if (CatalogTTL == 0 || DateTime.Now.ToUniversalTime() - File.GetLastWriteTimeUtc(sSWFile) <= new TimeSpan(CatalogTTL, 0, 1))
                     {
                         string sContent = File.ReadAllText(sSWFile);
                         if (sContent.Length > 64)
