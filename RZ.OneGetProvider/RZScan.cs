@@ -180,7 +180,7 @@ namespace RZUpdate
             return bResult;
         }
 
-        public async Task<bool> GetSWRepository(string RepositoryPath)
+        /*       public async Task<bool> GetSWRepository(string RepositoryPath)
         {
             //var tGetSWRepo =
             bool bResult = await Task.Run(() =>
@@ -211,25 +211,6 @@ namespace RZUpdate
                         }
                         catch { }
                     }
-
-
-                    /*lock (SoftwareRepository)
-                    {
-                        SoftwareRepository = oDB.Select(item => new GetSoftware()
-                        {
-                            Categories = item.Categories.ToList(),
-                            Description = item.Description,
-                            Downloads = item.Downloads,
-                            IconId = item.IconId,
-                            Image = item.Image,
-                            Manufacturer = item.Manufacturer,
-                            ProductName = item.ProductName,
-                            ProductURL = item.ProductURL,
-                            ProductVersion = item.ProductVersion,
-                            Quality = item.Quality,
-                            Shortname = item.Shortname
-                        }).ToList();
-                    }*/
                 }
                 catch (Exception ex)
                 {
@@ -243,8 +224,9 @@ namespace RZUpdate
 
             return bResult;
         }
+*/
 
-        public bool CheckForUpdates
+        /*public bool CheckForUpdates
         {
             get { return bCheckUpdates; }
             set
@@ -252,7 +234,7 @@ namespace RZUpdate
                 bCheckUpdates = value;
                 bInitialScan = value;
             }
-        }
+        }*/
 
         private void RZScan_OnUpdScanCompleted(object sender, EventArgs e)
         {
@@ -627,7 +609,6 @@ namespace RZUpdate
         {
             try
             {
-                //Bitmap bResult = new Bitmap(GetIconForFile(Filename, ShellIconSize.LargeIcon).ToBitmap(), new Size(128, 128));
                 Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
 
                 try
@@ -637,7 +618,7 @@ namespace RZUpdate
                     {
                         List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
                         //Max Size 64px...
-                        var ico = lIcons.Where(t => t.Height <= 64 & t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                        var ico = lIcons.Where(t => t.Height <= 128 & t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
                         if (ico != null)
                             return ico.ToBitmap();
                         else
@@ -647,7 +628,6 @@ namespace RZUpdate
                 catch { }
 
                 return bResult;
-                //return System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
             }
             catch
             {

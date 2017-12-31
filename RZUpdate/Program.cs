@@ -26,7 +26,7 @@ namespace RZUpdate
             List<string> lArgs = args.ToList();
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck Update Tool (c) 2017 by Roger Zander");
+                Console.WriteLine("RuckZuck Update Tool (c) 2018 by Roger Zander");
                 Console.WriteLine("Usage:");
                 Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\" [\"Manufacturer\"]");
                 Console.WriteLine("Install a Software from Shortname : RZUpdate.exe \"<Shortname>\"[;\"<Shortname2>\"]");

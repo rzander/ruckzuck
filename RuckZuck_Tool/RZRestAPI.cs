@@ -175,7 +175,7 @@ namespace RuckZuck_WCF
                     {
                         try
                         {
-                            DateTime dCreationDate = File.GetCreationTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                            DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
                             if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
                             {
                                 //return cached Content

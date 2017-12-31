@@ -18,6 +18,8 @@ namespace RuckZuck_WCF
     {
         private static string _sURL = "UDP";
         public static bool DisableBroadcast = false;
+        public static string ipfs_GW_URL = "https://gateway.ipfs.io/ipfs";
+
         public static string sURL
         {
             get
@@ -167,17 +169,14 @@ namespace RuckZuck_WCF
         {
             try
             {
-                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-
                 if (string.IsNullOrEmpty(Searchstring)) //FullCatalog?
                 {
                     if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
                     {
                         try
                         {
-                            DateTime dCreationDate = File.GetCreationTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                            if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0))
+                            DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                            if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
                             {
                                 //return cached Content
                                 string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
@@ -308,20 +307,12 @@ namespace RuckZuck_WCF
             return false;
         }
 
-        public static async void TrackDownloads(string contentID)
-        {
-            contentID.ToString();
-            //depreciated
-        }
-
 
         //vNext 5.9.2017
         public static async void TrackDownloads2(long SWId, string Architecture)
         {
             try
             {
-                //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
                 await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + "&arch=" + WebUtility.UrlEncode(Architecture));
             }
             catch { }
@@ -354,6 +345,29 @@ namespace RuckZuck_WCF
 
             return null;
         }
+
+        /// <summary>
+        /// Get IPFS.io hash
+        /// </summary>
+        /// <param name="contentID"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string GetIPFS(string contentID, string fileName)
+        {
+            try
+            {
+                var response = oClient.GetStringAsync(sURL + "/rest/GetIPFS?Id=" + contentID + "&file=" + fileName);
+                response.Wait(5000);
+
+                if (response.IsCompleted)
+                {
+                    return response.Result.Trim('"');
+                }
+            }
+            catch { }
+
+            return "";
+        }
     }
 
     public class GetSoftware
@@ -382,9 +396,9 @@ namespace RuckZuck_WCF
 
         public bool isInstalled { get; set; }
 
-        public string XMLFile { get; set; }
+        //public string XMLFile { get; set; }
 
-        public string IconFile { get; set; }
+        //public string IconFile { get; set; }
 
         public string IconURL
         {
@@ -396,7 +410,7 @@ namespace RuckZuck_WCF
                 }
                 else
                 {
-                    return "File://" + IconFile;
+                    return ""; // "File://" + IconFile;
                 }
                 //return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + IconId.ToString();
             }
@@ -447,10 +461,11 @@ namespace RuckZuck_WCF
         public string[] PreRequisites { get; set; }
 
         //vNext 5.9.2017
-        public long SWId { get { return IconId; } set { IconId = value; } }
+        //public long SWId { get { return IconId; } set { IconId = value; } }
+        public long SWId { get; set; }
 
         //remove if SWId is in place 5.9.2017
-        public long IconId { get; set; }
+        //public long IconId { get; set; }
 
         public string IconURL
         {

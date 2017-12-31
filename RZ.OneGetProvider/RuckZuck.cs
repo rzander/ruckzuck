@@ -286,11 +286,10 @@ namespace PackageManagement
                 //Get all installed SW
                 if (bUpdate)
                 {
-                    oScan.CheckForUpdates = false;
+                    oScan.bCheckUpdates = false;
                     oScan.SWScan().Wait();
                     oScan.CheckUpdates(null).Wait();
                     lSoftware = oScan.InstalledSoftware;
-
 
                     List<AddSoftware> RequiredUpdates = oScan.NewSoftwareVersions; // RZApi.CheckForUpdate(lSoftware.ToArray()).ToList().Where(t => t.Architecture != "new").ToList();
                     foreach (var SW in RequiredUpdates)
@@ -325,7 +324,8 @@ namespace PackageManagement
                         //Find by Shortname
                         if (exactSearch)
                         {
-                            lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
+                            if (!string.IsNullOrEmpty(name))
+                                lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
 
                             if (lResult.Count == 0)
                             {
@@ -335,7 +335,8 @@ namespace PackageManagement
                         }
                         else
                         {
-                            lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
+                            if(!string.IsNullOrEmpty(name))
+                                lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
 
                             if (lResult.Count == 0)
                             {
@@ -548,11 +549,14 @@ namespace PackageManagement
             try
             {
                 List<AddSoftware> lResult = getInstalledSW().ToList();
+                List<GetSoftware> lCatalog = RZRestAPI.SWResults("").ToList();
 
-                List<GetSoftware> lServer = RZRestAPI.SWResults(name).OrderBy(t => t.Shortname).ToList();
-                request.Debug("Items Found: " + lServer.Count().ToString());
+                //List<GetSoftware> lServer = RZRestAPI.SWResults(name).OrderBy(t => t.Shortname).ToList();
 
-                List<AddSoftware> lLocal = lResult.Where(t => lServer.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
+                List<AddSoftware> lLocal = lResult.Where(t => lCatalog.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
+                request.Debug("Items Found: " + lLocal.Count().ToString());
+
+                //List<AddSoftware> lLocal = lResult.Where(t => lServer.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
 
 
                 if (!string.IsNullOrEmpty(name))
@@ -560,7 +564,7 @@ namespace PackageManagement
                     string sProdName = "";
                     try
                     {
-                        sProdName = lServer.FirstOrDefault(p => string.Equals(p.Shortname, name, StringComparison.OrdinalIgnoreCase)).ProductName;
+                        sProdName = lCatalog.FirstOrDefault(p => string.Equals(p.Shortname, name, StringComparison.OrdinalIgnoreCase)).ProductName;
                     }
                     catch { }
                     lLocal = lLocal.Where(p => String.Equals(p.ProductName, name, StringComparison.OrdinalIgnoreCase) | String.Equals(p.ProductName, sProdName, StringComparison.OrdinalIgnoreCase)).OrderBy(t => t.ProductName).ToList();
@@ -595,8 +599,13 @@ namespace PackageManagement
 
                 foreach (var SW in lLocal)
                 {
-                    request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPI.sURL, name ?? "", "", SW.Shortname);
+                    var oCAT = lCatalog.FirstOrDefault(t => t.ProductName == SW.ProductName && t.ProductVersion == SW.ProductVersion && t.Manufacturer == SW.Manufacturer);
+                    if(oCAT != null)
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", oCAT.Description, RZRestAPI.sURL, name ?? "", oCAT.IconId.ToString(), oCAT.Shortname);
+                    else
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPI.sURL, name ?? "", "", SW.Shortname);
                     //request.YieldSoftwareIdentity(SW.Shortname, SW.ProductName, SW.ProductVersion, "", SW.Description, "Local", "", SW.ProductURL, SW.ContentID.ToString());
+                    request.AddMetadata("FromTrustedSource", "True");
                 }
             }
             catch
