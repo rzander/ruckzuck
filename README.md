@@ -19,6 +19,8 @@ Select a Software from the Repository and RuckZuck handles the download and the 
 
 2016:  https://rzander.azurewebsites.net/ruckzuck-figures-for-2016/ 
 
+2017:  https://rzander.azurewebsites.net/ruckzuck-figures-for-2017/
+
 ## RuckZuck components
 ### RuckZuck_Tool (RuckZuck.exe)
 The RuckZuck.exe is a portable Tool with a UI to install or update Applications from the RZ Repository.
