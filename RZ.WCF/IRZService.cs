@@ -46,9 +46,13 @@ namespace RuckZuck_WCF
         [WebGet(UriTemplate = "Feedback?name={productName}&ver={productVersion}&ok={working}&user={userkey}&text={feedback}")]
         void Feedback(string productName, string productVersion, string working, string userKey, string feedback);*/
 
-        [OperationContract] //(IsOneWay = true)
+        /*[OperationContract] //(IsOneWay = true)
         [WebGet(UriTemplate = "Feedback?name={productName}&ver={productVersion}&man={manufacturer}&ok={working}&user={userkey}&text={feedback}")]
-        void Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback);
+        void Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback);*/
+
+        [OperationContract] //(IsOneWay = true)
+        [WebGet(UriTemplate = "Feedback?name={productName}&ver={productVersion}&man={manufacturer}&arch={architecture}&ok={working}&user={userkey}&text={feedback}")]
+        void Feedback(string productName, string productVersion, string manufacturer, string architecture, string working, string userKey, string feedback);
 
         [OperationContract]
         [WebInvoke(UriTemplate = "CheckForUpdateXml", Method = "POST",
@@ -92,6 +96,14 @@ namespace RuckZuck_WCF
         [OperationContract]
         [WebGet(UriTemplate = "ApproveSW?SWId={SWId}&arch={Architecture}")]
         bool ApproveSW(long SWId, string Architecture);
+
+        [OperationContract]
+        [WebGet(UriTemplate = "AddIPFS?Id={contentID}&file={fileName}&hash={iPFS}&size={size}&upd={update}")]
+        void AddIPFS(string contentID, string fileName, string iPFS, long size, bool update);
+
+        [OperationContract]
+        [WebGet(UriTemplate = "GetIPFS?Id={contentID}&file={fileName}")]
+        string GetIPFS(string contentID, string fileName);
     }
 
     [DataContract]
@@ -192,6 +204,9 @@ namespace RuckZuck_WCF
         //2.9.17
         [DataMember]
         public long IconId { get; set; }
+
+        [DataMember]
+        public long SWId { get { return IconId; } set { IconId = value; } }
     }
 
     [DataContract]

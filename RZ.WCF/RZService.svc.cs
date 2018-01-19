@@ -191,7 +191,7 @@ namespace RuckZuck_WCF
                     return oResult;
                 }*/
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
@@ -333,7 +333,7 @@ namespace RuckZuck_WCF
 
             if (SearchPattern == "--NEW--")
             {
-                foreach (var oOld in oSW.v_SWVersions.Where(t=>t.IsLatest == true).OrderByDescending(t => t.LastModified).Take(30))
+                foreach (var oOld in oSW.v_SWVersions.Where(t => t.IsLatest == true).OrderByDescending(t => t.LastModified).Take(30))
                 {
                     try
                     {
@@ -429,7 +429,7 @@ namespace RuckZuck_WCF
 
         public List<GetSoftware> SWGetByShortname(string PkgName)
         {
-            return SWGetByPkgNameAndVersion(PkgName, "");
+            return SWGetByPkgNameAndVersion(PkgName.Trim(';'), "");
         }
 
         public List<GetSoftware> SWGetByPkgNameAndVersion(string PkgName, string PkgVersion = "")
@@ -453,16 +453,16 @@ namespace RuckZuck_WCF
 
             if (string.IsNullOrEmpty(PkgVersion))
             {
-                lResult = oCat.Where(t => t.ProductName == PkgName).ToList();
+                lResult = oCat.Where(t => t.ProductName.ToLower() == PkgName.ToLower()).ToList();
             }
             else
             {
-                lResult = oCat.Where(t => t.ProductName == PkgName & t.ProductVersion == PkgVersion).ToList();
+                lResult = oCat.Where(t => t.ProductName.ToLower() == PkgName.ToLower() & t.ProductVersion.ToLower() == PkgVersion.ToLower()).ToList();
             }
 
             if (lResult.Count() == 0)
             {
-                lResult = oCat.Where(t => t.Shortname == PkgName & t.isLatest).ToList();
+                lResult = oCat.Where(t => t.Shortname.ToLower() == PkgName.ToLower() & t.isLatest).ToList();
             }
 
             try
@@ -573,16 +573,16 @@ namespace RuckZuck_WCF
 
             if (string.IsNullOrEmpty(PkgVersion))
             {
-                lResult = oCat.Where(t => t.ProductName == PkgName & t.Manufacturer == Manufacturer).ToList();
+                lResult = oCat.Where(t => t.ProductName.ToLower() == PkgName.ToLower() & t.Manufacturer.ToLower() == Manufacturer.ToLower()).ToList();
             }
             else
             {
-                lResult = oCat.Where(t => t.ProductName == PkgName & t.ProductVersion == PkgVersion & t.Manufacturer == Manufacturer).ToList();
+                lResult = oCat.Where(t => t.ProductName.ToLower() == PkgName.ToLower() & t.ProductVersion.ToLower() == PkgVersion.ToLower() & t.Manufacturer.ToLower() == Manufacturer.ToLower()).ToList();
             }
 
-            if(lResult.Count() == 0)
+            if (lResult.Count() == 0)
             {
-                oCat.Where(t => t.Shortname == PkgName & t.isLatest).ToList();
+                oCat.Where(t => t.Shortname.ToLower() == PkgName.ToLower() & t.isLatest).ToList();
             }
 
             try
@@ -688,24 +688,24 @@ namespace RuckZuck_WCF
                     }
                     else
                     {
-                        if(oProd.IsLatest != true )
+                        if (oProd.IsLatest != true)
                         {
                             if (string.IsNullOrEmpty(oProd.ProductDescription) & !string.IsNullOrEmpty(SoftwareItem.Description))
                                 oProd.ProductDescription = SoftwareItem.Description;
                             if (string.IsNullOrEmpty(oProd.ProjectURL) & !string.IsNullOrEmpty(SoftwareItem.ProductURL))
                                 oProd.ProjectURL = SoftwareItem.ProductURL;
-                            if(string.IsNullOrEmpty(oProd.Category) & !string.IsNullOrEmpty(SoftwareItem.Category))
+                            if (string.IsNullOrEmpty(oProd.Category) & !string.IsNullOrEmpty(SoftwareItem.Category))
                                 oProd.Category = SoftwareItem.Category;
                             if (string.IsNullOrEmpty(oProd.ShortName) & !string.IsNullOrEmpty(SoftwareItem.Shortname))
                                 oProd.ShortName = SoftwareItem.Shortname;
-                            
+
                             oSW.SaveChanges();
                         }
                     }
 
                     SoftwareItem.IconId = oProd.Id;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
@@ -1029,14 +1029,14 @@ namespace RuckZuck_WCF
                         sShortName = "Git Extensions";
                     if (SoftwareItem.ProductName == "RuckZuck")
                         sShortName = "RuckZuck";
-                    if (SoftwareItem.ProductName == "Google Chrome ")
+                    if (SoftwareItem.ProductName.StartsWith("Google Chrome "))
                         sShortName = "Google Chrome ";
                     if (SoftwareItem.ProductName == "CDBurnerXP")
                         sShortName = "CDBurnerXP";
 
-                    if (SoftwareItem.ProductName == "Sublime Text Build ")
+                    if (SoftwareItem.ProductName.StartsWith("Sublime Text Build "))
                         sShortName = "SublimeText";
-                    if (SoftwareItem.ProductName == "Microsoft Visio Viewer ")
+                    if (SoftwareItem.ProductName.StartsWith("Microsoft Visio Viewer "))
                         sShortName = "Visio Viewer";
                     if (SoftwareItem.ProductName == "Adobe Flash Player 27 NPAPI")
                         sShortName = "FlashPlayerPlugin";
@@ -1049,8 +1049,49 @@ namespace RuckZuck_WCF
                         sShortName = "Arduino";
                     if (SoftwareItem.ProductName == "mRemoteNG")
                         sShortName = "mRemoteNG";
-                    if (SoftwareItem.ProductName == "Driver Booster ")
+                    if (SoftwareItem.ProductName.StartsWith("Driver Booster "))
                         sShortName = "Driver Booster";
+                    if (SoftwareItem.ProductName == "KC Softwares DUMo")
+                        sShortName = "DUMo";
+                    if (SoftwareItem.ProductName == "KC Softwares SUMo")
+                        sShortName = "SUMo";
+                    if (SoftwareItem.ProductName.StartsWith("Gadwin PrintScreen"))
+                        sShortName = "Gadwin PrintScreen";
+                    if (SoftwareItem.ProductName.StartsWith("Docker for Windows"))
+                        sShortName = "Docker";
+
+                    if (SoftwareItem.ProductName.StartsWith("Subtitle Edit "))
+                        sShortName = "Subtitle Edit";
+                    if (SoftwareItem.ProductName.StartsWith("MediaCoder "))
+                        sShortName = "MediaCoder";
+
+                    //Dez2017
+                    if (SoftwareItem.ProductName.StartsWith("Everything "))
+                        sShortName = "Everything";
+                    if (SoftwareItem.ProductName.StartsWith("Adobe Shockwave Player "))
+                        sShortName = "ShockwavePlayer";
+                    if (SoftwareItem.ProductName == "Dropbox")
+                        sShortName = "Dropbox";
+                    if (SoftwareItem.ProductName == "WhatsApp")
+                        sShortName = "WhatsApp";
+                    if (SoftwareItem.ProductName == "iTunes")
+                        sShortName = "iTunes";
+                    if (SoftwareItem.ProductName == "CDBurnerXP")
+                        sShortName = "CDBurnerXP";
+                    if (SoftwareItem.ProductName == "Google Chrome")
+                        sShortName = "Google Chrome";
+                    if (SoftwareItem.ProductName == "NordVPN")
+                        sShortName = "NordVPN";
+
+                    //Jan18
+                    if (SoftwareItem.ProductName.StartsWith("Smart Defrag "))
+                        sShortName = "Smart Defrag";
+                    if (SoftwareItem.ProductName == "JetClean")
+                        sShortName = "JetClean";
+                    if (SoftwareItem.ProductName == "Auslogics Registry Cleaner")
+                        sShortName = "Auslogics Registry Cleaner";
+                    if (SoftwareItem.ProductName == "Avast Free Antivirus")
+                        sShortName = "Avast Free Antivirus";
 
                     if (!string.IsNullOrEmpty(sShortName))
                     {
@@ -1110,7 +1151,7 @@ namespace RuckZuck_WCF
 
                             PushBullet(SoftwareItem.ProductName + " " + SoftwareItem.ProductVersion + " is waiting for approval.", SoftwareItem.ProductURL);
 
-                            if (SoftwareItem.Author != "rzander")
+                            if (SoftwareItem.Author != "qqq")
                             {
                                 oSW.SWPending.Add(new SWPending() { Architecture = SoftwareItem.Architecture, ProductName = SoftwareItem.ProductName, Username = SoftwareItem.Author, SWId = SoftwareItem.IconId });
                                 oSW.SaveChangesAsync();
@@ -1124,11 +1165,11 @@ namespace RuckZuck_WCF
                         try
                         {
                             var oUsr = System.Web.Security.Membership.GetUser(SoftwareItem.Author.Trim());
-                            
+
                             BrokeredMessage bMSG = new BrokeredMessage() { Label = "RuckZuck/WCF/PendingApproval/" + SoftwareItem.ProductName + ";" + SoftwareItem.ProductVersion, TimeToLive = new TimeSpan(24, 0, 0) };
                             bMSG.Properties.Add("User", SoftwareItem.Author);
 
-                            if(oUsr != null)
+                            if (oUsr != null)
                                 bMSG.Properties.Add("Mail", oUsr.Email.Trim() ?? "");
 
                             bMSG.Properties.Add("SWId", SoftwareItem.IconId.ToString());
@@ -1145,7 +1186,7 @@ namespace RuckZuck_WCF
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 return false;
@@ -1186,8 +1227,8 @@ namespace RuckZuck_WCF
 
             }
 
-            var oSWVer =  oSW.v_SWVersions.FirstOrDefault(t => t.ProductName == productName & t.Version == productVersion & t.Manufacturer == manufacturer);
-            if(oSWVer != null)
+            var oSWVer = oSW.v_SWVersions.FirstOrDefault(t => t.ProductName == productName & t.Version == productVersion & t.Manufacturer == manufacturer);
+            if (oSWVer != null)
             {
                 lResult = GetSWDetails(oSWVer.Id);
             }
@@ -1296,7 +1337,7 @@ namespace RuckZuck_WCF
                     {
                         var oCat = GetCatalog();
 
-                        var oProd = oCat.FirstOrDefault(t => t.ProductName == productName & t.ProductVersion == productVersion & t.Manufacturer == manufacturer);
+                        var oProd = oCat.FirstOrDefault(t => t.ProductName.ToLower() == productName.ToLower() & t.ProductVersion.ToLower() == productVersion.ToLower() & t.Manufacturer.ToLower() == manufacturer.ToLower());
                         if (oProd != null)
                         {
                             string sArch = Architecture;
@@ -1344,7 +1385,7 @@ namespace RuckZuck_WCF
             IDatabase cache6 = Connection.GetDatabase(6); // Latest Versions
             IDatabase cache7 = Connection.GetDatabase(7); // NoUpdates
 
-            
+
 
             List<AddSoftware> lResult = new List<AddSoftware>();
 
@@ -1708,7 +1749,7 @@ namespace RuckZuck_WCF
                         return oRes;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
@@ -1789,7 +1830,7 @@ namespace RuckZuck_WCF
                         lResult.Add(oItem);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
@@ -1800,27 +1841,27 @@ namespace RuckZuck_WCF
 
         public void SyncSW(string s1)
         {
-            foreach(var oLatest in oSW.v_SWVersionsLatest.ToList())
+            foreach (var oLatest in oSW.v_SWVersionsLatest.ToList())
             {
-               foreach(var oDet in GetSWDetails(oLatest.Id))
-               {
+                foreach (var oDet in GetSWDetails(oLatest.Id))
+                {
                     if (oDet.IconId != oLatest.Id)
                     {
                         oDet.IconId = oLatest.Id;
                         oDet.Category = oLatest.Category;
 
-                        
+
 
                         var oDBItem = oSW.SWDetails.FirstOrDefault(t => t.SWId == oLatest.Id & t.Architecture == oDet.Architecture);
-                        if(oDBItem != null)
+                        if (oDBItem != null)
                         {
                             string jItem = JsonConvert.SerializeObject(oDet);
                             oDBItem.Definition = jItem;
                             oSW.SaveChanges();
                         }
-                        
+
                     }
-               }
+                }
 
             }
 
@@ -1851,8 +1892,8 @@ namespace RuckZuck_WCF
                 IDatabase cache = Connection.GetDatabase();
 
                 string sToken = headers["AuthenticatedToken"] ?? "";
-                string sUsername = headers["Username"] ?? "";
-                string sPassword = headers["Password"] ?? "";
+                string sUsername = headers["Username"] ?? "xxx";
+                string sPassword = headers["Password"] ?? "xxx";
 
                 if (System.Web.Security.Membership.ValidateUser(sUsername, sPassword))
                 {
@@ -1866,9 +1907,9 @@ namespace RuckZuck_WCF
                         }
 
                         var oOldVersion = oSW.SWVersions.FirstOrDefault(t => t.ShortName == oNewVersion.ShortName & t.IsLatest == true);
-                        if(oOldVersion != null)
+                        if (oOldVersion != null)
                         {
-                            if(oNewVersion != null)
+                            if (oNewVersion != null)
                             {
                                 if (oNewVersion.Id != oOldVersion.Id) //in case of a resubmit
                                 {
@@ -1890,6 +1931,88 @@ namespace RuckZuck_WCF
 
             return false;
 
+        }
+
+        public void AddIPFS(string contentID, string fileName, string iPFS, long size = 0, bool update = false)
+        {
+            try
+            {
+                if (update)
+                {
+                    var oIPFS = oSW.IPFSMap.FirstOrDefault(t => t.ContentID == contentID & t.FileName == fileName);
+                    if (oIPFS != null)
+                    {
+                        //oIPFS.ContentID = contentID;
+                        oIPFS.IPFS = iPFS;
+                        oIPFS.CreationDate = DateTime.UtcNow;
+                        if (size > 0)
+                        {
+                            oIPFS.Size = size;
+                        }
+
+                        oSW.SaveChanges();
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(contentID) & !string.IsNullOrEmpty(fileName) & !string.IsNullOrEmpty(iPFS))
+                        {
+                            if (size > 8000) //to prevent storing failed downloads
+                            {
+                                oSW.IPFSMap.Add(new IPFSMap() { ContentID = contentID, FileName = fileName, IPFS = iPFS, CreationDate = DateTime.UtcNow, Size = size });
+                                oSW.SaveChanges();
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(contentID) & !string.IsNullOrEmpty(fileName) & !string.IsNullOrEmpty(iPFS))
+                    {
+                        if (size > 8000) //to prevent storing failed downloads
+                        {
+                            oSW.IPFSMap.Add(new IPFSMap() { ContentID = contentID, FileName = fileName, IPFS = iPFS, CreationDate = DateTime.UtcNow, Size = size });
+                            oSW.SaveChanges();
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(contentID) & !string.IsNullOrEmpty(fileName) & !string.IsNullOrEmpty(iPFS))
+                    {
+                        if (size > 8000) //to prevent storing failed downloads
+                        {
+                            oSW.IPFSMap.Add(new IPFSMap() { ContentID = contentID, FileName = fileName, IPFS = iPFS, CreationDate = DateTime.UtcNow, Size = size });
+                            oSW.SaveChanges();
+                        }
+                    }
+                }
+                catch { }
+
+            }
+        }
+
+        public string GetIPFS(string contentID, string fileName)
+        {
+            string sResult = "";
+            try
+            {
+                if (!string.IsNullOrEmpty(contentID) & !string.IsNullOrEmpty(fileName))
+                {
+                    var oIPFS = oSW.IPFSMap.FirstOrDefault(t => t.ContentID == contentID & t.FileName == fileName);
+                    if(oIPFS != null)
+                    {
+                        return oIPFS.IPFS;
+                    }
+
+                }
+            }
+            catch { }
+
+            return sResult;
         }
     }
 }

@@ -33,5 +33,6 @@ namespace RuckZuck_WCF
         public DbSet<SWFeedback> SWFeedback { get; set; }
         public DbSet<SWPending> SWPending { get; set; }
         public DbSet<v_SWVersionsOLD> v_SWVersionsOLD { get; set; }
+        public DbSet<IPFSMap> IPFSMap { get; set; }
     }
 }

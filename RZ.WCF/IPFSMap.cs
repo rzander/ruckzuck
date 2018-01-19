@@ -12,13 +12,12 @@ namespace RuckZuck_WCF
     using System;
     using System.Collections.Generic;
     
-    public partial class vLatestProducts
+    public partial class IPFSMap
     {
-        public string Shortname { get; set; }
-        public string Version { get; set; }
-        public Nullable<System.DateTime> LastModified { get; set; }
-        public long ProductVersionId { get; set; }
-        public string ProductDescription { get; set; }
-        public string ProjectURL { get; set; }
+        public string ContentID { get; set; }
+        public string IPFS { get; set; }
+        public string FileName { get; set; }
+        public Nullable<System.DateTime> CreationDate { get; set; }
+        public Nullable<long> Size { get; set; }
     }
 }
