@@ -17,7 +17,7 @@ using RuckZuck_WCF;
 
 namespace PackageManagement
 {
-    partial class PackageProvider 
+    partial class PackageProvider
     {
         // RuckZuck Code Here
 
@@ -130,10 +130,10 @@ namespace PackageManagement
                 if (string.Equals(Properties.Settings.Default.Location, WebServiceURL, StringComparison.InvariantCultureIgnoreCase))
                     bIsTrusted = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 request.Debug("RZ112: " + ex.Message);
-                return; 
+                return;
             }
 
             request.YieldPackageSource("RuckZuck", Properties.Settings.Default.Location, bIsTrusted, true, bValidated);
@@ -220,13 +220,13 @@ namespace PackageManagement
             //Re-Authenticate after 30min
             if ((DateTime.Now - dLastTokenRefresh).TotalMinutes >= 30)
             {
-                
+
 
                 if (string.IsNullOrEmpty(Properties.Settings.Default.Location))
                 {
                     //Properties.Settings.Default.Location = WebServiceURL;
                     //Properties.Settings.Default.Save();
-                    
+
                 }
 
                 //RZRestAPI.sURL = Properties.Settings.Default.Location;
@@ -302,11 +302,11 @@ namespace PackageManagement
                             }
                             else
                             {
-                                if ((SW.ProductName.ToLowerInvariant() == name.ToLowerInvariant() | SW.Shortname.ToLowerInvariant() == name.ToLowerInvariant()) & exactSearch)
+                                if ((SW.ProductName.ToLowerInvariant() == name.ToLowerInvariant() | SW.Shortname.ToLowerInvariant() == name.ToLowerInvariant()) && exactSearch)
                                 {
                                     lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Description = SW.Description, ProductURL = SW.ProductURL });
                                 }
-                                if ((SW.ProductName.ToLowerInvariant().Contains(name.ToLowerInvariant()) | SW.Shortname.ToLowerInvariant().Contains(name.ToLowerInvariant())) & !exactSearch)
+                                if ((SW.ProductName.ToLowerInvariant().Contains(name.ToLowerInvariant()) | SW.Shortname.ToLowerInvariant().Contains(name.ToLowerInvariant())) && !exactSearch)
                                 {
                                     lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Description = SW.Description, ProductURL = SW.ProductURL });
                                 }
@@ -335,7 +335,7 @@ namespace PackageManagement
                         }
                         else
                         {
-                            if(!string.IsNullOrEmpty(name))
+                            if (!string.IsNullOrEmpty(name))
                                 lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
 
                             if (lResult.Count == 0)
@@ -449,7 +449,7 @@ namespace PackageManagement
 
             oUpdate.SoftwareUpdate.GetInstallType();
 
-            if(!bDLPath)
+            if (!bDLPath)
                 oUpdate.SoftwareUpdate.Download(false).Result.ToString();
             else
                 oUpdate.SoftwareUpdate.Download(false, sDLPath).Result.ToString();
@@ -535,7 +535,7 @@ namespace PackageManagement
             oUpdate.SoftwareUpdate.SW.Manufacturer = sManu;
 
             oUpdate.SoftwareUpdate.GetInstallType();
-            if(oUpdate.SoftwareUpdate.Download(false, location).Result)
+            if (oUpdate.SoftwareUpdate.Download(false, location).Result)
                 request.Verbose(sManu + " " + sProd + " " + sVer + " downloaded.");
             else
                 request.Verbose(sManu + " " + sProd + " " + sVer + " NOT downloaded.");
@@ -553,7 +553,7 @@ namespace PackageManagement
 
                 //List<GetSoftware> lServer = RZRestAPI.SWResults(name).OrderBy(t => t.Shortname).ToList();
 
-                List<AddSoftware> lLocal = lResult.Where(t => lCatalog.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
+                List<AddSoftware> lLocal = lResult.Where(t => lCatalog.Count(x => x.ProductName == t.ProductName && x.Manufacturer == t.Manufacturer && x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
                 request.Debug("Items Found: " + lLocal.Count().ToString());
 
                 //List<AddSoftware> lLocal = lResult.Where(t => lServer.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) != 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
@@ -600,19 +600,18 @@ namespace PackageManagement
                 foreach (var SW in lLocal)
                 {
                     var oCAT = lCatalog.FirstOrDefault(t => t.ProductName == SW.ProductName && t.ProductVersion == SW.ProductVersion && t.Manufacturer == SW.Manufacturer);
-                    if(oCAT != null)
-                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", oCAT.Description, RZRestAPI.sURL, name ?? "", oCAT.IconId.ToString(), oCAT.Shortname);
+                    if (oCAT != null)
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", oCAT.Description, RZRestAPI.sURL, (name ?? ""), oCAT.IconId.ToString(), oCAT.Shortname);
                     else
-                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPI.sURL, name ?? "", "", SW.Shortname);
-                    //request.YieldSoftwareIdentity(SW.Shortname, SW.ProductName, SW.ProductVersion, "", SW.Description, "Local", "", SW.ProductURL, SW.ContentID.ToString());
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPI.sURL, (name ?? ""), "", SW.Shortname);
                     request.AddMetadata("FromTrustedSource", "True");
                 }
             }
             catch
             {
                 dLastTokenRefresh = new DateTime();
-                
-                
+
+
             }
         }
 
@@ -630,7 +629,7 @@ namespace PackageManagement
             PowerShellInstance.AddScript(PSScript);
 
             Collection<PSObject> PSOutput = PowerShellInstance.Invoke();
-            
+
             return PSOutput;
 
         }
@@ -652,7 +651,7 @@ namespace PackageManagement
         public List<AddSoftware> getInstalledSW()
         {
             lSoftware = new List<AddSoftware>();
-            
+
             if (oScan.bInitialScan)
             {
                 oScan = new RZUpdate.RZScan(false, false);
