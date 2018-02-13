@@ -198,8 +198,6 @@ namespace RuckZuck_Tool
                     {
                         Guid.Parse(sResponse);
                         sAuthToken = sResponse;
-                        //tbURL.Text = Properties.Settings.Default.InternalURL;
-                        //oInstPanel.sInternalURL = Properties.Settings.Default.InternalURL;
                         tbURL.IsEnabled = true;
                         tbIPFSGW.IsEnabled = true;
                     }
@@ -468,7 +466,7 @@ namespace RuckZuck_Tool
                                 {
 
                                     //Check if SW is already installed
-                                    if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName & t.ProductVersion == oSW.ProductVersion) != null)
+                                    if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                                     {
                                         GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, isInstalled = true };
                                         oDBCat.Add(oNew);
@@ -485,7 +483,7 @@ namespace RuckZuck_Tool
                         else
                         {
                             //Check if SW is already installed
-                            if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName & t.ProductVersion == oSW.ProductVersion) != null)
+                            if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                             {
                                 oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, isInstalled = true });
                             }
@@ -513,7 +511,7 @@ namespace RuckZuck_Tool
                 oInstPanel.lAllSoftware = oSCAN.SoftwareRepository; 
 
                 //Mark all installed...
-                oInstPanel.lAllSoftware.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                oInstPanel.lAllSoftware.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
                 /*if (!string.IsNullOrEmpty(tbURL.Text))
@@ -600,7 +598,7 @@ namespace RuckZuck_Tool
                             oNewPanel.tbArchitecture.Text = "X86";
                     }
 
-                    if (oNewPanel.tbPSUnInstall.Text.ToLowerInvariant().Contains("(x86)") | oNewPanel.tbPSDetection.Text.ToLowerInvariant().Contains("wow6432node"))
+                    if (oNewPanel.tbPSUnInstall.Text.ToLowerInvariant().Contains("(x86)") || oNewPanel.tbPSDetection.Text.ToLowerInvariant().Contains("wow6432node"))
                         oNewPanel.tbPSPrereq.Text = "[Environment]::Is64BitProcess";
 
                     //oNewPanel.tbPSUnInstall.Text = oNewPanel.tbPSUnInstall.Text.Replace(@"C:\Program Files (x86)", "$(${Env:ProgramFiles(x86)})");
@@ -660,10 +658,10 @@ namespace RuckZuck_Tool
 
         private void tabWizard_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(tabWizard.SelectedItem != tabNewSWSMI & e.Source == tabWizard)
+            if(tabWizard.SelectedItem != tabNewSWSMI && e.Source == tabWizard)
                 oNewPanel.unload();
 
-            if (tabWizard.SelectedItem == tabNewSWARP & e.Source == tabWizard)
+            if (tabWizard.SelectedItem == tabNewSWARP && e.Source == tabWizard)
             {
                 Mouse.OverrideCursor = Cursors.Wait;
                 try
@@ -688,7 +686,7 @@ namespace RuckZuck_Tool
                     }
                     else
                     {
-                        arpGrid2.ItemsSource = lSoftware.Where(t => lServer.Count(x => x.ProductName == t.ProductName & x.Manufacturer == t.Manufacturer & x.ProductVersion == t.ProductVersion) == 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
+                        arpGrid2.ItemsSource = lSoftware.Where(t => lServer.Count(x => x.ProductName == t.ProductName && x.Manufacturer == t.Manufacturer && x.ProductVersion == t.ProductVersion) == 0).OrderBy(t => t.ProductName).ThenBy(t => t.ProductVersion).ThenBy(t => t.Manufacturer).ToList();
                     }
                 }
                 finally
@@ -847,7 +845,6 @@ namespace RuckZuck_Tool
                 tbPassword.ToolTip = sResponse;
                 //oInstPanel.sInternalURL = "";
             }
-
         }
 
         private void btOpenSettings_Click(object sender, RoutedEventArgs e)

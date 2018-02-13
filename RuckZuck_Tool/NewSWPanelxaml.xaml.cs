@@ -184,7 +184,7 @@ namespace RuckZuck_Tool
                     return;
             }
 
-            if(tbPSInstall.Text.Contains("/?") | tbPSUnInstall.Text.Contains("/?"))
+            if(tbPSInstall.Text.Contains("/?") || tbPSUnInstall.Text.Contains("/?"))
             {
                 if (MessageBox.Show("Paremeter for silent In-Uninstall are missing or unknown ( \"/?\")", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
                     return;

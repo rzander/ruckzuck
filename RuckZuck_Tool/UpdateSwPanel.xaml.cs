@@ -171,7 +171,7 @@ namespace RuckZuck_Tool
                     {
                         string sProdName = ((AddSoftware)lvSW.SelectedItem).ProductName;
 
-                        List<AddSoftware> possibleSW = lInstalledSW.Where(t => t.Manufacturer == ((AddSoftware)lvSW.SelectedItem).Manufacturer & t.ProductVersion == ((AddSoftware)lvSW.SelectedItem).MSIProductID).ToList();
+                        List<AddSoftware> possibleSW = lInstalledSW.Where(t => t.Manufacturer == ((AddSoftware)lvSW.SelectedItem).Manufacturer && t.ProductVersion == ((AddSoftware)lvSW.SelectedItem).MSIProductID).ToList();
                         if (possibleSW.Count == 1)
                         {
                             SWUpdate._RunPS(possibleSW[0].PSUninstall.ToString());

@@ -105,7 +105,7 @@ namespace RuckZuck_Tool
                     return;
                 }
 
-                foreach (DLTask oDL in lDLTasks.Where(t => t.AutoInstall & t.PercentDownloaded == 100 & !t.Error & !t.Installed & !t.Downloading & !t.WaitingForDependency & !t.Installing & !t.UnInstalled))
+                foreach (DLTask oDL in lDLTasks.Where(t => t.AutoInstall && t.PercentDownloaded == 100 && !t.Error && !t.Installed && !t.Downloading && !t.WaitingForDependency && !t.Installing && !t.UnInstalled))
                 {
                     try
                     {
@@ -122,14 +122,14 @@ namespace RuckZuck_Tool
                     }
                 }
 
-                foreach (DLTask oDL in lDLTasks.Where(t => t.WaitingForDependency & t.PercentDownloaded == 100 & !t.Error & !t.Installed & !t.Downloading & !t.Installing & !t.UnInstalled))
+                foreach (DLTask oDL in lDLTasks.Where(t => t.WaitingForDependency && t.PercentDownloaded == 100 && !t.Error && !t.Installed && !t.Downloading && !t.Installing && !t.UnInstalled))
                 {
                     try
                     {
                         bool allDone = true;
                         foreach (string sPreReq in oDL.SWUpd.SW.PreRequisites)
                         {
-                            if (lDLTasks.Count(t => t.Shortname == sPreReq & !t.Installed & !t.Error) != 0)
+                            if (lDLTasks.Count(t => t.Shortname == sPreReq && !t.Installed && !t.Error) != 0)
                             {
                                 allDone = false;
                             }
@@ -150,7 +150,7 @@ namespace RuckZuck_Tool
                         }
                         else
                         {
-                            if (!oDL.Downloading & !oDL.WaitingForDependency & oDL.AutoInstall)
+                            if (!oDL.Downloading && !oDL.WaitingForDependency && oDL.AutoInstall)
                                 if (!bInstalling)
                                 {
                                     Mutex mRes = null;
@@ -192,7 +192,7 @@ namespace RuckZuck_Tool
                 UILock.TryEnterReadLock(5000);
                 try
                 {
-                    var xRem = lDLTasks.Where(x => x.Installed | x.Error | (x.PercentDownloaded == 100 & x.AutoInstall == false) | (x.Status == "Waiting" & x.DownloadedBytes == 0 & x.Downloading == false) | x.UnInstalled ).ToList();
+                    var xRem = lDLTasks.Where(x => x.Installed || x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled ).ToList();
                     foreach (var o in xRem)
                     {
                         try

@@ -289,7 +289,7 @@ namespace RuckZuck_Tool
 
                             try
                             {
-                                var xRem = dm.lDLTasks.Where(x => x.ProductName == oSW.SW.ProductName & (x.Error | (x.PercentDownloaded == 100 & x.AutoInstall == false) | (x.Status == "Waiting" & x.DownloadedBytes == 0 & x.Downloading == false) | x.UnInstalled)).ToList();
+                                var xRem = dm.lDLTasks.Where(x => x.ProductName == oSW.SW.ProductName && (x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled)).ToList();
                                 foreach (var o in xRem)
                                 {
                                     try
@@ -562,7 +562,7 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "";
 
                 //Mark all installed...
-                oldSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                oldSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
                 ListCollectionView lcv = new ListCollectionView(oldSW.ToList());
 
@@ -584,7 +584,7 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "";
 
                 //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
                 ListCollectionView lcv = new ListCollectionView(badSW.ToList());
@@ -609,7 +609,7 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "";
 
                 //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
                 ListCollectionView lcv = new ListCollectionView(badSW.ToList());
@@ -632,7 +632,7 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "";
 
                 //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
                 ListCollectionView lcv = new ListCollectionView(badSW.ToList());
@@ -655,7 +655,7 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "";
 
                 //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
 
 
                 ListCollectionView lcv = new ListCollectionView(badSW.ToList());
@@ -692,7 +692,7 @@ namespace RuckZuck_Tool
             tSearch.Stop();
             lAllSoftware = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).Select(x => new GetSoftware() { isInstalled = false }).ToList();
             //Mark all installed...
-            lAllSoftware.ToList().ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName & t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
+            lAllSoftware.ToList().ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
         }
 
         private void miInstall_Click(object sender, RoutedEventArgs e)
