@@ -52,7 +52,7 @@ namespace RZUpdate
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
             }
 
-            if (!File.Exists(sSWFile))
+            if(!File.Exists(sSWFile))
             {
                 SoftwareUpdate = new SWUpdate(Parse(sSWFile));
             }
@@ -282,7 +282,7 @@ namespace RZUpdate
                 lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 return lRes;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -629,7 +629,7 @@ namespace RZUpdate
                         }
 
                         //Only Check Hash if downloaded
-                        if (!string.IsNullOrEmpty(vFile.FileHash) & bDownload)
+                        if (!string.IsNullOrEmpty(vFile.FileHash) && bDownload)
                         {
                             if (string.IsNullOrEmpty(vFile.HashType))
                                 vFile.HashType = "MD5";
@@ -971,7 +971,7 @@ namespace RZUpdate
                 else
                 {
                     Console.WriteLine("WARNING: Product not detected after installation.");
-                    if (iExitCode != 0 & iExitCode != 3010)
+                    if (iExitCode != 0 && iExitCode != 3010)
                     {
                         if (SendFeedback)
                             RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, SW.Architecture, "false", sUserName, "Product not detected after installation.").ConfigureAwait(false); ;
@@ -1049,7 +1049,7 @@ namespace RZUpdate
                     RZisRunning = false;
                 }
             }
-            while (msiIsRunning | RZisRunning);
+            while (msiIsRunning || RZisRunning);
 
             bool bMutexCreated = false;
             bool bResult = false;
@@ -1085,7 +1085,7 @@ namespace RZUpdate
             {
                 bool bError = false;
 
-                if (!CheckDTPreReq() & !Force)
+                if (!CheckDTPreReq() && !Force)
                 {
 
                     Console.WriteLine("Requirements not valid. Installation will not start.");
@@ -1252,7 +1252,7 @@ namespace RZUpdate
                     RZisRunning = false;
                 }
             }
-            while (msiIsRunning | RZisRunning);
+            while (msiIsRunning || RZisRunning);
 
             bool bMutexCreated = false;
             bool bResult = false;
@@ -1301,17 +1301,15 @@ namespace RZUpdate
                         finally { UILock.ExitReadLock(); }
                         return true;
                     }
-                    else
-                    {
-                        downloadTask.Installed = false;
-                        downloadTask.Installing = false;
-                        downloadTask.Downloading = false;
-                    }
                 }
-                catch
+                catch(Exception ex)
                 {
-
+                    Console.WriteLine(ex.Message);
                 }
+
+                downloadTask.Installed = false;
+                downloadTask.Installing = false;
+                downloadTask.Downloading = false;
             }
             else
             {
@@ -1361,7 +1359,7 @@ namespace RZUpdate
         public bool _DownloadFile2(string URL, string FileName)
         {
             //Check if URL is HTTP, otherwise it must be a PowerShell
-            if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) & !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
+            if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
             {
                 Collection<PSObject> oResults = _RunPS(URL, FileName);
                 if (File.Exists(FileName))
