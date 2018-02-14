@@ -1,0 +1,10 @@
+version: 1.6.1.{build}
+skip_tags: true
+image: Visual Studio 2017
+before_build:
+- ps: nuget restore RZUpdate\RZUpdate.sln
+build:
+  project: /RZUpdate/RZUpdate.sln
+  verbosity: minimal
+artifacts:
+- path: RZUpdate\bin\Debug\RZUpdate.exe
