@@ -104,21 +104,21 @@ namespace RZUpdate
                 else
                 {
                     //Detect added SW
-                    foreach (AddSoftware oSW in TempInstalledSoftware.Where(x => !InstalledSoftware.Any(y => y.ProductName == x.ProductName & y.ProductVersion == x.ProductVersion)))
+                    foreach (AddSoftware oSW in TempInstalledSoftware.Where(x => !InstalledSoftware.Any(y => y.ProductName == x.ProductName && y.ProductVersion == x.ProductVersion)))
                     {
                         OnInstalledSWAdded(oSW, new EventArgs());
                     }
 
                     bool bUpdateRemoved = false;
                     //Detect removed SW
-                    foreach (AddSoftware oSW in InstalledSoftware.Where(x => !TempInstalledSoftware.Any(y => y.ProductName == x.ProductName & y.ProductVersion == x.ProductVersion)))
+                    foreach (AddSoftware oSW in InstalledSoftware.Where(x => !TempInstalledSoftware.Any(y => y.ProductName == x.ProductName && y.ProductVersion == x.ProductVersion)))
                     {
                         try
                         {
                             lock (NewSoftwareVersions)
                             {
                                 int iCount = NewSoftwareVersions.RemoveAll(t => t.ProductName == oSW.ProductName);
-                                iCount = iCount + NewSoftwareVersions.RemoveAll(t => t.MSIProductID == oSW.ProductVersion & t.Manufacturer == oSW.Manufacturer);
+                                iCount = iCount + NewSoftwareVersions.RemoveAll(t => t.MSIProductID == oSW.ProductVersion && t.Manufacturer == oSW.Manufacturer);
                                 if (iCount > 0)
                                     bUpdateRemoved = true;
                             }
@@ -277,7 +277,7 @@ namespace RZUpdate
                 var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
 
                 //we do not have to check for updates if it's in the Catalog
-                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.FirstOrDefault(r => r.ProductName == t.ProductName & r.ProductVersion == t.ProductVersion & r.Manufacturer == t.Manufacturer) == null).ToList();
+                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.FirstOrDefault(r => r.ProductName == t.ProductName && r.ProductVersion == t.ProductVersion && r.Manufacturer == t.Manufacturer) == null).ToList();
 
                 List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(tRes).ToList();
 
@@ -384,6 +384,8 @@ namespace RZUpdate
         internal AddSoftware GetSWProperties(RegistryKey oRegkey)
         {
             AddSoftware oResult = new AddSoftware();
+            Version oVer = null;
+            bool bVersion = false;
 
             oResult.PSPreReq = "$true";
 
@@ -400,7 +402,7 @@ namespace RZUpdate
             string sMSI = oRegkey.Name.Split('\\').Last();
 
             string EncKey = "";
-            if (sMSI.StartsWith("{") & sMSI.EndsWith("}"))
+            if (sMSI.StartsWith("{") && sMSI.EndsWith("}"))
             {
                 bool bIsMSI = true;
                 EncKey = descramble(sMSI.Substring(1, 36).Replace("-", ""));
@@ -416,7 +418,7 @@ namespace RZUpdate
                 if (bIsMSI)
                 {
                     oResult.MSIProductID = sMSI;
-                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qb! REBOOT=REALLYSUPPRESS \" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qn REBOOT=REALLYSUPPRESS \" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
 
 
                     oResult.PSDetection = @"Test-Path 'HKLM:\SOFTWARE\Classes\Installer\Products\" + EncKey + "'";
@@ -433,7 +435,11 @@ namespace RZUpdate
                     {
                         try
                         {
-                            oResult.PSDetection = @"if((Get-ItemProperty -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue | select -exp DisplayVersion) -eq '" + oRegkey.GetValue("DisplayVersion", "").ToString() + "') { $true } else { $false }";
+                            string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
+                            if (Version.TryParse(sVer, out oVer))
+                                oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                            else
+                                oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                         }
                         catch { }
 
@@ -443,26 +449,48 @@ namespace RZUpdate
                 else
                 {
                     oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                    if (Environment.Is64BitOperatingSystem & oRegkey.View == RegistryView.Registry32)
+
+                    string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
+                    if (Version.TryParse(sVer, out oVer)) //check if its a Version
+                        bVersion = true;
+
+                    if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
                     {
-                        oResult.PSDetection = @"if((Get-ItemProperty -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue | select -exp DisplayVersion) -eq '" + oRegkey.GetValue("DisplayVersion", "").ToString() + "') { $true } else { $false }";
+                        if (bVersion)
+                            oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                        else
+                            oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                     }
                     else
                     {
-                        oResult.PSDetection = @"if((Get-ItemProperty -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue | select -exp DisplayVersion) -eq '" + oRegkey.GetValue("DisplayVersion", "").ToString() + "') { $true } else { $false }";
+                        if (bVersion)
+                            oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                        else
+                            oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
+
                     }
                 }
             }
             else
             {
+                string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
+                if (Version.TryParse(sVer, out oVer)) //check if its a Version
+                    bVersion = true;
+
                 oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                if (Environment.Is64BitOperatingSystem & oRegkey.View == RegistryView.Registry32)
+                if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
                 {
-                    oResult.PSDetection = @"if((Get-ItemProperty -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue | select -exp DisplayVersion) -eq '" + oRegkey.GetValue("DisplayVersion", "").ToString() + "') { $true } else { $false }";
+                    if (bVersion)
+                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                    else
+                        oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                 }
                 else
                 {
-                    oResult.PSDetection = @"if((Get-ItemProperty -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue | select -exp DisplayVersion) -eq '" + oRegkey.GetValue("DisplayVersion", "").ToString() + "') { $true } else { $false }";
+                    if (bVersion)
+                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                    else
+                        oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                 }
 
             }
@@ -617,8 +645,8 @@ namespace RZUpdate
                     if (iE.FileName != null)
                     {
                         List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
-                        //Max Size 64px...
-                        var ico = lIcons.Where(t => t.Height <= 128 & t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                        //Max Size 128px...
+                        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
                         if (ico != null)
                             return ico.ToBitmap();
                         else

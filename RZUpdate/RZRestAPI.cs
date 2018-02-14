@@ -36,7 +36,7 @@ namespace RuckZuck_WCF
                     }
                 }
 
-                if (_sURL == "UDP" & !DisableBroadcast)
+                if (_sURL == "UDP" && !DisableBroadcast)
                 {
                     try
                     {
@@ -147,7 +147,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t => t.ProductName == PackageName & t.ProductVersion == PackageVersion).ToList();
+                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion).ToList();
             }
             catch { }
 
@@ -158,7 +158,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t => t.ProductName == PackageName & t.ProductVersion == PackageVersion & t.Manufacturer == Manufacturer).ToList();
+                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion && t.Manufacturer == Manufacturer).ToList();
             }
             catch { }
 
@@ -524,17 +524,17 @@ namespace RuckZuck_WCF
             {
                 if (string.IsNullOrEmpty(_status))
                 {
-                    if (Installing & !Error)
+                    if (Installing && !Error)
                         return "Installing";
-                    if (Downloading & !Error)
+                    if (Downloading && !Error)
                         return "Downloading";
-                    if (Installed & !Error)
+                    if (Installed && !Error)
                         return "Installed";
-                    if (UnInstalled & !Error)
+                    if (UnInstalled && !Error)
                         return "Uninstalled";
                     if (WaitingForDependency)
                         return "Installing dependencies";
-                    if (PercentDownloaded == 100 & !Error)
+                    if (PercentDownloaded == 100 && !Error)
                         return "Downloaded";
                     if (Error)
                         return ErrorMessage;

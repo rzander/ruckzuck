@@ -1301,17 +1301,15 @@ namespace RZUpdate
                         finally { UILock.ExitReadLock(); }
                         return true;
                     }
-                    else
-                    {
-                        downloadTask.Installed = false;
-                        downloadTask.Installing = false;
-                        downloadTask.Downloading = false;
-                    }
                 }
-                catch
+                catch(Exception ex)
                 {
-
+                    Console.WriteLine(ex.Message);
                 }
+
+                downloadTask.Installed = false;
+                downloadTask.Installing = false;
+                downloadTask.Downloading = false;
             }
             else
             {
