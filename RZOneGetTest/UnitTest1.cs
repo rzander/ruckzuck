@@ -16,10 +16,13 @@ namespace RZOneGetTest
             Assert.IsNotNull(oRes);
             if(oRes != null)
             {
-                Console.Write("Latest Version of 'sccmclictr': ");
-                string sVersion = (((System.Management.Automation.PSProperty)oRes[0].Properties["Version"]).Value as string) ?? "";
-                Console.WriteLine(sVersion);
-                Assert.AreNotEqual(sVersion, "");
+                if (oRes.Count > 0)
+                {
+                    Console.Write("Latest Version of 'sccmclictr': ");
+                    string sVersion = (((System.Management.Automation.PSProperty)oRes[0].Properties["Version"]).Value as string) ?? "";
+                    Console.WriteLine(sVersion);
+                    Assert.AreNotEqual(sVersion, "");
+                }
             }
         }
     }
