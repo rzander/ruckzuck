@@ -76,6 +76,7 @@ namespace RuckZuck_Tool
             cp.ReferencedAssemblies.Add("System.Xml.Linq.dll");
 
             cp.ReferencedAssemblies.Add("System.Net.Http.dll");
+            cp.ReferencedAssemblies.Add("System.Net.dll");
             cp.ReferencedAssemblies.Add("System.Web.Extensions.dll");
 
             cp.ReferencedAssemblies.Add(@"C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll");

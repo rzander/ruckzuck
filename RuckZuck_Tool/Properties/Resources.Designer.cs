@@ -149,6 +149,7 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Resources;
         ///using System.Text;
         ///using System.Threading;
+        ///using System.Net;
         ///
         ///namespace RZWrapper
         ///{
@@ -160,9 +161,8 @@ namespace RuckZuck_Tool.Properties {
         ///
         ///            try
         ///            {
-        ///                Assembly _assembly = Assembly.GetExecutingAssembly();
-        ///                var stream = _assembly.GetManifestResourceStream(&quot;Resources.resx&quot;);
-        ///   [rest of string was truncated]&quot;;.
+        ///		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        ///		ServicePointManager.ServerCertificateValidationCallback = delegate  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {

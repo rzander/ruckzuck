@@ -47,7 +47,7 @@ namespace RuckZuck_Tool
             CommandArgs.AddRange(Environment.GetCommandLineArgs());
             CommandArgs.RemoveAt(0);
 
-            //Disbale SSL/TLS Errors
+            //Disable SSL/TLS Errors
             System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             //Disable CRL Check
             System.Net.ServicePointManager.CheckCertificateRevocationList = false;

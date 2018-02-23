@@ -2354,6 +2354,7 @@ using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Threading;
+using System.Net;
 
 namespace RZWrapper
 {
@@ -2365,6 +2366,9 @@ namespace RZWrapper
 
             try
             {
+		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+		ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+		ServicePointManager.CheckCertificateRevocationList = false;
                 Assembly _assembly = Assembly.GetExecutingAssembly();
                 var stream = _assembly.GetManifestResourceStream("Resources.resx");
                 var resourceData = new byte[] { };
