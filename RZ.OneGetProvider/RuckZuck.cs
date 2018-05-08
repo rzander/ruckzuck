@@ -54,6 +54,7 @@ namespace PackageManagement
                 _reAuthenticate(request);
 
                 oScan = new RZUpdate.RZScan(false, false);
+                //oScan.GetSWRepository().ConfigureAwait(false); //no need to load Repository on init
                 oUpdate = new RZUpdate.RZUpdater();
 
                 /*
@@ -286,6 +287,7 @@ namespace PackageManagement
                 //Get all installed SW
                 if (bUpdate)
                 {
+                    oScan.GetSWRepository().Wait(6000);
                     oScan.bCheckUpdates = false;
                     oScan.SWScan().Wait();
                     oScan.CheckUpdates(null).Wait();

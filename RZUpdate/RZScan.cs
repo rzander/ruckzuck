@@ -17,6 +17,7 @@ namespace RZUpdate
     public class RZScan
     {
         internal bool bCheckUpdates = false;
+        internal bool bRunScan = false;
         internal bool bInitialScan = true;
         delegate void AnonymousDelegate();
 
@@ -61,16 +62,27 @@ namespace RZUpdate
 
             OnSWScanCompleted += RZScan_OnSWScanCompleted;
             OnUpdScanCompleted += RZScan_OnUpdScanCompleted;
+            OnSWRepoLoaded += RZScan_OnSWRepoLoaded;
 
             if (RunScan)
             {
-                SWScan();
+                bRunScan = true;
+                //SWScan();
+                GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
 
             //Check every 60s
             tRegCheck.Interval = 60000;
             tRegCheck.Elapsed += TRegCheck_Elapsed;
 
+        }
+
+        private void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
+        {
+            if (bRunScan)
+            {
+                SWScan();
+            }
         }
 
         public Task SWScan()

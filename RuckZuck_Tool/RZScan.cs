@@ -17,6 +17,7 @@ namespace RZUpdate
     public class RZScan
     {
         internal bool bCheckUpdates = false;
+        internal bool bRunScan = false;
         internal bool bInitialScan = true;
         delegate void AnonymousDelegate();
 
@@ -61,16 +62,27 @@ namespace RZUpdate
 
             OnSWScanCompleted += RZScan_OnSWScanCompleted;
             OnUpdScanCompleted += RZScan_OnUpdScanCompleted;
+            OnSWRepoLoaded += RZScan_OnSWRepoLoaded;
 
             if (RunScan)
             {
-                SWScan();
+                bRunScan = true;
+                //SWScan();
+                GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
 
             //Check every 60s
             tRegCheck.Interval = 60000;
             tRegCheck.Elapsed += TRegCheck_Elapsed;
 
+        }
+
+        private void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
+        {
+            if (bRunScan)
+            {
+                SWScan();
+            }
         }
 
         public Task SWScan()
@@ -254,7 +266,9 @@ namespace RZUpdate
         {
             if (bCheckUpdates)
             {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 CheckUpdates(null);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             }
         }
 
@@ -480,8 +494,8 @@ namespace RZUpdate
                 oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                 if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
                 {
-                    if(bVersion)
-                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer+ "') { $true } else { $false }";
+                    if (bVersion)
+                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
                     else
                         oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                 }
