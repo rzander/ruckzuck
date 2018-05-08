@@ -164,7 +164,7 @@ namespace RuckZuck_Tool
                 if (tbURL.IsEnabled)
                 {
                     tabWizard.SelectedItem = tabMain;
-                    oSCAN.SWScan();
+                    //oSCAN.SWScan();
 
                     oInstPanel.EnableFeedback = true;
                     oInstPanel.EnableEdit = true;
@@ -173,7 +173,7 @@ namespace RuckZuck_Tool
                 else
                 {
                     oInstPanel.EnableSupport = false;
-                    oSCAN.SWScan();
+                    //oSCAN.SWScan();
                 }
             }
         }
@@ -326,6 +326,9 @@ namespace RuckZuck_Tool
                     btInstallSoftware.IsEnabled = true;
                 };
                 Dispatcher.Invoke(update);
+
+                oSCAN.bCheckUpdates = true;
+                oSCAN.SWScan();
             }
             catch { }
         }
