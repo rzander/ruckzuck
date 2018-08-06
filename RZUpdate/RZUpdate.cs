@@ -409,9 +409,21 @@ namespace RZUpdate
                 var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault(); ;
 
                 SW = new AddSoftware();
-                SW.ProductName = oGetSW.ProductName;
-                SW.ProductVersion = oGetSW.ProductVersion;
-                SW.Manufacturer = oGetSW.Manufacturer;
+
+                if (oGetSW == null)
+                {
+                    if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json")))
+                    {
+                        string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json");
+                        SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
+                    }
+                }
+                else
+                {
+                    SW.ProductName = oGetSW.ProductName;
+                    SW.ProductVersion = oGetSW.ProductVersion;
+                    SW.Manufacturer = oGetSW.Manufacturer;
+                }
 
                 //Get Install-type
                 GetInstallType();
