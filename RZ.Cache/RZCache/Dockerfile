@@ -12,7 +12,7 @@ ENTRYPOINT ["dotnet", "RZCache.dll"]
 COPY ${source:-obj/Docker/publish} .
 #RUN tar xvfz /app/wwwroot/go-ipfs_v0.4.13_linux-amd64.tar.gz
 #RUN mv go-ipfs/ipfs /usr/local/bin/ipfs
-RUN rm /app/wwwroot/go-ipfs_v0.4.13_linux-amd64.tar.gz
+#RUN rm /app/wwwroot/go-ipfs_v0.4.13_linux-amd64.tar.gz
 ENV localURL "https://rzproxy.azurewebsites.net"
 ENV RZUser ""
 ENV RZPW ""
