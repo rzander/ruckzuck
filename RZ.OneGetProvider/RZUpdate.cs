@@ -52,7 +52,7 @@ namespace RZUpdate
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
             }
 
-            if(!File.Exists(sSWFile))
+            if (!File.Exists(sSWFile))
             {
                 SoftwareUpdate = new SWUpdate(Parse(sSWFile));
             }
@@ -282,7 +282,7 @@ namespace RZUpdate
                 lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 return lRes;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -406,35 +406,56 @@ namespace RZUpdate
 
             try
             {
-                var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault(); ;
 
                 SW = new AddSoftware();
-                SW.ProductName = oGetSW.ProductName;
-                SW.ProductVersion = oGetSW.ProductVersion;
-                SW.Manufacturer = oGetSW.Manufacturer;
 
-                //Get Install-type
-                GetInstallType();
-
-                if (SW == null)
+                //Always use local JSON-File if exists
+                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json")))
                 {
-                    SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
-
-                    try
+                    string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json");
+                    SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
+                }
+                else
+                {
+                    var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault();
+                    if (oGetSW != null)
                     {
-                        if (SW.Image == null)
+                        SW.ProductName = oGetSW.ProductName;
+                        SW.ProductVersion = oGetSW.ProductVersion;
+                        SW.Manufacturer = oGetSW.Manufacturer;
+
+                        if (SW.Architecture == null)
                         {
-                            SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+
+                            try
+                            {
+                                if (SW.Image == null)
+                                {
+                                    SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                                }
+                            }
+                            catch { }
+
+                            if (SW.Files == null)
+                                SW.Files = new List<contentFiles>();
+
+                            if (string.IsNullOrEmpty(SW.PSPreReq))
+                                SW.PSPreReq = "$true; ";
                         }
                     }
-                    catch { }
 
-                    if (SW.Files == null)
-                        SW.Files = new List<contentFiles>();
+                    if (string.IsNullOrEmpty(SW.Shortname))
+                        return;
+                    //Get Install-type
+                    GetInstallType();
 
-                    if (string.IsNullOrEmpty(SW.PSPreReq))
-                        SW.PSPreReq = "$true; ";
+
                 }
+
+
+
+
 
                 downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
@@ -449,38 +470,42 @@ namespace RZUpdate
 
         public bool GetInstallType(bool bGetFirst = false)
         {
-            foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+            //Only get other DeploymentTypes if Architecture is not defined...
+            if (string.IsNullOrEmpty(this.SW.Architecture))
             {
-                try
+                foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
                 {
-                    //Check PreReqs
                     try
                     {
-                        if (!string.IsNullOrEmpty(DT.PSPreReq))
+                        //Check PreReqs
+                        try
                         {
-                            if (!bGetFirst)
+                            if (!string.IsNullOrEmpty(DT.PSPreReq))
                             {
-                                if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
-                                    continue;
+                                if (!bGetFirst)
+                                {
+                                    if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
+                                        continue;
+                                }
                             }
                         }
-                    }
-                    catch { continue; }
+                        catch { continue; }
 
-                    SW = DT;
+                        SW = DT;
 
-                    try
-                    {
-                        if (SW.Image == null)
+                        try
                         {
-                            SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            if (SW.Image == null)
+                            {
+                                SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            }
                         }
+                        catch { }
+
+                        return true;
                     }
                     catch { }
-
-                    return true;
                 }
-                catch { }
             }
 
             return false;
@@ -1302,7 +1327,7 @@ namespace RZUpdate
                         return true;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }

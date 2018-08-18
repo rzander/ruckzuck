@@ -129,7 +129,7 @@ namespace RZ.Bot
                                     {
                                         Console.WriteLine("... done.");
                                         message.Complete();
-                                        RZRestAPI.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
+                                        RZRestAPI.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, oRZSW.SoftwareUpdate.SW.Architecture, "true", "RZBot", "ok..").Wait(3000);
                                         sLastPackage = DateTime.Now.Ticks.ToString(); ;
                                         //return 0;
                                     }

@@ -203,7 +203,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="StartSSL_Authentication.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
