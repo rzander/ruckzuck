@@ -423,11 +423,12 @@ namespace RZUpdate
                         SW.ProductName = oGetSW.ProductName;
                         SW.ProductVersion = oGetSW.ProductVersion;
                         SW.Manufacturer = oGetSW.Manufacturer;
+                        SW.Shortname = Shortname;
 
                         if (SW.Architecture == null)
                         {
                             SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
-
+                            SW.Shortname = Shortname;
                             try
                             {
                                 if (SW.Image == null)
@@ -447,6 +448,7 @@ namespace RZUpdate
 
                     if (string.IsNullOrEmpty(SW.Shortname))
                         return;
+
                     //Get Install-type
                     GetInstallType();
 
@@ -506,9 +508,11 @@ namespace RZUpdate
                     }
                     catch { }
                 }
+
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         private bool _Download(bool Enforce, string DLPath)
@@ -834,7 +838,8 @@ namespace RZUpdate
         /// <returns>true = success</returns>
         public async Task<bool> Download(bool Enforce)
         {
-            bool bAutoInstall = downloadTask.AutoInstall;
+            return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
+            /*bool bAutoInstall = downloadTask.AutoInstall;
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
             if (SW.PreRequisites.Length > 0)
@@ -852,7 +857,7 @@ namespace RZUpdate
             ProgressDetails += SWUpdate_ProgressDetails;
 
             bool bResult = await Task.Run(() => _Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID))).ConfigureAwait(false);
-            return bResult;
+            return bResult;*/
         }
 
         public async Task<bool> Download(bool Enforce, string DLPath)
