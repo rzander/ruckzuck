@@ -97,7 +97,7 @@ namespace RZUpdate
                             }
                         }
 
-                        if ((bool)SWUpdate._RunPS(SW.PSPreReq)[0].BaseObject)
+                        if ((bool)SWUpdate._RunPS(SW.PSPreReq).Last().BaseObject)
                         {
                             SoftwareUpdate = new SWUpdate(SW);
                             return SoftwareUpdate;
@@ -486,7 +486,7 @@ namespace RZUpdate
                             {
                                 if (!bGetFirst)
                                 {
-                                    if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
+                                    if (!(bool)_RunPS(DT.PSPreReq).Last().BaseObject)
                                         continue;
                                 }
                             }
@@ -971,11 +971,11 @@ namespace RZUpdate
                         downloadTask.Installing = true;
                         ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode");
+                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
 
                         try
                         {
-                            iExitCode = ((int)oResult[0].BaseObject);
+                            iExitCode = ((int)oResult.Last().BaseObject);
                         }
                         catch { }
 
@@ -1173,11 +1173,11 @@ namespace RZUpdate
                             downloadTask.Installing = true;
                             ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode");
+                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
 
                             try
                             {
-                                iExitCode = ((int)oResult[0].BaseObject);
+                                iExitCode = ((int)oResult.Last().BaseObject);
                             }
                             catch { }
 
@@ -1311,7 +1311,7 @@ namespace RZUpdate
                 try
                 {
                     //Already installed ?
-                    if ((bool)_RunPS(SW.PSDetection)[0].BaseObject)
+                    if ((bool)_RunPS(SW.PSDetection).Last().BaseObject)
                     {
                         UILock.EnterReadLock();
                         try
@@ -1369,7 +1369,7 @@ namespace RZUpdate
                     if (string.IsNullOrEmpty(SW.PSPreReq))
                         SW.PSPreReq = "$true; ";
                     //Already installed ?
-                    if ((bool)_RunPS(SW.PSPreReq)[0].BaseObject)
+                    if ((bool)_RunPS(SW.PSPreReq).Last().BaseObject)
                     {
                         return true;
                     }
@@ -1391,7 +1391,7 @@ namespace RZUpdate
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
             {
-                Collection<PSObject> oResults = _RunPS(URL, FileName);
+                var oResults = _RunPS(URL, FileName, new TimeSpan(2, 0, 0)); //2h timeout
                 if (File.Exists(FileName))
                 {
                     DLProgress((int)100, EventArgs.Empty);
@@ -1629,25 +1629,51 @@ namespace RZUpdate
         /// </summary>
         /// <param name="PSScript">PowerShell Script</param>
         /// <returns></returns>
-        public static Collection<PSObject> _RunPS(string PSScript, string WorkingDir = "")
+        public static PSDataCollection<PSObject> _RunPS(string PSScript, string WorkingDir = "", TimeSpan? Timeout = null)
         {
-            PowerShell PowerShellInstance = PowerShell.Create();
+            TimeSpan timeout = new TimeSpan(0, 5, 0); //default timeout = 5min
 
-            if (!string.IsNullOrEmpty(WorkingDir))
+            if (Timeout != null)
+                timeout = (TimeSpan)Timeout;
+
+            DateTime dStart = DateTime.Now;
+            TimeSpan dDuration = DateTime.Now - dStart;
+            using (PowerShell PowerShellInstance = PowerShell.Create())
             {
-                WorkingDir = Path.GetDirectoryName(WorkingDir);
-                PSScript = "Set-Location -Path '" + WorkingDir + "';" + PSScript;
+                if (!string.IsNullOrEmpty(WorkingDir))
+                {
+                    WorkingDir = Path.GetDirectoryName(WorkingDir);
+                    PSScript = "Set-Location -Path '" + WorkingDir + "';" + PSScript;
+                }
+
+                PowerShellInstance.AddScript(PSScript);
+                PSDataCollection<PSObject> outputCollection = new PSDataCollection<PSObject>();
+
+                outputCollection.DataAdding += ConsoleOutput;
+                PowerShellInstance.Streams.Error.DataAdding += ConsoleError;
+
+                IAsyncResult async = PowerShellInstance.BeginInvoke<PSObject, PSObject>(null, outputCollection);
+                while (async.IsCompleted == false || dDuration > timeout)
+                {
+                    Thread.Sleep(200);
+                    dDuration = DateTime.Now - dStart;
+                }
+
+                return outputCollection;
             }
-            PowerShellInstance.AddScript(PSScript);
 
-            Collection<PSObject> PSOutput = PowerShellInstance.Invoke();
-            foreach (ErrorRecord err in PowerShellInstance.Streams.Error)
-            {
-                Console.WriteLine(err.ToString());
-            }
+        }
 
-            return PSOutput;
+        private static void ConsoleError(object sender, DataAddingEventArgs e)
+        {
+            if (e.ItemAdded != null)
+                Console.WriteLine("ERROR:" + e.ItemAdded.ToString());
+        }
 
+        private static void ConsoleOutput(object sender, DataAddingEventArgs e)
+        {
+            //if (e.ItemAdded != null)
+            //    Console.WriteLine(e.ItemAdded.ToString());
         }
 
         public string GetDLPath()
