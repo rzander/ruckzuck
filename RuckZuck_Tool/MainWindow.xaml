@@ -119,7 +119,7 @@
                             <Grid>
                                 <StackPanel DockPanel.Dock="Left">
                                     <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
-                                    <Label Content="... will Scan your Computer to detect installed Software" Margin="50,-10,0,0" />
+                                    <Label Content="... will scan your Computer to detect installed Software" Margin="50,-10,0,0" />
                                 </StackPanel>
                                 <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
                             </Grid>
@@ -179,7 +179,7 @@
                             <Grid>
                                 <StackPanel DockPanel.Dock="Left">
                                     <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
-                                    <Label Content="... has Found unknow Software on your Computer." Margin="50,-10,0,0" />
+                                    <Label Content="... has found unknow Software on your Computer." Margin="50,-10,0,0" />
                                 </StackPanel>
                                 <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
                             </Grid>
@@ -445,7 +445,7 @@
                             <Grid>
                                 <StackPanel DockPanel.Dock="Left">
                                     <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
-                                    <Label Content="Create a new Softare Package..." Margin="50,-10,0,0" />
+                                    <Label Content="Create a new Software Package..." Margin="50,-10,0,0" />
                                 </StackPanel>
                                 <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
                             </Grid>
@@ -498,7 +498,7 @@
                             <Grid>
                                 <StackPanel DockPanel.Dock="Left">
                                     <Label Content="RuckZuck" FontSize="14" FontWeight="Bold" Margin="30,0,0,0" FontFamily="Segoe UI Black" />
-                                    <Label Content="Create new Software-Items based on a existing installation." Margin="50,-10,0,0" />
+                                    <Label Content="Create new Software-Items based on an existing installation." Margin="50,-10,0,0" />
                                 </StackPanel>
                                 <Image DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="0,0,10,0" Panel.ZIndex="500" Source="Images/RuckZuck.png" />
                             </Grid>
