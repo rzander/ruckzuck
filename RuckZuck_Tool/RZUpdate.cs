@@ -971,7 +971,7 @@ namespace RZUpdate
                         downloadTask.Installing = true;
                         ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
+                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 60, 0));
 
                         try
                         {
@@ -1631,7 +1631,7 @@ namespace RZUpdate
         /// <returns></returns>
         public static PSDataCollection<PSObject> _RunPS(string PSScript, string WorkingDir = "", TimeSpan? Timeout = null)
         {
-            TimeSpan timeout = new TimeSpan(0, 5, 0); //default timeout = 5min
+            TimeSpan timeout = new TimeSpan(0, 15, 0); //default timeout = 15min
 
             if (Timeout != null)
                 timeout = (TimeSpan)Timeout;
