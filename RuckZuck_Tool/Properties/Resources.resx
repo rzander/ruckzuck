@@ -174,7 +174,7 @@ namespace RuckZuck_WCF
                     }
                 }
 
-                if (_sURL == "UDP" &amp; !DisableBroadcast)
+                if (_sURL == "UDP" &amp;&amp; !DisableBroadcast)
                 {
                     try
                     {
@@ -285,7 +285,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t =&gt; t.ProductName == PackageName &amp; t.ProductVersion == PackageVersion).ToList();
+                return SWResults("").Where(t =&gt; t.ProductName == PackageName &amp;&amp; t.ProductVersion == PackageVersion).ToList();
             }
             catch { }
 
@@ -296,7 +296,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t =&gt; t.ProductName == PackageName &amp; t.ProductVersion == PackageVersion &amp; t.Manufacturer == Manufacturer).ToList();
+                return SWResults("").Where(t =&gt; t.ProductName == PackageName &amp;&amp; t.ProductVersion == PackageVersion &amp;&amp; t.Manufacturer == Manufacturer).ToList();
             }
             catch { }
 
@@ -313,7 +313,7 @@ namespace RuckZuck_WCF
                     {
                         try
                         {
-                            DateTime dCreationDate = File.GetCreationTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                            DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
                             if ((DateTime.Now - dCreationDate) &lt; new TimeSpan(0, 30, 0)) //Cache for 30min
                             {
                                 //return cached Content
@@ -662,17 +662,17 @@ namespace RuckZuck_WCF
             {
                 if (string.IsNullOrEmpty(_status))
                 {
-                    if (Installing &amp; !Error)
+                    if (Installing &amp;&amp; !Error)
                         return "Installing";
-                    if (Downloading &amp; !Error)
+                    if (Downloading &amp;&amp; !Error)
                         return "Downloading";
-                    if (Installed &amp; !Error)
+                    if (Installed &amp;&amp; !Error)
                         return "Installed";
-                    if (UnInstalled &amp; !Error)
+                    if (UnInstalled &amp;&amp; !Error)
                         return "Uninstalled";
                     if (WaitingForDependency)
                         return "Installing dependencies";
-                    if (PercentDownloaded == 100 &amp; !Error)
+                    if (PercentDownloaded == 100 &amp;&amp; !Error)
                         return "Downloaded";
                     if (Error)
                         return ErrorMessage;
@@ -770,7 +770,7 @@ namespace RZUpdate
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
             }
 
-            if(!File.Exists(sSWFile))
+            if (!File.Exists(sSWFile))
             {
                 SoftwareUpdate = new SWUpdate(Parse(sSWFile));
             }
@@ -815,7 +815,7 @@ namespace RZUpdate
                             }
                         }
 
-                        if ((bool)SWUpdate._RunPS(SW.PSPreReq)[0].BaseObject)
+                        if ((bool)SWUpdate._RunPS(SW.PSPreReq).Last().BaseObject)
                         {
                             SoftwareUpdate = new SWUpdate(SW);
                             return SoftwareUpdate;
@@ -1000,7 +1000,7 @@ namespace RZUpdate
                 lRes.PreRequisites = lRes.PreRequisites.Where(x =&gt; !string.IsNullOrEmpty(x)).ToArray();
                 return lRes;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -1124,35 +1124,58 @@ namespace RZUpdate
 
             try
             {
-                var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault(); ;
 
                 SW = new AddSoftware();
-                SW.ProductName = oGetSW.ProductName;
-                SW.ProductVersion = oGetSW.ProductVersion;
-                SW.Manufacturer = oGetSW.Manufacturer;
 
-                //Get Install-type
-                GetInstallType();
-
-                if (SW == null)
+                //Always use local JSON-File if exists
+                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json")))
                 {
-                    SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
-
-                    try
+                    string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json");
+                    SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
+                }
+                else
+                {
+                    var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault();
+                    if (oGetSW != null)
                     {
-                        if (SW.Image == null)
+                        SW.ProductName = oGetSW.ProductName;
+                        SW.ProductVersion = oGetSW.ProductVersion;
+                        SW.Manufacturer = oGetSW.Manufacturer;
+                        SW.Shortname = Shortname;
+
+                        if (SW.Architecture == null)
                         {
-                            SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+                            SW.Shortname = Shortname;
+                            try
+                            {
+                                if (SW.Image == null)
+                                {
+                                    SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                                }
+                            }
+                            catch { }
+
+                            if (SW.Files == null)
+                                SW.Files = new List&lt;contentFiles&gt;();
+
+                            if (string.IsNullOrEmpty(SW.PSPreReq))
+                                SW.PSPreReq = "$true; ";
                         }
                     }
-                    catch { }
 
-                    if (SW.Files == null)
-                        SW.Files = new List&lt;contentFiles&gt;();
+                    if (string.IsNullOrEmpty(SW.Shortname))
+                        return;
 
-                    if (string.IsNullOrEmpty(SW.PSPreReq))
-                        SW.PSPreReq = "$true; ";
+                    //Get Install-type
+                    GetInstallType();
+
+
                 }
+
+
+
+
 
                 downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
@@ -1167,41 +1190,47 @@ namespace RZUpdate
 
         public bool GetInstallType(bool bGetFirst = false)
         {
-            foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+            //Only get other DeploymentTypes if Architecture is not defined...
+            if (string.IsNullOrEmpty(this.SW.Architecture))
             {
-                try
+                foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
                 {
-                    //Check PreReqs
                     try
                     {
-                        if (!string.IsNullOrEmpty(DT.PSPreReq))
+                        //Check PreReqs
+                        try
                         {
-                            if (!bGetFirst)
+                            if (!string.IsNullOrEmpty(DT.PSPreReq))
                             {
-                                if (!(bool)_RunPS(DT.PSPreReq)[0].BaseObject)
-                                    continue;
+                                if (!bGetFirst)
+                                {
+                                    if (!(bool)_RunPS(DT.PSPreReq).Last().BaseObject)
+                                        continue;
+                                }
                             }
                         }
-                    }
-                    catch { continue; }
+                        catch { continue; }
 
-                    SW = DT;
+                        SW = DT;
 
-                    try
-                    {
-                        if (SW.Image == null)
+                        try
                         {
-                            SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            if (SW.Image == null)
+                            {
+                                SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                            }
                         }
+                        catch { }
+
+                        return true;
                     }
                     catch { }
-
-                    return true;
                 }
-                catch { }
+
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         private bool _Download(bool Enforce, string DLPath)
@@ -1527,7 +1556,8 @@ namespace RZUpdate
         /// &lt;returns&gt;true = success&lt;/returns&gt;
         public async Task&lt;bool&gt; Download(bool Enforce)
         {
-            bool bAutoInstall = downloadTask.AutoInstall;
+            return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
+            /*bool bAutoInstall = downloadTask.AutoInstall;
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
             if (SW.PreRequisites.Length &gt; 0)
@@ -1545,7 +1575,7 @@ namespace RZUpdate
             ProgressDetails += SWUpdate_ProgressDetails;
 
             bool bResult = await Task.Run(() =&gt; _Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID))).ConfigureAwait(false);
-            return bResult;
+            return bResult;*/
         }
 
         public async Task&lt;bool&gt; Download(bool Enforce, string DLPath)
@@ -1659,11 +1689,11 @@ namespace RZUpdate
                         downloadTask.Installing = true;
                         ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode");
+                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 60, 0));
 
                         try
                         {
-                            iExitCode = ((int)oResult[0].BaseObject);
+                            iExitCode = ((int)oResult.Last().BaseObject);
                         }
                         catch { }
 
@@ -1861,11 +1891,11 @@ namespace RZUpdate
                             downloadTask.Installing = true;
                             ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode");
+                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
 
                             try
                             {
-                                iExitCode = ((int)oResult[0].BaseObject);
+                                iExitCode = ((int)oResult.Last().BaseObject);
                             }
                             catch { }
 
@@ -1999,7 +2029,7 @@ namespace RZUpdate
                 try
                 {
                     //Already installed ?
-                    if ((bool)_RunPS(SW.PSDetection)[0].BaseObject)
+                    if ((bool)_RunPS(SW.PSDetection).Last().BaseObject)
                     {
                         UILock.EnterReadLock();
                         try
@@ -2020,7 +2050,7 @@ namespace RZUpdate
                         return true;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -2057,7 +2087,7 @@ namespace RZUpdate
                     if (string.IsNullOrEmpty(SW.PSPreReq))
                         SW.PSPreReq = "$true; ";
                     //Already installed ?
-                    if ((bool)_RunPS(SW.PSPreReq)[0].BaseObject)
+                    if ((bool)_RunPS(SW.PSPreReq).Last().BaseObject)
                     {
                         return true;
                     }
@@ -2079,7 +2109,7 @@ namespace RZUpdate
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
             {
-                Collection&lt;PSObject&gt; oResults = _RunPS(URL, FileName);
+                var oResults = _RunPS(URL, FileName, new TimeSpan(2, 0, 0)); //2h timeout
                 if (File.Exists(FileName))
                 {
                     DLProgress((int)100, EventArgs.Empty);
@@ -2317,25 +2347,51 @@ namespace RZUpdate
         /// &lt;/summary&gt;
         /// &lt;param name="PSScript"&gt;PowerShell Script&lt;/param&gt;
         /// &lt;returns&gt;&lt;/returns&gt;
-        public static Collection&lt;PSObject&gt; _RunPS(string PSScript, string WorkingDir = "")
+        public static PSDataCollection&lt;PSObject&gt; _RunPS(string PSScript, string WorkingDir = "", TimeSpan? Timeout = null)
         {
-            PowerShell PowerShellInstance = PowerShell.Create();
+            TimeSpan timeout = new TimeSpan(0, 15, 0); //default timeout = 15min
 
-            if (!string.IsNullOrEmpty(WorkingDir))
+            if (Timeout != null)
+                timeout = (TimeSpan)Timeout;
+
+            DateTime dStart = DateTime.Now;
+            TimeSpan dDuration = DateTime.Now - dStart;
+            using (PowerShell PowerShellInstance = PowerShell.Create())
             {
-                WorkingDir = Path.GetDirectoryName(WorkingDir);
-                PSScript = "Set-Location -Path '" + WorkingDir + "';" + PSScript;
+                if (!string.IsNullOrEmpty(WorkingDir))
+                {
+                    WorkingDir = Path.GetDirectoryName(WorkingDir);
+                    PSScript = "Set-Location -Path '" + WorkingDir + "';" + PSScript;
+                }
+
+                PowerShellInstance.AddScript(PSScript);
+                PSDataCollection&lt;PSObject&gt; outputCollection = new PSDataCollection&lt;PSObject&gt;();
+
+                outputCollection.DataAdding += ConsoleOutput;
+                PowerShellInstance.Streams.Error.DataAdding += ConsoleError;
+
+                IAsyncResult async = PowerShellInstance.BeginInvoke&lt;PSObject, PSObject&gt;(null, outputCollection);
+                while (async.IsCompleted == false || dDuration &gt; timeout)
+                {
+                    Thread.Sleep(200);
+                    dDuration = DateTime.Now - dStart;
+                }
+
+                return outputCollection;
             }
-            PowerShellInstance.AddScript(PSScript);
 
-            Collection&lt;PSObject&gt; PSOutput = PowerShellInstance.Invoke();
-            foreach (ErrorRecord err in PowerShellInstance.Streams.Error)
-            {
-                Console.WriteLine(err.ToString());
-            }
+        }
 
-            return PSOutput;
+        private static void ConsoleError(object sender, DataAddingEventArgs e)
+        {
+            if (e.ItemAdded != null)
+                Console.WriteLine("ERROR:" + e.ItemAdded.ToString());
+        }
 
+        private static void ConsoleOutput(object sender, DataAddingEventArgs e)
+        {
+            //if (e.ItemAdded != null)
+            //    Console.WriteLine(e.ItemAdded.ToString());
         }
 
         public string GetDLPath()

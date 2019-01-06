@@ -392,7 +392,11 @@ namespace RuckZuck_WCF
 
         public List<string> Categories { get; set; }
 
-        public long IconId { get; set; }
+        //public long IconId { get; set; }
+
+        public long SWId { get; set; }
+
+        public string IconHash { get; set; }
 
         public bool isInstalled { get; set; }
 
@@ -404,14 +408,19 @@ namespace RuckZuck_WCF
         {
             get
             {
-                if (IconId > 0)
+                if (SWId > 0)
                 {
-                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + IconId.ToString();
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
                 }
-                else
+
+                //Support new V2 REST API
+                if(!string.IsNullOrEmpty(IconHash))
                 {
-                    return ""; // "File://" + IconFile;
+                    return RZRestAPI.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
                 }
+
+                return "";
+
                 //return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + IconId.ToString();
             }
         }
@@ -464,6 +473,7 @@ namespace RuckZuck_WCF
         //public long SWId { get { return IconId; } set { IconId = value; } }
         public long SWId { get; set; }
 
+        public string IconHash { get; set; }
         //remove if SWId is in place 5.9.2017
         //public long IconId { get; set; }
 
@@ -475,6 +485,12 @@ namespace RuckZuck_WCF
                 {
                     string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
                     return sURL;
+                }
+
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPI.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
                 }
                 return "";
             }

@@ -168,14 +168,16 @@ namespace RZUpdate
                             Categories = item.Categories.ToList(),
                             Description = item.Description,
                             Downloads = item.Downloads,
-                            IconId = item.IconId,
+                            //IconId = item.IconId,
+                            SWId = item.SWId,
                             Image = item.Image,
                             Manufacturer = item.Manufacturer,
                             ProductName = item.ProductName,
                             ProductURL = item.ProductURL,
                             ProductVersion = item.ProductVersion,
                             Quality = item.Quality,
-                            Shortname = item.Shortname
+                            Shortname = item.Shortname,
+                            IconHash = item.IconHash
                         }).ToList();
                     }
                 }
@@ -307,7 +309,8 @@ namespace RZUpdate
                     ProductVersion = item.ProductVersion,
                     MSIProductID = item.MSIProductID,
                     Shortname = item.Shortname,
-                    SWId = item.SWId
+                    SWId = item.SWId,
+                    IconHash = item.IconHash ?? ""
                 }).ToList();
 
                 //Only take updated Versions

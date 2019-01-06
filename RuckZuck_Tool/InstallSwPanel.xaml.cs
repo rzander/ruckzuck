@@ -449,7 +449,7 @@ namespace RuckZuck_Tool
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = false;
-                                oSW.Download(false).ConfigureAwait(false); ;
+                                oSW.Download(false).ConfigureAwait(false); 
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
                             }
@@ -580,7 +580,7 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                var badSW = RZRestAPI.SWResults("--BAD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var badSW = RZRestAPI.SWResults("--BAD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -605,7 +605,7 @@ namespace RuckZuck_Tool
                 tSearch.Stop();
                 tbSearch.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
-                var badSW = RZRestAPI.SWResults("--ISSUE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var badSW = RZRestAPI.SWResults("--ISSUE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -651,7 +651,7 @@ namespace RuckZuck_Tool
             try
             {
                 tSearch.Stop();
-                var badSW = RZRestAPI.SWResults("--APPROVE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var badSW = RZRestAPI.SWResults("--APPROVE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...
