@@ -555,6 +555,7 @@ namespace RZUpdate
             {
                 foreach (var vFile in SW.Files)
                 {
+                    bool bDLSuccess = false; 
                     try
                     {
                         if (string.IsNullOrEmpty(vFile.URL))
@@ -642,20 +643,7 @@ namespace RZUpdate
                             }
                             else
                             {
-
-                                if (SendFeedback)
-                                {
-                                    if (SW.SWId > 0)
-                                    {
-                                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture);
-                                    }
-                                    else
-                                    {
-                                        //Depreciated
-                                        //RZRestAPI.TrackDownloads(SW.ContentID);
-                                    }
-                                }
-
+                                bDLSuccess = true;
                             }
 
                             //Sleep 1s to complete
@@ -788,7 +776,17 @@ namespace RZUpdate
                         Console.WriteLine("ERROR: " + ex.Message);
                         bError = true;
                     }
+
+                    if (SendFeedback && bDLSuccess)
+                    {
+                        if (SW.SWId > 0)
+                        {
+                            RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture);
+                        }
+                    }
                 }
+
+
             }
             else
             {
