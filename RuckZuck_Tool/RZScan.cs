@@ -168,7 +168,7 @@ namespace RZUpdate
                             Categories = item.Categories.ToList(),
                             Description = item.Description,
                             Downloads = item.Downloads,
-                            //IconId = item.IconId,
+                            IconId = item.IconId,
                             SWId = item.SWId,
                             Image = item.Image,
                             Manufacturer = item.Manufacturer,
@@ -310,7 +310,8 @@ namespace RZUpdate
                     MSIProductID = item.MSIProductID,
                     Shortname = item.Shortname,
                     SWId = item.SWId,
-                    IconHash = item.IconHash ?? ""
+                    IconId = item.IconId,
+                    IconHash = item.IconHash
                 }).ToList();
 
                 //Only take updated Versions
