@@ -339,7 +339,8 @@ namespace RuckZuck_WCF
                 using (MemoryStream ms = new MemoryStream())
                 {
                     response.Result.CopyTo(ms);
-                    return ms.ToArray();
+                    byte[] bRes = ms.ToArray();
+                    return bRes;
                 }
             }
 

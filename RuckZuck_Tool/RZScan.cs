@@ -163,22 +163,21 @@ namespace RZUpdate
                     var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     lock (SoftwareRepository)
                     {
-                        SoftwareRepository = oDB.Select(item => new GetSoftware()
-                        {
-                            Categories = item.Categories.ToList(),
-                            Description = item.Description,
-                            Downloads = item.Downloads,
-                            IconId = item.IconId,
-                            SWId = item.SWId,
-                            Image = item.Image,
-                            Manufacturer = item.Manufacturer,
-                            ProductName = item.ProductName,
-                            ProductURL = item.ProductURL,
-                            ProductVersion = item.ProductVersion,
-                            Quality = item.Quality,
-                            Shortname = item.Shortname,
-                            IconHash = item.IconHash
-                        }).ToList();
+                    SoftwareRepository = oDB.Select(item => new GetSoftware()
+                    {
+                        Categories = item.Categories ?? new List<string>(),
+                        Description = item.Description,
+                        Downloads = item.Downloads,
+                        IconId = item.IconId,
+                        SWId = item.SWId,
+                        Image = item.Image,
+                        Manufacturer = item.Manufacturer,
+                        ProductName = item.ProductName,
+                        ProductURL = item.ProductURL,
+                        ProductVersion = item.ProductVersion,
+                        Shortname = item.Shortname,
+                        IconHash = item.IconHash
+                    }).ToList();
                     }
                 }
                 catch (Exception ex)
@@ -293,7 +292,7 @@ namespace RZUpdate
                 var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
 
                 //we do not have to check for updates if it's in the Catalog
-                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.FirstOrDefault(r => r.ProductName == t.ProductName && r.ProductVersion == t.ProductVersion && r.Manufacturer == t.Manufacturer) == null).ToList();
+                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.Count(r => r.ProductName.ToLower().Trim() == t.ProductName.ToLower().Trim() && r.ProductVersion.ToLower().Trim() == t.ProductVersion.ToLower().Trim() && r.Manufacturer.ToLower().Trim() == t.Manufacturer.ToLower().Trim()) == 0).ToList();
 
                 List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(tRes).ToList();
 
