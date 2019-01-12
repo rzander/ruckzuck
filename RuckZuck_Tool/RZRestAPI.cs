@@ -267,7 +267,7 @@ namespace RuckZuck_WCF
                 if (contentType == "application/json")
                 {
                     var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
-                    response.Wait(15000);
+                    response.Wait(60000);
                     if (response.IsCompleted)
                     {
                         List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
