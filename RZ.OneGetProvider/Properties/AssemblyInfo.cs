@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Zander Tools")]
 [assembly: AssemblyProduct("RuckZuck OneGet provider")]
-[assembly: AssemblyCopyright("Copyright  © 2018 by Roger Zander")]
+[assembly: AssemblyCopyright("Copyright  © 2019 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,5 +49,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("1.6.2.11")]
-[assembly: AssemblyFileVersion("1.6.2.11")]
+[assembly: AssemblyVersion("1.6.2.13")]
+[assembly: AssemblyFileVersion("1.6.2.13")]

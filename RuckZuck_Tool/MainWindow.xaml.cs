@@ -204,6 +204,8 @@ namespace RuckZuck_Tool
                     catch { }
                 }
 
+                tbURL.IsEnabled = true;
+
                 //Authenticate with dummy account
                 if (string.IsNullOrEmpty(sAuthToken))
                     sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());

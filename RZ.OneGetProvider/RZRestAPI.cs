@@ -32,11 +32,11 @@ namespace RuckZuck_WCF
                 {
                     if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        RZRestAPI._sURL = sWebSVC;
+                        RZRestAPI._sURL = sWebSVC.TrimEnd('/');
                     }
                 }
 
-                if (_sURL == "UDP" & !DisableBroadcast)
+                if (_sURL == "UDP" && !DisableBroadcast)
                 {
                     try
                     {
@@ -147,7 +147,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t => t.ProductName == PackageName & t.ProductVersion == PackageVersion).ToList();
+                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion).ToList();
             }
             catch { }
 
@@ -158,7 +158,7 @@ namespace RuckZuck_WCF
         {
             try
             {
-                return SWResults("").Where(t => t.ProductName == PackageName & t.ProductVersion == PackageVersion & t.Manufacturer == Manufacturer).ToList();
+                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion && t.Manufacturer == Manufacturer).ToList();
             }
             catch { }
 
@@ -267,7 +267,7 @@ namespace RuckZuck_WCF
                 if (contentType == "application/json")
                 {
                     var response = oClient.PostAsync(sURL + "/rest/CheckForUpdate", oCont);
-                    response.Wait(15000);
+                    response.Wait(60000);
                     if (response.IsCompleted)
                     {
                         List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
@@ -309,14 +309,19 @@ namespace RuckZuck_WCF
 
 
         //vNext 5.9.2017
-        public static async void TrackDownloads2(long SWId, string Architecture)
+        public static async void TrackDownloads2(long SWId, string Architecture, string Shortname = "")
         {
             try
             {
-                await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + "&arch=" + WebUtility.UrlEncode(Architecture));
+                string sID = SWId.ToString();
+                if (SWId == 0)
+                    sID = "";
+
+                await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + sID + "&arch=" + WebUtility.UrlEncode(Architecture) + "&shortname=" + WebUtility.UrlEncode(Shortname));
             }
             catch { }
         }
+
 
         public static List<string> GetCategories(List<GetSoftware> oSWList)
         {
@@ -339,7 +344,8 @@ namespace RuckZuck_WCF
                 using (MemoryStream ms = new MemoryStream())
                 {
                     response.Result.CopyTo(ms);
-                    return ms.ToArray();
+                    byte[] bRes = ms.ToArray();
+                    return bRes;
                 }
             }
 
@@ -394,6 +400,10 @@ namespace RuckZuck_WCF
 
         public long IconId { get; set; }
 
+        public long SWId { get; set; }
+
+        public string IconHash { get; set; }
+
         public bool isInstalled { get; set; }
 
         //public string XMLFile { get; set; }
@@ -404,14 +414,25 @@ namespace RuckZuck_WCF
         {
             get
             {
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPI.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                }
+
+                if (SWId > 0)
+                {
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                }
+
                 if (IconId > 0)
                 {
-                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + IconId.ToString();
+                    SWId = IconId;
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
                 }
-                else
-                {
-                    return ""; // "File://" + IconFile;
-                }
+
+                return "";
+
                 //return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + IconId.ToString();
             }
         }
@@ -464,6 +485,9 @@ namespace RuckZuck_WCF
         //public long SWId { get { return IconId; } set { IconId = value; } }
         public long SWId { get; set; }
 
+        public long IconId { get; set; }
+
+        public string IconHash { get; set; }
         //remove if SWId is in place 5.9.2017
         //public long IconId { get; set; }
 
@@ -473,6 +497,19 @@ namespace RuckZuck_WCF
             {
                 if (SWId > 0)
                 {
+                    string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    return sURL;
+                }
+
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPI.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                }
+
+                if (IconId > 0)
+                {
+                    SWId = IconId;
                     string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
                     return sURL;
                 }
@@ -524,17 +561,17 @@ namespace RuckZuck_WCF
             {
                 if (string.IsNullOrEmpty(_status))
                 {
-                    if (Installing & !Error)
+                    if (Installing && !Error)
                         return "Installing";
-                    if (Downloading & !Error)
+                    if (Downloading && !Error)
                         return "Downloading";
-                    if (Installed & !Error)
+                    if (Installed && !Error)
                         return "Installed";
-                    if (UnInstalled & !Error)
+                    if (UnInstalled && !Error)
                         return "Uninstalled";
                     if (WaitingForDependency)
                         return "Installing dependencies";
-                    if (PercentDownloaded == 100 & !Error)
+                    if (PercentDownloaded == 100 && !Error)
                         return "Downloaded";
                     if (Error)
                         return ErrorMessage;

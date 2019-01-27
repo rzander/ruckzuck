@@ -32,7 +32,7 @@ namespace RuckZuck_WCF
                 {
                     if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        RZRestAPI._sURL = sWebSVC;
+                        RZRestAPI._sURL = sWebSVC.TrimEnd('/');
                     }
                 }
 
@@ -309,14 +309,19 @@ namespace RuckZuck_WCF
 
 
         //vNext 5.9.2017
-        public static async void TrackDownloads2(long SWId, string Architecture)
+        public static async void TrackDownloads2(long SWId, string Architecture, string Shortname = "")
         {
             try
             {
-                await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + SWId.ToString() + "&arch=" + WebUtility.UrlEncode(Architecture));
+                string sID = SWId.ToString();
+                if (SWId == 0)
+                    sID = "";
+
+                await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + sID + "&arch=" + WebUtility.UrlEncode(Architecture) + "&shortname=" + WebUtility.UrlEncode(Shortname));
             }
             catch { }
         }
+
 
         public static List<string> GetCategories(List<GetSoftware> oSWList)
         {
@@ -409,15 +414,15 @@ namespace RuckZuck_WCF
         {
             get
             {
-                if (SWId > 0)
-                {
-                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
-                }
-
                 //Support new V2 REST API
                 if(!string.IsNullOrEmpty(IconHash))
                 {
                     return RZRestAPI.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                }
+
+                if (SWId > 0)
+                {
+                    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
                 }
 
                 if (IconId > 0)

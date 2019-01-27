@@ -258,7 +258,20 @@ namespace RZUpdate
                 try
                 {
                     JavaScriptSerializer ser = new JavaScriptSerializer();
-                    AddSoftware lRes = ser.Deserialize<AddSoftware>(File.ReadAllText(sFile));
+                    string sJson = File.ReadAllText(sFile);
+                    AddSoftware lRes;
+
+                    //Check if it's an Arrya (new in V2)
+                    if (sJson.TrimStart().StartsWith("["))
+                    {
+                        List<AddSoftware> lItems = ser.Deserialize<List<AddSoftware>>(sJson);
+                        lRes = lItems[0];
+                    }
+                    else
+                    {
+                        lRes = ser.Deserialize<AddSoftware>(sJson);
+                    }
+
                     if (lRes.PreRequisites != null)
                     {
                         lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
@@ -542,6 +555,7 @@ namespace RZUpdate
             {
                 foreach (var vFile in SW.Files)
                 {
+                    bool bDLSuccess = false;
                     try
                     {
                         if (string.IsNullOrEmpty(vFile.URL))
@@ -629,20 +643,7 @@ namespace RZUpdate
                             }
                             else
                             {
-
-                                if (SendFeedback)
-                                {
-                                    if (SW.SWId > 0)
-                                    {
-                                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture);
-                                    }
-                                    else
-                                    {
-                                        //Depreciated
-                                        //RZRestAPI.TrackDownloads(SW.ContentID);
-                                    }
-                                }
-
+                                bDLSuccess = true;
                             }
 
                             //Sleep 1s to complete
@@ -775,7 +776,14 @@ namespace RZUpdate
                         Console.WriteLine("ERROR: " + ex.Message);
                         bError = true;
                     }
+
+                    if (SendFeedback && bDLSuccess)
+                    {
+                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture, SW.Shortname);
+                    }
                 }
+
+
             }
             else
             {
@@ -865,10 +873,17 @@ namespace RZUpdate
             bool bAutoInstall = downloadTask.AutoInstall;
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
-            if (SW.PreRequisites.Length > 0)
+            if (SW.PreRequisites != null)
             {
-                downloadTask.WaitingForDependency = true;
-                downloadTask.AutoInstall = false;
+                if (SW.PreRequisites.Length > 0)
+                {
+                    downloadTask.WaitingForDependency = true;
+                    downloadTask.AutoInstall = false;
+                }
+                else
+                {
+                    downloadTask.AutoInstall = bAutoInstall;
+                }
             }
             else
             {
@@ -971,7 +986,7 @@ namespace RZUpdate
                         downloadTask.Installing = true;
                         ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0,60,0));
+                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 60, 0));
 
                         try
                         {
@@ -1173,7 +1188,7 @@ namespace RZUpdate
                             downloadTask.Installing = true;
                             ProgressDetails(this.downloadTask, EventArgs.Empty);
 
-                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode", "", new TimeSpan(0,30,0));
+                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
 
                             try
                             {
@@ -1391,7 +1406,7 @@ namespace RZUpdate
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
             {
-                var oResults = _RunPS(URL, FileName, new TimeSpan(2,0,0)); //2h timeout
+                var oResults = _RunPS(URL, FileName, new TimeSpan(2, 0, 0)); //2h timeout
                 if (File.Exists(FileName))
                 {
                     DLProgress((int)100, EventArgs.Empty);
@@ -1629,7 +1644,7 @@ namespace RZUpdate
         /// </summary>
         /// <param name="PSScript">PowerShell Script</param>
         /// <returns></returns>
-        public static PSDataCollection<PSObject> _RunPS(string PSScript, string WorkingDir = "",TimeSpan? Timeout = null)
+        public static PSDataCollection<PSObject> _RunPS(string PSScript, string WorkingDir = "", TimeSpan? Timeout = null)
         {
             TimeSpan timeout = new TimeSpan(0, 15, 0); //default timeout = 15min
 
