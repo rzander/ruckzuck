@@ -1,0 +1,297 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json.Linq;
+
+namespace RZ.Server.Controllers
+{
+    public class RZv1Controller : Controller
+    {
+        private IMemoryCache _cache;
+        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxx";
+        TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck",  RetryPolicy.Default);
+
+        public RZv1Controller(IMemoryCache memoryCache)
+        {
+            _cache = memoryCache;
+        }
+
+        [Route("rest")]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [Route("rest/AuthenticateUser")]
+        public ActionResult AuthenticateUser()
+        {
+            string Username = "FreeRZ"; //TBD
+            string Password = "";
+
+            if (string.IsNullOrEmpty(Username))
+            {
+                Username = Request.Headers["Username"];
+                Password = Request.Headers["Password"];
+            }
+
+            // Create and store the AuthenticatedToken before returning it
+            string token2 = Guid.NewGuid().ToString();
+
+            return Content(token2, "text/xml");
+
+            if (string.IsNullOrEmpty(Username))
+            {
+                return Content("", "text/xml");
+            }
+            else
+            {
+                if (Username == "FreeRZ")
+                {
+                    try
+                    {
+                        byte[] data = Convert.FromBase64String(Password);
+                        DateTime when = DateTime.FromBinary(BitConverter.ToInt64(data, 0));
+                        if ((DateTime.UtcNow - when) <= new TimeSpan(2, 0, 10))
+                        {
+                            // Create and store the AuthenticatedToken before returning it
+                            string token = Guid.NewGuid().ToString();
+
+                            return Content(token, "text/xml");
+                        }
+                    }
+                    catch { }
+
+                    return Content("", "text/xml");
+                }
+                else
+                {
+                    //return Content(RuckZuck_WCF.RZRestProxy.GetAuthToken(Username, Password), "text/xml"); ;
+                    return Content(""); //TBD
+                }
+            }
+
+        }
+
+        [HttpGet]
+        [Route("rest/SWResults")]
+        [Route("rest/SWResults/{search}")]
+        public ActionResult SWResults(string search = "")
+        {
+            string sRes = "";
+            if (string.IsNullOrEmpty(search))
+                sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
+            else
+            {
+                if(search.ToLower() == "--new--")
+                {
+                    JArray oRes = Base.GetCatalog("", true);
+                    JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
+                    JArray jTop = JArray.FromObject(jsorted.Take(20));
+                    return Content(jTop.ToString());
+                }
+                if (search.ToLower() == "--old--")
+                {
+                    JArray oRes = Base.GetCatalog("", true);
+                    JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
+                    JArray jTop = JArray.FromObject(jsorted.Take(20));
+                    return Content(jTop.ToString());
+                }
+            }
+            return Content(sRes);
+        }
+
+        [HttpGet]
+        [Route("rest/GetIcon")]
+        [Route("rest/GetIcon/{id}")]
+        public Task<Stream> GetIcon(Int32 id = 575633)
+        {
+            return Base.GetIcon(id);
+        }
+
+        [HttpGet]
+        [Route("rest/GetSWDefinition")]
+        [Route("rest/GetSWDefinition/{name}/{ver}/{man}")]
+        public ActionResult GetSWDefinition(string name = "", string ver = "", string man = "")
+        {
+            if (string.IsNullOrEmpty(Base.localURL))
+                Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/getswdefinition")[0];
+
+            JArray jRes = Base.GetSoftwares(name, ver, man);
+            //Send Status
+            try
+            {
+                Message bMSG = new Message() { Label = "RuckZuck/WCF/GetSWDefinitions/" + name, TimeToLive = new TimeSpan(4, 0, 0) };
+                bMSG.UserProperties.Add("Count", jRes.Count);
+                bMSG.UserProperties.Add("ProductName", name);
+                bMSG.UserProperties.Add("ProductVersion", ver);
+                bMSG.UserProperties.Add("Manufacturer", man);
+                tcRuckZuck.SendAsync(bMSG);
+            }
+            catch { }
+
+            return Content(jRes.ToString(Newtonsoft.Json.Formatting.None));
+        }
+
+        [HttpGet]
+        [Route("rest/SWGetShort")]
+        [Route("rest/SWGetShort/{name}")]
+        public ActionResult SWGet(string name = "")
+        {
+            return Content(Base.GetSoftwares(name).ToString());
+        }
+
+        [HttpPost]
+        [Route("rest/CheckForUpdate")]
+        public ActionResult CheckForUpdate()
+        {
+            DateTime dStart = DateTime.Now;
+            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            string sResult = Base.CheckForUpdates(JArray.Parse(oGet.Result)).ToString();
+            TimeSpan tDuration = DateTime.Now - dStart;
+            Console.WriteLine("UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
+            return Content(sResult);
+        }
+
+        [HttpPost]
+        [Route("rest/UploadSWEntry")]
+        public bool UploadSWEntry()
+        {
+            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            string sJSON = oGet.Result;
+
+            Base.GetPendingApproval();
+
+            if (sJSON.TrimStart().StartsWith('['))
+            {
+                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON));
+
+                //if (bRes)
+                //    Base.GetCatalog("", true); //reload Catalog
+
+                return bRes;
+            }
+            else
+            {
+                JArray jSW = new JArray();
+                jSW.Add(JObject.Parse(sJSON));
+                bool bRes = Base.UploadSoftwareWaiting(jSW);
+
+                //if (bRes)
+                //    Base.GetCatalog("", true); //reload Catalog
+
+                return bRes;
+            }
+        }
+
+        [HttpPost]
+        [Route("rest/UploadSWLookup")]
+        public bool UploadSWLookup()
+        {
+            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            string sJSON = oGet.Result;
+            JObject jObj = JObject.Parse(sJSON);
+
+            return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
+        }
+
+        [HttpGet]
+        [Route("rest/TrackDownloadsNew")]
+        //[Route("TrackDownloadsNew?SWId={SWId}&arch={Architecture}&shortname={Shortname}")]
+        public bool IncCounter(string SWId = "", string arch = "", string shortname = "")
+        {
+            string sLabel = SWId;
+            if (string.IsNullOrEmpty(SWId))
+                sLabel = shortname;
+            Message bMSG;
+            bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + sLabel, TimeToLive = new TimeSpan(24, 0, 0) };
+
+            bMSG.UserProperties.Add("SWId", SWId);
+            bMSG.UserProperties.Add("Architecture", arch);
+            bMSG.UserProperties.Add("ShortName", shortname);
+            tcRuckZuck.SendAsync(bMSG);
+            if (string.IsNullOrEmpty(shortname))
+                return false;
+            else
+                return Base.IncCounter(shortname, "DL");
+        }
+
+        [HttpGet]
+        //[Route("rest/Feedback?name={productName}&ver={productVersion}&man={manufacturer}&arch={architecture}&ok={working}&user={userkey}&text={feedback}")]
+        [Route("rest/Feedback")]
+        public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
+        {
+            try
+            {
+                bool bWorking = false;
+                try
+                {
+                    if (string.IsNullOrEmpty(ok))
+                        ok = "false";
+
+                    bool.TryParse(ok, out bWorking);
+
+                    Message bMSG;
+                    //BrokeredMessage bMSG;
+                    if (bWorking)
+                        bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                    else
+                        bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+
+
+                    bMSG.UserProperties.Add("User", "");
+                    bMSG.UserProperties.Add("feedback", text);
+                    bMSG.UserProperties.Add("ProductName", name);
+                    bMSG.UserProperties.Add("ProductVersion", ver);
+                    bMSG.UserProperties.Add("Manufacturer", man);
+                    //bMSG.Properties.Add("IP", ipAddress);
+                    tcRuckZuck.SendAsync(bMSG);
+
+                }
+                catch { }
+
+                bool bWriteToDB = true;
+                if (text.Contains("Product not detected after installation."))
+                {
+                    //We do not save status as it's from the upgrade process
+                    bWriteToDB = false;
+                }
+
+                if (text == "Requirements not valid.Installation will not start.")
+                {
+                    //We do not save status as it's from the upgrade process
+                    bWriteToDB = false;
+                }
+
+                if (text == "ok")
+                    bWriteToDB = false;
+                if (text == "ok..")
+                    bWriteToDB = false;
+
+                string Shortname = Base.GetShortname(name, ver, man);
+
+                if (bWriteToDB)
+                {
+                    if (bWorking)
+                        Base.IncCounter(Shortname, "SUCCESS");
+                    else
+                        Base.IncCounter(Shortname, "FAILURE");
+                }
+
+            }
+            catch { }
+        }
+
+        //[HttpGet]
+        //[Route("dl")]
+        //[Route("dl/{contentid}/{filename}")]
+        //public Stream Dl(string contentid, string filename)
+        //{
+        //    return Base.GetFile(Path.Combine(contentid,filename));
+        //}
+    }
+}

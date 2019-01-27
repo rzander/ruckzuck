@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "About";
+}
+<h2>@ViewData["Title"]</h2>
+
+<h3>What is RuckZuck</h3>
+<p>RuckZuck is a free Software Package Manager for Windows, designed to keep the Software on your System(s) up to date even if the Software was not installed with RuckZuck.</p>
+<p>The Tool provides an easy graphical User-Interface to install or upgrade software with just a few clicks. It also provides a wizard to create and upload new Software entries to the repository. So if you miss a software, create a new record !</p>
+<p>Professional Users can use the RuckZuck OneGet Provider to manage Software with simple PowerShell commands (Install the Provider and OneGet with RuckZuck). You can create a Scheduled-Task that automatically updates the System with a single PowerShell command.</p>
+<p>Enterprise Admins can use <a href="https://ruckzuck.azurewebsites.net/api/GetFile.ashx?id=7654">RuckZuck for ConfigMgr</a> to integrate Software from the RuckZuck repository in System Center Configuration Manager with just a few clicks. <a href="http://rzander.azurewebsites.net/import-ruckzuck-applications-to-configuration-manager-2012/">read more...</a></p>
+
+<h3>What does RuckZuck mean ?</h3>
+<p>"RuckZuck" is a German word for something that happens instantly.</p>
+
+<h3>How does it work...</h3>
+<p>
+    RuckZuck knows the links to the latest versions of Software and the parameters how the software can be installed silently. So if you update or install a software, the tool does download the file(s) from the vendor's web-site, verifies that the file is valid (based on Hash values) and just triggers a silent install.
+</p>
+<p>There is no guarantee that the installation is working, because vendors can change URL's and Filenames. If an installation fails, please fill out the feedback form that pops up with as much details as possible or create and upload a fixed software record.</p>
+<p>
+    <strong>Important:</strong> The data sent to the backend DB is anonymized and does not contain any user or device information.
+</p>
+<h3>What's about Software licenses ?</h3>
+<p>
+    The RuckZuck repository does not store binaries of the Software, just the links to where the software can be downloaded.
+    Installing Software with RuckZuck does not grant you a license for that Product.
+</p>
+<h2 style="color: #800000">When you install Software with RuckZuck, you confirm that you have read and agree with the license agreements and restrictions of the software you install.</h2>
+<h3>I'm missing Software in the Repository...</h3>
+<p>
+    The reasons can be:
+</p>
+<ul>
+    <li>No one has created a Software entry for this Software (You can be the first one!)</li>
+    <li>The Software has not yet passed the RuckZuck Quality-Assurance process.</li>
+    <li>The Software is not publicly available.</li>
+    <li>The Software cannot be silently installed.</li>
+</ul>
+<h3>Is RuckZuck free ?</h3>
+<p>
+    The RuckZuck tool and OneGet provider is free Software. You can find the published version at <a href="https://github.com/rzander/ruckzuck">https://github.com/rzander/ruckzuck</a>
+</p>
