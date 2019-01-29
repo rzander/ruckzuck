@@ -338,6 +338,7 @@ namespace RZUpdate
                 if (SW.Image == null)
                 {
                     SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                    downloadTask.Image = SW.Image;
                 }
             }
             catch { }
