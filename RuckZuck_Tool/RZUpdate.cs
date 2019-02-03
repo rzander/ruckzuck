@@ -408,6 +408,9 @@ namespace RZUpdate
                 }
             }
 
+            if (SW.PreRequisites == null)
+                SW.PreRequisites = new string[0];
+
 
         }
 
@@ -469,10 +472,6 @@ namespace RZUpdate
 
                 }
 
-
-
-
-
                 downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
 
                 foreach (contentFiles vFile in SW.Files)
@@ -480,6 +479,9 @@ namespace RZUpdate
                     if (string.IsNullOrEmpty(vFile.HashType))
                         vFile.HashType = "MD5";
                 }
+
+                if (SW.PreRequisites == null)
+                    SW.PreRequisites = new string[0];
             }
             catch { }
         }
@@ -556,7 +558,7 @@ namespace RZUpdate
             {
                 foreach (var vFile in SW.Files)
                 {
-                    bool bDLSuccess = false; 
+                    bool bDLSuccess = false;
                     try
                     {
                         if (string.IsNullOrEmpty(vFile.URL))

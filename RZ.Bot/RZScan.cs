@@ -163,20 +163,21 @@ namespace RZUpdate
                     var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     lock (SoftwareRepository)
                     {
-                        SoftwareRepository = oDB.Select(item => new GetSoftware()
-                        {
-                            Categories = item.Categories.ToList(),
-                            Description = item.Description,
-                            Downloads = item.Downloads,
-                            IconId = item.IconId,
-                            Image = item.Image,
-                            Manufacturer = item.Manufacturer,
-                            ProductName = item.ProductName,
-                            ProductURL = item.ProductURL,
-                            ProductVersion = item.ProductVersion,
-                            Quality = item.Quality,
-                            Shortname = item.Shortname
-                        }).ToList();
+                    SoftwareRepository = oDB.Select(item => new GetSoftware()
+                    {
+                        Categories = item.Categories ?? new List<string>(),
+                        Description = item.Description,
+                        Downloads = item.Downloads,
+                        IconId = item.IconId,
+                        SWId = item.SWId,
+                        Image = item.Image,
+                        Manufacturer = item.Manufacturer,
+                        ProductName = item.ProductName,
+                        ProductURL = item.ProductURL,
+                        ProductVersion = item.ProductVersion,
+                        Shortname = item.Shortname,
+                        IconHash = item.IconHash
+                    }).ToList();
                     }
                 }
                 catch (Exception ex)
@@ -192,6 +193,61 @@ namespace RZUpdate
             return bResult;
         }
 
+        /*       public async Task<bool> GetSWRepository(string RepositoryPath)
+        {
+            //var tGetSWRepo =
+            bool bResult = await Task.Run(() =>
+            {
+                try
+                {
+
+                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    DirectoryInfo dInfo = new DirectoryInfo(RepositoryPath);
+
+                    foreach (FileInfo dFile in dInfo.GetFiles("*.xml", SearchOption.AllDirectories))
+                    {
+                        try
+                        {
+                            var oAddRemSW = RZUpdater.ParseXML(dFile.FullName);
+                            string sFile = dFile.DirectoryName + "\\" + oAddRemSW.ContentID + ".png";
+
+                            if (!File.Exists(sFile))
+                            {
+                                byte[] image = oAddRemSW.Image;
+                                MemoryStream ms = new MemoryStream(image);
+                                Image img = Image.FromStream(ms);
+
+                                img.Save(dFile.DirectoryName + "\\" + oAddRemSW.ContentID + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                            }
+
+                            SoftwareRepository.Add(new GetSoftware() { ProductName = oAddRemSW.ProductName, Description = oAddRemSW.Description, Categories = (oAddRemSW.Category ?? "Local Repository").Split(';').ToList(), isInstalled = false, Manufacturer = oAddRemSW.Manufacturer, ProductURL = oAddRemSW.ProductURL, ProductVersion = oAddRemSW.ProductVersion, Shortname = oAddRemSW.ProductName + " (" + oAddRemSW.Architecture + ")", Downloads = 0, IconId = 0, IconFile = sFile, XMLFile = dFile.FullName, Quality = 100 });
+                        }
+                        catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message.ToString());
+                }
+
+                OnSWRepoLoaded(this, new EventArgs());
+
+                return true;
+            });
+
+            return bResult;
+        }
+*/
+
+        /*public bool CheckForUpdates
+        {
+            get { return bCheckUpdates; }
+            set
+            {
+                bCheckUpdates = value;
+                bInitialScan = value;
+            }
+        }*/
 
         private void RZScan_OnUpdScanCompleted(object sender, EventArgs e)
         {
@@ -236,9 +292,13 @@ namespace RZUpdate
                 var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
 
                 //we do not have to check for updates if it's in the Catalog
-                List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.FirstOrDefault(r => r.ProductName == t.ProductName && r.ProductVersion == t.ProductVersion && r.Manufacturer == t.Manufacturer) == null).ToList();
+                //List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.Count(r => r.ProductName.ToLower().Trim() == t.ProductName.ToLower().Trim() && r.ProductVersion.ToLower().Trim() == t.ProductVersion.ToLower().Trim() && r.Manufacturer.ToLower().Trim() == t.Manufacturer.ToLower().Trim()) == 0).ToList();
+                foreach(var oSW in SoftwareRepository)
+                {
+                    vSWCheck.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
+                }
 
-                List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(tRes).ToList();
+                List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(vSWCheck).ToList();
 
                 var lResult = lCheckResult.Select(item => new AddSoftware()
                 {
@@ -252,7 +312,9 @@ namespace RZUpdate
                     ProductVersion = item.ProductVersion,
                     MSIProductID = item.MSIProductID,
                     Shortname = item.Shortname,
-                    SWId = item.SWId
+                    SWId = item.SWId,
+                    IconId = item.IconId,
+                    IconHash = item.IconHash
                 }).ToList();
 
                 //Only take updated Versions
@@ -600,17 +662,17 @@ namespace RZUpdate
 
                 try
                 {
-                    /*TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
-                    if (iE.FileName != null)
-                    {
-                        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
-                        //Max Size 128px...
-                        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
-                        if (ico != null)
-                            return ico.ToBitmap();
-                        else
-                            return bResult;
-                    }*/
+                    //TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
+                    //if (iE.FileName != null)
+                    //{
+                    //    List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
+                    //    //Max Size 128px...
+                    //    var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                    //    if (ico != null)
+                    //        return ico.ToBitmap();
+                    //    else
+                    //        return bResult;
+                    //}
                 }
                 catch { }
 
