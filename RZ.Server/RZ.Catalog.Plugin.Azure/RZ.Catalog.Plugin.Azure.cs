@@ -30,10 +30,12 @@ namespace Plugin_Software
         public void Init(string PluginPath)
         {
             //Check if MemoryCache is initialized
-            if (_cache == null)
+            if (_cache != null)
             {
-                _cache = new MemoryCache(new MemoryCacheOptions());
+                _cache.Dispose();
             }
+
+            _cache = new MemoryCache(new MemoryCacheOptions());
 
             if (Settings == null)
                 Settings = new Dictionary<string, string>();

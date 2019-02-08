@@ -27,12 +27,12 @@ namespace RZ.Server
             _CatalogPlugins.Clear();
             _SoftwarePlugins.Clear();
             _SWLookupPlugins.Clear();
-            
-            //Check if MemoryCache is initialized
-            if (Base._cache == null)
+
+            if (Base._cache != null)
             {
-                Base._cache = new MemoryCache(new MemoryCacheOptions());
+                Base._cache.Dispose(); //Clear Cache...
             }
+            Base._cache = new MemoryCache(new MemoryCacheOptions());
 
             Dictionary<string, string> dSettings = new Dictionary<string, string>();
 
@@ -166,6 +166,43 @@ namespace RZ.Server
             return bResult;
         }
 
+        public static bool Decline(string Software)
+        {
+            bool bResult = true;
+            try
+            {
+                foreach (var item in Plugins._SoftwarePlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        return item.Value.Decline(Software);
+                    }
+                    catch { bResult = false; }
+                }
+            }
+            catch { }
+
+            return bResult;
+        }
+
+        public static string GetPending(string Software)
+        {
+            try
+            {
+                foreach (var item in Plugins._SoftwarePlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        return item.Value.GetPending(Software);
+                    }
+                    catch {}
+                }
+            }
+            catch { }
+
+            return "";
+        }
+
         public static JArray GetSoftwares(string shortname)
         {
             try
@@ -188,6 +225,9 @@ namespace RZ.Server
         {
             try
             {
+                if (string.IsNullOrEmpty(man))
+                    man = "_unknown";
+
                 foreach (var item in Plugins._SoftwarePlugins.OrderBy(t => t.Key))
                 {
                     try
@@ -310,8 +350,9 @@ namespace RZ.Server
                     try
                     {
                         sResult = item.Value.GetShortname(name, ver, man);
-                        if (!string.IsNullOrEmpty(sResult))
-                            return sResult;
+                        return sResult;
+                        //if (!string.IsNullOrEmpty(sResult))
+                        //    return sResult;
                     }
                     catch { }
                 }
@@ -388,7 +429,7 @@ namespace RZ.Server
                         {
                             string sRZVersion = jSW["ProductVersion"].ToString();
 
-                            if (string.IsNullOrEmpty(sRZVersion))
+                            if (!string.IsNullOrEmpty(sRZVersion))
                                 if (productversion == sRZVersion) //same version...
                                     continue;
 
@@ -408,15 +449,6 @@ namespace RZ.Server
                             oCatItem.Add("ProductURL", jSW["ProductURL"]);
                             oCatItem.Add("MSIProductID", productversion); //to show the old version in RuckZuck.exe
 
-
-                            //JArray jCategories = JArray.FromObject(new string[] { "Other" });
-                            //try
-                            //{
-                            //    if (!string.IsNullOrEmpty(jSW["Category"].ToString()))
-                            //        jCategories = JArray.FromObject(jSW["Category"].Value<string>().Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries));
-                            //}
-                            //catch { }
-                            //oCatItem.Add("Categories", jCategories);
 
                             if(jSW["Downloads"] == null)
                                 oCatItem.Add("Downloads", 0);
@@ -441,7 +473,7 @@ namespace RZ.Server
 
                             jResult.Add(oCatItem);
                             bFound = true;
-                            break;
+                            continue;
                         }
                         catch { }
 
@@ -453,7 +485,7 @@ namespace RZ.Server
                     }
                     else
                     {
-                        if (shortname == null)
+                        if (shortname == null) //if shortname = ""; it's in SWLookup but without a shortname so we dont need to store it...
                         {
                             ThreadPool.QueueUserWorkItem(s =>
                             {

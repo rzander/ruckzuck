@@ -49,6 +49,12 @@ namespace RZ.Server.Interfaces
         //Approve a pending Software
         bool Approve(string Software);
 
+        //Decline a pending Software
+        bool Decline(string Software);
+
+        //Get JSON of a pending Software
+        string GetPending(string Software);
+
         Task<Stream> GetFile(string FilePath);
 
         bool IncCounter(string shortname = "", string counter = "", string Customer = "");

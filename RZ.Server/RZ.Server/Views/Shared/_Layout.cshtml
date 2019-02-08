@@ -1,4 +1,20 @@
 ﻿<!DOCTYPE html>
+<style>
+    html {
+        position: relative;
+        min-height: 100%;
+    }
+    .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        /* Set the fixed height of the footer here */
+        height: 40px;
+        /*background-color: #f5f5f5;*/
+        text-align: right;
+        left: -15px;
+    }
+</style>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -14,6 +30,7 @@
               asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.css" />
     </environment>
 </head>
 <body>
@@ -42,10 +59,9 @@
 
     <div class="container body-content">
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; 2019 by Roger Zander - RuckZuck Server V2.x.x.x</p>
-        </footer>
+    </div>
+    <div class="footer">
+        <p>&copy; 2019 by Roger Zander - RuckZuck Server V2.x.x.x</p>
     </div>
 
     <environment include="Development">

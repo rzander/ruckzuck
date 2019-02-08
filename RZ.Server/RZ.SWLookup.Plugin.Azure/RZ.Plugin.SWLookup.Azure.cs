@@ -34,10 +34,12 @@ namespace RZ.SWLookup.Plugin
         public void Init(string PluginPath)
         {
             //Check if MemoryCache is initialized
-            if (_cache == null)
+            if (_cache != null)
             {
-                _cache = new MemoryCache(new MemoryCacheOptions());
+                _cache.Dispose();
             }
+
+            _cache = new MemoryCache(new MemoryCacheOptions());
 
             if (Settings == null)
                 Settings = new Dictionary<string, string>();
@@ -87,49 +89,67 @@ namespace RZ.SWLookup.Plugin
                 string productname = Server.Base.clean(name).Trim();
                 string productversion = Server.Base.clean(ver).Trim();
 
+                string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
+
+                string sResult = "";
+
+                //Try to get value from Memory
+                if (_cache.TryGetValue("lookup-" + sID, out sResult))
+                {
+                    return true;
+                }
+
+                //Try to get value from Memory
+                if (_cache.TryGetValue("setshort-" + sID, out sResult))
+                {
+                    if (!string.IsNullOrEmpty(sResult))
+                        return true;
+                }
 
                 JObject jEntity = new JObject();
                 jEntity.Add("Manufacturer", manufacturer);
                 jEntity.Add("ProductName", productname);
                 jEntity.Add("ProductVersion", productversion);
 
-                #region automatch
-                JArray jMap = getAutoMap(Settings["mapURL"] + "?" + Settings["mapSAS"]);
-                foreach(JObject jCheck in jMap)
+                if (string.IsNullOrEmpty(shortname))
                 {
-                    bool bName = false;
-                    bool bManu = false;
-                    bool bVer = false;
-
-                    try
+                    #region automatch
+                    JArray jMap = getAutoMap(Settings["mapURL"] + "?" + Settings["mapSAS"]);
+                    foreach (JObject jCheck in jMap)
                     {
-                        if (jCheck["xProductName"] != null && !string.IsNullOrEmpty(jCheck["xProductName"].ToString()))
-                        {
-                            bName = Match(jCheck["xProductName"].ToString(), productname);
-                        }
-                        else bName = true;
+                        bool bName = false;
+                        bool bManu = false;
+                        bool bVer = false;
 
-                        if (jCheck["xProductVersion"] != null && !string.IsNullOrEmpty(jCheck["xProductVersion"].ToString()))
+                        try
                         {
-                            bVer = Match(jCheck["xProductVersion"].ToString(), productversion);
-                        }
-                        else bVer= true;
+                            if (jCheck["xProductName"] != null && !string.IsNullOrEmpty(jCheck["xProductName"].ToString()))
+                            {
+                                bName = Match(jCheck["xProductName"].ToString(), productname);
+                            }
+                            else bName = true;
 
-                        if (jCheck["xManufacturer"] != null && !string.IsNullOrEmpty(jCheck["xManufacturer"].ToString()))
-                        {
-                            bManu = Match(jCheck["xManufacturer"].ToString(), manufacturer);
-                        }
-                        else bManu = true;
+                            if (jCheck["xProductVersion"] != null && !string.IsNullOrEmpty(jCheck["xProductVersion"].ToString()))
+                            {
+                                bVer = Match(jCheck["xProductVersion"].ToString(), productversion);
+                            }
+                            else bVer = true;
 
-                        if (bName && bManu && bVer)
-                            shortname = jCheck["shortname"].ToString().ToLower();
+                            if (jCheck["xManufacturer"] != null && !string.IsNullOrEmpty(jCheck["xManufacturer"].ToString()))
+                            {
+                                bManu = Match(jCheck["xManufacturer"].ToString(), manufacturer);
+                            }
+                            else bManu = true;
+
+                            if (bName && bManu && bVer)
+                                shortname = jCheck["shortname"].ToString().ToLower();
+                        }
+                        catch { }
                     }
-                    catch { }
+
+
+                    #endregion
                 }
-
- 
-                #endregion
-
                 shortname = shortname.Trim().ToLower();
 
                 if (!string.IsNullOrEmpty(shortname))
@@ -141,8 +161,8 @@ namespace RZ.SWLookup.Plugin
                     jEntity.Add("ShortName", "");
                 }
 
-                string sID = (manufacturer.ToLower() + productname.ToLower() + productversion.ToLower()).Trim();
-                Console.WriteLine(sID);
+                //string sID = (manufacturer.ToLower() + productname.ToLower() + productversion.ToLower()).Trim();
+                //Console.WriteLine(sID);
 
                 string sRowKey = Hash.CalculateMD5HashString(sID);
 
@@ -150,6 +170,9 @@ namespace RZ.SWLookup.Plugin
 
                 if (!string.IsNullOrEmpty(shortname))
                     UpdateEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString()); //only update if there is a shortname
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1)); //cache hash for 1 hour
+                _cache.Set("setshort-" + sID, "exist", cacheEntryOptions);
 
                 return true;
             }

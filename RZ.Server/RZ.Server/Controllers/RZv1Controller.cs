@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
@@ -15,10 +16,12 @@ namespace RZ.Server.Controllers
         private IMemoryCache _cache;
         static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxx";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck",  RetryPolicy.Default);
+        private readonly IHubContext<Default> _hubContext;
 
-        public RZv1Controller(IMemoryCache memoryCache)
+        public RZv1Controller(IMemoryCache memoryCache, IHubContext<Default> hubContext)
         {
             _cache = memoryCache;
+            _hubContext = hubContext;
         }
 
         [Route("rest")]
@@ -28,6 +31,7 @@ namespace RZ.Server.Controllers
         }
 
         [Route("rest/AuthenticateUser")]
+        [Route("wcf/RZService.svc/rest/AuthenticateUser")]
         public ActionResult AuthenticateUser()
         {
             string Username = "FreeRZ"; //TBD
@@ -80,14 +84,19 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/SWResults")]
         [Route("rest/SWResults/{search}")]
+        [Route("wcf/RZService.svc/rest/SWResults")]
+        [Route("wcf/RZService.svc/rest/SWResults/{search}")]
         public ActionResult SWResults(string search = "")
         {
             string sRes = "";
             if (string.IsNullOrEmpty(search))
+            {
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
                 sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
+            }
             else
             {
-                if(search.ToLower() == "--new--")
+                if (search.ToLower() == "--new--")
                 {
                     JArray oRes = Base.GetCatalog("", true);
                     JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
@@ -108,6 +117,8 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/GetIcon")]
         [Route("rest/GetIcon/{id}")]
+        [Route("wcf/RZService.svc/rest/GetIcon")]
+        [Route("wcf/RZService.svc/rest/GetIcon/{id}")]
         public Task<Stream> GetIcon(Int32 id = 575633)
         {
             return Base.GetIcon(id);
@@ -116,12 +127,17 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/GetSWDefinition")]
         [Route("rest/GetSWDefinition/{name}/{ver}/{man}")]
+        [Route("wcf/RZService.svc/rest/GetSWDefinition")]
+        [Route("wcf/RZService.svc/rest/GetSWDefinition/{name}/{ver}/{man}")]
         public ActionResult GetSWDefinition(string name = "", string ver = "", string man = "")
         {
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/getswdefinition")[0];
 
             JArray jRes = Base.GetSoftwares(name, ver, man);
+
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - get definition for '" + name + "'</li>");
+
             //Send Status
             try
             {
@@ -140,6 +156,8 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/SWGetShort")]
         [Route("rest/SWGetShort/{name}")]
+        [Route("wcf/RZService.svc/rest/SWGetShort")]
+        [Route("wcf/RZService.svc/rest/SWGetShort/{name}")]
         public ActionResult SWGet(string name = "")
         {
             return Content(Base.GetSoftwares(name).ToString());
@@ -147,24 +165,28 @@ namespace RZ.Server.Controllers
 
         [HttpPost]
         [Route("rest/CheckForUpdate")]
+        [Route("wcf/RZService.svc/rest/CheckForUpdate")]
         public ActionResult CheckForUpdate()
         {
             DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-            string sResult = Base.CheckForUpdates(JArray.Parse(oGet.Result)).ToString();
+            JArray jItems = JArray.Parse(oGet.Result);
+            string sResult = Base.CheckForUpdates(jItems).ToString();
             TimeSpan tDuration = DateTime.Now - dStart;
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
             Console.WriteLine("UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
             return Content(sResult);
         }
 
         [HttpPost]
         [Route("rest/UploadSWEntry")]
+        [Route("wcf/RZService.svc/rest/UploadSWEntry")]
         public bool UploadSWEntry()
         {
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             string sJSON = oGet.Result;
 
-            Base.GetPendingApproval();
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
 
             if (sJSON.TrimStart().StartsWith('['))
             {
@@ -190,17 +212,19 @@ namespace RZ.Server.Controllers
 
         [HttpPost]
         [Route("rest/UploadSWLookup")]
+        [Route("wcf/RZService.svc/rest/UploadSWLookup")]
         public bool UploadSWLookup()
         {
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             string sJSON = oGet.Result;
             JObject jObj = JObject.Parse(sJSON);
-
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
             return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
         }
 
         [HttpGet]
         [Route("rest/TrackDownloadsNew")]
+        [Route("wcf/RZService.svc/rest/TrackDownloadsNew")]
         //[Route("TrackDownloadsNew?SWId={SWId}&arch={Architecture}&shortname={Shortname}")]
         public bool IncCounter(string SWId = "", string arch = "", string shortname = "")
         {
@@ -214,6 +238,9 @@ namespace RZ.Server.Controllers
             bMSG.UserProperties.Add("Architecture", arch);
             bMSG.UserProperties.Add("ShortName", shortname);
             tcRuckZuck.SendAsync(bMSG);
+
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + sLabel + ")</li>");
+
             if (string.IsNullOrEmpty(shortname))
                 return false;
             else
@@ -223,6 +250,7 @@ namespace RZ.Server.Controllers
         [HttpGet]
         //[Route("rest/Feedback?name={productName}&ver={productVersion}&man={manufacturer}&arch={architecture}&ok={working}&user={userkey}&text={feedback}")]
         [Route("rest/Feedback")]
+        [Route("wcf/RZService.svc/rest/Feedback")]
         public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
         {
             try
@@ -238,9 +266,15 @@ namespace RZ.Server.Controllers
                     Message bMSG;
                     //BrokeredMessage bMSG;
                     if (bWorking)
+                    {
                         bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name+ ")</li>");
+                    }
                     else
+                    {
+                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
                         bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                    }
 
 
                     bMSG.UserProperties.Add("User", "");

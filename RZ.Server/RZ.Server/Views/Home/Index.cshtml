@@ -1,36 +1,130 @@
 ﻿@{
     ViewData["Title"] = "RuckZuck.tools";
 }
+<style>
+    textarea {
+        font-family: 'Courier New';
+    }
+
+    .list-group {
+        max-height: 250px;
+        margin-bottom: 10px;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .list-group-item {
+        padding: 3px 10px
+    }
+</style>
 <br />
 <div class="jumbotron">
-    <h1 class="display-4">RuckZuck v2 (PREVIEW !!!)</h1>
+    <h2 class="display-4">RuckZuck v2 (PREVIEW !!!)</h2>
     <p class="lead">Software Package Manager for Windows, a quick way to install and update Software... </p>
 </div>
 <hr class="my-4">
-<p>This page is under construction...</p>
-<hr class="my-4">
 <div>
-    <h4>Latest (5) repository changes:</h4>
-    <form>
-        @foreach (var SW in ViewBag.LatestItems)
-        {
-            <div class="form-group row">
-                <div class="row col-lg-5">
-                    <div class="col-lg-1">
-                        <img src=@SW.IconURL width="32px" height="32px" />
-                    </div>
-                    <div class="col-lg-11">
-                        <div class="col-lg-12" style="vertical-align:top; height:16px">
-                            <label>@SW.Shortname</label>
-                            <label>@SW.Version</label>
+    <h4>Downloads:</h4>
+    <div class="row">
+        <div class="col-md-4 form-group">
+            <a href="https://github.com/rzander/ruckzuck">portable RuckZuck-Tool for Windows:</a>
+            <a href="https://github.com/rzander/ruckzuck/releases/download/1.6.2.13/RuckZuck.exe" role="button" data-toggle="tooltip" title="No installation required, just run this tool..." class="btn btn-block btn-info">download RuckZuck.exe</a>
+            <p class="text-muted"><sup>latest version: 1.6.2.13</sup></p>
+        </div>
+        <div class="col-md-4 form-group">
+            <a href="https://github.com/rzander/ruckzuck/wiki/RuckZuck-OneGet-Provider">PowerShell OneGet Provider:</a>
+            <a href="https://github.com/rzander/ruckzuck/releases/download/1.6.2.13/RuckZuck.provider.for.OneGet_x64.msi" role="button" data-toggle="tooltip" title="Install RuckZuck application with PowerShell." class="btn btn-block btn-info">download OneGet Provider MSI</a>
+            <p class="text-muted"><sup>latest version: 1.6.2.13</sup></p>
+        </div>
+        <div class="col-md-4 form-group">
+            <a href="https://rzander.azurewebsites.net/import-ruckzuck-applications-to-configuration-manager-2012">Configuration Manager (SCCM) Plugin :</a>
+            <a href="https://github.com/rzander/ruckzuck/releases/download/1.6.2.13/RZ4ConfigMgrSetup.exe" role="button" data-toggle="tooltip" title="Import Applications from RuckZuck to System Center Configuration Manager." class="btn btn-block btn-info">download RZ4ConfigMgrSetup.exe</a>
+            <p class="text-muted"><sup>latest version: 1.6.1.13</sup></p>
+        </div>
+    </div>
+    <h5>Requirements:</h5>
+    <div class="well well-sm">
+        <strong>.Net Framework 4.6 , Powershell 5</strong>
+        <small>(part of Windows 10)</small>
+        <br />
+        <strong>Note:</strong> Software is mainly tested on <strong>Windows10 x64</strong>, but feel free to create and upload x86 versions.
+    </div>
+    <div class="col-lg-4">
+        <h4>Latest (5) repository changes:</h4>
+        <form id="fChanges">
+            @foreach (var SW in ViewBag.LatestItems)
+            {
+                <div class="form-group row">
+                    <div class="row col-lg-12">
+                        <div class="col-lg-1">
+                            <img src=@SW.IconURL width="32px" height="32px" />
                         </div>
-                        <div class="col-lg-12" style="height:8px; vertical-align:top">
-                            <small>(@SW.Date)</small>
+                        <div class="col-lg-10">
+                            <div class="col-lg-11" style="vertical-align:top; height:16px">
+                                <label>@SW.Shortname</label>
+                                <label>@SW.Version</label>
+                            </div>
+                            <div class="col-lg-11" style="height:8px; vertical-align:top">
+                                <small>(@SW.Date)</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        }
-    </form>
+            }
+        </form>
+    </div>
+    <div class="col-lg-8">
+        <h4>Activities:</h4>
+        @*<textarea readonly class="form-control" rows="10" id="activities"></textarea>*@
+        <ul class="list-group" style="overflow-x: hidden;" id="activities"></ul>
+    </div>
 </div>
+<hr class="my-4">
+
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+<script>
+    var connection = new signalR.HubConnectionBuilder().withUrl("/msg").build();
+
+    connection.on("Append", function (message) {
+        var alist = document.getElementById('activities');
+        alist.innerHTML += message.replace("%tt%", (new Date()).toLocaleTimeString('en-GB'));
+        alist.scrollTop = alist.scrollHeight;
+    });
+
+    connection.on("Reload", function () {
+        var fList = document.getElementById('fChanges');
+        fList.innerHTML = '';
+        $.ajax({
+            url: '@Url.Action("ReloadLatest", "Home")',
+            datatype: "json",
+            success: function (data) {
+                for (var iSW in data) {
+
+                    var sDiv = `<div class="form-group row">
+                    <div class="row col-lg-12">
+                        <div class="col-lg-1">
+                            <img src="${data[iSW].iconURL}" width="32px" height="32px" />
+                        </div>
+                        <div class="col-lg-10">
+                            <div class="col-lg-10" style="vertical-align:top; height:16px">
+                                <label>${data[iSW].shortname}</label>
+                                <label>${data[iSW].version}</label>
+                            </div>
+                            <div class="col-lg-10" style="height:8px; vertical-align:top">
+                                <small>${data[iSW].date}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                    fList.innerHTML += sDiv;
+                }
+            },
+        })
+    });
+
+    connection.start().then(function () {
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+</script>

@@ -11,11 +11,30 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
+using static RZ.Server.Controllers.HomeController;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace RZ.Server.Controllers
 {
     public class AdminController : Controller
     {
+        public IConfiguration Configuration { get; }
+        public IHostingEnvironment Env { get; }
+        private readonly IHubContext<Default> _hubContext;
+        private IMemoryCache _cache;
+
+        public AdminController(IHostingEnvironment env, IConfiguration configuration, IHubContext<Default> hubContext, IMemoryCache memoryCache)
+        {
+            Configuration = configuration;
+            Env = env;
+            _hubContext = hubContext;
+            _cache = memoryCache;
+        }
+
         [Route("Admin")]
         [Route("Admin/Index")]
         public IActionResult Index()
@@ -30,11 +49,34 @@ namespace RZ.Server.Controllers
         [HttpPost]
         public ActionResult Approve(IFormCollection formcollection)
         {
-            string sApp = formcollection["ApplicationType"].ToString();
-            if(!string.IsNullOrEmpty(sApp))
+            if (formcollection["approve"].ToString() == "Approve")
             {
-                Base.Approve(sApp);
-                Base.GetCatalog("", true);
+                string sApp = formcollection["ApplicationType"].ToString();
+                if (!string.IsNullOrEmpty(sApp))
+                {
+                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-primary\">%tt% - SW Approved: " + sApp + "</li>");
+                    _hubContext.Clients.All.SendAsync("Reload");
+                    Base.Approve(sApp);
+                    Base.GetCatalog("", true);
+                }
+            }
+
+            if (formcollection["decline"].ToString() == "Decline")
+            {
+                string sApp = formcollection["ApplicationType"].ToString();
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - SW Declined: " + sApp + "</li>");
+                if (!string.IsNullOrEmpty(sApp))
+                {
+                    Base.Decline(sApp);
+                }
+            }
+
+            if (formcollection["show"].ToString() == "show JSON")
+            {
+                string sApp = formcollection["ApplicationType"].ToString();
+                string sJSON = Base.GetPending(sApp);
+
+                return Content(sJSON);
             }
 
             return RedirectToAction("Index");
@@ -375,8 +417,17 @@ namespace RZ.Server.Controllers
 
         public ActionResult Refresh()
         {
-            Base.ResetMemoryCache();
+            Plugins.loadPlugins(Path.Combine(Env.WebRootPath, "plugins"));
+            Base.GetCatalog("", true);
 
+            _hubContext.Clients.All.SendAsync("Reload");
+
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult ShowJson(IFormCollection formcollection)
+        {
+            string sApp = formcollection["ApplicationType"].ToString();
             return RedirectToAction("Index");
         }
 

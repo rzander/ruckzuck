@@ -33,10 +33,12 @@ namespace Plugin_Software
         public void Init(string PluginPath)
         {
             //Check if MemoryCache is initialized
-            if (_cache == null)
+            if (_cache != null)
             {
-                _cache = new MemoryCache(new MemoryCacheOptions());
+                _cache.Dispose();
             }
+
+            _cache = new MemoryCache(new MemoryCacheOptions());
 
             if (Settings == null)
                 Settings = new Dictionary<string, string>();
@@ -91,8 +93,9 @@ namespace Plugin_Software
 
 
                 CloudBlobContainer oRepoContainer = new CloudBlobContainer(new Uri(Settings["repoURL"] + "?" + Settings["repoSAS"]));
-                var oDir = oRepoContainer.GetDirectoryReference(Base.clean(man).ToLower() + "/" + Base.clean(name).ToLower() + "/" + Base.clean(ver).ToLower());
-                
+                string sID = Base.clean(man).ToLower() + "/" + Base.clean(name).ToLower() + "/" + Base.clean(ver).ToLower();
+                var oDir = oRepoContainer.GetDirectoryReference(sID);
+
                 foreach (CloudBlockBlob oItem in oDir.ListBlobsSegmentedAsync(new BlobContinuationToken()).Result.Results)
                 {
                     if (oItem.Name.ToLower().EndsWith(".json"))
@@ -863,7 +866,7 @@ namespace Plugin_Software
                     {
                         JArray jSW = JArray.Parse(sJSON);
 
-                        #region remave IsLatest on old Catalog Item
+                        #region remove IsLatest on old Catalog Item
                         try
                         {
                             string shortname = jSW[0]["Shortname"].ToString();
@@ -893,6 +896,42 @@ namespace Plugin_Software
             catch { }
 
             return false;
+        }
+
+        public bool Decline(string Software)
+        {
+            try
+            {
+                CloudBlobContainer oWaitContainer = new CloudBlobContainer(new Uri(Settings["waitURL"] + "?" + Settings["waitSAS"]));
+
+                foreach (CloudBlockBlob lItem in oWaitContainer.ListBlobsSegmentedAsync(Software + ".json", new BlobContinuationToken()).Result.Results)
+                {
+                    lItem.DeleteAsync();
+                }
+
+                return true;
+            }
+            catch { }
+
+            return false;
+        }
+
+        public string GetPending(string Software)
+        {
+            try
+            {
+                CloudBlobContainer oWaitContainer = new CloudBlobContainer(new Uri(Settings["waitURL"] + "?" + Settings["waitSAS"]));
+
+                foreach (CloudBlockBlob lItem in oWaitContainer.ListBlobsSegmentedAsync(Software + ".json", new BlobContinuationToken()).Result.Results)
+                {
+                    string sJSON = lItem.DownloadTextAsync().Result;
+
+                    return sJSON;
+                }
+            }
+            catch { }
+
+            return "";
         }
     }
 }

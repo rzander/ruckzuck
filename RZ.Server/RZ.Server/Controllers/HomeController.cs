@@ -70,5 +70,30 @@ namespace RZ.Server.Controllers
 
             public string Date { get; set; }
         }
+
+        public ActionResult ReloadLatest()
+        {
+            string sURL = Request.GetEncodedUrl().ToLower().TrimEnd('/');
+            sURL = sURL.Split("/home")[0];
+
+            List<LatestItems> lSW = new List<LatestItems>();
+            JArray oRes = Base.GetCatalog("", false);
+            JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
+            JArray jTop = JArray.FromObject(jsorted.Take(5));
+            foreach (JObject jSW in jTop)
+            {
+                LatestItems oSW = new LatestItems();
+                oSW.Shortname = jSW["ShortName"].ToString();
+                oSW.Version = jSW["ProductVersion"].ToString();
+                if (jSW["IconHash"] != null)
+                    oSW.IconURL = sURL + "/rest/v2/GetIcon?iconhash=" + jSW["IconHash"].ToString();
+                else
+                    oSW.IconURL = sURL + "/rest/v2/GetIcon?id=" + jSW["SWId"].ToString();
+                oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
+                lSW.Add(oSW);
+            }
+
+            return Json(lSW);
+        }
     }
 }
