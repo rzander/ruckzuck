@@ -13,6 +13,17 @@ Select a Software from the Repository and RuckZuck handles the download and the 
 
  The RuckZuck repository does not store the binaries of the Software, just the links to where the software is downloaded. Installing Software with RuckZuck does not grant you a license for that Product.
 
+# Changes in V2 (Soon):
+
+RuckZuck will soon get a new REST API which brings some general changes:
+* no RuckZuck accounts and therefore no authentication anymore. 
+  * you will be able to provide an eMail address if you upload a new Software, but as soon as the Software is approved, the address will be removed from the package.
+  * Moderators will have to logon with a Microsoft account.
+  * no benefits for existing 'PRO' users (Accounts will be deleted)
+* its possible that RuckZuck will store binaries for some Packages
+  * if a product does not provide an URL for automatic download and the license allows to redistribute the binaries, RuckZuck will be able to host these files.
+* Support for private/disconnected Repostories if you host your own RuckZuck Server (no sync from the public repository)
+
 ## Statistics and Figures of the Project: 
 
 2015:  http://rzander.azurewebsites.net/ruckzuck-packagemanager-v1-0/ 
