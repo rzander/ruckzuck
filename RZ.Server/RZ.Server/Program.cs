@@ -21,7 +21,10 @@ namespace RZ.Server
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseStartup<Startup>()
+                .UseStartup<Startup>().ConfigureAppConfiguration((builderContext, config) =>
+                {
+                    config.AddJsonFile("appsettings.json", optional: false);
+                })
                 .UseUrls("http://*:" + (Environment.GetEnvironmentVariable("WebPort") ?? "5000"))
                 .Build();
 

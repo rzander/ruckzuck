@@ -11,10 +11,11 @@ using Newtonsoft.Json.Linq;
 
 namespace RZ.Server.Controllers
 {
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public class RZv1Controller : Controller
     {
         private IMemoryCache _cache;
-        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxx";
+        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck",  RetryPolicy.Default);
         private readonly IHubContext<Default> _hubContext;
 
@@ -253,6 +254,7 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/Feedback")]
         public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
         {
+            string Shortname = Base.GetShortname(name, ver, man);
             try
             {
                 bool bWorking = false;
@@ -263,28 +265,28 @@ namespace RZ.Server.Controllers
 
                     bool.TryParse(ok, out bWorking);
 
-                    Message bMSG;
+                    //Message bMSG;
                     //BrokeredMessage bMSG;
                     if (bWorking)
                     {
-                        bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                        //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                         _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name+ ")</li>");
                     }
                     else
                     {
                         _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
-                        bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                        //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                     }
 
 
-                    bMSG.UserProperties.Add("User", "");
-                    bMSG.UserProperties.Add("feedback", text);
-                    bMSG.UserProperties.Add("ProductName", name);
-                    bMSG.UserProperties.Add("ProductVersion", ver);
-                    bMSG.UserProperties.Add("Manufacturer", man);
-                    //bMSG.Properties.Add("IP", ipAddress);
-                    tcRuckZuck.SendAsync(bMSG);
+                    //bMSG.UserProperties.Add("User", "");
+                    //bMSG.UserProperties.Add("feedback", text);
+                    //bMSG.UserProperties.Add("ProductName", name);
+                    //bMSG.UserProperties.Add("ProductVersion", ver);
+                    //bMSG.UserProperties.Add("Manufacturer", man);
+                    //tcRuckZuck.SendAsync(bMSG);
 
+                    Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking);
                 }
                 catch { }
 
@@ -292,21 +294,21 @@ namespace RZ.Server.Controllers
                 if (text.Contains("Product not detected after installation."))
                 {
                     //We do not save status as it's from the upgrade process
-                    bWriteToDB = false;
+                    //bWriteToDB = false;
                 }
 
                 if (text == "Requirements not valid.Installation will not start.")
                 {
                     //We do not save status as it's from the upgrade process
-                    bWriteToDB = false;
+                    //bWriteToDB = false;
                 }
 
-                if (text == "ok")
-                    bWriteToDB = false;
-                if (text == "ok..")
-                    bWriteToDB = false;
+                //if (text == "ok")
+                //    bWriteToDB = false;
+                //if (text == "ok..")
+                //    bWriteToDB = false;
 
-                string Shortname = Base.GetShortname(name, ver, man);
+                
 
                 if (bWriteToDB)
                 {

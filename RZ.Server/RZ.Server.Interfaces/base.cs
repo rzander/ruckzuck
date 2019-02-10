@@ -18,6 +18,7 @@ namespace RZ.Server
         internal static Dictionary<string, ICatalog> _CatalogPlugins = new Dictionary<string, ICatalog>();
         internal static Dictionary<string, ISoftware> _SoftwarePlugins = new Dictionary<string, ISoftware>();
         internal static Dictionary<string, ISWLookup> _SWLookupPlugins = new Dictionary<string, ISWLookup>();
+        internal static Dictionary<string, IFeedback> _FeedbackPlugins = new Dictionary<string, IFeedback>();
 
         public static void loadPlugins(string PluginPath = "")
         {
@@ -27,6 +28,7 @@ namespace RZ.Server
             _CatalogPlugins.Clear();
             _SoftwarePlugins.Clear();
             _SWLookupPlugins.Clear();
+            _FeedbackPlugins.Clear();
 
             if (Base._cache != null)
             {
@@ -74,6 +76,17 @@ namespace RZ.Server
             foreach (var item in Lookupplugins)
             {
                 _SWLookupPlugins.Add(item.Name, item);
+                Console.WriteLine(item.Name);
+                item.Settings = new Dictionary<string, string>();
+                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Init(PluginPath);
+                dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
+            }
+
+            ICollection<IFeedback> Feedbackplugins = GenericPluginLoader<IFeedback>.LoadPlugins(PluginPath, "RZ.Plugin.Feedback");
+            foreach (var item in Feedbackplugins)
+            {
+                _FeedbackPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
                 item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
@@ -435,10 +448,30 @@ namespace RZ.Server
 
                             try
                             {
-                                if (Version.Parse(productversion) >= Version.Parse(sRZVersion)) //version is newer or same
+                                if (Version.Parse(productversion) > Version.Parse(sRZVersion)) //version is newer
+                                {
+                                    Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
+                                    Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "RZ", true);
+                                    continue;
+                                }
+                                if (Version.Parse(productversion) == Version.Parse(sRZVersion)) //version is  same
                                     continue;
                             }
-                            catch { }
+                            catch
+                            {
+                                try
+                                {
+                                    if (string.Compare(productversion, sRZVersion, true) >= 1)
+                                    {
+                                        Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
+                                        Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "RZ", true);
+                                        continue;
+                                    }
+                                }
+                                catch { }
+                            }
+
+
 
                             JObject oCatItem = new JObject();
                             oCatItem.Add("ShortName", jSW["ShortName"]);
@@ -527,6 +560,42 @@ namespace RZ.Server
             return new List<string>();
         }
         #endregion
+
+        public static void StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null)
+        {
+            try
+            {
+                foreach (var item in Plugins._FeedbackPlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        item.Value.StoreFeedback(name, ver, man, shortname, feedback, user, failure);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            return;
+        }
+
+        public static void SendNotification(string message = "", string body = "")
+        {
+            try
+            {
+                foreach (var item in Plugins._FeedbackPlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        item.Value.SendNotification(message, body);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            return;
+        }
 
         public static string clean(string filename)
         {

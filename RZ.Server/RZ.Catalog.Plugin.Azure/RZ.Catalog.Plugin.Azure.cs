@@ -40,7 +40,6 @@ namespace Plugin_Software
             if (Settings == null)
                 Settings = new Dictionary<string, string>();
 
-            string wwwpath = Settings["wwwPath"] ?? PluginPath;
         }
 
 

@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RZ.Server.Controllers
 {
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public class RZController : Controller
     {
         private readonly IHubContext<Default> _hubContext;

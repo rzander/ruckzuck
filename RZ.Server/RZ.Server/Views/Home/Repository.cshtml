@@ -1,0 +1,31 @@
+﻿
+@{
+    ViewData["Title"] = "Repository";
+}
+
+<h2>Repository</h2>
+
+<div class="col-lg-12">
+    <form id="fChanges">
+        @foreach (var SW in ViewBag.RepositoryItems)
+        {
+            <div class="form-group row">
+                <div class="row col-lg-12">
+                    <div class="col-lg-1" style="width:72px">
+                        <img src="@SW.IconURL" width="48px" height="48px" />
+                    </div>
+                    <div class="row col-lg-2">
+                        <a href="@SW.ProductURL" target="_blank"><b>@SW.Shortname</b></a>
+                        @SW.Version
+                    </div>
+                    <div class="col-lg-2">
+                        <p>@SW.Manufacturer</p>
+                    </div>
+                    <div class="col-lg-7">
+                        <p>@SW.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </form>
+</div>

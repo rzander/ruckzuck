@@ -43,14 +43,24 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">RZ.Server</a>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">RuckZuck</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    @*<li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>*@
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Repository">Repository</a></li>
+                    <li><a href="https://github.com/rzander/ruckzuck/wiki" target="_blank">Wiki</a></li>
+                    <li><a href="https://github.com/rzander/ruckzuck/issues" target="_blank">Forum</a></li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-area="" asp-controller="Admin" asp-action="Index">Admin</a></li>
+                    }
                 </ul>
+                <partial name="_LoginPartial" />
+                @*@Html.Partial("_LoginPartial")*@
+
             </div>
         </div>
     </nav>
@@ -61,7 +71,7 @@
         @RenderBody()
     </div>
     <div class="footer">
-        <p>&copy; 2019 by Roger Zander - RuckZuck Server V2.x.x.x</p>
+        <p>&copy; 2019 by Roger Zander - RuckZuck Server @ViewBag.appVersion</p>
     </div>
 
     <environment include="Development">

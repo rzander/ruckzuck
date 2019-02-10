@@ -17,9 +17,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using static RZ.Server.Controllers.HomeController;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
 
 namespace RZ.Server.Controllers
 {
+    [Authorize]
     public class AdminController : Controller
     {
         public IConfiguration Configuration { get; }
@@ -35,16 +38,25 @@ namespace RZ.Server.Controllers
             _cache = memoryCache;
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         [Route("Admin")]
         [Route("Admin/Index")]
         public IActionResult Index()
         {
+            ViewBag.appVersion = typeof(AdminController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             List<string> pendingApps = Base.GetPendingApproval();
 
             ViewBag.ApplicationTypes = pendingApps;
             return View();
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         [Route("Admin/Approve")]
         [HttpPost]
         public ActionResult Approve(IFormCollection formcollection)
@@ -54,8 +66,9 @@ namespace RZ.Server.Controllers
                 string sApp = formcollection["ApplicationType"].ToString();
                 if (!string.IsNullOrEmpty(sApp))
                 {
-                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-primary\">%tt% - SW Approved: " + sApp + "</li>");
+                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - SW Approved: " + sApp + "</li>");
                     _hubContext.Clients.All.SendAsync("Reload");
+                    Base.SendNotification("Software Approved:" + sApp, "");
                     Base.Approve(sApp);
                     Base.GetCatalog("", true);
                 }
@@ -82,6 +95,10 @@ namespace RZ.Server.Controllers
             return RedirectToAction("Index");
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         [HttpPost]
         [Route("Admin/UploadSWEntry")]
         public bool UploadSWEntry()
@@ -110,6 +127,10 @@ namespace RZ.Server.Controllers
             }
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         [Route("Admin/importlookup")]
         public void ImportLookup()
         {
@@ -145,63 +166,64 @@ namespace RZ.Server.Controllers
             }
         }
 
-        [Route("Admin/importlatest")]
-        public void ImportLatest()
-        {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "xdiv5qhm5h.database.windows.net";
-            builder.UserID = "rzander@xdiv5qhm5h";
-            builder.Password = "Kerb7eros";
-            builder.InitialCatalog = "RuckZuck_pub";
+        //oboslete
+        //[Route("Admin/importlatest")]
+        //public void ImportLatest()
+        //{
+        //    SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+        //    builder.DataSource = "xdiv5qhm5h.database.windows.net";
+        //    builder.UserID = "rzander@xdiv5qhm5h";
+        //    builder.Password = "Kerb7eros";
+        //    builder.InitialCatalog = "RuckZuck_pub";
 
-            using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
-            {
-                Console.WriteLine("\nQuery data example:");
-                Console.WriteLine("=========================================\n");
+        //    using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+        //    {
+        //        Console.WriteLine("\nQuery data example:");
+        //        Console.WriteLine("=========================================\n");
 
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT [Id],[ShortName] ");
-                sb.Append("  FROM [dbo].[SWVersions] WHERE IsLatest = 1 ORDER BY [LastModified] DESC");
+        //        connection.Open();
+        //        StringBuilder sb = new StringBuilder();
+        //        sb.Append("SELECT [Id],[ShortName] ");
+        //        sb.Append("  FROM [dbo].[SWVersions] WHERE IsLatest = 1 ORDER BY [LastModified] DESC");
 
-                String sql = sb.ToString();
+        //        String sql = sb.ToString();
 
-                var SWList = new List<KeyValuePair<string, string>>();
+        //        var SWList = new List<KeyValuePair<string, string>>();
 
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            SWList.Add(new KeyValuePair<string, string>(reader.GetInt64(0).ToString(), reader.GetString(1)));
-                        }
-                    }
-                }
+        //        using (SqlCommand command = new SqlCommand(sql, connection))
+        //        {
+        //            using (SqlDataReader reader = command.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    SWList.Add(new KeyValuePair<string, string>(reader.GetInt64(0).ToString(), reader.GetString(1)));
+        //                }
+        //            }
+        //        }
 
-                foreach (var Item in SWList)
-                {
-                    JArray jResult = new JArray();
-                    sb = new StringBuilder();
-                    sb.Append("SELECT [Definition] ");
-                    sb.Append("  FROM [dbo].[SWDetails] WHERE SWId = " + Item.Key);
+        //        foreach (var Item in SWList)
+        //        {
+        //            JArray jResult = new JArray();
+        //            sb = new StringBuilder();
+        //            sb.Append("SELECT [Definition] ");
+        //            sb.Append("  FROM [dbo].[SWDetails] WHERE SWId = " + Item.Key);
 
-                    using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
-                    {
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                Console.WriteLine("{0} {1}", Item.Key, Item.Value);
-                                jResult.Add(JObject.Parse(reader.GetString(0)));
-                            }
-                        }
-                    }
+        //            using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
+        //            {
+        //                using (SqlDataReader reader = command.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {
+        //                        Console.WriteLine("{0} {1}", Item.Key, Item.Value);
+        //                        jResult.Add(JObject.Parse(reader.GetString(0)));
+        //                    }
+        //                }
+        //            }
 
-                    bool bRes = Base.UploadSoftware(jResult);
-                }
-            }
-        }
+        //            bool bRes = Base.UploadSoftware(jResult);
+        //        }
+        //    }
+        //}
 
         public string GetDownloadURL(string url, string Customer, string RowKey)
         {
@@ -341,6 +363,10 @@ namespace RZ.Server.Controllers
 
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         [Route("Admin/importcatalog")]
         public void importcatalog()
         {
@@ -397,8 +423,8 @@ namespace RZ.Server.Controllers
 
                                 string sRowKey = Hash.CalculateMD5HashString(sID);
 
-                                //InsertEntityAsync("https://ruckzuck.table.core.windows.net/catalog?st=2019-01-10T15%3A32%3A32Z&se=2019-01-31T15%3A32%3A00Z&sp=raud&sv=2018-03-28&tn=catalog&sig=gr4YRGGtmPYsuc%2BpQLTgUP0rFRRXXY8szEChfRt1BZE%3D", "known", sRowKey, jEntity.ToString());
-                                MergeEntityAsync("https://ruckzuck.table.core.windows.net/catalog?st=2019-01-10T15%3A32%3A32Z&se=2019-01-31T15%3A32%3A00Z&sp=raud&sv=2018-03-28&tn=catalog&sig=gr4YRGGtmPYsuc%2BpQLTgUP0rFRRXXY8szEChfRt1BZE%3D", "known", sRowKey, jEntity.ToString());
+                                //InsertEntityAsync("https://ruckzuck.table.core.windows.net/catalog?st=2019-02-08T19%3A20%3A22Z&se=2019-03-31T19%3A20%3A00Z&sp=raud&sv=2018-03-28&tn=catalog&sig=cQpC0tsLFkz6A%2BOs%2FqG4JAyHLTIYG6%2Fw9quNNEc9xUM%3D", "known", sRowKey, jEntity.ToString());
+                                MergeEntityAsync("https://ruckzuck.table.core.windows.net/catalog?st=2019-02-08T19%3A20%3A22Z&se=2019-03-31T19%3A20%3A00Z&sp=raud&sv=2018-03-28&tn=catalog&sig=cQpC0tsLFkz6A%2BOs%2FqG4JAyHLTIYG6%2Fw9quNNEc9xUM%3D", "known", sRowKey, jEntity.ToString());
 
                                 //Base.SetShortname(reader.GetString(1), reader.GetString(2), reader.GetString(0), reader.GetString(3));
                             }
@@ -415,6 +441,10 @@ namespace RZ.Server.Controllers
             //Cleanup old isLatest TBD: PartitionKey eq 'known' and Timestamp lt datetime'2019-01-12T14:18:38.639Z' and IsLatest eq true
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         public ActionResult Refresh()
         {
             Plugins.loadPlugins(Path.Combine(Env.WebRootPath, "plugins"));
@@ -425,6 +455,10 @@ namespace RZ.Server.Controllers
             return RedirectToAction("Index");
         }
 
+#if DEBUG
+        [AllowAnonymous]
+#endif
+        [Authorize]
         public ActionResult ShowJson(IFormCollection formcollection)
         {
             string sApp = formcollection["ApplicationType"].ToString();
@@ -432,62 +466,62 @@ namespace RZ.Server.Controllers
         }
 
         //REMOVE
-        public void importlookup()
-        {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "xdiv5qhm5h.database.windows.net";
-            builder.UserID = "rzander@xdiv5qhm5h";
-            builder.Password = "Kerb7eros";
-            builder.InitialCatalog = "RuckZuck_pub";
+        //public void importlookup()
+        //{
+        //    SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+        //    builder.DataSource = "xdiv5qhm5h.database.windows.net";
+        //    builder.UserID = "rzander@xdiv5qhm5h";
+        //    builder.Password = "Kerb7eros";
+        //    builder.InitialCatalog = "RuckZuck_pub";
 
-            using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
-            {
-                Console.WriteLine("\nQuery data example:");
-                Console.WriteLine("=========================================\n");
+        //    using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+        //    {
+        //        Console.WriteLine("\nQuery data example:");
+        //        Console.WriteLine("=========================================\n");
 
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                //sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE (IsLatest is NULL or IsLatest = '') AND Shortname = ''");
-                //sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE Shortname is not null and Shortname != '' and (IsLatest != 1 or IsLatest is null)");
-                sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE Shortname != '' and (IsLatest != 1 or IsLatest is null)");
+        //        connection.Open();
+        //        StringBuilder sb = new StringBuilder();
+        //        //sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE (IsLatest is NULL or IsLatest = '') AND Shortname = ''");
+        //        //sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE Shortname is not null and Shortname != '' and (IsLatest != 1 or IsLatest is null)");
+        //        sb.Append(" SELECT * FROM [dbo].[SWVersions] WHERE Shortname != '' and (IsLatest != 1 or IsLatest is null)");
 
-                String sql = sb.ToString();
+        //        String sql = sb.ToString();
 
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            JObject jEntity = new JObject();
-                            jEntity.Add("Manufacturer", Base.clean(reader["Manufacturer"] as string));
-                            jEntity.Add("ProductName", Base.clean(reader["ProductName"] as string));
-                            jEntity.Add("ProductVersion", Base.clean(reader["Version"] as string));
+        //        using (SqlCommand command = new SqlCommand(sql, connection))
+        //        {
+        //            using (SqlDataReader reader = command.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    JObject jEntity = new JObject();
+        //                    jEntity.Add("Manufacturer", Base.clean(reader["Manufacturer"] as string));
+        //                    jEntity.Add("ProductName", Base.clean(reader["ProductName"] as string));
+        //                    jEntity.Add("ProductVersion", Base.clean(reader["Version"] as string));
 
-                            string shortname = reader["ShortName"] as string;
-                            if(!string.IsNullOrEmpty(shortname))
-                            {
-                                jEntity.Add("ShortName", shortname.ToLower());
-                            }
+        //                    string shortname = reader["ShortName"] as string;
+        //                    if(!string.IsNullOrEmpty(shortname))
+        //                    {
+        //                        jEntity.Add("ShortName", shortname.ToLower());
+        //                    }
 
-                            if (jEntity["ShortName"] == null)
-                                jEntity["ShortName"] = "";
+        //                    if (jEntity["ShortName"] == null)
+        //                        jEntity["ShortName"] = "";
 
-                            string sID = (jEntity["Manufacturer"].ToString().ToLower() + jEntity["ProductName"].ToString().ToLower() + jEntity["ProductVersion"].ToString().ToLower()).Trim();
-                            Console.WriteLine(sID);
+        //                    string sID = (jEntity["Manufacturer"].ToString().ToLower() + jEntity["ProductName"].ToString().ToLower() + jEntity["ProductVersion"].ToString().ToLower()).Trim();
+        //                    Console.WriteLine(sID);
 
-                            string sRowKey = Hash.CalculateMD5HashString(sID);
+        //                    string sRowKey = Hash.CalculateMD5HashString(sID);
 
-                            if(string.IsNullOrEmpty(shortname))
-                                InsertEntityAsync("https://ruckzuck.table.core.windows.net/SWLookup?st=2019-01-11T20%3A21%3A50Z&se=2019-01-31T20%3A21%3A00Z&sp=raud&sv=2018-03-28&tn=swlookup&sig=qruiRc4nT3vgtQMzgHsuy0pxsHU8jC%2FwpNswoFm%2FJfE%3D", "lookup", sRowKey, jEntity.ToString());
-                            else
-                                UpdateEntityAsync("https://ruckzuck.table.core.windows.net/SWLookup?st=2019-01-11T20%3A21%3A50Z&se=2019-01-31T20%3A21%3A00Z&sp=raud&sv=2018-03-28&tn=swlookup&sig=qruiRc4nT3vgtQMzgHsuy0pxsHU8jC%2FwpNswoFm%2FJfE%3D", "lookup", sRowKey, jEntity.ToString());
+        //                    if(string.IsNullOrEmpty(shortname))
+        //                        InsertEntityAsync("https://ruckzuck.table.core.windows.net/SWLookup?st=2019-01-11T20%3A21%3A50Z&se=2019-01-31T20%3A21%3A00Z&sp=raud&sv=2018-03-28&tn=swlookup&sig=qruiRc4nT3vgtQMzgHsuy0pxsHU8jC%2FwpNswoFm%2FJfE%3D", "lookup", sRowKey, jEntity.ToString());
+        //                    else
+        //                        UpdateEntityAsync("https://ruckzuck.table.core.windows.net/SWLookup?st=2019-01-11T20%3A21%3A50Z&se=2019-01-31T20%3A21%3A00Z&sp=raud&sv=2018-03-28&tn=swlookup&sig=qruiRc4nT3vgtQMzgHsuy0pxsHU8jC%2FwpNswoFm%2FJfE%3D", "lookup", sRowKey, jEntity.ToString());
 
-                            //Base.SetShortname(reader.GetString(1), reader.GetString(2), reader.GetString(0), reader.GetString(3));
-                        }
-                    }
-                }
-            }
-        }
+        //                    //Base.SetShortname(reader.GetString(1), reader.GetString(2), reader.GetString(0), reader.GetString(3));
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
     }
 }
