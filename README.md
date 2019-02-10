@@ -54,9 +54,11 @@ Docker container to cache RuckZuck traffic (SW definitions, Icons and binary-dow
 https://rzander.azurewebsites.net/ruckzuck-cache/   
 https://hub.docker.com/r/zanderr/ruckzuck/
 
+### RZ.Server
+RuckZuck Web-UI and REST API.
+
 ### RZ.Bot
 (internals) A "Service" to automatically download and install failed apps.
 ### RZ.LogConsole
 (internals) A real-time Log-Console to get failed and success installations.
-### RZ.WCF
-(internals) RuckZuck Back-End Web-Service. [Overview](https://rzander.azurewebsites.net/ruckzuck-backend-services-v2/)
+
