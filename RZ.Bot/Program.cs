@@ -85,7 +85,7 @@ namespace RZ.Bot
 
                         if (sLastPackage != oRZSW.SoftwareUpdate.SW.Shortname)
                         {
-                            oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.Shortname);
+                            //oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.Shortname);
 
                             oRZSW.SoftwareUpdate.SendFeedback = false; //we already process feedback...
 

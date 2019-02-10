@@ -250,14 +250,6 @@ namespace RuckZuck_Tool
                             if (oItem.GetType() == typeof(GetSoftware))
                             {
                                 GetSoftware dgr = oItem as GetSoftware;
-                                /*if (!string.IsNullOrEmpty(dgr.XMLFile))
-                                {
-                                    if (System.IO.File.Exists(dgr.XMLFile))
-                                    {
-                                        oSW = new SWUpdate(RZUpdater.ParseXML(dgr.XMLFile));
-                                        oSW.SendFeedback = false;
-                                    }
-                                }*/
 
                                 if (oSW == null)
                                     oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
