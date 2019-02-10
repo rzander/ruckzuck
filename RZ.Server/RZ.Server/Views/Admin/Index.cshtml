@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "RZ Admin";
+}
+
+<br />
+<div class="panel panel-primary">
+    <div class="panel-heading">Pending approvals:</div>
+    <div class="panel-body">
+        @using (@Html.BeginForm("Approve", "admin", FormMethod.Post))
+        {
+            @Html.DropDownList("ApplicationType", new SelectList(ViewBag.ApplicationTypes, "ApplicationName"), new { @class = "form-control" })
+
+            <br />
+
+            <input type="submit" name="approve" value="Approve" />
+            <input type="submit" name ="decline" value="Decline" />
+            <input type="submit" name="show" value="show JSON" />
+        }
+    </div>
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">Admin Tasks:</div>
+    <div class="panel-body">
+        <input id="btReset" type="button" value="reset MemCache" onclick="location.href='@Url.Action("Refresh", "Admin")'" />
+    </div>
+</div>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+
+</script>
