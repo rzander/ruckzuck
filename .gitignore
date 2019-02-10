@@ -324,7 +324,6 @@ ASALocalRun/
 RZ.Server/RZ.Server.Interfaces/config.json
 RZ.Server/RZ.Server/wwwroot/content
 RZ.Server/RZ.Server/wwwroot/icons
-RZ.Server/RZ.Server/wwwroot/images
 RZ.Server/RZ.Server/wwwroot/swlookup
 RZ.Server/RZ.Server/wwwroot/repository
 RZ.Server/RZ.Server/wwwroot/plugins
