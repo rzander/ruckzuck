@@ -49,10 +49,21 @@
                 <ul class="nav navbar-nav">
                     @*<li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>*@
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Support">Support</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Repository">Repository</a></li>
                     <li><a href="https://github.com/rzander/ruckzuck/wiki" target="_blank">Wiki</a></li>
                     <li><a href="https://github.com/rzander/ruckzuck/issues" target="_blank">Forum</a></li>
+                    <li data-toggle="tooltip" title="Pushbullet feed for new Versions and reported Issues...">
+                        <a class="pushbullet-subscribe-widget" data-channel="ruckzuck" data-widget="button" data-size="small"></a>
+                        <script type="text/javascript">(function () { var a = document.createElement('script'); a.type = 'text/javascript'; a.async = true; a.src = 'https://widget.pushbullet.com/embed.js'; var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(a, b); })();</script>
+                    </li>
+                    <li data-toggle="tooltip" title="RSS Feed with all Repository changes...">
+                        <a href="/rss.aspx">
+                            <span>
+                                <img src="/Images/RSS_24.png" alt="RSS" />
+                            </span>
+                        </a>
+                    </li>
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li><a asp-area="" asp-controller="Admin" asp-action="Index">Admin</a></li>

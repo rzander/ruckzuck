@@ -52,6 +52,13 @@ namespace RZ.Server.Controllers
         }
 
         [AllowAnonymous]
+        [Route("rss.aspx")]
+        public IActionResult RSS()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
         public IActionResult Repository()
         {
             ViewBag.appVersion = typeof(HomeController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
@@ -95,10 +102,9 @@ namespace RZ.Server.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Contact()
+        public IActionResult Support()
         {
             ViewBag.appVersion = typeof(HomeController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
-            ViewData["Message"] = "Your contact page.";
 
             return View();
         }
