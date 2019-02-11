@@ -129,6 +129,7 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/v2/GetFile")]
         [Route("rest/v2/GetFile/{contentid}/{filename}")]
+        [Route("wcf/RZService.svc/rest/v2/GetFile/{contentid}/{filename}")]
         public async Task<IActionResult> GetFile(string contentid, string filename)
         {
             string sPath = Path.Combine(contentid, filename);
