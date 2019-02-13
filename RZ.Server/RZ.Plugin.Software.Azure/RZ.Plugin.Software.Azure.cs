@@ -409,6 +409,23 @@ namespace Plugin_Software
                 {
                     JToken oContentID;
 
+                    //Empty PreRequisites should be handled by the Client; Fix after 1.6.2.13!
+                    try
+                    {
+                        if (jObj["PreRequisites"] == null)
+                        {
+                            string[] oReq = new string[0];
+                            jObj.Add("PreRequisites", JToken.FromObject(oReq));
+                        }
+
+                        if (!jObj["PreRequisites"].HasValues)
+                        {
+                            string[] oReq = new string[0];
+                            jObj["PreRequisites"] = JToken.FromObject(oReq);
+                        }
+                    }
+                    catch { }
+
                     if (jObj.TryGetValue("ContentID", out oContentID))
                     {
                         string sContentID = oContentID.Value<string>();

@@ -47,7 +47,7 @@ namespace RZ.Server.Controllers
             // Create and store the AuthenticatedToken before returning it
             string token2 = Guid.NewGuid().ToString();
 
-            return Content(token2, "text/xml");
+            return Content(token2, "application/json");
 
             if (string.IsNullOrEmpty(Username))
             {

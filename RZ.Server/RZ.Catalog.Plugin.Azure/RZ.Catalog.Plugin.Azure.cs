@@ -126,6 +126,13 @@ namespace Plugin_Software
 
                     jItem.Add("Image", null);
                     jItem.Add("Quality", 100);
+
+                    //Backward compatibility; remove after 1.6.2.13
+                    //try
+                    //{
+                    //    jItem.Add("Shortname", jItem["ShortName"]);
+                    //}
+                    //catch { }
                 }
 
                 return jResult;
