@@ -70,7 +70,6 @@ namespace RZUpdate
                 //SWScan();
                 GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
-
             //Check every 60s
             tRegCheck.Interval = 60000;
             tRegCheck.Elapsed += TRegCheck_Elapsed;

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.IO;
 using RuckZuck_WCF;
+using System.Diagnostics;
 
 namespace RZUpdate
 {

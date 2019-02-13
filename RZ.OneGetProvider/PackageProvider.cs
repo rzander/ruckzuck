@@ -90,7 +90,7 @@ namespace PackageManagement
         public void OnUnhandledException(string methodName, Exception exception)
         {
             Debug.WriteLine("Unexpected Exception thrown in '{0}::{1}' -- {2}\\{3}\r\n{4}", PackageProviderName, methodName, exception.GetType().Name, exception.Message, exception.StackTrace);
-            dLastTokenRefresh = new DateTime(); //enforce to refresh authentication
+            //dLastTokenRefresh = new DateTime(); //enforce to refresh authentication
         }
 
         /// <summary>

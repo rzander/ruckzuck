@@ -21,14 +21,14 @@ namespace PackageManagement
     {
         // RuckZuck Code Here
 
-        private static string _AuthenticationToken = "";
+        //private static string _AuthenticationToken = "";
         private RZUpdate.RZScan oScan;
         private RZUpdate.RZUpdater oUpdate;
 
         public List<AddSoftware> lSoftware = new List<AddSoftware>();
         public static string WebServiceURL = "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
 
-        private DateTime dLastTokenRefresh = new DateTime();
+        //private DateTime dLastTokenRefresh = new DateTime();
 
         /// <summary>
         /// Initialize the RuckZuck Web-Service
@@ -51,7 +51,7 @@ namespace PackageManagement
                     Properties.Settings.Default.Save();
                 }
 
-                _reAuthenticate(request);
+                //_reAuthenticate(request);
 
                 oScan = new RZUpdate.RZScan(false, false);
                 //oScan.GetSWRepository().ConfigureAwait(false); //no need to load Repository on init
@@ -122,11 +122,12 @@ namespace PackageManagement
             bool bIsTrusted = false;
             try
             {
-                _reAuthenticate(request); //Check if AuthToken is still valid
-                if (!string.IsNullOrEmpty(_AuthenticationToken))
-                {
-                    bValidated = true;
-                }
+                //_reAuthenticate(request); //Check if AuthToken is still valid
+                bValidated = true;
+                //if (!string.IsNullOrEmpty(_AuthenticationToken))
+                //{
+                //    bValidated = true;
+                //}
 
                 if (string.Equals(Properties.Settings.Default.Location, WebServiceURL, StringComparison.InvariantCultureIgnoreCase))
                     bIsTrusted = true;
@@ -182,15 +183,15 @@ namespace PackageManagement
 
             Properties.Settings.Default.Save();
 
-            _AuthenticationToken = RZRestAPI.GetAuthToken(sUser, ToInsecureString(sPW));
+            //_AuthenticationToken = RZRestAPI.GetAuthToken(sUser, ToInsecureString(sPW));
 
-            Guid gToken;
-            if (!Guid.TryParse(_AuthenticationToken, out gToken))
-            {
-                request.Warning(_AuthenticationToken);
-                dLastTokenRefresh = new DateTime();
-                return;
-            }
+            //Guid gToken;
+            //if (!Guid.TryParse(_AuthenticationToken, out gToken))
+            //{
+            //    request.Warning(_AuthenticationToken);
+            //    dLastTokenRefresh = new DateTime();
+            //    return;
+            //}
         }
 
         private void _removePackageSource(string name, Request request)
@@ -200,7 +201,7 @@ namespace PackageManagement
             Properties.Settings.Default.Password = "";
             Properties.Settings.Default.Save();
 
-            dLastTokenRefresh = new DateTime();
+            //dLastTokenRefresh = new DateTime();
 
             //RZRestAPI.sURL = Properties.Settings.Default.Location;
         }
@@ -209,57 +210,57 @@ namespace PackageManagement
         /// Check if RuckZuck Token is still valid or request a new token if last refresh was mor than an hour
         /// </summary>
         /// <param name="request"></param>
-        private void _reAuthenticate(Request request)
-        {
-            //Check if there is a token..
-            Guid gToken;
-            if (!Guid.TryParse(_AuthenticationToken, out gToken))
-            {
-                dLastTokenRefresh = new DateTime();
-            }
+        //private void _reAuthenticate(Request request)
+        //{
+        //    //Check if there is a token..
+        //    //Guid gToken;
+        //    //if (!Guid.TryParse(_AuthenticationToken, out gToken))
+        //    //{
+        //    //    dLastTokenRefresh = new DateTime();
+        //    //}
 
-            //Re-Authenticate after 30min
-            if ((DateTime.Now - dLastTokenRefresh).TotalMinutes >= 30)
-            {
+        //    //Re-Authenticate after 30min
+        //    if ((DateTime.Now - dLastTokenRefresh).TotalMinutes >= 30)
+        //    {
 
 
-                if (string.IsNullOrEmpty(Properties.Settings.Default.Location))
-                {
-                    //Properties.Settings.Default.Location = WebServiceURL;
-                    //Properties.Settings.Default.Save();
+        //        if (string.IsNullOrEmpty(Properties.Settings.Default.Location))
+        //        {
+        //            //Properties.Settings.Default.Location = WebServiceURL;
+        //            //Properties.Settings.Default.Save();
 
-                }
+        //        }
 
-                //RZRestAPI.sURL = Properties.Settings.Default.Location;
+        //        //RZRestAPI.sURL = Properties.Settings.Default.Location;
 
-                if (!string.IsNullOrEmpty(Properties.Settings.Default.Username))
-                {
-                    _AuthenticationToken = RZRestAPI.GetAuthToken(Properties.Settings.Default.Username, ToInsecureString(DecryptString(Properties.Settings.Default.Password)));
-                    dLastTokenRefresh = DateTime.Now;
-                    request.Debug("RZ Account: " + Properties.Settings.Default.Username);
-                }
-                else
-                {
-                    _AuthenticationToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
-                    dLastTokenRefresh = DateTime.Now;
-                    request.Debug("RZ Account: FreeRZ");
-                }
+        //        if (!string.IsNullOrEmpty(Properties.Settings.Default.Username))
+        //        {
+        //            //_AuthenticationToken = RZRestAPI.GetAuthToken(Properties.Settings.Default.Username, ToInsecureString(DecryptString(Properties.Settings.Default.Password)));
+        //            //dLastTokenRefresh = DateTime.Now;
+        //            request.Debug("RZ Account: " + Properties.Settings.Default.Username);
+        //        }
+        //        else
+        //        {
+        //            //_AuthenticationToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
+        //            dLastTokenRefresh = DateTime.Now;
+        //            request.Debug("RZ Account: FreeRZ");
+        //        }
 
-                if (!Guid.TryParse(_AuthenticationToken, out gToken))
-                {
-                    dLastTokenRefresh = new DateTime();
-                    request.Warning(_AuthenticationToken);
-                    _AuthenticationToken = "";
-                    return;
-                }
+        //        //if (!Guid.TryParse(_AuthenticationToken, out gToken))
+        //        //{
+        //        //    dLastTokenRefresh = new DateTime();
+        //        //    request.Warning(_AuthenticationToken);
+        //        //    _AuthenticationToken = "";
+        //        //    return;
+        //        //}
 
-                request.Debug("RZ Authentication Token:" + _AuthenticationToken);
-            }
-        }
+        //        request.Debug("RZ Authentication Token:" + _AuthenticationToken);
+        //    }
+        //}
 
         private void _findPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Request request)
         {
-            _reAuthenticate(request); //Check if AuthToken is still valid
+            //_reAuthenticate(request); //Check if AuthToken is still valid
 
             try
             {
@@ -401,7 +402,7 @@ namespace PackageManagement
             catch (Exception ex)
             {
                 request.Debug("E334:" + ex.Message);
-                dLastTokenRefresh = new DateTime();
+                //dLastTokenRefresh = new DateTime();
             }
         }
 
@@ -412,7 +413,7 @@ namespace PackageManagement
         /// <param name="request"></param>
         private void _installPackage(string fastPackageReference, Request request)
         {
-            _reAuthenticate(request); //Check if AuthToken is still valid
+            //_reAuthenticate(request); //Check if AuthToken is still valid
 
             bool bSkipDep = false;
             bool bDLPath = false;
@@ -469,7 +470,7 @@ namespace PackageManagement
         /// <param name="request"></param>
         private void _uninstallPackage(string fastPackageReference, Request request)
         {
-            _reAuthenticate(request); //Check if AuthToken is still valid
+            //_reAuthenticate(request); //Check if AuthToken is still valid
 
             string sProd = fastPackageReference;
             string sVer = "";
@@ -506,7 +507,7 @@ namespace PackageManagement
 
         private void _downloadPackage(string fastPackageReference, string location, Request request)
         {
-            _reAuthenticate(request); //Check if AuthToken is still valid
+            //_reAuthenticate(request); //Check if AuthToken is still valid
 
             bool bSkipDep = false;
             if (request.OptionKeys.Contains("SkipDependencies"))
@@ -546,7 +547,7 @@ namespace PackageManagement
 
         private void _getInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
         {
-            _reAuthenticate(request); //Check if AuthToken is still valid
+            //_reAuthenticate(request); //Check if AuthToken is still valid
 
             try
             {
@@ -611,9 +612,7 @@ namespace PackageManagement
             }
             catch
             {
-                dLastTokenRefresh = new DateTime();
-
-
+                //dLastTokenRefresh = new DateTime();
             }
         }
 
