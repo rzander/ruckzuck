@@ -849,6 +849,25 @@ namespace Plugin_Software
                 string ProductVersion = Base.clean(Software[0]["ProductVersion"].ToString()).Trim();
                 string Manufacturer = Base.clean(Software[0]["Manufacturer"].ToString()).Trim();
 
+                string sIconId = DateTime.Now.Year.ToString().Substring(2, 2) + DateTime.Now.DayOfYear.ToString("D" + 3) + Convert.ToInt32(DateTime.Now.TimeOfDay.TotalMinutes).ToString();
+                int iIconID = int.Parse(sIconId);
+
+                foreach (JObject jObj in Software)
+                {
+                    try
+                    {
+                        if (jObj["SWId"] == null)
+                            jObj.Add("SWId", iIconID);
+                        else
+                            jObj["SWId"] = iIconID;
+
+                        if (jObj["IconId"] == null)
+                            jObj.Add("IconId", iIconID);
+                        else
+                            jObj["IconId"] = iIconID;
+                    }
+                    catch { }
+                }
                 CloudBlobContainer oWaitContainer = new CloudBlobContainer(new Uri(Settings["waitURL"] + "?" + Settings["waitSAS"]));
                 CloudBlockBlob cJsonBlock = oWaitContainer.GetBlockBlobReference(Manufacturer + "-" + ProductName+ "-" + ProductVersion + ".json");
                 var upl = cJsonBlock.UploadTextAsync(Software.ToString());
