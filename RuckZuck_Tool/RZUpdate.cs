@@ -483,6 +483,9 @@ namespace RZUpdate
                 {
                     try
                     {
+                        if (DT.IconId == 0)
+                            DT.IconId = SW.IconId;
+
                         //Check PreReqs
                         try
                         {

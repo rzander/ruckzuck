@@ -409,7 +409,7 @@ namespace Plugin_Software
                 {
                     JToken oContentID;
 
-                    //Empty PreRequisites should be handled by the Client; Fix after 1.6.2.13!
+                    //Empty PreRequisites should be handled by the Client; Fix after 1.6.2.14!
                     try
                     {
                         if (jObj["PreRequisites"] == null)
@@ -423,6 +423,14 @@ namespace Plugin_Software
                             string[] oReq = new string[0];
                             jObj["PreRequisites"] = JToken.FromObject(oReq);
                         }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        jObj["Manufacturer"] = Base.clean(jObj["Manufacturer"].Value<string>());
+                        jObj["ProductName"] = Base.clean(jObj["ProductName"].Value<string>());
+                        jObj["ProductVersion"] = Base.clean(jObj["ProductVersion"].Value<string>());
                     }
                     catch { }
 

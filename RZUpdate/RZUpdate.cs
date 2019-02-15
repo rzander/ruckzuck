@@ -437,7 +437,7 @@ namespace RZUpdate
                         if (SW.Architecture == null)
                         {
                             SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
-                            if(SW == null) { Console.WriteLine("No SW"); }
+                            if (SW == null) { Console.WriteLine("No SW"); }
                             SW.Shortname = Shortname;
                             try
                             {
@@ -483,6 +483,9 @@ namespace RZUpdate
                 {
                     try
                     {
+                        if (DT.IconId == 0)
+                            DT.IconId = SW.IconId;
+
                         //Check PreReqs
                         try
                         {
