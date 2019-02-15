@@ -70,7 +70,6 @@ namespace RZUpdate
                 //SWScan();
                 GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
-
             //Check every 60s
             tRegCheck.Interval = 60000;
             tRegCheck.Elapsed += TRegCheck_Elapsed;
@@ -163,21 +162,21 @@ namespace RZUpdate
                     var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     lock (SoftwareRepository)
                     {
-                    SoftwareRepository = oDB.Select(item => new GetSoftware()
-                    {
-                        Categories = item.Categories ?? new List<string>(),
-                        Description = item.Description,
-                        Downloads = item.Downloads,
-                        IconId = item.IconId,
-                        SWId = item.SWId,
-                        Image = item.Image,
-                        Manufacturer = item.Manufacturer,
-                        ProductName = item.ProductName,
-                        ProductURL = item.ProductURL,
-                        ProductVersion = item.ProductVersion,
-                        Shortname = item.Shortname,
-                        IconHash = item.IconHash
-                    }).ToList();
+                        SoftwareRepository = oDB.Select(item => new GetSoftware()
+                        {
+                            Categories = item.Categories ?? new List<string>(),
+                            Description = item.Description,
+                            Downloads = item.Downloads,
+                            IconId = item.IconId,
+                            SWId = item.SWId,
+                            Image = item.Image,
+                            Manufacturer = item.Manufacturer,
+                            ProductName = item.ProductName,
+                            ProductURL = item.ProductURL,
+                            ProductVersion = item.ProductVersion,
+                            Shortname = item.Shortname,
+                            IconHash = item.IconHash
+                        }).ToList();
                     }
                 }
                 catch (Exception ex)
@@ -293,7 +292,7 @@ namespace RZUpdate
 
                 //we do not have to check for updates if it's in the Catalog
                 //List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.Count(r => r.ProductName.ToLower().Trim() == t.ProductName.ToLower().Trim() && r.ProductVersion.ToLower().Trim() == t.ProductVersion.ToLower().Trim() && r.Manufacturer.ToLower().Trim() == t.Manufacturer.ToLower().Trim()) == 0).ToList();
-                foreach(var oSW in SoftwareRepository)
+                foreach (var oSW in SoftwareRepository)
                 {
                     vSWCheck.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
                 }

@@ -23,20 +23,12 @@ namespace RZUpdate
     /// </summary>
     public class RZUpdater
     {
-        static string sAuthToken = "";
-
         /// <summary>
         /// Constructor
         /// </summary>
-        public RZUpdater() : this("FreeRZ", _getTimeToken())
-        {
-        }
-
-        public RZUpdater(string Username, string Password)
+        public RZUpdater()
         {
             AddSoftware oSW = new AddSoftware();
-            sAuthToken = RZRestAPI.GetAuthToken(Username, Password);
-
             SoftwareUpdate = new SWUpdate(oSW);
         }
 
@@ -445,6 +437,7 @@ namespace RZUpdate
                         if (SW.Architecture == null)
                         {
                             SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+                            if (SW == null) { Console.WriteLine("No SW"); }
                             SW.Shortname = Shortname;
                             try
                             {
@@ -457,7 +450,6 @@ namespace RZUpdate
 
                             if (SW.Files == null)
                                 SW.Files = new List<contentFiles>();
-
                             if (string.IsNullOrEmpty(SW.PSPreReq))
                                 SW.PSPreReq = "$true; ";
                         }
@@ -468,18 +460,14 @@ namespace RZUpdate
 
                     //Get Install-type
                     GetInstallType();
-
-
                 }
 
                 downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
-
                 foreach (contentFiles vFile in SW.Files)
                 {
                     if (string.IsNullOrEmpty(vFile.HashType))
                         vFile.HashType = "MD5";
                 }
-
                 if (SW.PreRequisites == null)
                     SW.PreRequisites = new string[0];
             }
@@ -549,7 +537,6 @@ namespace RZUpdate
                 }
                 catch { }
             }
-
             if (SW.Files == null)
                 SW.Files = new List<contentFiles>();
 
@@ -823,11 +810,17 @@ namespace RZUpdate
         {
             bool bAutoInstall = downloadTask.AutoInstall;
             downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
-
-            if (SW.PreRequisites.Length > 0)
+            if (SW.PreRequisites != null)
             {
-                downloadTask.WaitingForDependency = true;
-                downloadTask.AutoInstall = false;
+                if (SW.PreRequisites.Length > 0)
+                {
+                    downloadTask.WaitingForDependency = true;
+                    downloadTask.AutoInstall = false;
+                }
+                else
+                {
+                    downloadTask.AutoInstall = bAutoInstall;
+                }
             }
             else
             {
@@ -837,7 +830,6 @@ namespace RZUpdate
             downloadTask.SWUpd = this;
             downloadTask.Downloading = true;
             ProgressDetails += SWUpdate_ProgressDetails;
-
             bool bResult = await Task.Run(() => _Download(false, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID))).ConfigureAwait(false);
             return bResult;
         }
@@ -935,9 +927,9 @@ namespace RZUpdate
             }
 
             downloadTask.Installing = true;
-
             if (!CheckDTPreReq())
             {
+
                 Console.WriteLine("Requirements not valid. Installation will not start.");
                 downloadTask.Installing = false;
                 downloadTask.Installed = false;

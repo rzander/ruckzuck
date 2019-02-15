@@ -31,7 +31,7 @@ namespace RuckZuck_Tool
     /// </summary>
     public partial class MainWindow : Window
     {
-        string sAuthToken;
+        //string sAuthToken;
         delegate void AnonymousDelegate();
         //List<GetSoftware2> oDBx = new List<GetSoftware2>();
         //List<GetSoftware> oDB = new List<GetSoftware>();
@@ -98,7 +98,7 @@ namespace RuckZuck_Tool
             //Set SOAP Header
             //oAPI.SecuredWebServiceHeaderValue = new RZApi.SecuredWebServiceHeader() { AuthenticatedToken = sAuthToken };
 
-            oInstPanel.sAuthToken = sAuthToken;
+            //oInstPanel.sAuthToken = sAuthToken;
             oInstPanel.onEdit += oInstPanel_onEdit;
             oUpdPanel.onEdit += oInstPanel_onEdit;
             //oInstPanel.OnSWUpdated += OUpdPanel_OnSWUpdated;
@@ -190,25 +190,25 @@ namespace RuckZuck_Tool
         {
             try
             {
-                //Authenticate with custom User and Password from config file...
-                if (!string.IsNullOrEmpty(Properties.Settings.Default.UserPW))
-                {
-                    string sResponse = RZRestAPI.GetAuthToken(Properties.Settings.Default.UserKey, Decrypt(Properties.Settings.Default.UserPW, Environment.UserName));
-                    try
-                    {
-                        Guid.Parse(sResponse);
-                        sAuthToken = sResponse;
-                        tbURL.IsEnabled = true;
-                        tbIPFSGW.IsEnabled = true;
-                    }
-                    catch { }
-                }
+                ////Authenticate with custom User and Password from config file...
+                //if (!string.IsNullOrEmpty(Properties.Settings.Default.UserPW))
+                //{
+                //    string sResponse = RZRestAPI.GetAuthToken(Properties.Settings.Default.UserKey, Decrypt(Properties.Settings.Default.UserPW, Environment.UserName));
+                //    try
+                //    {
+                //        Guid.Parse(sResponse);
+                //        sAuthToken = sResponse;
+                //        tbURL.IsEnabled = true;
+                //        tbIPFSGW.IsEnabled = true;
+                //    }
+                //    catch { }
+                //}
 
                 tbURL.IsEnabled = true;
 
-                //Authenticate with dummy account
-                if (string.IsNullOrEmpty(sAuthToken))
-                    sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
+                ////Authenticate with dummy account
+                //if (string.IsNullOrEmpty(sAuthToken))
+                //    sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
             }
             catch { }
         }
@@ -809,11 +809,11 @@ namespace RuckZuck_Tool
 
         private void btSettingsSave_Click(object sender, RoutedEventArgs e)
         {
-            string sResponse = RZRestAPI.GetAuthToken(tbUsername.Text, tbPassword.Password);
+            //string sResponse = RZRestAPI.GetAuthToken(tbUsername.Text, tbPassword.Password);
             try
             {
                 //Check if GUID came back..
-                Guid.Parse(sResponse);
+                //Guid.Parse(sResponse);
 
                 //Enable InternalURL
                 //tbURL.IsEnabled = true;
@@ -846,8 +846,8 @@ namespace RuckZuck_Tool
                 //Username or Password are wrong !
                 tbUsername.BorderBrush = Brushes.Red;
                 tbPassword.BorderBrush = Brushes.Red;
-                tbUsername.ToolTip = sResponse;
-                tbPassword.ToolTip = sResponse;
+                //tbUsername.ToolTip = sResponse;
+                //tbPassword.ToolTip = sResponse;
                 //oInstPanel.sInternalURL = "";
             }
         }
