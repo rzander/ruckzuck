@@ -257,16 +257,36 @@ namespace RZ.Server
 
         public static JArray GetCatalog(string customerid = "", bool nocache = false)
         {
+            JArray jResult = new JArray();
+            if (!nocache) //skip cache ?!
+            {
+                //Try to get value from Memory
+                if (_cache.TryGetValue("swcat", out jResult))
+                {
+                    return jResult;
+                }
+
+                jResult = new JArray();
+            }
+
             try
             {
                 foreach (var item in Plugins._CatalogPlugins.OrderBy(t => t.Key))
                 {
                     try
                     {
-                        return item.Value.GetCatalog(customerid, nocache);
+                        jResult.Merge(item.Value.GetCatalog(customerid, nocache), new JsonMergeSettings
+                        {
+                            MergeArrayHandling = MergeArrayHandling.Union
+                        });
                     }
                     catch { }
                 }
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
+                _cache.Set("swcat", jResult, cacheEntryOptions);
+
+                return jResult;
             }
             catch { }
 
