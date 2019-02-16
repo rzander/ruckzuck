@@ -451,7 +451,9 @@ namespace Plugin_Software
                         {
                             if (FileNames.Contains(oFiles["FileName"].Value<string>().ToLower()))
                             {
-                                oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                //oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                oFiles["URL"] = "https://ruckzuck.azureedge.net/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                
                             }
                         }
                     }
