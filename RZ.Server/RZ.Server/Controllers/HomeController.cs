@@ -56,6 +56,7 @@ namespace RZ.Server.Controllers
 
         [AllowAnonymous]
         [Route("rss.aspx")]
+        [Route("rss")]
         public IActionResult RSS()
         {
             Stream stream = new MemoryStream();
@@ -73,7 +74,7 @@ namespace RZ.Server.Controllers
             feedWriter.WriteElementString("language", "en-us");
             feedWriter.WriteElementString("copyright", "Copyright 2019 ruckzuck.tools. All rights reserved.");
             feedWriter.WriteElementString("lastBuildDate", DateTime.Now.ToString("R"));
-            feedWriter.WriteRaw("<atom:link xmlns:atom=\"http://www.w3.org/2005/Atom\" href=\"https://ruckzuck.tools/rss.aspx/\" rel=\"self\" type=\"application/rss+xml\" />");
+            feedWriter.WriteRaw("<atom:link xmlns:atom=\"http://www.w3.org/2005/Atom\" href=\"https://ruckzuck.azureedge.net/rss.aspx\" rel=\"self\" type=\"application/rss+xml\" />");
             feedWriter.WriteElementString("ttl", "10");
             feedWriter.Flush();
 
@@ -82,7 +83,7 @@ namespace RZ.Server.Controllers
             JArray jTop = JArray.FromObject(jsorted.Take(30));
             foreach (JObject jSW in jTop)
             {
-                string sImgUrl = string.Format("https://ruckzuck.tools/rest/v2/GetIcon?iconhash={0}", jSW["IconHash"].Value<string>());
+                string sImgUrl = string.Format("https://ruckzuck.azureedge.net/rest/v2/GetIcon?iconhash={0}", jSW["IconHash"].Value<string>());
                 //string sImg = "&lt;img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /&gt;";
                 string sImg = "<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /></br>";
                 //string sImg = "<![CDATA[<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /> ]]>";

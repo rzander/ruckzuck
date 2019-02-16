@@ -64,10 +64,10 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetSoftwares/{man}/{name}/{ver}")]
         public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "")  //result = array
         {
-            if(string.IsNullOrEmpty(Base.localURL))
+            if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
 
-             if (!string.IsNullOrEmpty(shortname))
+            if (!string.IsNullOrEmpty(shortname))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
                 return Content(Base.GetSoftwares(shortname).ToString());
