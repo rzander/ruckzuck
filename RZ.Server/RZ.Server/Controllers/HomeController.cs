@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +58,59 @@ namespace RZ.Server.Controllers
         [Route("rss.aspx")]
         public IActionResult RSS()
         {
-            return View();
+            Stream stream = new MemoryStream();
+            XmlTextWriter feedWriter = new XmlTextWriter(stream, Encoding.ASCII);
+
+            feedWriter.WriteStartDocument();
+            // These are RSS Tags
+            feedWriter.WriteStartElement("rss");
+            feedWriter.WriteAttributeString("version", "2.0");
+            feedWriter.WriteAttributeString("xmlns:atom", "http://www.w3.org/2005/Atom");
+            feedWriter.WriteStartElement("channel");
+            feedWriter.WriteElementString("title", "RuckZuck Software Package Manager");
+            feedWriter.WriteElementString("link", "https://ruckzuck.tools");
+            feedWriter.WriteElementString("description", "recent software repository changes");
+            feedWriter.WriteElementString("language", "en-us");
+            feedWriter.WriteElementString("copyright", "Copyright 2019 ruckzuck.tools. All rights reserved.");
+            feedWriter.WriteElementString("lastBuildDate", DateTime.Now.ToString("R"));
+            feedWriter.WriteRaw("<atom:link xmlns:atom=\"http://www.w3.org/2005/Atom\" href=\"https://ruckzuck.tools/rss.aspx/\" rel=\"self\" type=\"application/rss+xml\" />");
+            feedWriter.WriteElementString("ttl", "10");
+            feedWriter.Flush();
+
+            JArray oRes = Base.GetCatalog("", false);
+            JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
+            JArray jTop = JArray.FromObject(jsorted.Take(30));
+            foreach (JObject jSW in jTop)
+            {
+                string sImgUrl = string.Format("https://ruckzuck.tools/rest/v2/GetIcon?iconhash={0}", jSW["IconHash"].Value<string>());
+                //string sImg = "&lt;img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /&gt;";
+                string sImg = "<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /></br>";
+                //string sImg = "<![CDATA[<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /> ]]>";
+                feedWriter.WriteStartElement("item");
+                feedWriter.WriteElementString("title", jSW["ShortName"].Value<string>() + " " + jSW["ProductVersion"].Value<string>());
+                //feedWriter.WriteCData(sImg);
+
+                feedWriter.WriteElementString("description", sImg + jSW["Description"].Value<string>());
+                feedWriter.WriteElementString("pubDate", jSW["Timestamp"].Value<DateTime>().ToString("R"));
+                feedWriter.WriteElementString("link", "https://ruckzuck.tools");
+                feedWriter.WriteElementString("guid", sImgUrl);
+                feedWriter.WriteEndElement();
+            }
+
+            // Close all open tags tags
+            feedWriter.WriteEndElement();
+            feedWriter.WriteEndElement();
+            feedWriter.WriteEndDocument();
+            feedWriter.Flush();
+            stream.Flush();
+            stream.Position = 0;
+
+            StreamReader reader = new StreamReader(stream);
+            string sXML = reader.ReadToEnd();
+            feedWriter.Close();
+
+            return Content(sXML, "text/xml");
+
         }
 
         [AllowAnonymous]
