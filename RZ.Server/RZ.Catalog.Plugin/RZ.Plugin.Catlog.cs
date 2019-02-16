@@ -94,6 +94,7 @@ namespace RZ.Plugin.Catlog.Azure
                         {
                             JObject oCatItem = new JObject();
                             oCatItem.Add("Shortname", jSW["Shortname"]);
+                            oCatItem.Add("ShortName", jSW["Shortname"]);
                             oCatItem.Add("Description", jSW["Description"]);
                             oCatItem.Add("Manufacturer", jSW["Manufacturer"]);
                             oCatItem.Add("ProductName", jSW["ProductName"]);
@@ -131,6 +132,19 @@ namespace RZ.Plugin.Catlog.Azure
                                     }
 
                                 }
+                            }
+
+                            if(jSW["IconHash"] == null)
+                            {
+                                string sIconHash = RZ.Server.Hash.CalculateMD5HashString(jSW["Image"].ToString());
+                                //string IconsPath = Settings["icons"];
+                                byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
+                                if (!File.Exists(Path.Combine(Settings["icons"], sIconHash + ".jpg")))
+                                {
+                                    File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                }
+                                
+                                jSW["IconHash"] = sIconHash;
                             }
 
                             if (!string.IsNullOrEmpty(jSW["IconHash"].ToString()))
