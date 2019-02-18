@@ -164,7 +164,7 @@ namespace RZ.SWLookup.Plugin
                 //string sID = (manufacturer.ToLower() + productname.ToLower() + productversion.ToLower()).Trim();
                 //Console.WriteLine(sID);
 
-                string sRowKey = Hash.CalculateMD5HashString(sID);
+                string sRowKey = sID; // Hash.CalculateMD5HashString(sID);
 
                 InsertEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString());
 
