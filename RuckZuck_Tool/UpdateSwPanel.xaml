@@ -29,7 +29,7 @@
                         </DockPanel>
                         <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
                             <DockPanel DockPanel.Dock="Top">
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding Shortname}" FontWeight="Bold"/>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ShortName}" FontWeight="Bold"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top" MaxWidth="500">
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Description}" TextWrapping="Wrap"/>
@@ -93,11 +93,6 @@
                     <MenuItem Name="miUninstall" Header="Uninstall existing Version" ToolTip="Try to uninstall existing Version..." Click="miUninstall_Click" Height="24px">
                         <MenuItem.Icon>
                             <Image Source="Images/Announcements.ico" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Name="miDownloadIpfs" Header="Download from IPFS"  ToolTip="Download the required files from IPFS.io to %TEMP%\{ContentID}." Height="24px" Click="miDownloadIpfs_Click">
-                        <MenuItem.Icon>
-                            <Image Source="Images/Download.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>

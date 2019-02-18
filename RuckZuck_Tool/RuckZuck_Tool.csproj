@@ -134,6 +134,7 @@
     </Compile>
     <Compile Include="IconExtractor.cs" />
     <Compile Include="RZRestAPI.cs" />
+    <Compile Include="RZRestAPIv2.cs" />
     <Compile Include="RZScan.cs" />
     <Compile Include="RZUpdate.cs" />
     <Compile Include="UpdateSwPanel.xaml.cs">

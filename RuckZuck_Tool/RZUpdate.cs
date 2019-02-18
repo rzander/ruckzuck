@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
 using System.Net.Http;
+using RuckZuck.Base;
 
 namespace RZUpdate
 {
@@ -75,7 +76,7 @@ namespace RZUpdate
                         if (SW.PSPreReq == null)
                         {
                             //Load all MetaData for the specific SW
-                            foreach (AddSoftware SWCheck in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+                            foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
                             {
                                 if (string.IsNullOrEmpty(SW.PSPreReq))
                                     SW.PSPreReq = "$true; ";
@@ -205,8 +206,8 @@ namespace RZUpdate
                                 case "psuninstall":
                                     oSoftware.PSUninstall = xProperty.InnerText;
                                     break;
-                                case "shortname":
-                                    oSoftware.Shortname = xProperty.InnerText;
+                                case "ShortName":
+                                    oSoftware.ShortName = xProperty.InnerText;
                                     break;
                                 case "image":
                                     oSoftware.Image = Convert.FromBase64String(xProperty.InnerText);
@@ -322,14 +323,14 @@ namespace RZUpdate
         {
             SW = Software;
             //downloadTask = new DLTask();
-            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files, UnInstalled = false, Installed = false, Installing = false };
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files, UnInstalled = false, Installed = false, Installing = false };
             downloadTask.SWUpd = this;
 
             try
             {
                 if (SW.Image == null)
                 {
-                    SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                    SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
                     downloadTask.Image = SW.Image;
                 }
             }
@@ -369,17 +370,17 @@ namespace RZUpdate
                 return;
             }
 
-            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files, UnInstalled = false, Installed = false };
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files, UnInstalled = false, Installed = false };
 
             if (SW == null)
             {
-                SW = RZRestAPI.GetSWDefinitions(ProductName, ProductVersion, Manufacturer).FirstOrDefault();
+                SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer).FirstOrDefault();
 
                 try
                 {
                     if (SW.Image == null)
                     {
-                        SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                        SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
                     }
                 }
                 catch { }
@@ -406,12 +407,12 @@ namespace RZUpdate
 
         }
 
-        public SWUpdate(string Shortname)
+        public SWUpdate(string ShortName)
         {
             SW = null;
             downloadTask = new DLTask();
             downloadTask.SWUpd = this;
-            downloadTask.Shortname = Shortname;
+            downloadTask.ShortName = ShortName;
 
             try
             {
@@ -419,31 +420,31 @@ namespace RZUpdate
                 SW = new AddSoftware();
 
                 //Always use local JSON-File if exists
-                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json")))
+                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json")))
                 {
-                    string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), Shortname + ".json");
+                    string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json");
                     SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
                 }
                 else
                 {
-                    var oGetSW = RZRestAPI.SWGet(Shortname).FirstOrDefault();
+                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == ShortName).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                     if (oGetSW != null)
                     {
                         SW.ProductName = oGetSW.ProductName;
                         SW.ProductVersion = oGetSW.ProductVersion;
                         SW.Manufacturer = oGetSW.Manufacturer;
-                        SW.Shortname = Shortname;
+                        SW.ShortName = ShortName;
 
                         if (SW.Architecture == null)
                         {
-                            SW = RZRestAPI.GetSWDefinitions(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+                            SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
                             if (SW == null) { Console.WriteLine("No SW"); }
-                            SW.Shortname = Shortname;
+                            SW.ShortName = ShortName;
                             try
                             {
                                 if (SW.Image == null)
                                 {
-                                    SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                                    SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
                                 }
                             }
                             catch { }
@@ -455,14 +456,14 @@ namespace RZUpdate
                         }
                     }
 
-                    if (string.IsNullOrEmpty(SW.Shortname))
+                    if (string.IsNullOrEmpty(SW.ShortName))
                         return;
 
                     //Get Install-type
                     GetInstallType();
                 }
 
-                downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
+                downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files };
                 foreach (contentFiles vFile in SW.Files)
                 {
                     if (string.IsNullOrEmpty(vFile.HashType))
@@ -479,7 +480,7 @@ namespace RZUpdate
             //Only get other DeploymentTypes if Architecture is not defined...
             if (string.IsNullOrEmpty(this.SW.Architecture))
             {
-                foreach (var DT in RZRestAPI.GetSWDefinitions(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+                foreach (var DT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
                 {
                     try
                     {
@@ -506,7 +507,7 @@ namespace RZUpdate
                         {
                             if (SW.Image == null)
                             {
-                                SW.Image = RZRestAPI.GetIcon(SW.SWId);
+                                SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
                             }
                         }
                         catch { }
@@ -772,7 +773,7 @@ namespace RZUpdate
 
                     if (SendFeedback && bDLSuccess)
                     {
-                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture, SW.Shortname);
+                        RZRestAPI.TrackDownloads2(SW.SWId, SW.Architecture, SW.ShortName);
                     }
                 }
 
@@ -812,7 +813,7 @@ namespace RZUpdate
         public async Task<bool> Download()
         {
             bool bAutoInstall = downloadTask.AutoInstall;
-            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files };
             if (SW.PreRequisites != null)
             {
                 if (SW.PreRequisites.Length > 0)
@@ -846,7 +847,7 @@ namespace RZUpdate
         {
             return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
             /*bool bAutoInstall = downloadTask.AutoInstall;
-            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files };
 
             if (SW.PreRequisites.Length > 0)
             {
@@ -869,7 +870,7 @@ namespace RZUpdate
         public async Task<bool> Download(bool Enforce, string DLPath)
         {
             bool bAutoInstall = downloadTask.AutoInstall;
-            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Image = SW.Image, Files = SW.Files };
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Image = SW.Image, Files = SW.Files };
 
             if (SW.PreRequisites != null)
             {

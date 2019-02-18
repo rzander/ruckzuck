@@ -8,6 +8,7 @@ using System.Diagnostics;
 using RuckZuck_WCF;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using RuckZuck.Base;
 
 namespace RZUpdate
 {
@@ -158,8 +159,8 @@ namespace RZUpdate
             {
                 try
                 {
-
-                    var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    var oDB = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     lock (SoftwareRepository)
                     {
                         SoftwareRepository = oDB.Select(item => new GetSoftware()
@@ -174,7 +175,7 @@ namespace RZUpdate
                             ProductName = item.ProductName,
                             ProductURL = item.ProductURL,
                             ProductVersion = item.ProductVersion,
-                            Shortname = item.Shortname,
+                            ShortName = item.ShortName,
                             IconHash = item.IconHash
                         }).ToList();
                     }
@@ -200,7 +201,7 @@ namespace RZUpdate
                 try
                 {
 
-                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     DirectoryInfo dInfo = new DirectoryInfo(RepositoryPath);
 
                     foreach (FileInfo dFile in dInfo.GetFiles("*.xml", SearchOption.AllDirectories))
@@ -219,7 +220,7 @@ namespace RZUpdate
                                 img.Save(dFile.DirectoryName + "\\" + oAddRemSW.ContentID + ".png", System.Drawing.Imaging.ImageFormat.Png);
                             }
 
-                            SoftwareRepository.Add(new GetSoftware() { ProductName = oAddRemSW.ProductName, Description = oAddRemSW.Description, Categories = (oAddRemSW.Category ?? "Local Repository").Split(';').ToList(), isInstalled = false, Manufacturer = oAddRemSW.Manufacturer, ProductURL = oAddRemSW.ProductURL, ProductVersion = oAddRemSW.ProductVersion, Shortname = oAddRemSW.ProductName + " (" + oAddRemSW.Architecture + ")", Downloads = 0, IconId = 0, IconFile = sFile, XMLFile = dFile.FullName, Quality = 100 });
+                            SoftwareRepository.Add(new GetSoftware() { ProductName = oAddRemSW.ProductName, Description = oAddRemSW.Description, Categories = (oAddRemSW.Category ?? "Local Repository").Split(';').ToList(), isInstalled = false, Manufacturer = oAddRemSW.Manufacturer, ProductURL = oAddRemSW.ProductURL, ProductVersion = oAddRemSW.ProductVersion, ShortName = oAddRemSW.ProductName + " (" + oAddRemSW.Architecture + ")", Downloads = 0, IconId = 0, IconFile = sFile, XMLFile = dFile.FullName, Quality = 100 });
                         }
                         catch { }
                     }
@@ -310,14 +311,14 @@ namespace RZUpdate
                     ProductURL = item.ProductURL,
                     ProductVersion = item.ProductVersion,
                     MSIProductID = item.MSIProductID,
-                    Shortname = item.Shortname,
+                    ShortName = item.ShortName,
                     SWId = item.SWId,
                     IconId = item.IconId,
                     IconHash = item.IconHash
                 }).ToList();
 
                 //Only take updated Versions
-                var lNew = lResult.Where(t => t.Shortname != "new").ToList();
+                var lNew = lResult.Where(t => t.ShortName != "new").ToList();
 
 
                 lock (NewSoftwareVersions)
@@ -326,7 +327,7 @@ namespace RZUpdate
                     NewSoftwareVersions.AddRange(lNew);
 
                     //Remove duplicates
-                    NewSoftwareVersions = NewSoftwareVersions.GroupBy(x => x.Shortname).Select(y => y.First()).ToList();
+                    NewSoftwareVersions = NewSoftwareVersions.GroupBy(x => x.ShortName).Select(y => y.First()).ToList();
                 }
                 if (lNew.Count > 0)
                     OnUpdatesDetected(lNew, new EventArgs());

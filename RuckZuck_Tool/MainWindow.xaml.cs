@@ -23,6 +23,7 @@ using RuckZuck_WCF;
 using RZUpdate;
 using System.Security.Cryptography;
 using System.Text;
+using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -277,7 +278,7 @@ namespace RuckZuck_Tool
         private void OSCAN_OnUpdScanCompleted(object sender, EventArgs e)
         {
             //Remove duplicates...
-            lNewVersion = ((RZScan)sender).NewSoftwareVersions.GroupBy(x => x.Shortname).Select(y => y.First()).ToList();
+            lNewVersion = ((RZScan)sender).NewSoftwareVersions.GroupBy(x => x.ShortName).Select(y => y.First()).ToList();
 
             //var distinctItems = items.GroupBy(x => x.Id).Select(y => y.First());
 
@@ -285,7 +286,7 @@ namespace RuckZuck_Tool
             {
                 try
                 {
-                    lNewVersion.RemoveAll(t => t.Shortname == sExclude);
+                    lNewVersion.RemoveAll(t => t.ShortName == sExclude);
                 }
                 catch { }
             }
@@ -457,7 +458,7 @@ namespace RuckZuck_Tool
                 }
 
                 List<GetSoftware> oDBCat = new List<GetSoftware>();
-                PropertyGroupDescription PGD = new PropertyGroupDescription("", new ShortnameToCategory());
+                PropertyGroupDescription PGD = new PropertyGroupDescription("", new ShortNameToCategory());
 
                 foreach (GetSoftware oSW in oSCAN.SoftwareRepository)
                 {
@@ -473,12 +474,12 @@ namespace RuckZuck_Tool
                                     //Check if SW is already installed
                                     if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, IconHash = oSW.IconHash, isInstalled = true };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true };
                                         oDBCat.Add(oNew);
                                     }
                                     else
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, IconHash = oSW.IconHash, isInstalled = false };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false };
                                         oDBCat.Add(oNew);
                                     }
                                 }
@@ -490,11 +491,11 @@ namespace RuckZuck_Tool
                             //Check if SW is already installed
                             if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, IconHash = oSW.IconHash, isInstalled = true });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true });
                             }
                             else
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, Shortname = oSW.Shortname, IconHash = oSW.IconHash, isInstalled = false });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false });
                             }
                         }
                     }
@@ -512,7 +513,7 @@ namespace RuckZuck_Tool
                 
                 oInstPanel.lvSW.ItemsSource = lcv;
                 oInstPanel.lSoftware = lSoftware;
-                //var target = oSCAN.SoftwareRepository.Select(x => new GetSoftware() { Categories = x.Categories, Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                //var target = oSCAN.SoftwareRepository.Select(x => new GetSoftware() { Categories = x.Categories, Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, ShortName = x.ShortName, isInstalled = false }).ToList();
                 oInstPanel.lAllSoftware = oSCAN.SoftwareRepository; 
 
                 //Mark all installed...
@@ -530,7 +531,7 @@ namespace RuckZuck_Tool
             tabWizard.SelectedItem = tabInstallSW;
         }
 
-        public class ShortnameToCategory : IValueConverter
+        public class ShortNameToCategory : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
@@ -675,7 +676,7 @@ namespace RuckZuck_Tool
                     List<GetSoftware> lServer = new List<GetSoftware>();
                     if (oInstPanel.lvSW.ItemsSource == null)
                     {
-                        lServer = RZRestAPI.SWResults("").OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     }
                     else
                     {
@@ -683,7 +684,7 @@ namespace RuckZuck_Tool
                     }
                     
                     if(lServer == null)
-                        lServer = RZRestAPI.SWResults("").OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
 
                     if (Keyboard.Modifiers == ModifierKeys.Shift)
                     {
@@ -755,7 +756,7 @@ namespace RuckZuck_Tool
             {
                 foreach (string sException in Properties.Settings.Default.UpdExlusion)
                 {
-                    lNewVersion.RemoveAll(t => t.Shortname == sException);
+                    lNewVersion.RemoveAll(t => t.ShortName == sException);
                 }
 
                 oUpdPanel.lvSW.ItemsSource = lNewVersion; //oAPI.CheckForUpdate(lSoftware.Select(t => new RZApi.AddSoftware() {  ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToArray());
@@ -824,7 +825,6 @@ namespace RuckZuck_Tool
                 Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
                 //Properties.Settings.Default.InternalURL = tbURL.Text;
                 Properties.Settings.Default.IPFSGW = tbIPFSGW.Text;
-                RuckZuck_WCF.RZRestAPI.ipfs_GW_URL = tbIPFSGW.Text;
                 Properties.Settings.Default.Save();
 
                 //oInstPanel.sInternalURL = tbURL.Text;

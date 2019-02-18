@@ -28,22 +28,7 @@
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem x:Name="btIssue" Header="Issues" ToolTip="Get 10 Software-Items with worst success ratio" Click="btIssue_Click" Height="24" Visibility="Collapsed">
-                                <MenuItem.Icon>
-                                    <Image Source="Images/Star.ico" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="btBadRatio" Click="btBadRatio_Click" Height="24" Header="Bad success ratio" ToolTip="Get 10 Software-Items with worst success ratio" Visibility="Collapsed">
-                                <MenuItem.Icon>
-                                    <Image Source="Images/Star.ico" />
-                                </MenuItem.Icon>
-                            </MenuItem>
                             <MenuItem x:Name="btNew" Height="24" Header="New Software" ToolTip="recently added Software" Click="btNew_Click">
-                                <MenuItem.Icon>
-                                    <Image Source="Images/Star.ico" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="btApproval" Height="24" Header="Waiting for Approval" ToolTip="Waiting for Approval" Click="btApproval_Click" Visibility="Collapsed">
                                 <MenuItem.Icon>
                                     <Image Source="Images/Star.ico" />
                                 </MenuItem.Icon>
@@ -69,7 +54,7 @@
                         </DockPanel>
                         <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
                             <DockPanel DockPanel.Dock="Top">
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding Shortname}" FontWeight="Bold"/>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ShortName}" FontWeight="Bold"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top" MaxWidth="500">
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Description}" TextWrapping="Wrap"/>
@@ -130,11 +115,6 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Name="miDownloadFiles" Header="Download Files" Click="miDownloadFiles_Click" ToolTip="Download the required files to %TEMP%\{ContentID}." Height="24px">
-                        <MenuItem.Icon>
-                            <Image Source="Images/Download.ico" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Name="miDownloadIpfs" Header="Download from IPFS"  ToolTip="Download the required files from IPFS.io to %TEMP%\{ContentID}." Height="24px" Click="miDownloadIpfs_Click">
                         <MenuItem.Icon>
                             <Image Source="Images/Download.ico" />
                         </MenuItem.Icon>

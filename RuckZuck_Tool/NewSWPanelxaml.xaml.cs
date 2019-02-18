@@ -18,6 +18,7 @@ using RZUpdate;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
+using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -238,7 +239,7 @@ namespace RuckZuck_Tool
 
             oSoftware.Category = tbCategories.Text.Trim();
 
-            oSoftware.Shortname = tbShortname.Text.Trim();
+            oSoftware.ShortName = tbShortName.Text.Trim();
 
             if (RZRestAPI.UploadSWEntry(oSoftware))
                 btUpload.IsEnabled = false;
@@ -478,7 +479,7 @@ namespace RuckZuck_Tool
             oSoftware.PSPreInstall = tbPSPreInstall.Text;
             oSoftware.PSPostInstall = tbPSPostInstall.Text;
             oSoftware.PreRequisites = tbPreReq.Text.Split(';');
-            oSoftware.Shortname = tbShortname.Text.Trim();
+            oSoftware.ShortName = tbShortName.Text.Trim();
             oSoftware.Category = tbCategories.Text.Trim();
 
             if (imgIcon.Tag != null)
@@ -551,7 +552,7 @@ namespace RuckZuck_Tool
             catch { }
 
             tbCategories.Text = oSoftware.Category ?? "";
-            tbShortname.Text = oSoftware.Shortname ?? "";
+            tbShortName.Text = oSoftware.ShortName ?? "";
         }
 
         private void tbContentId_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -594,7 +595,8 @@ namespace RuckZuck_Tool
         {
             try
             {
-                List<GetSoftware> oSW = RZRestAPI.SWResults(tbProductName.Text).ToList();
+                List<GetSoftware> oSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == tbProductName.Text).ToList();
+                //List<GetSoftware> oSW = RZRestAPI.SWResults(tbProductName.Text).ToList();
                 if (oSW.FirstOrDefault() != null)
                 {
                     tbProductURL.Text = oSW.FirstOrDefault().ProductURL;

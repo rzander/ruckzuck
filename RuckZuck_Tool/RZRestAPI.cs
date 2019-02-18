@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using System.Net.Sockets;
 using System.IO;
 using System.Diagnostics;
+using RuckZuck.Base;
 
 namespace RuckZuck_WCF
 {
@@ -18,7 +19,7 @@ namespace RuckZuck_WCF
     {
         private static string _sURL = "UDP";
         public static bool DisableBroadcast = false;
-        public static string ipfs_GW_URL = "https://gateway.ipfs.io/ipfs";
+        //public static string ipfs_GW_URL = "https://gateway.ipfs.io/ipfs";
 
         public static string sURL
         {
@@ -63,7 +64,7 @@ namespace RuckZuck_WCF
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-                    return "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
+                    return "https://ruckzuck.azureedge.net"; //CDN Version -> otherwise use "https://ruckzuck.azurewebsites.net/"
                 }
                 else
                     return _sURL;
@@ -78,7 +79,7 @@ namespace RuckZuck_WCF
 
         public static string Token;
 
-        private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
+        //private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
 
         //public static string GetAuthToken(string Username, string Password)
         //{
@@ -112,111 +113,61 @@ namespace RuckZuck_WCF
 
         //}
 
-        public static List<GetSoftware> SWGet(string Shortname)
-        {
-            List<GetSoftware> lResult = new List<GetSoftware>();
+        //public static List<GetSoftware> SWGet(string ShortName)
+        //{
+        //    List<GetSoftware> lResult = new List<GetSoftware>();
 
-            try
-            {
-                lResult = SWResults("").Where(t => t.Shortname == Shortname).ToList();
-            }
-            catch { }
+        //    try
+        //    {
+        //        lResult = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == ShortName).ToList();
+        //    }
+        //    catch { }
 
-            if (lResult.Count() == 0)
-            {
-                try
-                {
-                    //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
-                    //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
-                    using (HttpClient oClient = new HttpClient())
-                    {
-                        var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(Shortname));
-                        response.Wait(5000);
-                        if (response.IsCompleted)
-                        {
-                            JavaScriptSerializer ser = new JavaScriptSerializer();
-                            List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-                            return lRes;
-                        }
-                    }
-                }
-                catch { }
-            }
+        //    //if (lResult.Count() == 0)
+        //    //{
+        //    //    try
+        //    //    {
+        //    //        //oClient.DefaultRequestHeaders.Add("AuthenticatedToken", Token);
+        //    //        //oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(contentType));
+        //    //        using (HttpClient oClient = new HttpClient())
+        //    //        {
+        //    //            var response = oClient.GetStringAsync(sURL + "/rest/SWGetShort?name=" + WebUtility.UrlEncode(ShortName));
+        //    //            response.Wait(5000);
+        //    //            if (response.IsCompleted)
+        //    //            {
+        //    //                JavaScriptSerializer ser = new JavaScriptSerializer();
+        //    //                List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+        //    //                return lRes;
+        //    //            }
+        //    //        }
+        //    //    }
+        //    //    catch { }
+        //    //}
 
-            return lResult;
-        }
+        //    return lResult;
+        //}
 
-        public static List<GetSoftware> SWGet(string PackageName, string PackageVersion)
-        {
-            try
-            {
-                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion).ToList();
-            }
-            catch { }
+        //public static List<GetSoftware> SWGet(string PackageName, string PackageVersion)
+        //{
+        //    try
+        //    {
+        //        return RZRestAPIv2.GetCatalog().Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion).ToList();
+        //    }
+        //    catch { }
 
-            return new List<GetSoftware>();
-        }
+        //    return new List<GetSoftware>();
+        //}
 
-        public static List<GetSoftware> SWGet(string PackageName, string Manufacturer, string PackageVersion)
-        {
-            try
-            {
-                return SWResults("").Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion && t.Manufacturer == Manufacturer).ToList();
-            }
-            catch { }
+        //public static List<GetSoftware> SWGet(string PackageName, string Manufacturer, string PackageVersion)
+        //{
+        //    try
+        //    {
+        //        return RZRestAPIv2.GetCatalog().Where(t => t.ProductName == PackageName && t.ProductVersion == PackageVersion && t.Manufacturer == Manufacturer).ToList();
+        //    }
+        //    catch { }
 
-            return new List<GetSoftware>();
-        }
-
-        public static List<GetSoftware> SWResults(string Searchstring)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(Searchstring)) //FullCatalog?
-                {
-                    if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
-                    {
-                        try
-                        {
-                            DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                            if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
-                            {
-                                //return cached Content
-                                string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                                JavaScriptSerializer ser = new JavaScriptSerializer();
-                                List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(jRes);
-                                return lRes;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
-                    }
-                }
-
-                var response = oClient.GetStringAsync(sURL + "/rest/SWResults?search=" + Searchstring);
-                response.Wait(20000);
-                if (response.IsCompleted)
-                {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
-
-                    if (string.IsNullOrEmpty(Searchstring))
-                    {
-                        if (lRes.Count > 400)
-                        {
-                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
-                        }
-                    }
-
-                    return lRes;
-                }
-            }
-            catch { }
-
-            return new List<GetSoftware>();
-        }
+        //    return new List<GetSoftware>();
+        //}
 
         public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string architecture, string working, string userKey, string feedback)
         {
@@ -236,29 +187,6 @@ namespace RuckZuck_WCF
             }
 
             return "";
-        }
-
-        public static List<AddSoftware> GetSWDefinitions(string productName, string productVersion, string manufacturer)
-        {
-
-            try
-            {
-                using (HttpClient oClient = new HttpClient())
-                {
-                    var response = oClient.GetStringAsync(sURL + "/rest/GetSWDefinition?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
-                    response.Wait(15000);
-                    if (response.IsCompleted)
-                    {
-                        JavaScriptSerializer ser = new JavaScriptSerializer();
-                        List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result);
-                        return lRes;
-                    }
-                }
-            }
-            catch { }
-
-            return new List<AddSoftware>();
-
         }
 
         public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
@@ -318,7 +246,7 @@ namespace RuckZuck_WCF
 
 
         //vNext 5.9.2017
-        public static async void TrackDownloads2(long SWId, string Architecture, string Shortname = "")
+        public static async void TrackDownloads2(long SWId, string Architecture, string ShortName = "")
         {
             try
             {
@@ -328,7 +256,7 @@ namespace RuckZuck_WCF
 
                 using (HttpClient oClient = new HttpClient())
                 {
-                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + sID + "&arch=" + WebUtility.UrlEncode(Architecture) + "&shortname=" + WebUtility.UrlEncode(Shortname));
+                    await oClient.GetStringAsync(sURL + "/rest/TrackDownloadsNew?SWId=" + sID + "&arch=" + WebUtility.UrlEncode(Architecture) + "&ShortName=" + WebUtility.UrlEncode(ShortName));
                 }
             }
             catch { }
@@ -347,51 +275,6 @@ namespace RuckZuck_WCF
             return lResult.Distinct().OrderBy(t => t).ToList();
         }
 
-        public static byte[] GetIcon(long SWId)
-        {
-            using (HttpClient oClient = new HttpClient())
-            {
-                var response = oClient.GetStreamAsync(RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString());
-                response.Wait(5000);
-                if (response.IsCompleted)
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        response.Result.CopyTo(ms);
-                        byte[] bRes = ms.ToArray();
-                        return bRes;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Get IPFS.io hash
-        /// </summary>
-        /// <param name="contentID"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        public static string GetIPFS(string contentID, string fileName)
-        {
-            try
-            {
-                using (HttpClient oClient = new HttpClient())
-                {
-                    var response = oClient.GetStringAsync(sURL + "/rest/GetIPFS?Id=" + contentID + "&file=" + fileName);
-                    response.Wait(5000);
-
-                    if (response.IsCompleted)
-                    {
-                        return response.Result.Trim('"');
-                    }
-                }
-            }
-            catch { }
-
-            return "";
-        }
     }
 
     public class GetSoftware
@@ -402,7 +285,7 @@ namespace RuckZuck_WCF
 
         public string Description { get; set; }
 
-        public string Shortname { get; set; }
+        public string ShortName { get; set; }
 
         public string ProductURL { get; set; }
 
@@ -465,7 +348,7 @@ namespace RuckZuck_WCF
 
         public string Description { get; set; }
 
-        public string Shortname { get; set; }
+        public string ShortName { get; set; }
 
         public string ProductURL { get; set; }
 
@@ -521,14 +404,15 @@ namespace RuckZuck_WCF
 
                 if (SWId > 0)
                 {
-                    string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    IconId = SWId;
+                    string sURL = RZRestAPI.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
                     return sURL;
                 }
 
                 if (IconId > 0)
                 {
                     SWId = IconId;
-                    string sURL = RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    string sURL = RZRestAPI.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
                     return sURL;
                 }
                 return "";
@@ -552,7 +436,7 @@ namespace RuckZuck_WCF
 
         public string Manufacturer { get; set; }
 
-        public string Shortname { get; set; }
+        public string ShortName { get; set; }
 
         public byte[] Image { get; set; }
 

@@ -129,7 +129,7 @@ namespace RuckZuck_Tool
                         bool allDone = true;
                         foreach (string sPreReq in oDL.SWUpd.SW.PreRequisites)
                         {
-                            if (lDLTasks.Count(t => t.Shortname == sPreReq && !t.Installed && !t.Error) != 0)
+                            if (lDLTasks.Count(t => t.ShortName == sPreReq && !t.Installed && !t.Error) != 0)
                             {
                                 allDone = false;
                             }

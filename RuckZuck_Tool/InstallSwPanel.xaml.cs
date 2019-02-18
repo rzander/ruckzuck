@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using RuckZuck_WCF;
 using RZUpdate;
 using System.IO;
+using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -138,7 +139,7 @@ namespace RuckZuck_Tool
 
                 try
                 {
-                    var vResult = lAllSoftware.FindAll(t => t.Shortname.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
+                    var vResult = lAllSoftware.FindAll(t => t.ShortName.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
                     vResult.AddRange(lAllSoftware.FindAll(t => t.ProductName.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     vResult.AddRange(lAllSoftware.FindAll(t => t.Manufacturer.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     if (vResult.Count <= 15)
@@ -146,7 +147,7 @@ namespace RuckZuck_Tool
                         vResult.AddRange(lAllSoftware.FindAll(t => (t.Description ?? "").IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     }
 
-                    lvSW.ItemsSource = vResult.Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName);
+                    lvSW.ItemsSource = vResult.Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName);
                 }
                 catch { }
             }
@@ -163,10 +164,10 @@ namespace RuckZuck_Tool
                 tbSearch.Text = "Search...";
 
 
-                ListCollectionView lcv = new ListCollectionView(lAllSoftware.Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList());
+                ListCollectionView lcv = new ListCollectionView(lAllSoftware.Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList());
 
-                //ListCollectionView lcv = new ListCollectionView(oAPI.SWResults("", "").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList());
-                PropertyGroupDescription PGD = new PropertyGroupDescription("", new ShortnameToCategory());
+                //ListCollectionView lcv = new ListCollectionView(oAPI.SWResults("", "").Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList());
+                PropertyGroupDescription PGD = new PropertyGroupDescription("", new ShortNameToCategory());
 
                 //PGD.GroupNames.Add(RZRestAPI.GetCategories(lAllSoftware));
                 foreach (var o in RZRestAPI.GetCategories(lAllSoftware))
@@ -186,7 +187,7 @@ namespace RuckZuck_Tool
 
                 try
                 {
-                    var vResult = lAllSoftware.FindAll(t => t.Shortname.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
+                    var vResult = lAllSoftware.FindAll(t => t.ShortName.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
                     vResult.AddRange(lAllSoftware.FindAll(t => t.ProductName.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     vResult.AddRange(lAllSoftware.FindAll(t => t.Manufacturer.IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     if (vResult.Count <= 15)
@@ -194,14 +195,14 @@ namespace RuckZuck_Tool
                         vResult.AddRange(lAllSoftware.FindAll(t => (t.Description ?? "").IndexOf(tbSearch.Text, 0, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList());
                     }
 
-                    lvSW.ItemsSource = vResult.Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName);
+                    lvSW.ItemsSource = vResult.Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName);
                 }
                 catch { }
             }
             Mouse.OverrideCursor = null;
         }
 
-        public class ShortnameToCategory : IValueConverter
+        public class ShortNameToCategory : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
@@ -463,74 +464,6 @@ namespace RuckZuck_Tool
 
         }
 
-        private void miDownloadIpfs_Click(object sender, RoutedEventArgs e)
-        {
-            if (lvSW.SelectedItem != null)
-            {
-                try
-                {
-                    foreach (var oItem in lvSW.SelectedItems)
-                    {
-                        try
-                        {
-                            SWUpdate oSW = null;
-                            if (oItem.GetType() == typeof(GetSoftware))
-                            {
-                                GetSoftware dgr = oItem as GetSoftware;
-                                //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
-                                oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
-                            }
-
-
-                            if (oItem.GetType() == typeof(AddSoftware))
-                            {
-                                AddSoftware dgr = oItem as AddSoftware;
-                                //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
-                                oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
-                                //oSW = new SWUpdate(dgr);
-                            }
-
-                            oSW.sUserName = Properties.Settings.Default.UserKey;
-
-                            //lDLTasks.Add(oSW.downloadTask);
-                            if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
-                            {
-                                //oSW.Downloaded += OSW_Downloaded;
-                                oSW.ProgressDetails += OSW_ProgressDetails;
-                                oSW.downloadTask.AutoInstall = false;
-                                
-                                foreach (var oFile in oSW.SW.Files.ToList())
-                                {
-                                    //Check if there is a known IPFS hash and update URL if there is...
-                                    string sHash = RuckZuck_WCF.RZRestAPI.GetIPFS(oSW.SW.ContentID, oFile.FileName);
-                                    if (sHash.Length > 12)
-                                    {
-                                        oFile.URL = RuckZuck_WCF.RZRestAPI.ipfs_GW_URL + "/" + sHash + "/";
-                                        oSW.Download(false).ConfigureAwait(false);
-                                    }
-                                    else
-                                        return;
-                                }
-                                dm.lDLTasks.Add(oSW.downloadTask);
-
-                            }
-                            dm.Show();
-
-                            continue;
-
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
-                    }
-                }
-                catch { }
-                OnSWUpdated(this, new EventArgs());
-
-            }
-        }
-
         private void miEdit_Click(object sender, RoutedEventArgs e)
         {
             lvSW.ContextMenu.IsOpen = false;
@@ -550,7 +483,7 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                var oldSW = RZRestAPI.SWResults("--OLD--"); //.Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var oldSW = RZRestAPIv2.GetCatalog("--old--"); //.Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, ShortName = x.ShortName, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -567,83 +500,13 @@ namespace RuckZuck_Tool
             }
         }
 
-        private void btBadRatio_Click(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-            try
-            {
-                var badSW = RZRestAPI.SWResults("--BAD--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
-                tbSearch.Text = "";
-
-                //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
-
-
-                ListCollectionView lcv = new ListCollectionView(badSW.ToList());
-
-                lvSW.ItemsSource = lcv;
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-
-        private void btIssue_Click(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-            try
-            {
-                tSearch.Stop();
-                tbSearch.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-
-                var badSW = RZRestAPI.SWResults("--ISSUE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
-                tbSearch.Text = "";
-
-                //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
-
-
-                ListCollectionView lcv = new ListCollectionView(badSW.ToList());
-
-                lvSW.ItemsSource = lcv;
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-
         private void btNew_Click(object sender, RoutedEventArgs e)
         {
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
                 tSearch.Stop();
-                var badSW = RZRestAPI.SWResults("--NEW--").ToList();
-                tbSearch.Text = "";
-
-                //Mark all installed...
-                badSW.ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
-
-
-                ListCollectionView lcv = new ListCollectionView(badSW.ToList());
-
-                lvSW.ItemsSource = lcv;
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-
-        private void btApproval_Click(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-            try
-            {
-                tSearch.Stop();
-                var badSW = RZRestAPI.SWResults("--APPROVE--").Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, SWId = x.SWId, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, Shortname = x.Shortname, isInstalled = false }).ToList();
+                var badSW = RZRestAPIv2.GetCatalog("--new--");
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -682,7 +545,7 @@ namespace RuckZuck_Tool
         private void tbSearch_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             tSearch.Stop();
-            lAllSoftware = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.Shortname).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).Select(x => new GetSoftware() { isInstalled = false }).ToList();
+            lAllSoftware = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).Select(x => new GetSoftware() { isInstalled = false }).ToList();
             //Mark all installed...
             lAllSoftware.ToList().ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
         }
@@ -793,12 +656,12 @@ namespace RuckZuck_Tool
                             oSW = new SWUpdate(dgr);
                         }
 
-                        CreateExe oExe = new CreateExe(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, oSW.SW.Shortname + "_setup.exe"));
+                        CreateExe oExe = new CreateExe(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, oSW.SW.ShortName + "_setup.exe"));
                         oExe.Icon = oSW.SW.Image;
-                        oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.Shortname));
+                        oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
                         oExe.Sources.Add(Properties.Resources.RZUpdate);
                         oExe.Sources.Add(Properties.Resources.RZRestApi);
-                        oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", oSW.SW.Shortname));
+                        oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", oSW.SW.ShortName));
 
                         if (!oExe.Compile())
                         {
@@ -846,14 +709,14 @@ namespace RuckZuck_Tool
                         }
 
                         string sDir = AppDomain.CurrentDomain.BaseDirectory;
-                        sDir = Path.Combine(sDir, "windows-" + oSW.SW.Shortname.Replace(" ", "")).Trim();
+                        sDir = Path.Combine(sDir, "windows-" + oSW.SW.ShortName.Replace(" ", "")).Trim();
                         Directory.CreateDirectory(sDir);
-                        CreateExe oExe = new CreateExe(Path.Combine(sDir, oSW.SW.Shortname.Replace(" ", "") + "_setup.exe"));
+                        CreateExe oExe = new CreateExe(Path.Combine(sDir, oSW.SW.ShortName.Replace(" ", "") + "_setup.exe"));
                         oExe.Icon = oSW.SW.Image;
-                        oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.Shortname));
+                        oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
                         oExe.Sources.Add(Properties.Resources.RZUpdate);
                         oExe.Sources.Add(Properties.Resources.RZRestApi);
-                        oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", oSW.SW.Shortname));
+                        oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", oSW.SW.ShortName));
 
                         if (!oExe.Compile())
                         {
@@ -862,7 +725,7 @@ namespace RuckZuck_Tool
 
                         List<string> lLines = new List<string>();
                         lLines.Add("{");
-                        lLines.Add("\t\"title\": \"" + oSW.SW.Shortname + "\",");
+                        lLines.Add("\t\"title\": \"" + oSW.SW.ShortName + "\",");
                         lLines.Add("\t\"description\": \"" + oSW.SW.Description + "\",");
                         lLines.Add("\t\"publisher\": \"" + oSW.SW.Manufacturer + "\",");
                         lLines.Add("\t\"tags\": [\"Windows\"");
@@ -880,7 +743,7 @@ namespace RuckZuck_Tool
                         }
                         lLines.Add("\t\"iconUri\": \"https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + ((GetSoftware)oItem).IconId + "\",");
                         lLines.Add("\t\"targetOsType\": \"Windows\",");
-                        lLines.Add("\t\"runCommand\": { \"commandToExecute\": \"" + oSW.SW.Shortname.Replace(" ", "") + "_setup.exe" + "\" }");
+                        lLines.Add("\t\"runCommand\": { \"commandToExecute\": \"" + oSW.SW.ShortName.Replace(" ", "") + "_setup.exe" + "\" }");
                         lLines.Add("}");
                         System.IO.File.WriteAllLines(Path.Combine(sDir, "artifactfile.json"), lLines.ToArray());
 
