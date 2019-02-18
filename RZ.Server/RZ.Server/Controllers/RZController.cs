@@ -35,6 +35,22 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetCatalog")]
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
+            if (customerid.ToLower() == "--new--")
+            {
+                JArray oRes = Base.GetCatalog("", false);
+                JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
+                JArray jTop = JArray.FromObject(jsorted.Take(30));
+                return Content(jTop.ToString());
+            }
+
+            if (customerid.ToLower() == "--old--")
+            {
+                JArray oRes = Base.GetCatalog("", true);
+                JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
+                JArray jTop = JArray.FromObject(jsorted.Take(30));
+                return Content(jTop.ToString());
+            }
+
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
             return Content(Base.GetCatalog(customerid, nocache).ToString());
         }
