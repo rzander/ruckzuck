@@ -7,8 +7,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>(c) 2019 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.0.0.7</AssemblyVersion>
-    <FileVersion>2.0.0.7</FileVersion>
+    <AssemblyVersion>2.0.0.8</AssemblyVersion>
+    <FileVersion>2.0.0.8</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +25,7 @@
   <ItemGroup>
     <Content Remove="wwwroot\%2a%2a" />
     <Content Remove="wwwroot\icons\9qZams9xELVCoFLwNHsSQWFzN.jpg" />
+    <Content Remove="wwwroot\repository\DevCDRAgent.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +77,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\icons\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\repository\DevCDRAgent.json" />
   </ItemGroup>
 
 </Project>

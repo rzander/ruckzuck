@@ -171,5 +171,15 @@ namespace RZ.Server.Controllers
             return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
         }
 
+        [HttpGet]
+        [Route("rest/v2/GetURL")]
+        public ActionResult GetURL(string customerid = "")
+        {
+            if(customerid == "swtesting")
+                return Content("https://ruckzuck.azurewebsites.net", "text/html");
+
+            return Content("https://cdn.ruckzuck.tools", "text/html");
+        }
+
     }
 }
