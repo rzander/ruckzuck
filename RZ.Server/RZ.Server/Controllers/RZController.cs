@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 
@@ -18,6 +19,8 @@ namespace RZ.Server.Controllers
     {
         private readonly IHubContext<Default> _hubContext;
         private IMemoryCache _cache;
+        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
+        TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
 
         public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext)
         {
@@ -118,7 +121,19 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/IncCounter/{shortname}/{counter}")]
         public bool IncCounter(string shortname = "", string counter = "DL")
         {
-            return Base.IncCounter(shortname, counter);
+            if (string.IsNullOrEmpty(shortname))
+                return false;
+            else
+            {
+                Message bMSG;
+                bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
+                bMSG.UserProperties.Add("ShortName", shortname);
+                tcRuckZuck.SendAsync(bMSG);
+
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + shortname + ")</li>");
+
+                return Base.IncCounter(shortname, counter);
+            }
         }
 
         [HttpPost]

@@ -229,9 +229,9 @@ namespace RZ.Server.Controllers
         //[Route("TrackDownloadsNew?SWId={SWId}&arch={Architecture}&shortname={Shortname}")]
         public bool IncCounter(string SWId = "", string arch = "", string shortname = "")
         {
-            string sLabel = SWId;
-            if (string.IsNullOrEmpty(SWId))
-                sLabel = shortname;
+            string sLabel = shortname;
+            if (string.IsNullOrEmpty(shortname))
+                sLabel = SWId;
             Message bMSG;
             bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + sLabel, TimeToLive = new TimeSpan(24, 0, 0) };
 
