@@ -7,8 +7,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>(c) 2019 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.0.0.8</AssemblyVersion>
-    <FileVersion>2.0.0.8</FileVersion>
+    <AssemblyVersion>2.0.0.9</AssemblyVersion>
+    <FileVersion>2.0.0.9</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
