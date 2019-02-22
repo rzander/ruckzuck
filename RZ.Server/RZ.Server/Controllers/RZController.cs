@@ -74,6 +74,7 @@ namespace RZ.Server.Controllers
                 return Base.GetIcon(0, iconhash);
             }
 
+            //iconid is obsolete !!
             return Base.GetIcon(iconid);
         }
 
@@ -81,19 +82,98 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/v2/GetSoftwares")]
         [Route("rest/v2/GetSoftwares/{man}/{name}/{ver}")]
-        public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "")  //result = array
+        public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "", bool image = false )  //result = array
         {
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
 
+            JArray jSW;
             if (!string.IsNullOrEmpty(shortname))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
-                return Content(Base.GetSoftwares(shortname).ToString());
+
+                jSW = Base.GetSoftwares(shortname);
+            }
+            else
+            {
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
+
+                jSW = Base.GetSoftwares(name, ver, man);
+            }
+            //Cleanup
+            foreach (JObject jObj in jSW)
+            {
+                //remove Image if not requested to reduce size
+                if (!image)
+                {
+                    try
+                    {
+                        if (jObj["Image"] != null)
+                            jObj.Remove("Image");
+                    }
+                    catch { }
+                }
+
+                //generate IconURL if missing
+                if (jObj["IconURL"] == null)
+                {
+                    if (jObj["IconHash"] != null)
+                        jObj.Add("IconURL", Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString());
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(jObj["IconURL"].ToString()) && jObj["IconHash"] != null)
+                    {
+                        //switch to cdn for icons
+                        string sBase = Base.localURL;
+                        if (sBase.ToLower().StartsWith("https://ruckzuck.tools"))
+                            sBase = "https://cdn.ruckzuck.tools";
+
+                        jObj["IconURL"] = Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString();
+                    }
+                }
+
+                if(jObj["IconId"] != null)
+                {
+                    jObj.Remove("IconId"); //No IconID on V2!! only SWId
+                }
+
+                //rename Shortname to ShortName on V2
+                if (jObj["Shortname"] != null)
+                {
+                    string sShortName = jObj["Shortname"].ToString();
+                    jObj.Remove("Shortname");
+
+                    if(jObj["ShortName"] == null)
+                    {
+                        jObj.Add("ShortName", sShortName);
+                    }
+                }
+
+                if (jObj["SWId"] != null)
+                {
+                    //Get SWId from Catalog if missing
+                    if(jObj["SWId"].ToString() == "0")
+                    {
+                        try
+                        {
+                            jObj["SWId"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["SWId"];
+                        }
+                        catch { }
+                    }
+                }
+
+                //remove Author as there are no RuckZuck users anymore
+                if(jObj["Author"] != null)
+                {
+                    jObj.Remove("Author");
+                }
             }
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
-            return Content(Base.GetSoftwares(name, ver, man).ToString());
+            if (jSW != null)
+                return Content(jSW.ToString());
+            else
+                return Content("{[]}"); //return empty json array
         }
 
         [HttpGet]

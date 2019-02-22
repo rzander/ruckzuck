@@ -481,7 +481,7 @@ namespace RZ.Server
                             {
                                 try
                                 {
-                                    if (string.Compare(productversion, sRZVersion, true) >= 1)
+                                    if (string.Compare(sRZVersion, productversion, true) >= 1)
                                     {
                                         Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
                                         Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "RZ", true);
