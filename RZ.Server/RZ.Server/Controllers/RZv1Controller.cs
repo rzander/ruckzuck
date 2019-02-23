@@ -249,7 +249,6 @@ namespace RZ.Server.Controllers
         }
 
         [HttpGet]
-        //[Route("rest/Feedback?name={productName}&ver={productVersion}&man={manufacturer}&arch={architecture}&ok={working}&user={userkey}&text={feedback}")]
         [Route("rest/Feedback")]
         [Route("wcf/RZService.svc/rest/Feedback")]
         public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
@@ -277,14 +276,6 @@ namespace RZ.Server.Controllers
                         _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                     }
-
-
-                    //bMSG.UserProperties.Add("User", "");
-                    //bMSG.UserProperties.Add("feedback", text);
-                    //bMSG.UserProperties.Add("ProductName", name);
-                    //bMSG.UserProperties.Add("ProductVersion", ver);
-                    //bMSG.UserProperties.Add("Manufacturer", man);
-                    //tcRuckZuck.SendAsync(bMSG);
 
                     Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking);
                 }

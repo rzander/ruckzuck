@@ -55,7 +55,32 @@ namespace RZ.Server.Controllers
             }
 
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
-            return Content(Base.GetCatalog(customerid, nocache).ToString());
+
+            JArray aRes = Base.GetCatalog(customerid, nocache);
+            
+            //Cleanup
+            foreach(JObject jObj in aRes)
+            {
+                //remove quality
+                if(jObj["Quality"] != null)
+                {
+                    jObj.Remove("Quality");
+                }
+
+                //remove Image
+                if (jObj["IconId"] != null)
+                {
+                    jObj.Remove("IconId");
+                }
+
+                //remove Image
+                if (jObj["Image"] != null)
+                {
+                    jObj.Remove("Image");
+                }
+            }
+
+            return Content(aRes.ToString());
         }
 
         [HttpGet]
@@ -248,32 +273,105 @@ namespace RZ.Server.Controllers
         }
 
         [HttpPost]
-        [Route("rest/v2/CheckForUpdate")]
+        [Route("rest/v2/checkforupdate")]
         public ActionResult CheckForUpdate()
         {
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             return Content(Base.CheckForUpdates(JArray.Parse(oGet.Result)).ToString());
         }
 
-        [HttpPost]
-        [Route("rest/v2/UploadSWLookup")]
-        public bool UploadSWLookup() //only need to forward requests from V1 REST API,  otherwise SWLookup entries will be created from CheckForUpdate
+        //[HttpPost]
+        //[Route("rest/v2/UploadSWLookup")]
+        //public bool UploadSWLookup() //only need to forward requests from V1 REST API,  otherwise SWLookup entries will be created from CheckForUpdate
+        //{
+        //    var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+        //    string sJSON = oGet.Result;
+        //    JObject jObj = JObject.Parse(sJSON);
+        //    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
+        //    return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
+        //}
+
+        [HttpGet]
+        [Route("rest/v2/GetPendingApproval")]
+        public ActionResult GetPendingApproval()
         {
-            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-            string sJSON = oGet.Result;
-            JObject jObj = JObject.Parse(sJSON);
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
-            return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
+            return Json(Base.GetPendingApproval());
         }
 
         [HttpGet]
-        [Route("rest/v2/GetURL")]
+        [Route("rest/v2/geturl")]
         public ActionResult GetURL(string customerid = "")
         {
-            if(customerid == "swtesting")
+            if (customerid == "swtesting")
                 return Content("https://ruckzuck.azurewebsites.net", "text/html");
 
             return Content("https://cdn.ruckzuck.tools", "text/html");
+        }
+
+        [HttpGet]
+        [Route("rest/v2/feedback")]
+        public void Feedback(string name, string ver, string man, string ok, string user, string text)
+        {
+            string Shortname = Base.GetShortname(name, ver, man);
+
+            if (!string.IsNullOrEmpty(Shortname))
+            {
+                try
+                {
+                    bool bWorking = false;
+                    try
+                    {
+                        if (string.IsNullOrEmpty(ok))
+                            ok = "false";
+
+                        bool.TryParse(ok, out bWorking);
+
+                        if (bWorking)
+                        {
+                            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
+                        }
+                        else
+                        {
+                            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
+                        }
+
+                        Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking);
+                    }
+                    catch { }
+
+
+                    if (bWorking)
+                        Base.IncCounter(Shortname, "SUCCESS");
+                    else
+                        Base.IncCounter(Shortname, "FAILURE");
+
+                }
+                catch { }
+            }
+        }
+
+        [HttpPost]
+        [Route("rest/v2/uploadswentry")]
+        public bool UploadSWEntry()
+        {
+            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            string sJSON = oGet.Result;
+
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
+
+            if (sJSON.TrimStart().StartsWith('['))
+            {
+                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON));
+                return bRes;
+            }
+            else
+            {
+                JArray jSW = new JArray();
+                jSW.Add(JObject.Parse(sJSON));
+                bool bRes = Base.UploadSoftwareWaiting(jSW);
+
+                return bRes;
+            }
         }
 
     }
