@@ -66,13 +66,17 @@ namespace RZ.Server.Controllers
                 string sApp = formcollection["ApplicationType"].ToString();
                 if (!string.IsNullOrEmpty(sApp))
                 {
-                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - SW Approved: " + sApp + "</li>");
-                    _hubContext.Clients.All.SendAsync("Reload");
-                    Base.SendNotification("Software Approved:" + sApp, "");
-                    Base.Approve(sApp);
-                    Base.GetCatalog("", true);
 
-                    _hubContext.Clients.All.SendAsync("Reload");
+                    bool bResult = Base.Approve(sApp);
+                    if(bResult)
+                    {
+                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - SW Approved: " + sApp + "</li>");
+                        _hubContext.Clients.All.SendAsync("Reload");
+                        Base.SendNotification("Software Approved:" + sApp, "");
+                        Base.GetCatalog("", true);
+                        _hubContext.Clients.All.SendAsync("Reload");
+                    }
+
                 }
             }
 
