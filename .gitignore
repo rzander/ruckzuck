@@ -328,3 +328,4 @@ RZ.Server/RZ.Server/wwwroot/swlookup
 RZ.Server/RZ.Server/wwwroot/repository
 RZ.Server/RZ.Server/wwwroot/plugins
 *.exe
+RZ.Server/RZ.Server/wwwroot/rzcat.json

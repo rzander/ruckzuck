@@ -124,19 +124,23 @@ namespace Plugin_Software
                 JObject jSoftware = Software[0] as JObject;
 
                 JToken oOut;
-                string shortname;
+                string shortname = "";
                 string manufacturer;
                 string productname;
                 string productversion;
 
-                if (!jSoftware.TryGetValue("Shortname", out oOut))
-                    return false;
+                if (jSoftware["Shortname"] == null)
+                {
+                    if (jSoftware["ShortName"] != null)
+                        shortname = jSoftware["ShortName"].ToString();
+                }
                 else
                 {
-                    if (string.IsNullOrEmpty(oOut.Value<string>()))
-                        return false;
-                    shortname = Base.clean(oOut.Value<string>());
+                    shortname = jSoftware["Shortname"].ToString();
                 }
+
+                if(string.IsNullOrEmpty(shortname))
+                    return false;
 
                 if (!jSoftware.TryGetValue("Manufacturer", out oOut))
                     manufacturer = "_unknown";
@@ -222,6 +226,14 @@ namespace Plugin_Software
                 catch { }
                 #endregion
 
+
+                //cleanup
+                foreach (JObject jObj in Software)
+                {
+                    if (jObj["Author"] != null)
+                        jObj.Remove("Author");
+                }
+
                 CloudBlobContainer oRepoContainer = new CloudBlobContainer(new Uri(Settings["repoURL"] + "?" + Settings["repoSAS"]));
                 var oDir = oRepoContainer.GetDirectoryReference(manufacturer.ToLower() + "/" + productname.ToLower() + "/" + productversion.ToLower());
                 CloudBlockBlob cRepoBlock = oDir.GetBlockBlobReference(shortname.ToLower() + ".json");
@@ -229,7 +241,8 @@ namespace Plugin_Software
                 if (!cRepoBlock.ExistsAsync().Result)
                     cRepoBlock.UploadTextAsync(Software.ToString(Newtonsoft.Json.Formatting.None));
 
-                foreach(JObject jObj in Software)
+
+                foreach (JObject jObj in Software)
                 {
                     JObject jEntity = new JObject();
                     jEntity.Add("Manufacturer", Base.clean(jObj["Manufacturer"].ToString()));
@@ -281,6 +294,7 @@ namespace Plugin_Software
 
                     InsertEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], "known", sRowKey, jEntity.ToString(Newtonsoft.Json.Formatting.None));
                     //MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], "known", sRowKey, jEntity.ToString(Newtonsoft.Json.Formatting.None));
+
                     break;
                 }
 
@@ -915,7 +929,15 @@ namespace Plugin_Software
                         #region remove IsLatest on old Catalog Item
                         try
                         {
-                            string shortname = jSW[0]["Shortname"].ToString();
+                            string shortname = "";
+                            if(jSW[0]["Shortname"] != null)
+                                shortname = jSW[0]["Shortname"].ToString();
+                            else
+                            {
+                                if (jSW[0]["ShortName"] != null)
+                                    shortname = jSW[0]["ShortName"].ToString();
+                            }
+
                             if (!string.IsNullOrEmpty(shortname))
                             {
                                 JArray joldSW = getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(),  "known");
