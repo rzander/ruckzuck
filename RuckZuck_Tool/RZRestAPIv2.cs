@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using RuckZuck_WCF;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,6 +24,9 @@ namespace RuckZuck.Base
         {
             get
             {
+                if (_sURL != "UDP" && ! string.IsNullOrEmpty(_sURL))
+                    return _sURL;
+
                 if (DisableBroadcast)
                     _sURL = "";
 
@@ -33,7 +35,7 @@ namespace RuckZuck.Base
                 {
                     if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _sURL = sWebSVC.TrimEnd('/');
+                        RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
                     }
                 }
 
@@ -64,7 +66,7 @@ namespace RuckZuck.Base
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-                    return "https://ruckzuck.azureedge.net"; //CDN Version -> otherwise use "https://ruckzuck.azurewebsites.net/"
+                    return GetURL("");
                 }
                 else
                     return _sURL;
@@ -75,6 +77,30 @@ namespace RuckZuck.Base
             }
         }
 
+        public static string GetURL(string customerid)
+        {
+            using (HttpClient hClient = new HttpClient())
+            {
+                Task<string> tReq;
+                if (string.IsNullOrEmpty(customerid))
+                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                else
+                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+                tReq.Wait(5000); //wait max 5s
+
+                if (tReq.IsCompleted)
+                {
+                    _sURL = tReq.Result;
+                    return _sURL;
+                }
+                else
+                {
+                    _sURL = "https://ruckzuck.azurewebsites.net";
+                    return _sURL;
+                }
+            }
+        }
 
         public static List<GetSoftware> GetCatalog(string customerid = "")
         {
@@ -109,7 +135,7 @@ namespace RuckZuck.Base
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid);
 
-                response.Wait(30000); //30s max
+                response.Wait(60000); //60s max
 
                 if (response.IsCompleted)
                 {
@@ -157,13 +183,16 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(long iconid = 0, string iconhash = "")
+        public static byte[] GetIcon(string iconhash)
         {
             Task<Stream> response;
-            if(string.IsNullOrEmpty(iconhash))
-                response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconid=" + iconid);
-            else
-                response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconhash=" + iconhash);
+
+            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?iconhash=" + iconhash);
+
+            //if (string.IsNullOrEmpty(iconhash))
+            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconid=" + iconid);
+            //else
+            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconhash=" + iconhash);
 
             response.Wait(10000);
 
@@ -179,5 +208,326 @@ namespace RuckZuck.Base
 
             return null;
         }
+
+        public static async void IncCounter(string shortname = "", string counter = "DL")
+        {
+            try
+            {
+               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname));
+            }
+            catch { }
+        }
+
+        public static List<string> GetCategories(List<GetSoftware> oSWList)
+        {
+            List<string> lResult = new List<string>();
+
+            foreach (GetSoftware oSW in oSWList)
+            {
+                lResult.AddRange((oSW.Categories ?? new List<string>()).ToArray());
+            }
+
+            return lResult.Distinct().OrderBy(t => t).ToList();
+        }
+
+        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback)
+        {
+            if (!string.IsNullOrEmpty(feedback))
+            {
+                try
+                {
+                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
+                    return oRes;
+                }
+                catch { }
+            }
+
+            return "";
+        }
+
+        public static bool UploadSWEntry(AddSoftware lSoftware)
+        {
+            try
+            {
+                JavaScriptSerializer ser = new JavaScriptSerializer();
+                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                var response = oClient.PostAsync(sURL + "/rest/v2/uploadswentry", oCont);
+                response.Wait(30000); //30s max
+
+                if (response.Result.StatusCode == HttpStatusCode.OK)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+
+        public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
+        {
+            try
+            {
+                JavaScriptSerializer ser = new JavaScriptSerializer();
+                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                response.Wait(120000); //2min max
+                if (response.IsCompleted)
+                {
+                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
+                    return lRes;
+                }
+
+            }
+            catch { }
+
+            return new List<AddSoftware>();
+        }
+
+    }
+
+    public class GetSoftware
+    {
+        public string ProductName { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string Description { get; set; }
+
+        public string ShortName { get; set; }
+
+        public string ProductURL { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        //public byte[] Image { get; set; }
+
+        //public Int32? Quality { get; set; }
+
+        public Int32? Downloads { get; set; }
+
+        public List<string> Categories { get; set; }
+
+        //public long IconId { get; set; }
+
+        public long SWId { get; set; }
+
+        public string IconHash { get; set; }
+
+        public bool isInstalled { get; set; }
+
+        //public string XMLFile { get; set; }
+
+        //public string IconFile { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                }
+
+                if (SWId > 0)
+                {
+                    return RZRestAPIv2.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                }
+
+                //if (IconId > 0)
+                //{
+                //    SWId = IconId;
+                //    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                //}
+
+                return "";
+            }
+        }
+
+    }
+
+    public class AddSoftware
+    {
+        public string ProductName { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string Description { get; set; }
+
+        public string ShortName { get; set; }
+
+        public string ProductURL { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        public byte[] Image { get; set; }
+
+        public string MSIProductID { get; set; }
+
+        public string Architecture { get; set; }
+
+        public string PSUninstall { get; set; }
+
+        public string PSDetection { get; set; }
+
+        public string PSInstall { get; set; }
+
+        public string PSPreReq { get; set; }
+
+        public string PSPreInstall { get; set; }
+
+        public string PSPostInstall { get; set; }
+
+        public string ContentID { get; set; }
+
+        public List<contentFiles> Files { get; set; }
+
+        public string Author { get; set; }
+
+        public string Category { get; set; }
+
+        public string[] PreRequisites { get; set; }
+
+        //vNext 5.9.2017
+        //public long SWId { get { return IconId; } set { IconId = value; } }
+        public long SWId { get; set; }
+
+        //public long IconId { get; set; }
+
+        public string IconHash { get; set; }
+        //remove if SWId is in place 5.9.2017
+        //public long IconId { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                }
+
+                if (SWId > 0)
+                {
+                    //IconId = SWId;
+                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
+                    return sURL;
+                }
+
+                //if (IconId > 0)
+                //{
+                //    SWId = IconId;
+                //    string sURL = RZRestAPI.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
+                //    return sURL;
+                //}
+                return "";
+            }
+        }
+    }
+
+    public class contentFiles
+    {
+        public string URL { get; set; }
+        public string FileName { get; set; }
+        public string FileHash { get; set; }
+        public string HashType { get; set; }
+    }
+
+    public class DLTask
+    {
+        public string ProductName { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string ShortName { get; set; }
+
+        //public byte[] Image { get; set; }
+
+        public string IconURL { get; set; }
+
+        public bool AutoInstall { get; set; }
+
+        public bool Installed { get; set; }
+
+        public bool UnInstalled { get; set; }
+
+        public bool Downloading { get; set; }
+
+        public bool Installing { get; set; }
+
+        public bool Error { get; set; }
+
+        public bool WaitingForDependency { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        internal string _status = "";
+        public string Status
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_status))
+                {
+                    if (Installing && !Error)
+                        return "Installing";
+                    if (Downloading && !Error)
+                        return "Downloading";
+                    if (Installed && !Error)
+                        return "Installed";
+                    if (UnInstalled && !Error)
+                        return "Uninstalled";
+                    if (WaitingForDependency)
+                        return "Installing dependencies";
+                    if (PercentDownloaded == 100 && !Error)
+                        return "Downloaded";
+                    if (Error)
+                        return ErrorMessage;
+
+                    return "Waiting";
+                }
+                else
+                    return _status;
+            }
+            set
+            {
+                _status = value;
+            }
+        }
+
+        public long DownloadedBytes { get; set; }
+
+        public long TotalBytes { get; set; }
+
+        public int PercentDownloaded { get; set; }
+
+        public List<contentFiles> Files { get; set; }
+
+        //public Task task { get; set; }
+
+        public RZUpdate.SWUpdate SWUpd { get; set; }
+    }
+
+    public class DLStatus
+    {
+        public string Filename { get; set; }
+
+        public string URL { get; set; }
+
+        public int PercentDownloaded { get; set; }
+
+        public long DownloadedBytes { get; set; }
+
+        public long TotalBytes { get; set; }
     }
 }

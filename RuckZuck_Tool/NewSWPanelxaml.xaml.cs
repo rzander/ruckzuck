@@ -13,7 +13,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using System.Threading;
-using RuckZuck_WCF;
 using RZUpdate;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -226,7 +225,7 @@ namespace RuckZuck_Tool
             oSoftware.PSPreReq = tbPSPrereq.Text;
             oSoftware.PSUninstall = tbPSUnInstall.Text;
             oSoftware.ProductURL = tbProductURL.Text;
-            oSoftware.Author = Properties.Settings.Default.UserKey;
+            oSoftware.Author = tbAuthor.Text; ;
             oSoftware.PSPreInstall = tbPSPreInstall.Text;
             oSoftware.PSPostInstall = tbPSPostInstall.Text;
 
@@ -241,7 +240,7 @@ namespace RuckZuck_Tool
 
             oSoftware.ShortName = tbShortName.Text.Trim();
 
-            if (RZRestAPI.UploadSWEntry(oSoftware))
+            if (RZRestAPIv2.UploadSWEntry(oSoftware))
                 btUpload.IsEnabled = false;
         }
 
@@ -481,6 +480,7 @@ namespace RuckZuck_Tool
             oSoftware.PreRequisites = tbPreReq.Text.Split(';');
             oSoftware.ShortName = tbShortName.Text.Trim();
             oSoftware.Category = tbCategories.Text.Trim();
+            oSoftware.Author = tbAuthor.Text.Trim();
 
             if (imgIcon.Tag != null)
                 oSoftware.Image = imgIcon.Tag as byte[];
@@ -540,6 +540,7 @@ namespace RuckZuck_Tool
             tbProductURL.Text = oSoftware.ProductURL;
             tbPSPostInstall.Text = oSoftware.PSPostInstall;
             tbPSPreInstall.Text = oSoftware.PSPreInstall;
+            tbAuthor.Text = oSoftware.Author;
             if (oSoftware.PreRequisites != null)
                 tbPreReq.Text = string.Join(";", oSoftware.PreRequisites) ?? "";
             else

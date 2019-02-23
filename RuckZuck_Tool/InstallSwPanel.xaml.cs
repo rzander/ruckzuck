@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Globalization;
 using System.Threading.Tasks;
-using RuckZuck_WCF;
 using RZUpdate;
 using System.IO;
 using RuckZuck.Base;
@@ -170,7 +169,7 @@ namespace RuckZuck_Tool
                 PropertyGroupDescription PGD = new PropertyGroupDescription("", new ShortNameToCategory());
 
                 //PGD.GroupNames.Add(RZRestAPI.GetCategories(lAllSoftware));
-                foreach (var o in RZRestAPI.GetCategories(lAllSoftware))
+                foreach (var o in RZRestAPIv2.GetCategories(lAllSoftware))
                 {
                     PGD.GroupNames.Add(o);
                 }
@@ -396,7 +395,7 @@ namespace RuckZuck_Tool
 
                                 if (oFeedBack.hasFeedback)
                                 {
-                                    RZRestAPI.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, "", oFeedBack.isWorking.ToString(), Properties.Settings.Default.UserKey, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
+                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.UserKey, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
                                 }
                             };
                             Dispatcher.Invoke(update);
@@ -657,6 +656,11 @@ namespace RuckZuck_Tool
                         }
 
                         CreateExe oExe = new CreateExe(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, oSW.SW.ShortName + "_setup.exe"));
+
+                        //Get Icon if missing
+                        if (oSW.SW.Image == null)
+                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+
                         oExe.Icon = oSW.SW.Image;
                         oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
                         oExe.Sources.Add(Properties.Resources.RZUpdate);
@@ -763,7 +767,8 @@ namespace RuckZuck_Tool
             }
         }*/
 
-
     }
+
+
 }
 

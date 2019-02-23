@@ -611,10 +611,11 @@
                         </DockPanel>
                         <DockPanel LastChildFill="True" >
                             <DockPanel DockPanel.Dock="Top">
-                                <Label DockPanel.Dock="Top">If you are a registered RuckZuck User, enter you account here:</Label>
+                                <Label DockPanel.Dock="Top">If you are a registered RuckZuck customer, enter you customerid here:</Label>
                                 <Grid Margin="0,5,0,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="14.5"/>
+                                        <ColumnDefinition Width="105.5"/>
                                         <ColumnDefinition Width="250" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
@@ -627,23 +628,18 @@
                                         <RowDefinition Height="30"/>
                                         <RowDefinition Height="45"/>
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Column="0" Grid.Row="0" Content="Username:" />
-                                    <TextBox x:Name="tbUsername" Grid.Column="1" Grid.Row="0"  Height="24" VerticalAlignment="Top"/>
-                                    <Label Grid.Column="2" Grid.Row="0" Content="You can request an Account at RuckZuck.tools" FontWeight="Light" />
-                                    <Label Grid.Column="0" Grid.Row="1" Content="Password:" />
-                                    <PasswordBox x:Name="tbPassword" Grid.Column="1" Grid.Row="1"  Height="24" VerticalAlignment="Top"/>
-                                    <Button x:Name="btSettingsSave" Grid.Row="2" Grid.Column="1" Content="Save" Width="80" Height="20" Click="btSettingsSave_Click" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                                    <Label Grid.Column="0" Grid.Row="3" Content="Web-API:" />
-                                    <TextBox x:Name="tbSVC" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="True" IsEnabled="False"/>
-                                    <Label Grid.Column="0" Grid.Row="4" Content="IPFS Gateway:" />
-                                    <TextBox x:Name="tbIPFSGW" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="False" IsEnabled="False" ToolTip="Gateway to download IPFS files."/>
-                                    <Label Grid.Column="0" Grid.Row="5" Content="Update Exclusion:" />
-                                    <Button x:Name="btUpdExclusion" Grid.Row="5" Grid.Column="1" Content="Clear All" Width="80" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="clear List of Update-Exclusion. Restart the Tool to rescan for Software-Updates." Click="btUpdExclusion_Click"/>
-                                    <Label Grid.Column="0" Grid.Row="6" Content="RZCache discovery:" />
-                                    <CheckBox x:Name="cbRZCache" Content="search for an RZCache server on startup." Grid.Column="1" Grid.Row="6" Margin="0,5,0,0" Checked="cbRZCache_Checked" Unchecked="cbRZCache_Checked"/>
-                                    <Label Grid.Column="0" Grid.Row="6" Content="Internal URL:" Visibility="Hidden" />
-                                    <TextBox x:Name="tbURL" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" IsReadOnly="true" Visibility="Hidden"/>
-                                    <Label Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="2" Visibility="Hidden" Content="downloads will be redirected to this URL. This URL must contain subfolders with the ContentId as name." Margin="0,20,0,0" FontWeight="Light" />
+                                    <Label Grid.Column="0" Grid.Row="0" Content="CustomerID:" Grid.ColumnSpan="2" />
+                                    <TextBox x:Name="tbCustomerID" Grid.Column="2" Grid.Row="0"  Height="24" VerticalAlignment="Top"/>
+                                    <Button x:Name="btSettingsSave" Grid.Row="1" Grid.Column="2" Content="Save" Width="80" Height="20" Click="btSettingsSave_Click" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                    <Label Grid.Column="0" Grid.Row="2" Content="REST-API:" Grid.ColumnSpan="2" />
+                                    <TextBox x:Name="tbSVC" Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsReadOnly="True" IsEnabled="False"/>
+                                    <Label Grid.Column="0" Grid.Row="4" Content="Update Exclusion:" Grid.ColumnSpan="2" />
+                                    <Button x:Name="btUpdExclusion" Grid.Row="4" Grid.Column="2" Content="Clear All" Width="80" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="clear List of Update-Exclusion. Restart the Tool to rescan for Software-Updates." Click="btUpdExclusion_Click"/>
+                                    <Label Grid.Column="0" Grid.Row="6" Content="RZCache discovery:" Grid.ColumnSpan="2" />
+                                    <CheckBox x:Name="cbRZCache" Content="search for an RZCache server on startup." Grid.Column="2" Grid.Row="6" Margin="0,5,0,0" Checked="cbRZCache_Checked" Unchecked="cbRZCache_Checked"/>
+                                    <Label Grid.Column="0" Grid.Row="6" Content="Internal URL:" Visibility="Hidden" Grid.ColumnSpan="2" />
+                                    <TextBox x:Name="tbURL" Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="5"  Height="24" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" IsReadOnly="true" Visibility="Hidden"/>
+                                    <Label Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" Visibility="Hidden" Content="downloads will be redirected to this URL. This URL must contain subfolders with the ContentId as name." Margin="0,20,0,0" FontWeight="Light" />
                                 </Grid>
                             </DockPanel>
                         </DockPanel>

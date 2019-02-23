@@ -105,6 +105,7 @@
                                 <RowDefinition Height="0" Name="rPreReq" />
                                 <RowDefinition Height="Auto" MinHeight="24" />
                                 <RowDefinition Height="Auto" MinHeight="24" />
+                                <RowDefinition Height="Auto" MinHeight="24" />
                             </Grid.RowDefinitions>
                             <Label Grid.Column="0" Grid.Row="0" Content="Detection Script:" />
                             <TextBox x:Name="tbPSDetection" Grid.Column="1" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" />
@@ -127,6 +128,8 @@
                             <TextBox x:Name="tbCategories" Grid.Column="2" Grid.Row="7" AcceptsReturn="True" AcceptsTab="True" />
                             <Label Grid.Column="0" Grid.Row="8" Content="ShortName:" ToolTip="ShortName" />
                             <TextBox x:Name="tbShortName" Grid.Column="2" Grid.Row="8" AcceptsReturn="True" AcceptsTab="True" />
+                            <Label Grid.Column="0" Grid.Row="9" Content="Author email:" ToolTip="optional email address to get feedback. this information will be deleted as soon as the application is approved." />
+                            <TextBox x:Name="tbAuthor" Grid.Column="2" Grid.Row="9" AcceptsReturn="True" AcceptsTab="True" />
                         </Grid>
                     </GroupBox>
                 </DockPanel>

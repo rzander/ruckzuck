@@ -15,7 +15,7 @@
                             <DockPanel>
                                 <DockPanel DockPanel.Dock="Left">
                                     <TextBlock>
-                                    <Image Height="32" Width="32" ToolTip="{Binding ProductName}" Source="{Binding Image}"/>
+                                    <Image Height="32" Width="32" ToolTip="{Binding ProductName}" Source="{Binding IconURL, IsAsync=True}"/>
                                     </TextBlock>
                                 </DockPanel>
                                 <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">

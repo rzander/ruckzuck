@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Navigation;
 using System.Diagnostics;
-using System.Globalization;
-using RuckZuck_WCF;
 using RZUpdate;
 using System.Threading;
+using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {

@@ -19,7 +19,6 @@ using System.Management.Automation;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Net;
-using RuckZuck_WCF;
 using RZUpdate;
 using System.Security.Cryptography;
 using System.Text;
@@ -81,9 +80,8 @@ namespace RuckZuck_Tool
             }
 
             //RZRestAPI.sURL = Properties.Settings.Default.WebService;
-            RZRestAPI.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
-            tbSVC.Text = RZRestAPI.sURL;
-            tbIPFSGW.Text = Properties.Settings.Default.IPFSGW;
+            RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
+            tbSVC.Text = RZRestAPIv2.sURL;
             cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
 
             //Authenticate;
@@ -397,8 +395,10 @@ namespace RuckZuck_Tool
                         //Load Software details for a valid DeploymentType...
                         SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
 
-                        oNewPanel.OpenXML(oSW.SW);
+                        //get Icon
+                        oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
 
+                        oNewPanel.OpenXML(oSW.SW);
 
                         tabWizard.SelectedItem = tabNewSWSMI;
                     }
@@ -474,12 +474,12 @@ namespace RuckZuck_Tool
                                     //Check if SW is already installed
                                     if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId,  Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true };
                                         oDBCat.Add(oNew);
                                     }
                                     else
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false };
                                         oDBCat.Add(oNew);
                                     }
                                 }
@@ -491,11 +491,11 @@ namespace RuckZuck_Tool
                             //Check if SW is already installed
                             if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true });
                             }
                             else
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, IconId = oSW.IconId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, Quality = oSW.Quality, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false });
                             }
                         }
                     }
@@ -504,7 +504,7 @@ namespace RuckZuck_Tool
 
                 ListCollectionView lcv = new ListCollectionView(oDBCat.ToList());
 
-                foreach (var o in RZRestAPI.GetCategories(oSCAN.SoftwareRepository))
+                foreach (var o in RZRestAPIv2.GetCategories(oSCAN.SoftwareRepository))
                 {
                         PGD.GroupNames.Add(o);
                 }
@@ -804,8 +804,8 @@ namespace RuckZuck_Tool
 
         private void tabSettings_Loaded(object sender, RoutedEventArgs e)
         {
-            tbUsername.Text = Properties.Settings.Default.UserKey;
-            tbPassword.Password = Decrypt(Properties.Settings.Default.UserPW, Environment.UserName);
+            //tbUsername.Text = Properties.Settings.Default.UserKey;
+            //tbPassword.Password = Decrypt(Properties.Settings.Default.UserPW, Environment.UserName);
         }
 
         private void btSettingsSave_Click(object sender, RoutedEventArgs e)
@@ -818,20 +818,20 @@ namespace RuckZuck_Tool
 
                 //Enable InternalURL
                 //tbURL.IsEnabled = true;
-                tbIPFSGW.IsEnabled = true;
+                //tbIPFSGW.IsEnabled = true;
 
                 //Update and save new username and password
-                Properties.Settings.Default.UserKey = tbUsername.Text;
-                Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
+                //Properties.Settings.Default.UserKey = tbUsername.Text;
+                //Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
                 //Properties.Settings.Default.InternalURL = tbURL.Text;
-                Properties.Settings.Default.IPFSGW = tbIPFSGW.Text;
+                //Properties.Settings.Default.IPFSGW = tbIPFSGW.Text;
                 Properties.Settings.Default.Save();
 
                 //oInstPanel.sInternalURL = tbURL.Text;
 
                 //Back to Main
                 //tabWizard.SelectedItem = tabMain;
-                tbUsername.BorderBrush = Brushes.Green;
+                //tbUsername.BorderBrush = Brushes.Green;
 
                 oInstPanel.EnableFeedback = true;
                 oInstPanel.EnableEdit = true;
@@ -844,8 +844,8 @@ namespace RuckZuck_Tool
             catch 
             {
                 //Username or Password are wrong !
-                tbUsername.BorderBrush = Brushes.Red;
-                tbPassword.BorderBrush = Brushes.Red;
+                //tbUsername.BorderBrush = Brushes.Red;
+                //tbPassword.BorderBrush = Brushes.Red;
                 //tbUsername.ToolTip = sResponse;
                 //tbPassword.ToolTip = sResponse;
                 //oInstPanel.sInternalURL = "";

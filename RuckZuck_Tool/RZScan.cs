@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Win32;
 using System.Diagnostics;
-using RuckZuck_WCF;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using RuckZuck.Base;
 
 namespace RZUpdate
@@ -168,9 +166,9 @@ namespace RZUpdate
                             Categories = item.Categories ?? new List<string>(),
                             Description = item.Description,
                             Downloads = item.Downloads,
-                            IconId = item.IconId,
+                            //IconId = item.IconId,
                             SWId = item.SWId,
-                            Image = item.Image,
+                            //Image = item.Image,
                             Manufacturer = item.Manufacturer,
                             ProductName = item.ProductName,
                             ProductURL = item.ProductURL,
@@ -298,7 +296,7 @@ namespace RZUpdate
                     vSWCheck.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
                 }
 
-                List<AddSoftware> lCheckResult = RZRestAPI.CheckForUpdate(vSWCheck).ToList();
+                List<AddSoftware> lCheckResult = RZRestAPIv2.CheckForUpdate(vSWCheck).ToList();
 
                 var lResult = lCheckResult.Select(item => new AddSoftware()
                 {
@@ -313,7 +311,7 @@ namespace RZUpdate
                     MSIProductID = item.MSIProductID,
                     ShortName = item.ShortName,
                     SWId = item.SWId,
-                    IconId = item.IconId,
+                    //IconId = item.IconId,
                     IconHash = item.IconHash
                 }).ToList();
 
