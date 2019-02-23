@@ -143,7 +143,7 @@ namespace RuckZuck.Base
                     List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
 
 
-                    if (!string.IsNullOrEmpty(customerid) && lRes.Count > 400)
+                    if (string.IsNullOrEmpty(customerid) && lRes.Count > 400)
                     {
                         File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
                     }
