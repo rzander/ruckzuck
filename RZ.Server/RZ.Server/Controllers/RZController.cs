@@ -38,6 +38,9 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetCatalog")]
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
+            if (string.IsNullOrEmpty(Base.localURL))
+                Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
+
             if (customerid.ToLower() == "--new--")
             {
                 JArray oRes = Base.GetCatalog("", false);
