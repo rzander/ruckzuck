@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.IO;
-using RuckZuck_WCF;
-using System.Diagnostics;
+using RuckZuck.Base;
 
 namespace RZUpdate
 {
@@ -27,17 +26,18 @@ namespace RZUpdate
             List<string> lArgs = args.ToList();
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck Update Tool (c) 2018 by Roger Zander");
+                Console.WriteLine("RuckZuck Update Tool (c) 2019 by Roger Zander");
                 Console.WriteLine("Usage:");
-                Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\" [\"Manufacturer\"]");
+                Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\" \"Manufacturer\"");
                 Console.WriteLine("Install a Software from Shortname : RZUpdate.exe \"<Shortname>\"[;\"<Shortname2>\"]");
-                Console.WriteLine("Install a Software from XML-File: RZUpdate.exe \"<RZXML File.xml>\"");
+                Console.WriteLine("Install a Software from XML-File: RZUpdate.exe \"<File.json>\"");
                 Console.WriteLine("Update all installed Software-Versions: RZUpdate.exe /Update");
                 Console.WriteLine("");
                 return;
             }
 
-            RZRestAPI.sURL = Properties.Settings.Default.WebService;
+            if(!string.IsNullOrEmpty(Properties.Settings.Default.WebService))
+                RZRestAPIv2.sURL = Properties.Settings.Default.WebService;
 
             if (lArgs.Count == 1)
             {
@@ -100,11 +100,11 @@ namespace RZUpdate
                                         RZUpdater oRZSWPreReq = new RZUpdater();
                                         oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
                                         Console.WriteLine();
-                                        Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                        Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
                                         if (oRZSWPreReq.SoftwareUpdate.Download().Result)
                                         {
                                             Console.WriteLine("... done.");
-                                            Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                            Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
                                             if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
                                             {
                                                 Console.WriteLine("... done.");
@@ -140,49 +140,49 @@ namespace RZUpdate
                     }
                 }
             }
-            if (lArgs.Count == 2)
-            {
-                RZUpdater oRZUpdate = new RZUpdater();
-                var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1]);
-                if (oUpdate != null)
-                {
-                    Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
-                    Console.Write("Downloading...");
+            //if (lArgs.Count == 2)
+            //{
+            //    RZUpdater oRZUpdate = new RZUpdater();
+            //    var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1]);
+            //    if (oUpdate != null)
+            //    {
+            //        Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
+            //        Console.Write("Downloading...");
 
-                    if (oUpdate.Download().Result)
-                    {
-                        Console.WriteLine("... done.");
-                        Console.Write("Installing...");
-                        if (oUpdate.Install(false, true).Result)
-                        {
-                            Console.WriteLine("... done.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("... Error. The update installation failed.");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No Update found...");
-                }
-            }
+            //        if (oUpdate.Download().Result)
+            //        {
+            //            Console.WriteLine("... done.");
+            //            Console.Write("Installing...");
+            //            if (oUpdate.Install(false, true).Result)
+            //            {
+            //                Console.WriteLine("... done.");
+            //            }
+            //            else
+            //            {
+            //                Console.WriteLine("... Error. The update installation failed.");
+            //            }
+            //        }
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("No Update found...");
+            //    }
+            //}
 
             if (lArgs.Count == 3)
             {
                 RZUpdater oRZUpdate = new RZUpdater();
-                var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1], lArgs[2]);
-                if (oUpdate != null)
+                oRZUpdate.SoftwareUpdate = new SWUpdate(lArgs[0], lArgs[1], lArgs[2]);
+                if (oRZUpdate.SoftwareUpdate != null)
                 {
-                    Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
+                    Console.WriteLine("New Version: " + oRZUpdate.SoftwareUpdate.SW.ProductVersion);
                     Console.Write("Downloading...");
 
-                    if (oUpdate.Download().Result)
+                    if (oRZUpdate.SoftwareUpdate.Download().Result)
                     {
                         Console.WriteLine("... done.");
                         Console.Write("Installing...");
-                        if (oUpdate.Install(false, true).Result)
+                        if (oRZUpdate.SoftwareUpdate.Install(false, true).Result)
                         {
                             Console.WriteLine("... done.");
                         }
@@ -206,7 +206,7 @@ namespace RZUpdate
             Console.WriteLine("... done.");
             Console.WriteLine(oScan.NewSoftwareVersions.Count + " updates found.");
 
-            foreach (RuckZuck_WCF.AddSoftware oSW in oScan.NewSoftwareVersions)
+            foreach (AddSoftware oSW in oScan.NewSoftwareVersions)
             {
                 try
                 {

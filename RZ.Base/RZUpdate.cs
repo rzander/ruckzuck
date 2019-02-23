@@ -5,10 +5,8 @@ using System.Net;
 using System.IO;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Xml.Linq;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
 using System.Net.Http;
@@ -32,11 +30,6 @@ namespace RZUpdate
 
         public RZUpdater(string sSWFile)
         {
-            if (sSWFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
-            {
-                SoftwareUpdate = new SWUpdate(ParseXML(sSWFile));
-            }
-
             if (sSWFile.EndsWith(".json", StringComparison.CurrentCultureIgnoreCase))
             {
                 SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
@@ -114,131 +107,6 @@ namespace RZUpdate
             byte[] time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
             byte[] key = Guid.NewGuid().ToByteArray();
             return Convert.ToBase64String(time.Concat(key).ToArray());
-        }
-
-        internal static XElement stripNS(XElement root)
-        {
-            return new XElement(
-                root.Name.LocalName,
-                root.HasElements ?
-                    root.Elements().Select(el => stripNS(el)) :
-                    (object)root.Value
-            );
-        }
-
-        internal static AddSoftware ParseXML(string sFile)
-        {
-            XmlDocument xDoc = new XmlDocument();
-            if (File.Exists(sFile))
-            {
-                xDoc.Load(sFile);
-            }
-            else
-            {
-                xDoc.LoadXml(sFile);
-            }
-
-            string sRes = stripNS(XElement.Parse(xDoc.InnerXml)).ToString();
-            xDoc.InnerXml = sRes;
-
-            AddSoftware oSoftware = new AddSoftware();
-            oSoftware.Files = new List<contentFiles>();
-
-            foreach (XmlNode xRoot in xDoc.SelectNodes("AddSoftware"))
-            {
-                try
-                {
-                    List<string> lPreReq = new List<string>();
-                    foreach (XmlNode xProperty in xRoot.ChildNodes)
-                    {
-                        try
-                        {
-                            switch (xProperty.Name.ToLower())
-                            {
-                                case "architecture":
-                                    oSoftware.Architecture = xProperty.InnerText;
-                                    break;
-                                case "author":
-                                    oSoftware.Author = xProperty.InnerText;
-                                    break;
-                                case "category":
-                                    oSoftware.Category = xProperty.InnerText;
-                                    break;
-                                case "contentid":
-                                    oSoftware.ContentID = xProperty.InnerText;
-                                    break;
-                                case "description":
-                                    oSoftware.Description = xProperty.InnerText;
-                                    break;
-                                case "manufacturer":
-                                    oSoftware.Manufacturer = xProperty.InnerText;
-                                    break;
-                                case "msiproductid":
-                                    oSoftware.MSIProductID = xProperty.InnerText;
-                                    break;
-                                case "productname":
-                                    oSoftware.ProductName = xProperty.InnerText;
-                                    break;
-                                case "producturl":
-                                    oSoftware.ProductURL = xProperty.InnerText;
-                                    break;
-                                case "productversion":
-                                    oSoftware.ProductVersion = xProperty.InnerText;
-                                    break;
-                                case "psdetection":
-                                    oSoftware.PSDetection = xProperty.InnerText;
-                                    break;
-                                case "psinstall":
-                                    oSoftware.PSInstall = xProperty.InnerText;
-                                    break;
-                                case "pspostinstall":
-                                    oSoftware.PSPostInstall = xProperty.InnerText;
-                                    break;
-                                case "pspreinstall":
-                                    oSoftware.PSPreInstall = xProperty.InnerText;
-                                    break;
-                                case "psprereq":
-                                    oSoftware.PSPreReq = xProperty.InnerText;
-                                    break;
-                                case "psuninstall":
-                                    oSoftware.PSUninstall = xProperty.InnerText;
-                                    break;
-                                case "ShortName":
-                                    oSoftware.ShortName = xProperty.InnerText;
-                                    break;
-                                case "image":
-                                    oSoftware.Image = Convert.FromBase64String(xProperty.InnerText);
-                                    break;
-                                case "prerequisites":
-                                    foreach (XmlNode xPreReq in xProperty.ChildNodes)
-                                    {
-                                        lPreReq.Add(xPreReq.InnerText);
-                                    }
-                                    break;
-                                case "files":
-                                    foreach (XmlNode xFile in xProperty.ChildNodes)
-                                    {
-                                        contentFiles oFile = new contentFiles();
-                                        oFile.HashType = "MD5";
-                                        try { oFile.FileHash = xFile["FileHash"].InnerText; } catch { }
-                                        try { oFile.FileName = xFile["FileName"].InnerText; } catch { }
-                                        try { oFile.HashType = xFile["HashType"].InnerText; } catch { }
-                                        try { oFile.URL = xFile["URL"].InnerText; } catch { }
-                                        oSoftware.Files.Add(oFile);
-                                    }
-
-                                    break;
-                            }
-                        }
-                        catch { }
-                    }
-
-                    oSoftware.PreRequisites = lPreReq.ToArray();
-                }
-                catch { }
-            }
-
-            return oSoftware;
         }
 
         internal static AddSoftware ParseJSON(string sFile)
@@ -424,7 +292,7 @@ namespace RZUpdate
                 }
                 else
                 {
-                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == ShortName).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                     if (oGetSW != null)
                     {
                         SW.ProductName = oGetSW.ProductName;

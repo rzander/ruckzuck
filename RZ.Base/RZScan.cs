@@ -8,12 +8,12 @@ using System.Diagnostics;
 using System.Drawing;
 using RuckZuck.Base;
 
-namespace RZUpdate
+namespace RuckZuck.Base
 {
     /// <summary>
     /// Class to detect Installed SW and Updates
     /// </summary>
-    public class RZScan
+    public partial class RZScan
     {
         internal bool bCheckUpdates = false;
         internal bool bRunScan = false;
@@ -652,27 +652,27 @@ namespace RZUpdate
             return null;
         }
 
-        internal static Bitmap GetImageFromExe(string Filename)
+        public static Bitmap GetImageFromExe(string Filename, string empty = "")
         {
             try
             {
                 Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
 
-                try
-                {
-                    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
-                    if (iE.FileName != null)
-                    {
-                        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
-                        //Max Size 128px...
-                        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
-                        if (ico != null)
-                            return ico.ToBitmap();
-                        else
-                            return bResult;
-                    }
-                }
-                catch { }
+                //try
+                //{
+                //    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
+                //    if (iE.FileName != null)
+                //    {
+                //        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
+                //        //Max Size 128px...
+                //        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                //        if (ico != null)
+                //            return ico.ToBitmap();
+                //        else
+                //            return bResult;
+                //    }
+                //}
+                //catch { }
 
                 return bResult;
             }

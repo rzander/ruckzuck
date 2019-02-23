@@ -128,14 +128,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\RZ.Base\RZRestAPIv2.cs">
+      <Link>RZRestAPIv2.cs</Link>
+    </Compile>
+    <Compile Include="..\RZ.Base\RZScan.cs">
+      <Link>RZScan.cs</Link>
+    </Compile>
+    <Compile Include="..\RZ.Base\RZUpdate.cs">
+      <Link>RZUpdate.cs</Link>
+    </Compile>
     <Compile Include="Compile.cs" />
     <Compile Include="DownloadMonitor.xaml.cs">
       <DependentUpon>DownloadMonitor.xaml</DependentUpon>
     </Compile>
     <Compile Include="IconExtractor.cs" />
-    <Compile Include="RZRestAPIv2.cs" />
-    <Compile Include="RZScan.cs" />
-    <Compile Include="RZUpdate.cs" />
     <Compile Include="UpdateSwPanel.xaml.cs">
       <DependentUpon>UpdateSwPanel.xaml</DependentUpon>
     </Compile>

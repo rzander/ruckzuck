@@ -70,7 +70,7 @@ namespace RuckZuck_Tool.Properties {
         ///[assembly: AssemblyConfiguration(&quot;&quot;)]
         ///[assembly: AssemblyCompany(&quot;RuckZuck.tools&quot;)]
         ///[assembly: AssemblyProduct(&quot;RZRZRZ&quot;)]
-        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2018 by Roger Zander&quot;)]
+        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2019 by Roger Zander&quot;)]
         ///[assembly: AssemblyTrademark(&quot;&quot;)]
         ///[assembly: AssemblyCulture(&quot;&quot;)]
         ///[ [rest of string was truncated]&quot;;.
@@ -82,27 +82,27 @@ namespace RuckZuck_Tool.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to using System;
+        ///   Looks up a localized string similar to using Microsoft.Win32;
+        ///using System;
         ///using System.Collections.Generic;
+        ///using System.Diagnostics;
+        ///using System.IO;
+        ///using System.Linq;
         ///using System.Net;
+        ///using System.Net.Http;
+        ///using System.Net.Sockets;
         ///using System.Text;
         ///using System.Threading.Tasks;
-        ///using System.Linq;
-        ///using System.Net.Http;
-        ///using System.Net.Http.Headers;
         ///using System.Web.Script.Serialization;
-        ///using Microsoft.Win32;
-        ///using System.Net.Sockets;
-        ///using System.IO;
-        ///using System.Diagnostics;
         ///
-        ///namespace RuckZuck_WCF
+        ///namespace RuckZuck.Base
         ///{
-        ///    public static class RZRestAPI
+        ///    class RZRestAPIv2
         ///    {
         ///        private static string _sURL = &quot;UDP&quot;;
         ///        public static bool DisableBroadcast = false;
-        ///        p [rest of string was truncated]&quot;;.
+        ///
+        ///        private static HttpClient oClient = new Ht [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
@@ -114,25 +114,26 @@ namespace RuckZuck_Tool.Properties {
         ///   Looks up a localized string similar to using System;
         ///using System.Collections.Generic;
         ///using System.Linq;
-        ///
         ///using System.Net;
         ///using System.IO;
         ///using System.Management.Automation;
-        ///using System.Collections.ObjectModel;
         ///using System.Threading.Tasks;
-        ///using System.Xml;
-        ///using RuckZuck_WCF;
         ///using System.Security.Cryptography.X509Certificates;
         ///using System.Threading;
-        ///using System.Xml.Linq;
         ///using System.Web.Script.Serialization;
         ///using System.Diagnostics;
         ///using System.Net.Http;
+        ///using RuckZuck.Base;
         ///
         ///namespace RZUpdate
         ///{
         ///    /// &lt;summary&gt;
-        ///    /// Updater Cl [rest of string was truncated]&quot;;.
+        ///    /// Updater Class
+        ///    /// &lt;/summary&gt;
+        ///    public class RZUpdater
+        ///    {
+        ///        /// &lt;summary&gt;
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {
@@ -143,8 +144,6 @@ namespace RuckZuck_Tool.Properties {
         /// <summary>
         ///   Looks up a localized string similar to using RZUpdate;
         ///using System;
-        ///using System.IO;
-        ///using System.IO.Compression;
         ///using System.Reflection;
         ///using System.Resources;
         ///using System.Text;
@@ -161,8 +160,9 @@ namespace RuckZuck_Tool.Properties {
         ///
         ///            try
         ///            {
-        ///		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        ///		ServicePointManager.ServerCertificateValidationCallback = delegate  [rest of string was truncated]&quot;;.
+        ///                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        ///                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+        ///  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {

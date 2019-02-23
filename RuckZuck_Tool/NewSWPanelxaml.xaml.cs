@@ -18,6 +18,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using RuckZuck.Base;
+//using System.Drawing;
 
 namespace RuckZuck_Tool
 {
@@ -264,6 +265,7 @@ namespace RuckZuck_Tool
                     // Open document 
                     string sImgfilename = dlg.FileName;
                     byte[] data;
+                    
                     if (sImgfilename.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase))
                         data = imageToByteArray(RZScan.GetImageFromExe(sImgfilename));
                     else
@@ -939,5 +941,40 @@ namespace RuckZuck_Tool
         #endregion
 
     }
+}
 
+namespace RuckZuck.Base
+{
+    public partial class RZScan
+    {
+        public static System.Drawing.Bitmap GetImageFromExe(string Filename)
+        {
+            try
+            {
+                System.Drawing.Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
+
+                try
+                {
+                    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
+                    if (iE.FileName != null)
+                    {
+                        List<System.Drawing.Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
+                        //Max Size 128px...
+                        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                        if (ico != null)
+                            return ico.ToBitmap();
+                        else
+                            return bResult;
+                    }
+                }
+                catch { }
+
+                return bResult;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
 }

@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="WebService" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://ruckzuck.azurewebsites.net/wcf/RZService.svc</Value>
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

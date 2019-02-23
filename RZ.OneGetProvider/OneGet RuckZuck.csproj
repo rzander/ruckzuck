@@ -64,15 +64,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\RZ.Base\RZRestAPIv2.cs">
+      <Link>RZRestAPIv2.cs</Link>
+    </Compile>
+    <Compile Include="..\RZ.Base\RZScan.cs">
+      <Link>RZScan.cs</Link>
+    </Compile>
+    <Compile Include="..\RZ.Base\RZUpdate.cs">
+      <Link>RZUpdate.cs</Link>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="RuckZuck.cs" />
-    <Compile Include="RZRestAPI.cs" />
-    <Compile Include="RZScan.cs" />
-    <Compile Include="RZUpdate.cs" />
     <Compile Include="Sdk\Constants.cs" />
     <Compile Include="Sdk\ErrorCategory.cs" />
     <Compile Include="Sdk\Request.cs" />

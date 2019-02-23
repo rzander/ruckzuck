@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using PackageManagement.Sdk;
-
-using System.Web;
-using System.Net;
-using System.IO;
-using System.Security.Cryptography;
 using System.Management.Automation;
 using System.Collections.ObjectModel;
-using Microsoft.Win32;
-using System.Security.Cryptography;
 using System.Security;
-using RuckZuck_WCF;
+using RuckZuck.Base;
 
 namespace PackageManagement
 {
@@ -22,11 +14,11 @@ namespace PackageManagement
         // RuckZuck Code Here
 
         //private static string _AuthenticationToken = "";
-        private RZUpdate.RZScan oScan;
+        private RZScan oScan;
         private RZUpdate.RZUpdater oUpdate;
 
         public List<AddSoftware> lSoftware = new List<AddSoftware>();
-        public static string WebServiceURL = "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
+        //public static string WebServiceURL = "https://ruckzuck.azurewebsites.net/wcf/RZService.svc";
 
         //private DateTime dLastTokenRefresh = new DateTime();
 
@@ -43,36 +35,17 @@ namespace PackageManagement
 
                 if (Properties.Settings.Default.Location.StartsWith("https:"))
                 {
-                    RZRestAPI.sURL = Properties.Settings.Default.Location;
+                    RZRestAPIv2.sURL = Properties.Settings.Default.Location;
                 }
                 else
                 {
-                    Properties.Settings.Default.Location = RZRestAPI.sURL;
+                    Properties.Settings.Default.Location = RZRestAPIv2.sURL;
                     Properties.Settings.Default.Save();
                 }
 
-                //_reAuthenticate(request);
-
-                oScan = new RZUpdate.RZScan(false, false);
-                //oScan.GetSWRepository().ConfigureAwait(false); //no need to load Repository on init
+                oScan = new RZScan(false, false);
                 oUpdate = new RZUpdate.RZUpdater();
 
-                /*
-                //Username and PW is not yet implemented
-                if (!string.IsNullOrEmpty(Properties.Settings.Default.Username))
-                {
-                    _AuthenticationToken = RZApi.AuthenticateUser(Properties.Settings.Default.Username, ToInsecureString(DecryptString(Properties.Settings.Default.Password)));
-                }
-                else
-                {
-                    _AuthenticationToken = RZApi.AuthenticateUser("FreeRZ", GetTimeToken());
-                }
-
-                request.Debug("RZ Token: " + _AuthenticationToken);
-
-                RZApi.SecuredWebServiceHeaderValue = new RZ.SecuredWebServiceHeader() { AuthenticatedToken = _AuthenticationToken };
-            
-                dLastTokenRefresh = DateTime.Now;*/
             }
             catch { }
         }
@@ -129,7 +102,7 @@ namespace PackageManagement
                 //    bValidated = true;
                 //}
 
-                if (string.Equals(Properties.Settings.Default.Location, WebServiceURL, StringComparison.InvariantCultureIgnoreCase))
+                if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
                     bIsTrusted = true;
             }
             catch (Exception ex)
@@ -196,7 +169,7 @@ namespace PackageManagement
 
         private void _removePackageSource(string name, Request request)
         {
-            Properties.Settings.Default.Location = WebServiceURL;
+            Properties.Settings.Default.Location = RZRestAPIv2.sURL;
             Properties.Settings.Default.Username = "";
             Properties.Settings.Default.Password = "";
             Properties.Settings.Default.Save();
@@ -301,17 +274,17 @@ namespace PackageManagement
                         {
                             if (string.IsNullOrEmpty(name))
                             {
-                                lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Description = SW.Description, ProductURL = SW.ProductURL });
+                                lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Description = SW.Description, ProductURL = SW.ProductURL });
                             }
                             else
                             {
-                                if ((SW.ProductName.ToLowerInvariant() == name.ToLowerInvariant() | SW.Shortname.ToLowerInvariant() == name.ToLowerInvariant()) && exactSearch)
+                                if ((SW.ProductName.ToLowerInvariant() == name.ToLowerInvariant() | SW.ShortName.ToLowerInvariant() == name.ToLowerInvariant()) && exactSearch)
                                 {
-                                    lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Description = SW.Description, ProductURL = SW.ProductURL });
+                                    lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Description = SW.Description, ProductURL = SW.ProductURL });
                                 }
-                                if ((SW.ProductName.ToLowerInvariant().Contains(name.ToLowerInvariant()) | SW.Shortname.ToLowerInvariant().Contains(name.ToLowerInvariant())) && !exactSearch)
+                                if ((SW.ProductName.ToLowerInvariant().Contains(name.ToLowerInvariant()) | SW.ShortName.ToLowerInvariant().Contains(name.ToLowerInvariant())) && !exactSearch)
                                 {
-                                    lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, Shortname = SW.Shortname, Description = SW.Description, ProductURL = SW.ProductURL });
+                                    lResult.Add(new GetSoftware() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Description = SW.Description, ProductURL = SW.ProductURL });
                                 }
                             }
                         }
@@ -324,27 +297,32 @@ namespace PackageManagement
                 {
                     if (string.IsNullOrEmpty(requiredVersion))
                     {
-                        //Find by Shortname
+                        //Find by ShortName
                         if (exactSearch)
                         {
                             if (!string.IsNullOrEmpty(name))
-                                lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
+                                lResult = RZRestAPIv2.GetCatalog().Where(t=>t.ShortName.ToLower() == name.ToLower()).OrderBy(t => t.ShortName).ToList();
 
                             if (lResult.Count == 0)
                             {
                                 //Find any
-                                lResult = RZRestAPI.SWResults(name).Where(t => t.ProductName == name).OrderBy(t => t.ProductName).ToList();
+                                lResult = RZRestAPIv2.GetCatalog().Where(t=>t.ProductName.ToLower() == name.ToLower()).OrderBy(t => t.ProductName).ToList();
                             }
                         }
                         else
                         {
                             if (!string.IsNullOrEmpty(name))
-                                lResult = RZRestAPI.SWGet(name).OrderBy(t => t.Shortname).ToList();
+                                lResult = RZRestAPIv2.GetCatalog().Where(t=>t.ShortName.ToLower().Contains(name.ToLower())).OrderBy(t => t.ShortName).ToList();
 
                             if (lResult.Count == 0)
                             {
                                 //Find any
-                                lResult = RZRestAPI.SWResults(name).OrderBy(t => t.Shortname).ToList();
+                                lResult = RZRestAPIv2.GetCatalog().Where(t=>t.ProductName.ToLower().Contains(name.ToLower())).OrderBy(t => t.ShortName).ToList();
+                            }
+                            if (lResult.Count == 0)
+                            {
+                                //Find any
+                                lResult = RZRestAPIv2.GetCatalog().Where(t => t.Manufacturer.ToLower().Contains(name.ToLower())).OrderBy(t => t.ShortName).ToList();
                             }
                         }
                     }
@@ -353,12 +331,18 @@ namespace PackageManagement
                         //Find by Shortname
                         if (exactSearch)
                         {
-                            lResult = RZRestAPI.SWGet(name, requiredVersion).OrderBy(t => t.Shortname).ToList();
+                            lResult = RZRestAPIv2.GetCatalog().Where(t=>t.ShortName.ToLower() == name.ToLower() && t.ProductVersion.ToLower() == requiredVersion.ToLower()).OrderBy(t => t.ShortName).ToList();
                         }
                         else
                         {
                             //Find any
-                            lResult = RZRestAPI.SWResults(name).Where(t => t.ProductVersion == requiredVersion).OrderBy(t => t.Shortname).ToList();
+                            lResult = RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower().Contains(name.ToLower()) && t.ProductVersion.ToLower() == requiredVersion.ToLower()).OrderBy(t => t.ShortName).ToList();
+
+                            if(lResult.Count == 0)
+                                lResult = RZRestAPIv2.GetCatalog().Where(t => t.ProductName.ToLower().Contains(name.ToLower()) && t.ProductVersion.ToLower() == requiredVersion.ToLower()).OrderBy(t => t.ShortName).ToList();
+
+                            if (lResult.Count == 0)
+                                lResult = RZRestAPIv2.GetCatalog().Where(t => t.Manufacturer.ToLower().Contains(name.ToLower()) && t.ProductVersion.ToLower() == requiredVersion.ToLower()).OrderBy(t => t.ShortName).ToList();
                         }
                     }
                 }
@@ -388,11 +372,11 @@ namespace PackageManagement
                 }
 
 
-                foreach (var SW in lResult.OrderBy(t => t.Shortname))
+                foreach (var SW in lResult.OrderBy(t => t.ShortName))
                 {
-                    request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion + ";" + SW.Manufacturer, SW.ProductName, SW.ProductVersion, "", SW.Description, Properties.Settings.Default.Location, name, SW.IconId.ToString(), SW.Shortname);
+                    request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion + ";" + SW.Manufacturer, SW.ProductName, SW.ProductVersion, "", SW.Description, Properties.Settings.Default.Location, name, SW.SWId.ToString(), SW.ShortName);
                     //Trust the original RucKZuck source
-                    if (string.Equals(Properties.Settings.Default.Location, WebServiceURL, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
                     {
                         request.AddMetadata("FromTrustedSource", "True");
                     }
@@ -402,7 +386,6 @@ namespace PackageManagement
             catch (Exception ex)
             {
                 request.Debug("E334:" + ex.Message);
-                //dLastTokenRefresh = new DateTime();
             }
         }
 
@@ -552,7 +535,7 @@ namespace PackageManagement
             try
             {
                 List<AddSoftware> lResult = getInstalledSW().ToList();
-                List<GetSoftware> lCatalog = RZRestAPI.SWResults("").ToList();
+                List<GetSoftware> lCatalog = RZRestAPIv2.GetCatalog();
 
                 //List<GetSoftware> lServer = RZRestAPI.SWResults(name).OrderBy(t => t.Shortname).ToList();
 
@@ -567,7 +550,7 @@ namespace PackageManagement
                     string sProdName = "";
                     try
                     {
-                        sProdName = lCatalog.FirstOrDefault(p => string.Equals(p.Shortname, name, StringComparison.OrdinalIgnoreCase)).ProductName;
+                        sProdName = lCatalog.FirstOrDefault(p => string.Equals(p.ShortName, name, StringComparison.OrdinalIgnoreCase)).ProductName;
                     }
                     catch { }
                     lLocal = lLocal.Where(p => String.Equals(p.ProductName, name, StringComparison.OrdinalIgnoreCase) | String.Equals(p.ProductName, sProdName, StringComparison.OrdinalIgnoreCase)).OrderBy(t => t.ProductName).ToList();
@@ -604,9 +587,9 @@ namespace PackageManagement
                 {
                     var oCAT = lCatalog.FirstOrDefault(t => t.ProductName == SW.ProductName && t.ProductVersion == SW.ProductVersion && t.Manufacturer == SW.Manufacturer);
                     if (oCAT != null)
-                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", oCAT.Description, RZRestAPI.sURL, (name ?? ""), oCAT.IconId.ToString(), oCAT.Shortname);
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", oCAT.Description, RZRestAPIv2.sURL, (name ?? ""), oCAT.SWId.ToString(), oCAT.ShortName);
                     else
-                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPI.sURL, (name ?? ""), "", SW.Shortname);
+                        request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion, SW.ProductName, SW.ProductVersion, "", "", RZRestAPIv2.sURL, (name ?? ""), "", SW.ShortName);
                     request.AddMetadata("FromTrustedSource", "True");
                 }
             }
@@ -655,7 +638,7 @@ namespace PackageManagement
 
             if (oScan.bInitialScan)
             {
-                oScan = new RZUpdate.RZScan(false, false);
+                oScan = new RZScan(false, false);
                 oScan.SWScan().Wait();
             }
 
