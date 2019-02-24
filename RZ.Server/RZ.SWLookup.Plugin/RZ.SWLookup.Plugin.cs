@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
 using System;
@@ -40,6 +41,11 @@ namespace RZ.SWLookup.Plugin
                 Directory.CreateDirectory(swlookup);
 
             Settings.Add("swlookup", swlookup);
+        }
+
+        public bool Forward
+        {
+            get { return false; }
         }
 
         public string GetShortname(string name = "", string ver = "", string man = "")
@@ -153,6 +159,11 @@ namespace RZ.SWLookup.Plugin
                 if(!string.IsNullOrEmpty(sOut))
                     yield return sOut;
             }
+        }
+
+        public JArray CheckForUpdates(JArray Softwares)
+        {
+            return new JArray();
         }
     }
 }

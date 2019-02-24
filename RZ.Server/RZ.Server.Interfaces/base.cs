@@ -411,9 +411,47 @@ namespace RZ.Server
             return false;
         }
 
+        internal static bool? bForward = null;
         public static JArray CheckForUpdates(JArray Softwares)
         {
+            if (bForward == null)
+            {
+                try
+                {
+                    foreach (var item in Plugins._SWLookupPlugins.OrderBy(t => t.Key))
+                    {
+                        try
+                        {
+                            if (item.Value.Forward)
+                                bForward = true;
+                        }
+                        catch { }
+                    }
+                }
+                catch { bForward = false; }
+
+                if (bForward == null)
+                    bForward = false;
+            }
+
+            if(bForward == true)
+            {
+                try
+                {
+                    foreach (var item in Plugins._SWLookupPlugins.OrderBy(t => t.Key))
+                    {
+                        try
+                        {
+                            return item.Value.CheckForUpdates(Softwares);
+                        }
+                        catch { }
+                    }
+                }
+                catch {}
+            }
+
             JArray jResult = new JArray();
+
 
             foreach (JObject jObj in Softwares)
             {

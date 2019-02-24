@@ -21,6 +21,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.SWLookup.Azure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Catalog.Proxy", "RZ.Catalog.Plugin.Proxy\RZ.Plugin.Catalog.Proxy.csproj", "{96045409-FAFF-4354-BE2A-F1EE55340344}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Software.Proxy", "RZ.Plugin.Software.Proxy\RZ.Plugin.Software.Proxy.csproj", "{1E93159B-260A-449E-8346-8080BF5F8A04}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Feedback.Azure", "RZ.Plugin.Feedback.Azure\RZ.Plugin.Feedback.Azure.csproj", "{9717EE20-5AA6-4F92-BA69-9A2D9C9D5277}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Feedback.Proxy", "RZ.Plugin.Feedback.Proxy\RZ.Plugin.Feedback.Proxy.csproj", "{74187EFB-07F0-477B-BFD2-01C47EF9B2EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.SWLookup.Proxy", "RZ.SWLookup.Plugin.Proxy\RZ.Plugin.SWLookup.Proxy.csproj", "{CDD709A8-2863-4686-BC27-80AF3B048CBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +71,22 @@ Global
 		{96045409-FAFF-4354-BE2A-F1EE55340344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96045409-FAFF-4354-BE2A-F1EE55340344}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96045409-FAFF-4354-BE2A-F1EE55340344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E93159B-260A-449E-8346-8080BF5F8A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E93159B-260A-449E-8346-8080BF5F8A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E93159B-260A-449E-8346-8080BF5F8A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E93159B-260A-449E-8346-8080BF5F8A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9717EE20-5AA6-4F92-BA69-9A2D9C9D5277}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9717EE20-5AA6-4F92-BA69-9A2D9C9D5277}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9717EE20-5AA6-4F92-BA69-9A2D9C9D5277}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9717EE20-5AA6-4F92-BA69-9A2D9C9D5277}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74187EFB-07F0-477B-BFD2-01C47EF9B2EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74187EFB-07F0-477B-BFD2-01C47EF9B2EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74187EFB-07F0-477B-BFD2-01C47EF9B2EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74187EFB-07F0-477B-BFD2-01C47EF9B2EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

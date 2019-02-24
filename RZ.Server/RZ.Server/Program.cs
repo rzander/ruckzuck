@@ -26,32 +26,40 @@ namespace RZ.Server
             //Broadcast listener (UDP)
             Task.Run(() =>
             {
-                while (true)
+                try
                 {
-                    var ClientEp = new IPEndPoint(IPAddress.Any, 0);
-                    var ClientRequestData = Server.Receive(ref ClientEp);
-                    var ClientRequest = Encoding.ASCII.GetString(ClientRequestData);
-
-                    Console.WriteLine("Discovery request from {0}...", ClientRequest);
-                    string sLocalURL = Base.localURL;
-                    if(string.IsNullOrEmpty(sLocalURL))
+                    Console.WriteLine("Starting UDP Listener on Port: " + (Environment.GetEnvironmentVariable("UDPPort") ?? "5001"));
+                    while (true)
                     {
-                        string sIP =  "localhost";
+                        var ClientEp = new IPEndPoint(IPAddress.Any, 0);
+                        var ClientRequestData = Server.Receive(ref ClientEp);
+                        var ClientRequest = Encoding.ASCII.GetString(ClientRequestData);
 
-                        try
+                        Console.WriteLine("Discovery request from {0}...", ClientRequest);
+                        string sLocalURL = Base.localURL;
+                        if (string.IsNullOrEmpty(sLocalURL))
                         {
-                            foreach (NetworkInterface f in NetworkInterface.GetAllNetworkInterfaces().Where(t => t.OperationalStatus == OperationalStatus.Up))
-                                foreach (GatewayIPAddressInformation d in f.GetIPProperties().GatewayAddresses.Where(t => t.Address.AddressFamily == AddressFamily.InterNetwork))
-                                {
-                                    sIP = f.GetIPProperties().UnicastAddresses.Where(t => t.Address.AddressFamily == AddressFamily.InterNetwork).First().Address.ToString();
-                                }
-                        }
-                        catch { }
+                            string sIP = "localhost";
 
-                        sLocalURL = "http://" + sIP + ":" + (Environment.GetEnvironmentVariable("WebPort") ?? "5000");
+                            try
+                            {
+                                foreach (NetworkInterface f in NetworkInterface.GetAllNetworkInterfaces().Where(t => t.OperationalStatus == OperationalStatus.Up))
+                                    foreach (GatewayIPAddressInformation d in f.GetIPProperties().GatewayAddresses.Where(t => t.Address.AddressFamily == AddressFamily.InterNetwork))
+                                    {
+                                        sIP = f.GetIPProperties().UnicastAddresses.Where(t => t.Address.AddressFamily == AddressFamily.InterNetwork).First().Address.ToString();
+                                    }
+                            }
+                            catch { }
+
+                            sLocalURL = "http://" + sIP + ":" + (Environment.GetEnvironmentVariable("WebPort") ?? "5000");
+                        }
+                        var ResponseData = Encoding.ASCII.GetBytes(sLocalURL);
+                        Server.Send(ResponseData, ResponseData.Length, ClientEp);
                     }
-                    var ResponseData = Encoding.ASCII.GetBytes(sLocalURL);
-                    Server.Send(ResponseData, ResponseData.Length, ClientEp);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("ERROR: UDP Listener - " + ex.Message);
                 }
             });
 

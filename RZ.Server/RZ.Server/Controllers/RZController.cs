@@ -253,12 +253,12 @@ namespace RZ.Server.Controllers
                 var oGet = new StreamReader(Request.Body).ReadToEndAsync();
                 string sJson = oGet.Result;
                 if(sJson.TrimStart().StartsWith('['))
-                    return Base.UploadSoftware(JArray.Parse(oGet.Result));
+                    return Base.UploadSoftwareWaiting(JArray.Parse(oGet.Result));
                 else
                 {
                     JArray jResult = new JArray();
                     jResult.Add(JObject.Parse(oGet.Result));
-                    return Base.UploadSoftware(jResult);
+                    return Base.UploadSoftwareWaiting(jResult);
                 }
             }
             catch { }
@@ -268,10 +268,13 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/v2/GetFile")]
         [Route("rest/v2/GetFile/{contentid}/{filename}")]
+        [Route("rest/v2/GetFile/proxy/{shortname}/{contentid}/{filename}")]
         [Route("wcf/RZService.svc/rest/v2/GetFile/{contentid}/{filename}")]
-        public async Task<IActionResult> GetFile(string contentid, string filename)
+        public async Task<IActionResult> GetFile(string contentid, string filename, string shortname = "")
         {
             string sPath = Path.Combine(contentid, filename);
+            if (!string.IsNullOrEmpty(shortname))
+                sPath = Path.Combine("proxy", shortname, contentid, filename);
             return File(await Base.GetFile(sPath), "application/octet-stream");
         }
 

@@ -56,6 +56,7 @@ namespace Plugin_Software
                 //Try to get value from Memory
                 if (_cache.TryGetValue("swcat", out jResult))
                 {
+                    Console.WriteLine("GetCatalog...");
                     return jResult;
                 }
             }
@@ -67,6 +68,7 @@ namespace Plugin_Software
             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
             _cache.Set("swcat", jResult, cacheEntryOptions);
 
+            Console.WriteLine("GetCatalog...");
             return jResult;
         }
 

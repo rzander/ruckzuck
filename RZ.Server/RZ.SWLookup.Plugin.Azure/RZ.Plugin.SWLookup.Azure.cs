@@ -31,6 +31,11 @@ namespace RZ.SWLookup.Plugin
 
         public System.Collections.Generic.Dictionary<string, string> Settings { get; set; }
 
+        public bool Forward
+        {
+            get { return false; }
+        }
+
         public void Init(string PluginPath)
         {
             //Check if MemoryCache is initialized
@@ -402,6 +407,11 @@ namespace RZ.SWLookup.Plugin
             }
             catch { }
 
+            return new JArray();
+        }
+
+        public JArray CheckForUpdates(JArray Softwares)
+        {
             return new JArray();
         }
     }

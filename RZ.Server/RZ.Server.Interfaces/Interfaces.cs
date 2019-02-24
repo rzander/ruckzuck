@@ -66,6 +66,8 @@ namespace RZ.Server.Interfaces
 
         string Name { get; }
 
+        bool Forward { get;  }
+
         Dictionary<string, string> Settings { get; set; }
 
         string GetShortname(string name = "", string ver = "", string man = "");
@@ -73,6 +75,8 @@ namespace RZ.Server.Interfaces
         bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "");
 
         IEnumerable<string> SWLookupItems(string filter);
+
+        JArray CheckForUpdates(JArray Softwares);
 
     }
 
