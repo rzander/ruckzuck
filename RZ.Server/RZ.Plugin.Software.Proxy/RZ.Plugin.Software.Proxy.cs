@@ -277,15 +277,18 @@ namespace Plugin_Software
 
                         foreach (JObject oFiles in jObj["Files"])
                         {
-                            if (FileNames.Contains(oFiles["FileName"].Value<string>().ToLower()))
+                            if (oFiles["URL"] != null && oFiles["URL"].ToString().ToLower().StartsWith("http"))
                             {
-                                //oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
-                                oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
-                                
-                            }
-                            else
-                            {
-                                oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/proxy/" + jObj["ShortName"].ToString() + "/" + sContentID  + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                if (FileNames.Contains(oFiles["FileName"].Value<string>().ToLower()))
+                                {
+                                    //oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                    oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+
+                                }
+                                else
+                                {
+                                    oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/proxy/" + jObj["ShortName"].ToString() + "/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                }
                             }
                         }
                     }
@@ -333,6 +336,7 @@ namespace Plugin_Software
 
                                 try
                                 {
+                                    _cache = new MemoryCache(new MemoryCacheOptions()); //clear cache...
                                     using (HttpClient oClient = new HttpClient())
                                     {
                                         using (var response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
@@ -369,8 +373,6 @@ namespace Plugin_Software
                         }
                     }
                 }
-
-
             }
 
             return null;
