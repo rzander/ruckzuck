@@ -476,7 +476,7 @@ namespace RuckZuck_Tool
             oSoftware.PSPreReq = tbPSPrereq.Text;
             oSoftware.PSUninstall = tbPSUnInstall.Text;
             oSoftware.ProductURL = tbProductURL.Text.Trim();
-            oSoftware.Author = Properties.Settings.Default.UserKey;
+            //oSoftware.Author = Properties.Settings.Default.UserKey;
             oSoftware.PSPreInstall = tbPSPreInstall.Text;
             oSoftware.PSPostInstall = tbPSPostInstall.Text;
             oSoftware.PreRequisites = tbPreReq.Text.Split(';');

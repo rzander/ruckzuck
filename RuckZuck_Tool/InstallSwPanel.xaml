@@ -19,7 +19,7 @@
             <StackPanel x:Name="spSupport" Orientation="Horizontal" HorizontalAlignment="Right" Background="{x:Null}">
                 <ToolBar IsTabStop="True" ToolBarTray.IsLocked="True" Background="{x:Null}" AllowDrop="True">
                     <Menu Background="{x:Null}" >
-                        <MenuItem Header="'PRO' Lists">
+                        <MenuItem Header="Favourites">
                             <MenuItem.Icon>
                                 <Image Source="Images/Star.ico" />
                             </MenuItem.Icon>
@@ -36,9 +36,6 @@
                         </MenuItem>
                     </Menu>
                 </ToolBar>
-
-
-
             </StackPanel>
         </DockPanel>
         <ListView Name="lvSW" Grid.Row="1" SelectionChanged="lvSW_SelectionChanged">
@@ -125,7 +122,7 @@
                             <Image Source="Images/folder.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="miSendFeedback" Header="Send Feedback" IsEnabled="False" Click="miSendFeedback_Click" ToolTip="Provide feedback for an Application..." Height="24px">
+                    <MenuItem Name="miSendFeedback" Header="Send Feedback" IsEnabled="True" Click="miSendFeedback_Click" ToolTip="Provide feedback for an Application..." Height="24px">
                         <MenuItem.Icon>
                             <Image Source="Images/Announcements.ico" />
                         </MenuItem.Icon>
@@ -140,7 +137,7 @@
                             <Image Source="Images/shell32_1001.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="miEdit" Header="Edit" IsEnabled="False" ToolTip="Edit Application properties..." Click="miEdit_Click" Height="24px">
+                    <MenuItem Name="miEdit" Header="Edit" IsEnabled="True" ToolTip="Edit Application properties..." Click="miEdit_Click" Height="24px">
                         <MenuItem.Icon>
                             <Image Source="Images/Setting_32.png" />
                         </MenuItem.Icon>
@@ -150,11 +147,6 @@
                             <Image Source="Images/star.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <!--<MenuItem Name="miCreateArtifact" Header="Create Artifact" IsEnabled="true" ToolTip="Create an Artifact for AzureLab"  Height="24px" Click="miCreateArtifact_Click">
-                        <MenuItem.Icon>
-                            <Image Source="Images/star.ico" />
-                        </MenuItem.Icon>
-                    </MenuItem>-->
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>

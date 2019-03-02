@@ -31,13 +31,9 @@ namespace RuckZuck_Tool
     /// </summary>
     public partial class MainWindow : Window
     {
-        //string sAuthToken;
         delegate void AnonymousDelegate();
-        //List<GetSoftware2> oDBx = new List<GetSoftware2>();
-        //List<GetSoftware> oDB = new List<GetSoftware>();
         List<string> CommandArgs = new List<string>();
         internal RZScan oSCAN;
-        public System.Timers.Timer tReAuth = new System.Timers.Timer();
 
         public MainWindow()
         {
@@ -61,8 +57,6 @@ namespace RuckZuck_Tool
                 Properties.Settings.Default.Save();
             }
 
-            tbSVC.Text = Properties.Settings.Default.WebService;
-
             //Get Version
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
             tbVersion.Text = string.Format(tbVersion.Text, fvi.FileVersion);
@@ -73,31 +67,10 @@ namespace RuckZuck_Tool
             s.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
             tabWizard.ItemContainerStyle = s;
 
-            if (string.IsNullOrEmpty(Properties.Settings.Default.UserKey))
-            {
-                Properties.Settings.Default.UserKey = Guid.NewGuid().ToString();
-                Properties.Settings.Default.Save();
-            }
-
-            //RZRestAPI.sURL = Properties.Settings.Default.WebService;
             RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
             tbSVC.Text = RZRestAPIv2.sURL;
             cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
 
-            //Authenticate;
-            Authenticate();
-            //ReAuthenticate every 20min
-            tReAuth.Interval = 1200000;
-            tReAuth.Elapsed += TReAuth_Elapsed;
-            tReAuth.Enabled = true;
-            tReAuth.AutoReset = true;
-
-            tReAuth.Start();
-
-            //Set SOAP Header
-            //oAPI.SecuredWebServiceHeaderValue = new RZApi.SecuredWebServiceHeader() { AuthenticatedToken = sAuthToken };
-
-            //oInstPanel.sAuthToken = sAuthToken;
             oInstPanel.onEdit += oInstPanel_onEdit;
             oUpdPanel.onEdit += oInstPanel_onEdit;
             //oInstPanel.OnSWUpdated += OUpdPanel_OnSWUpdated;
@@ -153,63 +126,21 @@ namespace RuckZuck_Tool
 
             if (CommandArgs.Count > 0)
             {
-                oInstPanel.EnableFeedback = false;
-                oInstPanel.EnableEdit = false;
-                oInstPanel.EnableSupport = false;
             }
             else
             {
-                //Skip Startpage for registerred users...
-                if (tbURL.IsEnabled)
+                //Show About once...
+                if (!Properties.Settings.Default.ShowAbout)
                 {
                     tabWizard.SelectedItem = tabMain;
-                    //oSCAN.SWScan();
-
-                    oInstPanel.EnableFeedback = true;
-                    oInstPanel.EnableEdit = true;
-                    oInstPanel.EnableSupport = true;
                 }
                 else
                 {
-                    oInstPanel.EnableSupport = false;
-                    //oSCAN.SWScan();
+                    tabWizard.SelectedItem = tabStart;
+                    Properties.Settings.Default.ShowAbout = false;
+                    Properties.Settings.Default.Save();
                 }
             }
-        }
-
-        private void TReAuth_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            Authenticate();
-        }
-
-        /// <summary>
-        /// Authenticate User and refresh token
-        /// </summary>
-        public void Authenticate()
-        {
-            try
-            {
-                ////Authenticate with custom User and Password from config file...
-                //if (!string.IsNullOrEmpty(Properties.Settings.Default.UserPW))
-                //{
-                //    string sResponse = RZRestAPI.GetAuthToken(Properties.Settings.Default.UserKey, Decrypt(Properties.Settings.Default.UserPW, Environment.UserName));
-                //    try
-                //    {
-                //        Guid.Parse(sResponse);
-                //        sAuthToken = sResponse;
-                //        tbURL.IsEnabled = true;
-                //        tbIPFSGW.IsEnabled = true;
-                //    }
-                //    catch { }
-                //}
-
-                tbURL.IsEnabled = true;
-
-                ////Authenticate with dummy account
-                //if (string.IsNullOrEmpty(sAuthToken))
-                //    sAuthToken = RZRestAPI.GetAuthToken("FreeRZ", GetTimeToken());
-            }
-            catch { }
         }
 
         /// <summary>
@@ -278,8 +209,6 @@ namespace RuckZuck_Tool
             //Remove duplicates...
             lNewVersion = ((RZScan)sender).NewSoftwareVersions.GroupBy(x => x.ShortName).Select(y => y.First()).ToList();
 
-            //var distinctItems = items.GroupBy(x => x.Id).Select(y => y.First());
-
             foreach (string sExclude in Properties.Settings.Default.UpdExlusion)
             {
                 try
@@ -309,9 +238,6 @@ namespace RuckZuck_Tool
                     btUpdateSoftware.IsEnabled = false;
                     btUpdateSoftware.Content = "there are currently no updates available...";
                 }
-
-                //tabWizard.SelectedItem = tabMain;
-
             };
             Dispatcher.Invoke(update);
         }
@@ -320,7 +246,6 @@ namespace RuckZuck_Tool
         {
             try
             {
-                //oDB = ((RZScan)sender).SoftwareRepository;
                 AnonymousDelegate update = delegate ()
                 {
                     btInstallSoftware.Content = "Install new Software";
@@ -513,7 +438,6 @@ namespace RuckZuck_Tool
                 
                 oInstPanel.lvSW.ItemsSource = lcv;
                 oInstPanel.lSoftware = lSoftware;
-                //var target = oSCAN.SoftwareRepository.Select(x => new GetSoftware() { Categories = x.Categories, Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, ShortName = x.ShortName, isInstalled = false }).ToList();
                 oInstPanel.lAllSoftware = oSCAN.SoftwareRepository; 
 
                 //Mark all installed...
@@ -657,9 +581,6 @@ namespace RuckZuck_Tool
         private void btNextStart_Click(object sender, RoutedEventArgs e)
         {
             tabWizard.SelectedItem = tabMain;
-            //tabWizard.SelectedItem = tabScan;
-            //lSoftware.Clear();
-            //btScan_Click(this, e);
         }
 
         private void tabWizard_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -776,79 +697,28 @@ namespace RuckZuck_Tool
             this.Close();
         }
 
-        private string GetTimeToken()
-        {
-            byte[] time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-            byte[] key = Guid.NewGuid().ToByteArray();
-            return Convert.ToBase64String(time.Concat(key).ToArray());
-        }
-
         private void btBackSettings_Click(object sender, RoutedEventArgs e)
         {
             tabWizard.SelectedItem = tabMain;
-            /*if (tbURL.Text != Properties.Settings.Default.InternalURL)
-            {
-                Properties.Settings.Default.InternalURL = tbURL.Text;
-                Properties.Settings.Default.LocallRepository = tbRepository.Text;
-                Properties.Settings.Default.Save();
-            }*/
-
-            if(!string.IsNullOrEmpty(tbSVC.Text))
-            {
-                if (tbSVC.Text != Properties.Settings.Default.WebService)
-                {
-                    //Properties.Settings.Default.WebService = tbSVC.Text;
-                }
-            }
         }
 
         private void tabSettings_Loaded(object sender, RoutedEventArgs e)
         {
-            //tbUsername.Text = Properties.Settings.Default.UserKey;
-            //tbPassword.Password = Decrypt(Properties.Settings.Default.UserPW, Environment.UserName);
+            tbCustomerID.Text = Properties.Settings.Default.CustomerID;
         }
 
         private void btSettingsSave_Click(object sender, RoutedEventArgs e)
         {
-            //string sResponse = RZRestAPI.GetAuthToken(tbUsername.Text, tbPassword.Password);
             try
             {
-                //Check if GUID came back..
-                //Guid.Parse(sResponse);
-
-                //Enable InternalURL
-                //tbURL.IsEnabled = true;
-                //tbIPFSGW.IsEnabled = true;
-
-                //Update and save new username and password
-                //Properties.Settings.Default.UserKey = tbUsername.Text;
-                //Properties.Settings.Default.UserPW = Encrypt(tbPassword.Password, Environment.UserName);
-                //Properties.Settings.Default.InternalURL = tbURL.Text;
-                //Properties.Settings.Default.IPFSGW = tbIPFSGW.Text;
+                Properties.Settings.Default.CustomerID = tbCustomerID.Text;
                 Properties.Settings.Default.Save();
-
-                //oInstPanel.sInternalURL = tbURL.Text;
-
-                //Back to Main
-                //tabWizard.SelectedItem = tabMain;
-                //tbUsername.BorderBrush = Brushes.Green;
-
-                oInstPanel.EnableFeedback = true;
-                oInstPanel.EnableEdit = true;
-                oInstPanel.EnableSupport = true;
 
                 oSCAN.SoftwareRepository = new List<GetSoftware>();
                 oSCAN.GetSWRepository().ConfigureAwait(false);
-
             }
             catch 
             {
-                //Username or Password are wrong !
-                //tbUsername.BorderBrush = Brushes.Red;
-                //tbPassword.BorderBrush = Brushes.Red;
-                //tbUsername.ToolTip = sResponse;
-                //tbPassword.ToolTip = sResponse;
-                //oInstPanel.sInternalURL = "";
             }
         }
 

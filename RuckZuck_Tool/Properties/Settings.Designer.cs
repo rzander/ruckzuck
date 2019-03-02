@@ -23,34 +23,6 @@ namespace RuckZuck_Tool.Properties {
             }
         }
         
-        /// <summary>
-        /// RuckZuck User
-        /// </summary>
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsDescriptionAttribute("RuckZuck User")]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string UserKey {
-            get {
-                return ((string)(this["UserKey"]));
-            }
-            set {
-                this["UserKey"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string UserPW {
-            get {
-                return ((string)(this["UserPW"]));
-            }
-            set {
-                this["UserPW"] = value;
-            }
-        }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -80,27 +52,6 @@ namespace RuckZuck_Tool.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://ruckzuck.azurewebsites.net/wcf/RZService.svc")]
-        public string WebService {
-            get {
-                return ((string)(this["WebService"]));
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://gateway.ipfs.io/ipfs")]
-        public string IPFSGW {
-            get {
-                return ((string)(this["IPFSGW"]));
-            }
-            set {
-                this["IPFSGW"] = value;
-            }
-        }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -110,6 +61,30 @@ namespace RuckZuck_Tool.Properties {
             }
             set {
                 this["DisableBroadcast"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CustomerID {
+            get {
+                return ((string)(this["CustomerID"]));
+            }
+            set {
+                this["CustomerID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowAbout {
+            get {
+                return ((bool)(this["ShowAbout"]));
+            }
+            set {
+                this["ShowAbout"] = value;
             }
         }
     }

@@ -36,47 +36,6 @@ namespace RuckZuck_Tool
 
         internal DownloadMonitor dm = new DownloadMonitor();
 
-        public bool EnableFeedback
-        {
-            get
-            {
-                return miSendFeedback.IsEnabled;
-            }
-            set
-            {
-                miSendFeedback.IsEnabled = value;
-            }
-
-        }
-
-        public bool EnableEdit
-        {
-            get
-            {
-                return miEdit.IsEnabled;
-            }
-            set
-            {
-                miEdit.IsEnabled = value;
-            }
-
-        }
-
-        public bool EnableSupport
-        {
-            get
-            {
-                return spSupport.IsVisible;
-            }
-            set
-            {
-                if (value)
-                    spSupport.Visibility = Visibility.Visible;
-                else
-                    spSupport.Visibility = Visibility.Hidden;
-            }
-
-        }
 
         public delegate void ChangedEventHandler(object sender, EventArgs e);
         public event ChangedEventHandler onEdit;
@@ -89,7 +48,6 @@ namespace RuckZuck_Tool
             tSearch.Enabled = false;
             tSearch.AutoReset = false;
         }
-
 
         private void TSearch_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -277,8 +235,6 @@ namespace RuckZuck_Tool
                                 }
                             }
 
-                            oSW.sUserName = Properties.Settings.Default.UserKey;
-
                             try
                             {
                                 var xRem = dm.lDLTasks.Where(x => x.ProductName == oSW.SW.ProductName && (x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled)).ToList();
@@ -312,7 +268,6 @@ namespace RuckZuck_Tool
                                         SWUpdate oPreReq = new SWUpdate(sPreReq);
                                         if (oPreReq.GetInstallType())
                                         {
-                                            oPreReq.sUserName = Properties.Settings.Default.UserKey;
                                             if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
                                             {
                                                 //oPreReq.Downloaded += OSW_Downloaded;
@@ -395,7 +350,7 @@ namespace RuckZuck_Tool
 
                                 if (oFeedBack.hasFeedback)
                                 {
-                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.UserKey, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
+                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.CustomerID, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
                                 }
                             };
                             Dispatcher.Invoke(update);
@@ -432,8 +387,6 @@ namespace RuckZuck_Tool
                                 //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
                                 oSW = new SWUpdate(dgr);
                             }
-
-                            oSW.sUserName = Properties.Settings.Default.UserKey;
 
                             //lDLTasks.Add(oSW.downloadTask);
                             if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
@@ -606,8 +559,6 @@ namespace RuckZuck_Tool
                                 }
                             }
 
-                            oSW.sUserName = Properties.Settings.Default.UserKey;
-
                             //lDLTasks.Add(oSW.downloadTask);
                             if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
                             {
@@ -670,13 +621,6 @@ namespace RuckZuck_Tool
                         if (!oExe.Compile())
                         {
                             MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-
-                        //Non authenticated Users can create one EXE
-                        if (!EnableEdit)
-                        {
-                            miCreateExe.IsEnabled = false;
-                            return;
                         }
                     }
                     catch { }
