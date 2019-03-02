@@ -68,6 +68,7 @@ namespace RuckZuck_Tool
             tabWizard.ItemContainerStyle = s;
 
             RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
+            RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
             tbSVC.Text = RZRestAPIv2.sURL;
             cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
 

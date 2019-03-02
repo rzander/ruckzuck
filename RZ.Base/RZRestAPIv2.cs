@@ -17,6 +17,7 @@ namespace RuckZuck.Base
     {
         private static string _sURL = "UDP";
         public static bool DisableBroadcast = false;
+        public static string CustomerID = "";
 
         private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
 
@@ -66,7 +67,7 @@ namespace RuckZuck.Base
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-                    return GetURL("");
+                    return GetURL(CustomerID);
                 }
                 else
                     return _sURL;
