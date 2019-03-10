@@ -101,8 +101,9 @@ namespace RuckZuck_Tool.Properties {
         ///    {
         ///        private static string _sURL = &quot;UDP&quot;;
         ///        public static bool DisableBroadcast = false;
+        ///        public static string CustomerID = &quot;&quot;;
         ///
-        ///        private static HttpClient oClient = new Ht [rest of string was truncated]&quot;;.
+        ///    [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {

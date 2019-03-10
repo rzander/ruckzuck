@@ -155,6 +155,7 @@ namespace RuckZuck.Base
     {
         private static string _sURL = "UDP";
         public static bool DisableBroadcast = false;
+        public static string CustomerID = "";
 
         private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
 
@@ -165,17 +166,40 @@ namespace RuckZuck.Base
                 if (_sURL != "UDP" &amp;&amp; ! string.IsNullOrEmpty(_sURL))
                     return _sURL;
 
+                try
+                {
+                    var vBroadcast = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "Broadcast", 1);
+                    if ((int)vBroadcast == 0) //only disable if set to 0
+                        DisableBroadcast = true;
+                }
+                catch { }
+
+
                 if (DisableBroadcast)
                     _sURL = "";
 
-                string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
-                if (!string.IsNullOrEmpty(sWebSVC))
+                try
                 {
-                    if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                    string sCustID = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "CustomerID", "") as string;
+                    if (!string.IsNullOrEmpty(sCustID))
                     {
-                        RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                        CustomerID = sCustID; //Override CustomerID
                     }
                 }
+                catch { }
+
+                try
+                {
+                    string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
+                    if (!string.IsNullOrEmpty(sWebSVC))
+                    {
+                        if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                        }
+                    }
+                }
+                catch { }
 
                 if (_sURL == "UDP" &amp;&amp; !DisableBroadcast)
                 {
@@ -204,7 +228,7 @@ namespace RuckZuck.Base
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-                    return GetURL("");
+                    return GetURL(CustomerID);
                 }
                 else
                     return _sURL;
@@ -281,7 +305,7 @@ namespace RuckZuck.Base
                     List&lt;GetSoftware&gt; lRes = ser.Deserialize&lt;List&lt;GetSoftware&gt;&gt;(response.Result);
 
 
-                    if (!string.IsNullOrEmpty(customerid) &amp;&amp; lRes.Count &gt; 400)
+                    if (string.IsNullOrEmpty(customerid) &amp;&amp; lRes.Count &gt; 400)
                     {
                         File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
                     }
@@ -292,6 +316,7 @@ namespace RuckZuck.Base
             catch(Exception ex)
             {
                 Debug.WriteLine("E2" + ex.Message, "GetCatalog");
+                _sURL = ""; //enforce reload endpoint URL
             }
 
             return new List&lt;GetSoftware&gt;();
@@ -315,6 +340,7 @@ namespace RuckZuck.Base
             catch(Exception ex)
             {
                 Debug.WriteLine("E1" + ex.Message, "GetSoftwares");
+                _sURL = ""; //enforce reload endpoint URL
             }
 
             return new List&lt;AddSoftware&gt;();
@@ -407,7 +433,6 @@ namespace RuckZuck.Base
             return false;
         }
 
-
         public static List&lt;AddSoftware&gt; CheckForUpdate(List&lt;AddSoftware&gt; lSoftware)
         {
             try
@@ -424,7 +449,10 @@ namespace RuckZuck.Base
                 }
 
             }
-            catch { }
+            catch
+            {
+                _sURL = ""; //enforce reload endpoint URL
+            }
 
             return new List&lt;AddSoftware&gt;();
         }
@@ -965,7 +993,7 @@ namespace RZUpdate
                 }
                 else
                 {
-                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t =&gt; t.ShortName == ShortName).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t =&gt; t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                     if (oGetSW != null)
                     {
                         SW.ProductName = oGetSW.ProductName;

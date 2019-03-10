@@ -67,10 +67,30 @@ namespace RuckZuck_Tool
             s.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
             tabWizard.ItemContainerStyle = s;
 
-            RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
-            RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
             tbSVC.Text = RZRestAPIv2.sURL;
-            cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
+            if (RZRestAPIv2.DisableBroadcast)
+            {
+                cbRZCache.IsChecked = false;
+                cbRZCache.IsEnabled = false;
+            }
+            else
+            {
+                RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
+                cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
+            }
+
+            if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
+            {
+                tbCustomerID.IsEnabled = true;
+                RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
+                btSettingsSave.IsEnabled = true;
+            }
+            else
+            {
+                tbCustomerID.Text = RZRestAPIv2.CustomerID;
+                tbCustomerID.IsEnabled = false;
+                btSettingsSave.IsEnabled = false;
+            }
 
             oInstPanel.onEdit += oInstPanel_onEdit;
             oUpdPanel.onEdit += oInstPanel_onEdit;
@@ -705,7 +725,7 @@ namespace RuckZuck_Tool
 
         private void tabSettings_Loaded(object sender, RoutedEventArgs e)
         {
-            tbCustomerID.Text = Properties.Settings.Default.CustomerID;
+            tbCustomerID.Text = RZRestAPIv2.CustomerID; // Properties.Settings.Default.CustomerID;
         }
 
         private void btSettingsSave_Click(object sender, RoutedEventArgs e)
@@ -714,6 +734,8 @@ namespace RuckZuck_Tool
             {
                 Properties.Settings.Default.CustomerID = tbCustomerID.Text;
                 Properties.Settings.Default.Save();
+                RZRestAPIv2.CustomerID = tbCustomerID.Text;
+                btSettingsSave.IsEnabled = false;
 
                 oSCAN.SoftwareRepository = new List<GetSoftware>();
                 oSCAN.GetSWRepository().ConfigureAwait(false);
@@ -749,6 +771,11 @@ namespace RuckZuck_Tool
         {
             Properties.Settings.Default.DisableBroadcast = !cbRZCache.IsChecked ?? false;
             Properties.Settings.Default.Save();
+        }
+
+        private void TbCustomerID_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            btSettingsSave.IsEnabled = true;
         }
     }
 }

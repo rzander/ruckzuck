@@ -29,6 +29,8 @@ namespace RuckZuck_Tool
 
         private void btYes_Click(object sender, RoutedEventArgs e)
         {
+            tbFeedback.IsEnabled = false;
+            tbFeedback.Text = "";
             btSend.IsEnabled = true;
             btYes.IsDefault = false;
             btSend.IsDefault = true;
@@ -37,6 +39,7 @@ namespace RuckZuck_Tool
 
         private void btNo_Click(object sender, RoutedEventArgs e)
         {
+            tbFeedback.IsEnabled = true;
             btSend.IsEnabled = true;
             isWorking = false;
         }

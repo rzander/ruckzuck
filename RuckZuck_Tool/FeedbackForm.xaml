@@ -10,8 +10,8 @@
         <Label Content="Was the installation successful?" HorizontalAlignment="Left" Margin="31,8,0,0" VerticalAlignment="Top"/>
         <Button x:Name="btYes" Content="Yes" HorizontalAlignment="Left" Margin="31,39,0,0" VerticalAlignment="Top" Width="75" Click="btYes_Click" IsDefault="True"/>
         <Button x:Name="btNo" Content="No" HorizontalAlignment="Left" Margin="249,39,0,0" VerticalAlignment="Top" Width="75" Click="btNo_Click"/>
-        <Label Content="comments or details:" HorizontalAlignment="Left" Margin="31,69,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="tbFeedback" HorizontalAlignment="Left" Height="81" Margin="31,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293" Grid.RowSpan="2" AcceptsReturn="True" SpellCheck.IsEnabled="True" ToolTip="Please provide more details..."/>
+        <Label Content="comments or error messages:" HorizontalAlignment="Left" Margin="31,69,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbFeedback" HorizontalAlignment="Left" Height="81" Margin="31,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293" Grid.RowSpan="2" AcceptsReturn="True" SpellCheck.IsEnabled="True" ToolTip="Please provide more details on failed installations..." IsEnabled="False"/>
         <Button x:Name="btSend" Content="OK" HorizontalAlignment="Left" Margin="233,71,0,0" Grid.Row="1" VerticalAlignment="Top" Width="91" IsEnabled="False" Click="btSend_Click"/>
 
     </Grid>
