@@ -28,17 +28,40 @@ namespace RuckZuck.Base
                 if (_sURL != "UDP" && ! string.IsNullOrEmpty(_sURL))
                     return _sURL;
 
+                try
+                {
+                    var vBroadcast = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "Broadcast", 1);
+                    if ((int)vBroadcast == 0) //only disable if set to 0
+                        DisableBroadcast = true;
+                }
+                catch { }
+
+
                 if (DisableBroadcast)
                     _sURL = "";
 
-                string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
-                if (!string.IsNullOrEmpty(sWebSVC))
+                try
                 {
-                    if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                    string sCustID = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "CustomerID", "") as string;
+                    if (!string.IsNullOrEmpty(sCustID))
                     {
-                        RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                        CustomerID = sCustID; //Override CustomerID
                     }
                 }
+                catch { }
+
+                try
+                {
+                    string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
+                    if (!string.IsNullOrEmpty(sWebSVC))
+                    {
+                        if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                        }
+                    }
+                }
+                catch { }
 
                 if (_sURL == "UDP" && !DisableBroadcast)
                 {
@@ -155,6 +178,7 @@ namespace RuckZuck.Base
             catch(Exception ex)
             {
                 Debug.WriteLine("E2" + ex.Message, "GetCatalog");
+                _sURL = ""; //enforce reload endpoint URL
             }
 
             return new List<GetSoftware>();
@@ -178,6 +202,7 @@ namespace RuckZuck.Base
             catch(Exception ex)
             {
                 Debug.WriteLine("E1" + ex.Message, "GetSoftwares");
+                _sURL = ""; //enforce reload endpoint URL
             }
 
             return new List<AddSoftware>();
@@ -270,7 +295,6 @@ namespace RuckZuck.Base
             return false;
         }
 
-
         public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
         {
             try
@@ -287,7 +311,10 @@ namespace RuckZuck.Base
                 }
 
             }
-            catch { }
+            catch
+            {
+                _sURL = ""; //enforce reload endpoint URL
+            }
 
             return new List<AddSoftware>();
         }
