@@ -67,4 +67,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if "$(ConfigurationName)"=="Debug" GOTO  end
+ "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\Bin\SignTool.exe" sign /i "COMODO RSA Code Signing CA" /n "Roger Zander" /t "http://timestamp.comodoca.com/authenticode" /q "$(TargetPath)" 
+:end</PostBuildEvent>
+  </PropertyGroup>
 </Project>

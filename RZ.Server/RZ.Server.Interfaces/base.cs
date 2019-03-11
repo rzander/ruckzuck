@@ -506,13 +506,13 @@ namespace RZ.Server
 
                             try
                             {
-                                if (Version.Parse(productversion) > Version.Parse(sRZVersion)) //version is newer
+                                if (TrimVersion(Version.Parse(productversion)) > TrimVersion(Version.Parse(sRZVersion))) //version is newer
                                 {
                                     Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
-                                    Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "RZ", true);
+                                    Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "Version", true);
                                     continue;
                                 }
-                                if (Version.Parse(productversion) == Version.Parse(sRZVersion)) //version is  same
+                                if (TrimVersion(Version.Parse(productversion)) == TrimVersion(Version.Parse(sRZVersion))) //version is  same
                                     continue;
                             }
                             catch
@@ -522,7 +522,7 @@ namespace RZ.Server
                                     if (string.Compare(productversion, sRZVersion, true) >= 1)
                                     {
                                         Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
-                                        Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "RZ", true);
+                                        Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "String", true);
                                         continue;
                                     }
                                 }
@@ -691,6 +691,25 @@ namespace RZ.Server
             }
             catch { }
             return false;
+        }
+
+        public static Version TrimVersion(Version ProductVersion)
+        {
+            int major = ProductVersion.Major;
+            int minor = ProductVersion.Minor;
+            int build = ProductVersion.Build;
+            int rev = ProductVersion.Revision;
+
+            if (major == -1)
+                major = 0;
+            if (minor == -1)
+                minor = 0;
+            if (build == -1)
+                build = 0;
+            if (rev == -1)
+                rev = 0;
+
+            return new Version(major, minor, build, rev);
         }
             
     }
