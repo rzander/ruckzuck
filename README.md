@@ -8,7 +8,7 @@ Select a software from the repository and RuckZuck handles the download and inst
  RuckZuck can detect and update existing software that was not installed with RuckZuck. 
 
  * Main Page: https://RuckZuck.tools
- * Software Repository: http://ruckzuck.tools/Repository.aspx
+ * Software Repository: https://ruckzuck.tools/Home/Repository
  * RSS Feed: http://ruckzuck.tools/rss.aspx
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
