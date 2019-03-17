@@ -500,9 +500,13 @@ namespace RZ.Server
                         {
                             string sRZVersion = jSW["ProductVersion"].ToString();
 
-                            if (!string.IsNullOrEmpty(sRZVersion))
-                                if (productversion == sRZVersion) //same version...
-                                    continue;
+                            try
+                            {
+                                if (!string.IsNullOrEmpty(sRZVersion))
+                                    if (productversion == sRZVersion.ToLower()) //same version...
+                                        continue;
+                            }
+                            catch { }
 
                             try
                             {
