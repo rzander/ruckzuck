@@ -318,6 +318,11 @@ namespace RuckZuck.Base
                 //Only take updated Versions
                 var lNew = lResult.Where(t => t.ShortName != "new").ToList();
 
+                //Remove Update if new Version is already installed
+                foreach (var oSW in InstalledSoftware)
+                {
+                    lNew.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
+                }
 
                 lock (NewSoftwareVersions)
                 {
