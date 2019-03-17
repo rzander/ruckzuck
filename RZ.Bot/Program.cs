@@ -3,7 +3,7 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System.Threading;
 using RZUpdate;
-using RuckZuck_WCF;
+using RuckZuck.Base;
 
 namespace RZ.Bot
 {
@@ -83,7 +83,7 @@ namespace RZ.Bot
                         oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
                         //oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString());
 
-                        if (sLastPackage != oRZSW.SoftwareUpdate.SW.Shortname)
+                        if (sLastPackage != oRZSW.SoftwareUpdate.SW.ShortName)
                         {
                             //oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.Shortname);
 
@@ -105,11 +105,11 @@ namespace RZ.Bot
                                     RZUpdater oRZSWPreReq = new RZUpdater();
                                     oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
                                     Console.WriteLine();
-                                    Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                    Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
                                     if (oRZSWPreReq.SoftwareUpdate.Download().Result)
                                     {
                                         Console.WriteLine("... done.");
-                                        Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.Shortname + ")...");
+                                        Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
                                         if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
                                         {
                                             Console.WriteLine("... done.");
@@ -129,14 +129,14 @@ namespace RZ.Bot
                                     {
                                         Console.WriteLine("... done.");
                                         message.Complete();
-                                        RZRestAPI.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, oRZSW.SoftwareUpdate.SW.Architecture, "true", "RZBot", "ok..").Wait(3000);
+                                        RZRestAPIv2.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
                                         sLastPackage = DateTime.Now.Ticks.ToString(); ;
                                         //return 0;
                                     }
                                     else
                                     {
                                         Console.WriteLine("... Error. Installation failed.");
-                                        sLastPackage = oRZSW.SoftwareUpdate.SW.Shortname;
+                                        sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
                                         message.Abandon();
                                         //return 1603;
                                     }
@@ -145,7 +145,7 @@ namespace RZ.Bot
                                 else
                                 {
                                     Console.WriteLine("... Error. Download failed.");
-                                    sLastPackage = oRZSW.SoftwareUpdate.SW.Shortname;
+                                    sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
                                     message.Abandon();
                                     //return 1602;
                                 }
