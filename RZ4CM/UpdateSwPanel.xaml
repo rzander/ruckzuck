@@ -1,0 +1,125 @@
+﻿<UserControl x:Class="RuckZuck_Tool.UpdateSwPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="500">
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="32"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="5,0,0,0">
+
+        </DockPanel>
+
+        <ListView Name="lvSW" Grid.Row="1" SelectionChanged="lvSW_SelectionChanged">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Left">
+                            <TextBlock>
+                                <Hyperlink NavigateUri="{Binding ProductURL}" RequestNavigate="Hyperlink_RequestNavigate" OverridesDefaultStyle="True" TextDecorations="">
+                                    <Image Height="32" Width="32" ToolTip="{Binding ProductName}" Source="{Binding IconURL, IsAsync=True}"/>
+                                </Hyperlink>
+                            </TextBlock>
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
+                            <DockPanel DockPanel.Dock="Top">
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ShortName}" FontWeight="Bold"/>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top" MaxWidth="500">
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Description}" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                    <Label Content="New Version:" FontWeight="Light" VerticalContentAlignment="Bottom"/>
+                                    <Label Content="{Binding ProductVersion}" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                    <Label Content="Old Version:" FontWeight="Light" VerticalContentAlignment="Bottom"/>
+                                    <Label Content="{Binding MSIProductID}" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                    <Label Content="Manufacturer:" FontWeight="Light" Margin="15,0,0,0" VerticalContentAlignment="Bottom" />
+                                    <Label Content="{Binding Manufacturer}" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                </StackPanel>
+                            </DockPanel>
+                        </DockPanel>
+                    </DockPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Expander IsExpanded="False">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
+                                                    <TextBlock Text="(" FontSize="18" Foreground="Silver"  VerticalAlignment="Bottom" Margin="10,0,0,0" />
+                                                    <TextBlock Text="{Binding ItemCount}" FontSize="18" Foreground="Silver" VerticalAlignment="Bottom" />
+                                                    <TextBlock Text=" Items)" FontSize="18" Foreground="Silver"  VerticalAlignment="Bottom" />
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </ListView.GroupStyle>
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Name="miOpenPage" Header="Open Web-Site..." ToolTip="Open the original product page..." Click="miOpenPage_Click" Height="24px">
+                        <MenuItem.Icon>
+                            <Image Source="Images/shell32_1001.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="miIgnoreUpdate" Header="Ignore this Update" ToolTip="Do not show this update again..." Click="miIgnoreUpdate_Click" Height="24px">
+                        <MenuItem.Icon>
+                            <Image Source="Images/star.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="miEdit" Header="Edit" ToolTip="Edit Application properties..."  Height="24px" Click="miEdit_Click">
+                        <MenuItem.Icon>
+                            <Image Source="Images/Setting_32.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="miUninstall" Header="Uninstall existing Version" ToolTip="Try to uninstall existing Version..." Click="miUninstall_Click" Height="24px">
+                        <MenuItem.Icon>
+                            <Image Source="Images/Announcements.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+        </ListView>
+
+        <DockPanel Grid.Row="2">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button DockPanel.Dock="Top" x:Name="btInstall" Content="Create App..." IsEnabled="false" BorderBrush="#FF1B491D" Click="btInstall_Click" Width="200" Margin="0,5,10,5">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FFAFF06E" Offset="0.356"/>
+                            <GradientStop Color="#FF58C725" Offset="1"/>
+                            <GradientStop Color="White"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <Button DockPanel.Dock="Top" x:Name="btInstallAll" Content="Create all apps..." IsEnabled="true" BorderBrush="#FF1B491D" Width="200" Margin="0,5" Click="btInstallAll_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FFEAF06E" Offset="0.356"/>
+                            <GradientStop Color="#FFC7C725" Offset="1"/>
+                            <GradientStop Color="White"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</UserControl>

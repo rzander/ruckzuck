@@ -330,3 +330,12 @@ RZ.Server/RZ.Server/wwwroot/plugins
 *.exe
 RZ.Server/RZ.Server/wwwroot/rzcat.json
 RuckZuck_Tool/Sign.cmd
+RZ4CM/System.Management.Automation.dll
+RZ4CM/Microsoft.ConfigurationManagement.ManagementProvider.dll
+RZ4CM/Microsoft.ConfigurationManagement.ApplicationManagement.MsiInstaller.dll
+RZ4CM/Microsoft.ConfigurationManagement.ApplicationManagement.dll
+RZ4CM/Interop.WindowsInstaller.dll
+RZ4CM/AdminUI.WqlQueryEngine.dll
+RZ4CM/AdminUI.DcmObjectWrapper.dll
+RZ4CM/AdminUI.AppManFoundation.dll
+RZ4CM/DcmObjectModel.dll
