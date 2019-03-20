@@ -103,11 +103,10 @@ namespace RuckZuck_Tool
 
                         }
                     }
-                    dm.Show();
-                    OnSWUpdated(this, new EventArgs());
                 }
                 catch { }
-
+                dm.Show();
+                OnSWUpdated(this, new EventArgs());
 
             }
         }

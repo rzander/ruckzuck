@@ -62,7 +62,7 @@ namespace RuckZuck_Tool
 
         private void TaskUpdate()
         {
-            UILock.TryEnterReadLock(350);
+            //UILock.TryEnterReadLock(350);
             try
             {
                 bool bInstalling = false;
@@ -167,7 +167,7 @@ namespace RuckZuck_Tool
             }
             finally
             {
-                UILock.ExitReadLock();
+                //UILock.ExitReadLock();
             }
         }
 
@@ -178,7 +178,7 @@ namespace RuckZuck_Tool
                 e.Cancel = true;
                 tDelay.Stop();
 
-                UILock.TryEnterReadLock(5000);
+                //UILock.TryEnterReadLock(5000);
                 try
                 {
                     var xRem = lDLTasks.Where(x => x.Installed || x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled).ToList();
@@ -198,7 +198,7 @@ namespace RuckZuck_Tool
             }
             finally
             {
-                UILock.ExitReadLock();
+                //UILock.ExitReadLock();
             }
         }
 
