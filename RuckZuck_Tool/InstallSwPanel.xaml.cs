@@ -622,6 +622,10 @@ namespace RuckZuck_Tool
                         {
                             MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
+                        else
+                        {
+                            MessageBox.Show(oSW.SW.ShortName + "_setup.exe" + " created in: " + AppDomain.CurrentDomain.BaseDirectory, "EXE created", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                     }
                     catch { }
                 }
