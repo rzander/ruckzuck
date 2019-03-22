@@ -821,16 +821,13 @@ namespace RZUpdate
                     //Already installed ?
                     if (CheckIsInstalled(true))
                     {
-                        if (SendFeedback)
-                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "true", sUserName, "Ok..").ConfigureAwait(false); ;
+                        //if (SendFeedback)
+                        //    RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "true", sUserName, "Ok..").ConfigureAwait(false); ;
                         return true;
                     }
                 }
 
-
-
                 downloadTask.Installing = true;
-
 
                 //Set CurrentDir and $Folder variable
                 string sFolder = ContentPath;
