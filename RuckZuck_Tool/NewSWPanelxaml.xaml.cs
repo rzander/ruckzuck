@@ -654,6 +654,10 @@ namespace RuckZuck_Tool
                 {
                     MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                else
+                {
+                    MessageBox.Show(tbProductName.Text + "_" + tbVersion.Text + "_" + tbArchitecture.Text + "_setup.exe" + " created in: " + AppDomain.CurrentDomain.BaseDirectory, "EXE created", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
                 File.Delete("Resources.resx");
             }
             catch { }
