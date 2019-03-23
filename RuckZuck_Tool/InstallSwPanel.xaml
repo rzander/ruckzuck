@@ -19,7 +19,7 @@
             <StackPanel x:Name="spSupport" Orientation="Horizontal" HorizontalAlignment="Right" Background="{x:Null}">
                 <ToolBar IsTabStop="True" ToolBarTray.IsLocked="True" Background="{x:Null}" AllowDrop="True">
                     <Menu Background="{x:Null}" >
-                        <MenuItem Header="Favourites">
+                        <MenuItem Header="Favorites">
                             <MenuItem.Icon>
                                 <Image Source="Images/Star.ico" />
                             </MenuItem.Icon>
