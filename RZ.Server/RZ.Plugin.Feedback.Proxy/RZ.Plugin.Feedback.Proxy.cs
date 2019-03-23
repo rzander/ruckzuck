@@ -44,25 +44,32 @@ namespace RZ.Plugin.Feedback.Azure
 
         }
 
-        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null)
+        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "")
         {
             var tFeedback = Task.Run(() =>
             {
-                string ok = "false";
-                if (failure == false)
-                    ok = "true";
+                try
+                {
+                    string ok = "false";
+                    if (failure == false)
+                        ok = "true";
 
-                if(failure == true)
-                {
-                    Console.WriteLine("Failure: " + name + " " + ver + "  Error:" + feedback);
+                    if (failure == true)
+                    {
+                        Console.WriteLine("Failure: " + name + " " + ver + "  Error:" + feedback);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Success: " + name + " " + ver);
+                    }
+
+                    RZRestAPIv2.StoreFeedback(name, ver, man, ok, user, feedback);
+                    return true;
                 }
-                else
+                catch
                 {
-                    Console.WriteLine("Success: " + name + " " + ver);
+                    return false;
                 }
-                
-                RZRestAPIv2.StoreFeedback(name, ver, man, ok, user, feedback);
-                return true;
             });
 
             return tFeedback;

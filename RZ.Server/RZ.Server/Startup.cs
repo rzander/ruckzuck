@@ -51,6 +51,7 @@ namespace RZ.Server
             services.AddSignalR();
 
             services.AddDistributedMemoryCache();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;

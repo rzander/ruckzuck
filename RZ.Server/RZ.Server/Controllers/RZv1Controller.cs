@@ -277,7 +277,7 @@ namespace RZ.Server.Controllers
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                     }
 
-                    Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking);
+                    Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, "v1 API");
                 }
                 catch { }
 

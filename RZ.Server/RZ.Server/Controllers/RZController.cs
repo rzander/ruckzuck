@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -19,13 +20,15 @@ namespace RZ.Server.Controllers
     {
         private readonly IHubContext<Default> _hubContext;
         private IMemoryCache _cache;
+        private IHttpContextAccessor _accessor;
         static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
 
-        public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext)
+        public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)
         {
             _cache = memoryCache;
             _hubContext = hubContext;
+            _accessor = accessor;
         }
 
         [Route("rest/v2")]
@@ -38,6 +41,8 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetCatalog")]
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
 
@@ -229,16 +234,31 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/IncCounter/{shortname}/{counter}")]
         public bool IncCounter(string shortname = "", string counter = "DL")
         {
+            string ClientIP = "";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+            catch (Exception ex)
+            {
+                ClientIP = ex.Message.ToString();
+            }
+
             if (string.IsNullOrEmpty(shortname))
                 return false;
             else
             {
-                Message bMSG;
-                bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
-                bMSG.UserProperties.Add("ShortName", shortname);
-                tcRuckZuck.SendAsync(bMSG);
+                try
+                {
+                    Message bMSG;
+                    bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
+                    bMSG.UserProperties.Add("ShortName", shortname);
+                    bMSG.UserProperties.Add("ClientIP", ClientIP);
+                    tcRuckZuck.SendAsync(bMSG);
 
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + shortname + ")</li>");
+                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + shortname + ")</li>");
+                }
+                catch { }
 
                 return Base.IncCounter(shortname, counter);
             }
@@ -318,6 +338,16 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/feedback")]
         public void Feedback(string name, string ver, string man, string ok, string user, string text)
         {
+            string ClientIP = "";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+            catch(Exception ex)
+            {
+                ClientIP = ex.Message.ToString(); 
+            }
+
             string Shortname = Base.GetShortname(name, ver, man);
 
             if (!string.IsNullOrEmpty(Shortname))
@@ -341,7 +371,7 @@ namespace RZ.Server.Controllers
                             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
                         }
 
-                        Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking);
+                        Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP);
                     }
                     catch { }
 

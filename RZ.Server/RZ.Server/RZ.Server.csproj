@@ -7,10 +7,16 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>(c) 2019 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.0.0.13</AssemblyVersion>
-    <FileVersion>2.0.0.13</FileVersion>
+    <AssemblyVersion>2.0.0.14</AssemblyVersion>
+    <FileVersion>2.0.0.14</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +42,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="2.10.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
 
   <ItemGroup>

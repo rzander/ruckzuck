@@ -406,7 +406,7 @@ namespace Plugin_Software
         
         public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
         {
-            return false;
+            return RZRestAPIv2.IncCounter(ShortName, counter);
         }
 
         //Upload SW and wait for approval

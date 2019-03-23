@@ -88,7 +88,7 @@ namespace RZ.Server.Interfaces
 
         Dictionary<string, string> Settings { get; set; }
 
-        Task<bool>  StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null);
+        Task<bool>  StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "");
 
         Task<bool> SendNotification(string message = "", string body = "");
     }

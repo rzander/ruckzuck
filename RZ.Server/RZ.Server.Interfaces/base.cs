@@ -623,7 +623,7 @@ namespace RZ.Server
         }
         #endregion
 
-        public static void StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null)
+        public static void StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "")
         {
             try
             {
@@ -631,7 +631,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        item.Value.StoreFeedback(name, ver, man, shortname, feedback, user, failure);
+                        item.Value.StoreFeedback(name, ver, man, shortname, feedback, user, failure, ip);
                     }
                     catch { }
                 }

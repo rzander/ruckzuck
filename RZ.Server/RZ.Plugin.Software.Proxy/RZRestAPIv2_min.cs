@@ -91,5 +91,16 @@ namespace Plugin_Software
             else
                 return false;
         }
+
+        public static bool IncCounter(string shortname = "", string counter = "DL")
+        {
+            var oStat = oClient.GetAsync(sURL + "rest/v2/IncCounter/" + shortname + "/" + counter);
+            oStat.Wait(10000);
+
+            if (oStat.IsCompleted)
+                return true;
+            else
+                return false;
+        }
     }
 }

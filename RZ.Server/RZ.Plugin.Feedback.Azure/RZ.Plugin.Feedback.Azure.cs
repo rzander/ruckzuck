@@ -46,7 +46,7 @@ namespace RZ.Plugin.Feedback.Azure
 
         }
 
-        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null)
+        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "")
         {
             var t = Task.Run(() =>
             {
@@ -77,7 +77,10 @@ namespace RZ.Plugin.Feedback.Azure
                     bMSG.UserProperties.Add("ProductName", name);
                     bMSG.UserProperties.Add("ProductVersion", ver);
                     bMSG.UserProperties.Add("Manufacturer", man);
-                    //bMSG.Properties.Add("IP", ipAddress);
+
+                    if (!string.IsNullOrEmpty(ip))
+                        bMSG.UserProperties.Add("ClientIP", ip);
+
                     tcRuckZuck.SendAsync(bMSG);
 
                     JObject jEntity = new JObject();

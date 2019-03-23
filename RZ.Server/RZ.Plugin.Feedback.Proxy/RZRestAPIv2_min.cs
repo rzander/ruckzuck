@@ -57,7 +57,7 @@ namespace RZ.Plugin.Feedback.Azure
 
         public static bool StoreFeedback(string name, string ver, string man, string ok, string user, string text)
         {
-            oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + name + "&ver=" + ver + "&man=" + man +  "&text=" + text + "&user=" + user + "&ok=" + ok);
+            oClient.GetAsync(sURL + "/rest/v2/feedback?name=" + name + "&ver=" + ver + "&man=" + man +  "&text=" + text + "&user=" + user + "&ok=" + ok);
 
             return true;
         }
