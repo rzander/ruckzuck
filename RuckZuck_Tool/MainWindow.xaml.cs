@@ -113,7 +113,7 @@ namespace RuckZuck_Tool
                     powershell.AddScript("(get-Host).Version");
                     powershell.Runspace = runspace;
                     Collection<PSObject> results = powershell.Invoke();
-                    if (((System.Version)(results[0].BaseObject)).Major < 4)
+                    if (((System.Version)(results[0].BaseObject)).Major < 5)
                     {
                         if (MessageBox.Show("The current Version of PowerShell is not supported. Do you want to update ?", "Update Powershell", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.Yes) == MessageBoxResult.Yes)
                         {
