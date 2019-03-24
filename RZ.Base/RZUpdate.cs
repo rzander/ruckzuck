@@ -284,48 +284,59 @@ namespace RZUpdate
 
                 SW = new AddSoftware();
 
+                string sBaseDir = AppDomain.CurrentDomain.BaseDirectory;
+
                 //Always use local JSON-File if exists
-                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json")))
+                if (File.Exists(Path.Combine(sBaseDir, ShortName + ".json")))
                 {
-                    string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json");
+                    string sSWFile = Path.Combine(sBaseDir, ShortName + ".json");
                     SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
                 }
                 else
                 {
-                    var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
-                    if (oGetSW != null)
+                    //Always use local JSON-File if exists
+                    if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json")))
                     {
-                        SW.ProductName = oGetSW.ProductName;
-                        SW.ProductVersion = oGetSW.ProductVersion;
-                        SW.Manufacturer = oGetSW.Manufacturer;
-                        SW.ShortName = ShortName;
-
-                        if (SW.Architecture == null)
-                        {
-                            SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
-                            if (SW == null) { Console.WriteLine("No SW"); }
-                            SW.ShortName = ShortName;
-                            //try
-                            //{
-                            //    if (SW.Image == null)
-                            //    {
-                            //        SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
-                            //    }
-                            //}
-                            //catch { }
-
-                            if (SW.Files == null)
-                                SW.Files = new List<contentFiles>();
-                            if (string.IsNullOrEmpty(SW.PSPreReq))
-                                SW.PSPreReq = "$true; ";
-                        }
+                        string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json");
+                        SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
                     }
+                    else
+                    {
+                        var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        if (oGetSW != null)
+                        {
+                            SW.ProductName = oGetSW.ProductName;
+                            SW.ProductVersion = oGetSW.ProductVersion;
+                            SW.Manufacturer = oGetSW.Manufacturer;
+                            SW.ShortName = ShortName;
 
-                    if (string.IsNullOrEmpty(SW.ShortName))
-                        return;
+                            if (SW.Architecture == null)
+                            {
+                                SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+                                if (SW == null) { Console.WriteLine("No SW"); }
+                                SW.ShortName = ShortName;
+                                //try
+                                //{
+                                //    if (SW.Image == null)
+                                //    {
+                                //        SW.Image = RZRestAPIv2.GetIcon(SW.SWId, SW.IconHash);
+                                //    }
+                                //}
+                                //catch { }
 
-                    //Get Install-type
-                    GetInstallType();
+                                if (SW.Files == null)
+                                    SW.Files = new List<contentFiles>();
+                                if (string.IsNullOrEmpty(SW.PSPreReq))
+                                    SW.PSPreReq = "$true; ";
+                            }
+                        }
+
+                        if (string.IsNullOrEmpty(SW.ShortName))
+                            return;
+
+                        //Get Install-type
+                        GetInstallType();
+                    }
                 }
 
                 downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, IconURL = SW.IconURL, Files = SW.Files };
