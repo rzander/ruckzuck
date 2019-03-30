@@ -15,7 +15,7 @@ namespace RZ.Server.Controllers
     public class RZv1Controller : Controller
     {
         private IMemoryCache _cache;
-        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
+        public static string sbconnection = "";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck",  RetryPolicy.Default);
         private readonly IHubContext<Default> _hubContext;
 

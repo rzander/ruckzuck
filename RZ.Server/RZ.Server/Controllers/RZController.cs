@@ -13,6 +13,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 
+
 namespace RZ.Server.Controllers
 {
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
@@ -21,7 +22,7 @@ namespace RZ.Server.Controllers
         private readonly IHubContext<Default> _hubContext;
         private IMemoryCache _cache;
         private IHttpContextAccessor _accessor;
-        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
+        public static string sbconnection = "";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
 
         public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)

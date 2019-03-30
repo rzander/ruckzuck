@@ -24,15 +24,33 @@ namespace RZ.Server
         {
             Configuration = configuration;
             Env = env;
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json",
+                 optional: false,
+                 reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
         public IHostingEnvironment Env { get; }
         public IDistributedCache Cache { get; }
 
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Controllers.RZController.sbconnection = Configuration["sbConnection"];
+            Controllers.RZv1Controller.sbconnection = Configuration["sbConnection"];
+
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
