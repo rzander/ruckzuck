@@ -54,7 +54,7 @@ namespace RZ.SWLookup.Plugin
 
         }
 
-        public string GetShortname(string name = "", string ver = "", string man = "")
+        public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
         {
             string sResult = "";
             string sID = (Base.clean(man.ToLower()) + Base.clean(name.ToLower()) + Base.clean(ver.ToLower())).Trim();
@@ -86,7 +86,7 @@ namespace RZ.SWLookup.Plugin
             return null;
         }
 
-        public bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "")
+        public bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "", string customerid = "")
         {
             try
             {
@@ -250,7 +250,7 @@ namespace RZ.SWLookup.Plugin
             });
         }
 
-        public IEnumerable<string> SWLookupItems(string filter)
+        public IEnumerable<string> SWLookupItems(string filter, string customerid = "")
         {
             List<string> lResult = new List<string>();
             string sRepository = Settings["swlookup"];
@@ -410,7 +410,7 @@ namespace RZ.SWLookup.Plugin
             return new JArray();
         }
 
-        public JArray CheckForUpdates(JArray Softwares)
+        public JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
             return new JArray();
         }

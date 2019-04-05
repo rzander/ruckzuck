@@ -55,7 +55,7 @@ namespace Plugin_Software
 
         }
 
-        public JArray GetSoftwares(string shortname)
+        public JArray GetSoftwares(string shortname, string customerid = "")
         {
             JArray jResult = new JArray();
             //Try to get value from Memory
@@ -127,7 +127,7 @@ namespace Plugin_Software
             return new JArray();
         }
 
-        public JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown")
+        public JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown", string customerid = "")
         {
             JArray jResult = new JArray();
             //Try to get value from Memory
@@ -205,7 +205,7 @@ namespace Plugin_Software
             return new JArray();
         }
 
-        public bool UploadSoftware(JArray Software)
+        public bool UploadSoftware(JArray Software, string customerid = "")
         {
             try
             {
@@ -320,69 +320,87 @@ namespace Plugin_Software
             return false;
         }
 
-        public Task<Stream> GetIcon(string shortname)
+        public async Task<Stream> GetIcon(string shortname, string customerid = "")
         {
-            byte[] bResult = new byte[0];
+            Stream bResult;
+            byte[] bCache;
 
             //Try to get value from Memory
-            if (_cache.TryGetValue("ico-" + shortname, out bResult))
+            if (_cache.TryGetValue("ico-" + shortname, out bCache))
             {
-                return bResult;
+                return new MemoryStream(bCache);
             }
 
-            JArray jFull = GetSoftwares(shortname);
+            JArray jFull = GetSoftwares(shortname, customerid);
             foreach (JObject jObj in jFull)
             {
                 try
                 {
                     if (jObj["Image"] != null)
                     {
-                        bResult = jObj["Image"].ToObject(typeof(byte[])) as byte[];
+                        bResult = new MemoryStream(jObj["Image"].ToObject(typeof(byte[])) as byte[]);
+                        MemoryStream ms = new MemoryStream();
+                        bResult.CopyTo(ms);
+
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
+                        _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+
+                        return bResult;
                     }
                     else
                     {
-                        if (jObj["IconHash"] != null)
-                            bResult = GetIcon(0, jObj["IconHash"].ToString());
+                        bResult = await GetIcon(0, jObj["IconHash"].ToString());
+                        MemoryStream ms = new MemoryStream();
+                        bResult.CopyTo(ms);
+
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
+                        _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+
+                        return bResult;
                     }
 
-                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(60)); //cache catalog for 30 Minutes
-                    _cache.Set("ico-" + shortname, bResult, cacheEntryOptions);
+                    //var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(60)); //cache catalog for 30 Minutes
+                    //_cache.Set("ico-" + shortname, bResult, cacheEntryOptions);
 
-                    return bResult;
+                    //return bResult;
                 }
                 catch { }
             }
 
-            return new byte[0];
+            return null;
         }
 
-        public Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "")
+        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
         {
             string sico = iconhash;
 
             if (iconid > 0)
                 sico = iconid.ToString();
 
-            byte[] bResult = new byte[0];
+            Stream bResult;
+            byte[] bCache;
 
             //Try to get value from Memory
-            if (_cache.TryGetValue("ico-" + sico, out bResult))
+            if (_cache.TryGetValue("ico-" + sico, out bCache))
             {
-                return bResult;
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
+                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+
+                return new MemoryStream(bCache);
             }
 
             string IconsPath = Settings["icons"];
             if (File.Exists(Path.Combine(IconsPath, sico + ".jpg")))
             {
-                bResult = File.ReadAllBytes(Path.Combine(IconsPath, sico + ".jpg"));
+                bCache = File.ReadAllBytes(Path.Combine(IconsPath, sico + ".jpg"));
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(60)); //cache icon for 60 Minutes
-                _cache.Set("ico-" + sico , bResult, cacheEntryOptions);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
+                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
 
-                return bResult;
+                return new MemoryStream(bCache);
             }
 
-            return new byte[0];
+            return null;
         }
 
         private void UpdateURLs(ref JArray jSource)
@@ -413,7 +431,7 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<Stream> GetFile(string FilePath)
+        public async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
             string sFullPath = Path.Combine(Settings["content"], FilePath);
             if(File.Exists(sFullPath))
@@ -431,7 +449,7 @@ namespace Plugin_Software
             return null;
         }
 
-        public string GetShortname(string name = "", string ver = "", string man = "")
+        public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
         {
             string sResult = "";
             //Try to get value from Memory
@@ -464,6 +482,34 @@ namespace Plugin_Software
             return "";
         }
 
+        public bool UploadSoftwareWaiting(JArray Software, string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
 
+        public List<string> GetPendingApproval(string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Approve(string Software, string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Decline(string Software, string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetPending(string Software, string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IncCounter(string shortname = "", string counter = "", string customerid = "")
+        {
+            throw new NotImplementedException();
+        }
     }
 }

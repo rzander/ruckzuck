@@ -103,7 +103,7 @@ namespace RZ.Server
         public static IMemoryCache _cache;
         public static string localURL = "";
 
-        public static bool UploadSoftware(JArray Software)
+        public static bool UploadSoftware(JArray Software, string customerid = "")
         {
             bool bResult = true;
             try
@@ -122,7 +122,7 @@ namespace RZ.Server
             return bResult;
         }
 
-        public static bool UploadSoftwareWaiting(JArray Software)
+        public static bool UploadSoftwareWaiting(JArray Software, string customerid = "")
         {
             bool bResult = true;
             try
@@ -141,7 +141,7 @@ namespace RZ.Server
             return bResult;
         }
 
-        public static List<string> GetPendingApproval()
+        public static List<string> GetPendingApproval(string customerid = "")
         {
             List<string> bResult = new List<string>(); ;
             try
@@ -160,7 +160,7 @@ namespace RZ.Server
             return bResult;
         }
 
-        public static bool Approve(string Software)
+        public static bool Approve(string Software, string customerid = "")
         {
             bool bResult = true;
             try
@@ -179,7 +179,7 @@ namespace RZ.Server
             return bResult;
         }
 
-        public static bool Decline(string Software)
+        public static bool Decline(string Software, string customerid = "")
         {
             bool bResult = true;
             try
@@ -198,7 +198,7 @@ namespace RZ.Server
             return bResult;
         }
 
-        public static string GetPending(string Software)
+        public static string GetPending(string Software, string customerid = "")
         {
             try
             {
@@ -216,7 +216,7 @@ namespace RZ.Server
             return "";
         }
 
-        public static JArray GetSoftwares(string shortname)
+        public static JArray GetSoftwares(string shortname, string customerid = "")
         {
             try
             {
@@ -224,7 +224,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return item.Value.GetSoftwares(shortname);
+                        return item.Value.GetSoftwares(shortname, customerid);
                     }
                     catch { }
                 }
@@ -234,7 +234,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown")
+        public static JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown", string customerid = "")
         {
             try
             {
@@ -245,7 +245,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return item.Value.GetSoftwares(name, ver, man);
+                        return item.Value.GetSoftwares(name, ver, man, customerid);
                     }
                     catch { }
                 }
@@ -293,7 +293,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetIcon(string shortname)
+        public static async Task<Stream> GetIcon(string shortname, string customerid = "")
         {
             try
             {
@@ -311,7 +311,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "")
+        public static async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
         {
             try
             {
@@ -329,7 +329,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetFile(string FilePath)
+        public static async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
             try
             {
@@ -337,7 +337,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return await item.Value.GetFile(FilePath);
+                        return await item.Value.GetFile(FilePath, customerid);
                     }
                     catch { }
                 }
@@ -349,7 +349,7 @@ namespace RZ.Server
 
 
         #region SWLookup
-        public static string GetShortname(string name = "", string ver = "", string man = "")
+        public static string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
         {
             string sResult = "";
 
@@ -397,7 +397,7 @@ namespace RZ.Server
             return null; //Not it SWLookup
         }
 
-        public static bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "")
+        public static bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "", string customerid = "")
         {
             foreach (var item in Plugins._SWLookupPlugins.OrderBy(t => t.Key))
             {
@@ -412,7 +412,7 @@ namespace RZ.Server
         }
 
         internal static bool? bForward = null;
-        public static JArray CheckForUpdates(JArray Softwares)
+        public static JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
             if (bForward == null)
             {
@@ -608,7 +608,7 @@ namespace RZ.Server
             return jResult;
         }
 
-        public static IEnumerable<string> SWLookupItems()
+        public static IEnumerable<string> SWLookupItems(string customerid = "")
         {
             foreach (var item in Plugins._SWLookupPlugins.OrderBy(t => t.Key))
             {
@@ -623,7 +623,7 @@ namespace RZ.Server
         }
         #endregion
 
-        public static void StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "")
+        public static void StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "")
         {
             try
             {
@@ -641,7 +641,7 @@ namespace RZ.Server
             return;
         }
 
-        public static void SendNotification(string message = "", string body = "")
+        public static void SendNotification(string message = "", string body = "", string customerid = "")
         {
             try
             {
@@ -667,7 +667,7 @@ namespace RZ.Server
             return (string.Join("", filename.Split(Path.GetInvalidFileNameChars()))).Trim().TrimEnd('.');
         }
 
-        public static bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
+        public static bool IncCounter(string ShortName = "", string counter = "DL", string customerid = "known")
         {
             try
             {
@@ -675,7 +675,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return item.Value.IncCounter(ShortName, counter, Customer);
+                        return item.Value.IncCounter(ShortName, counter, customerid);
                     }
                     catch { }
                 }

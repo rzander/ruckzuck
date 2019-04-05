@@ -22,6 +22,7 @@ namespace RZ.Server
     {
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+
             Configuration = configuration;
             Env = env;
 
@@ -48,8 +49,12 @@ namespace RZ.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            Controllers.RZController.sbconnection = Configuration["sbConnection"];
-            Controllers.RZv1Controller.sbconnection = Configuration["sbConnection"];
+            try
+            {
+                Controllers.RZController.sbconnection = Configuration["sbConnection"];
+                Controllers.RZv1Controller.sbconnection = Configuration["sbConnection"];
+            }
+            catch { }
 
             services.AddAuthentication(sharedOptions =>
             {

@@ -184,12 +184,18 @@ namespace RuckZuck.Base
             return new List<GetSoftware>();
         }
 
-        public static List<AddSoftware> GetSoftwares(string productName, string productVersion, string manufacturer)
+        public static List<AddSoftware> GetSoftwares(string productName, string productVersion, string manufacturer, string customerid = "")
         {
 
             try
             {
-                Task<string> response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                Task<string> response;
+
+                if (string.IsNullOrEmpty(customerid))
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                else
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid));
+
                 response.Wait(20000);
                 if (response.IsCompleted)
                 {
@@ -209,7 +215,7 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(string iconhash)
+        public static byte[] GetIcon(string iconhash, string customerid = "")
         {
             Task<Stream> response;
 
@@ -235,7 +241,7 @@ namespace RuckZuck.Base
             return null;
         }
 
-        public static async void IncCounter(string shortname = "", string counter = "DL")
+        public static async void IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             try
             {
@@ -256,7 +262,7 @@ namespace RuckZuck.Base
             return lResult.Distinct().OrderBy(t => t).ToList();
         }
 
-        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback)
+        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "")
         {
             if (!string.IsNullOrEmpty(feedback))
             {
@@ -271,7 +277,7 @@ namespace RuckZuck.Base
             return "";
         }
 
-        public static bool UploadSWEntry(AddSoftware lSoftware)
+        public static bool UploadSWEntry(AddSoftware lSoftware, string customerid = "")
         {
             try
             {
@@ -295,7 +301,7 @@ namespace RuckZuck.Base
             return false;
         }
 
-        public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
+        public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware, string customerid = "")
         {
             try
             {

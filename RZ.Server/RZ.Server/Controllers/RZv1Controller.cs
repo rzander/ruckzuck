@@ -16,13 +16,19 @@ namespace RZ.Server.Controllers
     {
         private IMemoryCache _cache;
         public static string sbconnection = "";
-        TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck",  RetryPolicy.Default);
+        TopicClient tcRuckZuck;
         private readonly IHubContext<Default> _hubContext;
 
         public RZv1Controller(IMemoryCache memoryCache, IHubContext<Default> hubContext)
         {
             _cache = memoryCache;
             _hubContext = hubContext;
+
+            if (!string.IsNullOrEmpty(sbconnection))
+            {
+                tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+            }
+
         }
 
         [Route("rest")]
@@ -147,7 +153,8 @@ namespace RZ.Server.Controllers
                 bMSG.UserProperties.Add("ProductName", name);
                 bMSG.UserProperties.Add("ProductVersion", ver);
                 bMSG.UserProperties.Add("Manufacturer", man);
-                tcRuckZuck.SendAsync(bMSG);
+                if(tcRuckZuck != null)
+                    tcRuckZuck.SendAsync(bMSG);
             }
             catch { }
 
@@ -159,9 +166,9 @@ namespace RZ.Server.Controllers
         [Route("rest/SWGetShort/{name}")]
         [Route("wcf/RZService.svc/rest/SWGetShort")]
         [Route("wcf/RZService.svc/rest/SWGetShort/{name}")]
-        public ActionResult SWGet(string name = "")
+        public ActionResult SWGet(string name = "", string customerid = "")
         {
-            return Content(Base.GetSoftwares(name).ToString());
+            return Content(Base.GetSoftwares(name, customerid).ToString());
         }
 
         [HttpPost]
@@ -174,7 +181,7 @@ namespace RZ.Server.Controllers
             JArray jItems = JArray.Parse(oGet.Result);
             string sResult = Base.CheckForUpdates(jItems).ToString();
             TimeSpan tDuration = DateTime.Now - dStart;
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
             Console.WriteLine("UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
             return Content(sResult);
         }
@@ -238,7 +245,8 @@ namespace RZ.Server.Controllers
             bMSG.UserProperties.Add("SWId", SWId);
             bMSG.UserProperties.Add("Architecture", arch);
             bMSG.UserProperties.Add("ShortName", shortname);
-            tcRuckZuck.SendAsync(bMSG);
+            if (tcRuckZuck != null)
+                tcRuckZuck.SendAsync(bMSG);
 
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + sLabel + ")</li>");
 

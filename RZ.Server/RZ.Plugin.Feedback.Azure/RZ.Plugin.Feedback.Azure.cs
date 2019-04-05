@@ -46,7 +46,7 @@ namespace RZ.Plugin.Feedback.Azure
 
         }
 
-        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "")
+        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "")
         {
             var t = Task.Run(() =>
             {
@@ -171,7 +171,7 @@ namespace RZ.Plugin.Feedback.Azure
             catch { }
         }
 
-        public Task<bool> SendNotification(string message = "", string body = "")
+        public Task<bool> SendNotification(string message = "", string body = "", string customerid = "")
         {
             Task<bool> t = Task<bool>.Run(() =>
             {

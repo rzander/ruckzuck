@@ -53,23 +53,23 @@ namespace RZ.SWLookup.Plugin
         }
 
 
-        public string GetShortname(string name = "", string ver = "", string man = "")
+        public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
         {
             return "";
         }
 
-        public bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "")
+        public bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "", string customerid = "")
         {
               return false;
         }
 
 
-        public IEnumerable<string> SWLookupItems(string filter)
+        public IEnumerable<string> SWLookupItems(string filter, string customerid = "")
         {
             return null;
         }
 
-        public JArray CheckForUpdates(JArray Softwares)
+        public JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
              JArray jRes = RZRestAPIv2.CheckForUpdates(Softwares);
             Console.WriteLine("CheckForUpdates:" + jRes.Count.ToString() + " updates detected.");

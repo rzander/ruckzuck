@@ -67,13 +67,13 @@ namespace Plugin_Software
 
         }
 
-        public static JArray GetSoftwares(string shortname)
+        public static JArray GetSoftwares(string shortname, string customerid)
         {
-            string sRes = oClient.GetStringAsync(sURL + "/rest/v2/getsoftwares?shortname=" + shortname).Result;
+            string sRes = oClient.GetStringAsync(sURL + "/rest/v2/getsoftwares?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(customerid)).Result;
             return JArray.Parse(sRes);
         }
 
-        public static JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown")
+        public static JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown", string customerid = "")
         {
             string sRes = oClient.GetStringAsync(sURL + "/rest/v2/getsoftwares?name=" + WebUtility.UrlEncode(name) + "&ver=" + WebUtility.UrlEncode(ver) + "&man=" + WebUtility.UrlEncode(man)).Result;
             return JArray.Parse(sRes);
@@ -83,7 +83,7 @@ namespace Plugin_Software
         {
             HttpContent oCont = new StringContent(Software.ToString(Formatting.None));
 
-            var oStat = oClient.PutAsync(sURL + "rest/v2/uploadsoftware", oCont);
+            var oStat = oClient.PutAsync(sURL + "/rest/v2/uploadsoftware", oCont);
             oStat.Wait(10000);
 
             if (oStat.IsCompleted)
@@ -94,7 +94,7 @@ namespace Plugin_Software
 
         public static bool IncCounter(string shortname = "", string counter = "DL")
         {
-            var oStat = oClient.GetAsync(sURL + "rest/v2/IncCounter/" + shortname + "/" + counter);
+            var oStat = oClient.GetAsync(sURL + "/rest/v2/IncCounter/" + WebUtility.UrlEncode(shortname) + "/" + WebUtility.UrlEncode(counter));
             oStat.Wait(10000);
 
             if (oStat.IsCompleted)

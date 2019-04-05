@@ -52,7 +52,7 @@ namespace Plugin_Software
             Settings.Add("icons", icons);
         }
 
-        public JArray GetSoftwares(string shortname)
+        public JArray GetSoftwares(string shortname, string customerid = "")
         {
             JArray jResult = new JArray();
             //Try to get value from Memory
@@ -63,7 +63,7 @@ namespace Plugin_Software
 
             foreach(JObject jObj in getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(), "known"))
             {
-                jResult = GetSoftwares(jObj["ProductName"].ToString().ToLower(), jObj["ProductVersion"].ToString().ToLower(), jObj["Manufacturer"].ToString().ToLower());
+                jResult = GetSoftwares(jObj["ProductName"].ToString().ToLower(), jObj["ProductVersion"].ToString().ToLower(), jObj["Manufacturer"].ToString().ToLower(), customerid);
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
                 _cache.Set("sn-" + shortname.ToLower(), jResult, cacheEntryOptions);
@@ -76,7 +76,7 @@ namespace Plugin_Software
             return new JArray();
         }
 
-        public JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown")
+        public JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown", string customerid = "")
         {
             JArray jResult = new JArray();
 
@@ -117,7 +117,7 @@ namespace Plugin_Software
             return new JArray();
         }
 
-        public bool UploadSoftware(JArray Software)
+        public bool UploadSoftware(JArray Software, string customerid = "")
         {
             try
             {
@@ -308,7 +308,7 @@ namespace Plugin_Software
             return false;
         }
 
-        public async Task<Stream> GetIcon(string shortname)
+        public async Task<Stream> GetIcon(string shortname, string customerid = "")
         {
             Stream bResult;
             byte[] bCache;
@@ -319,7 +319,7 @@ namespace Plugin_Software
                 return new MemoryStream(bCache);
             }
 
-            JArray jFull = GetSoftwares(shortname.ToLower());
+            JArray jFull = GetSoftwares(shortname.ToLower(), customerid);
             foreach (JObject jObj in jFull)
             {
                 try
@@ -356,7 +356,7 @@ namespace Plugin_Software
             return null;
         }
 
-        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "")
+        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
         {
             string sico = iconhash;
 
@@ -478,7 +478,7 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<Stream> GetFile(string FilePath)
+        public async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
                 string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
 
@@ -487,7 +487,7 @@ namespace Plugin_Software
                 return myWebResponse.GetResponseStream();
         }
 
-        public string GetShortname(string name = "", string ver = "", string man = "")
+        public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
         {
             string sResult = "";
             string sID = (Base.clean(man.ToLower()) + Base.clean(name.ToLower()) + Base.clean(ver.ToLower())).Trim();
@@ -857,7 +857,7 @@ namespace Plugin_Software
         }
 
         //Upload SW and wait for approval
-        public bool UploadSoftwareWaiting(JArray Software)
+        public bool UploadSoftwareWaiting(JArray Software, string customerid = "")
         {
             try
             {
@@ -896,7 +896,7 @@ namespace Plugin_Software
             return false;
         }
 
-        public List<string> GetPendingApproval()
+        public List<string> GetPendingApproval(string customerid = "")
         {
             List<string> lRes = new List<string>();
             try
@@ -913,7 +913,7 @@ namespace Plugin_Software
             return lRes;
         }
 
-        public bool Approve(string Software)
+        public bool Approve(string Software, string customerid = "")
         {
             try
             {
@@ -966,7 +966,7 @@ namespace Plugin_Software
             return false;
         }
 
-        public bool Decline(string Software)
+        public bool Decline(string Software, string customerid = "")
         {
             try
             {
@@ -984,7 +984,7 @@ namespace Plugin_Software
             return false;
         }
 
-        public string GetPending(string Software)
+        public string GetPending(string Software, string customerid = "")
         {
             try
             {

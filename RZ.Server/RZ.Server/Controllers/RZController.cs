@@ -23,13 +23,19 @@ namespace RZ.Server.Controllers
         private IMemoryCache _cache;
         private IHttpContextAccessor _accessor;
         public static string sbconnection = "";
-        TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+        TopicClient tcRuckZuck;
 
         public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)
         {
             _cache = memoryCache;
             _hubContext = hubContext;
             _accessor = accessor;
+
+            
+            if (!string.IsNullOrEmpty(sbconnection))
+            {
+                tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+            }
         }
 
         [Route("rest/v2")]
@@ -96,7 +102,7 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetIcon")]
         [Route("rest/v2/GetIcon/{shortname}")]
         [Route("wcf/RZService.svc/rest/v2/GetIcon")]
-        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "")
+        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "")
         {
             if (!string.IsNullOrEmpty(shortname))
             {
@@ -116,7 +122,7 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/v2/GetSoftwares")]
         [Route("rest/v2/GetSoftwares/{man}/{name}/{ver}")]
-        public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "", bool image = false )  //result = array
+        public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "", bool image = false, string customerid = "" )  //result = array
         {
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
@@ -126,13 +132,13 @@ namespace RZ.Server.Controllers
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
 
-                jSW = Base.GetSoftwares(shortname);
+                jSW = Base.GetSoftwares(shortname, customerid);
             }
             else
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
 
-                jSW = Base.GetSoftwares(name, ver, man);
+                jSW = Base.GetSoftwares(name, ver, man, customerid);
             }
             //Cleanup
             foreach (JObject jObj in jSW)
@@ -212,7 +218,7 @@ namespace RZ.Server.Controllers
 
         [HttpGet]
         [Route("rest/v2/GetSoftwares/{shortname}")]
-        public ActionResult GetSoftwares(string shortname = "") //result = array
+        public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
@@ -220,12 +226,12 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(shortname))
                 return Content("[]");
 
-            return Content(RZ.Server.Base.GetSoftwares(shortname).ToString());
+            return Content(RZ.Server.Base.GetSoftwares(shortname, customerid).ToString());
         }
 
         [HttpGet]
         [Route("rest/v2/GetUpdate/{man}/{name}/{ver}")]
-        public ActionResult GetUpdate(string name = "", string ver = "", string man = "")
+        public ActionResult GetUpdate(string name = "", string ver = "", string man = "", string customerid = "")
         {
             return null;
         }
@@ -233,7 +239,7 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/v2/IncCounter")]
         [Route("rest/v2/IncCounter/{shortname}/{counter}")]
-        public bool IncCounter(string shortname = "", string counter = "DL")
+        public bool IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             string ClientIP = "";
             try
@@ -255,31 +261,32 @@ namespace RZ.Server.Controllers
                     bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
                     bMSG.UserProperties.Add("ShortName", shortname);
                     bMSG.UserProperties.Add("ClientIP", ClientIP);
-                    tcRuckZuck.SendAsync(bMSG);
+                    if(tcRuckZuck != null)
+                        tcRuckZuck.SendAsync(bMSG);
 
                     _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + shortname + ")</li>");
                 }
                 catch { }
 
-                return Base.IncCounter(shortname, counter);
+                return Base.IncCounter(shortname, counter, customerid);
             }
         }
 
         [HttpPost]
         [Route("rest/v2/UploadSoftware")]
-        public bool UploadSoftware()
+        public bool UploadSoftware(string customerid = "")
         {
             try
             {
                 var oGet = new StreamReader(Request.Body).ReadToEndAsync();
                 string sJson = oGet.Result;
                 if(sJson.TrimStart().StartsWith('['))
-                    return Base.UploadSoftwareWaiting(JArray.Parse(oGet.Result));
+                    return Base.UploadSoftwareWaiting(JArray.Parse(oGet.Result), customerid);
                 else
                 {
                     JArray jResult = new JArray();
                     jResult.Add(JObject.Parse(oGet.Result));
-                    return Base.UploadSoftwareWaiting(jResult);
+                    return Base.UploadSoftwareWaiting(jResult, customerid);
                 }
             }
             catch { }
@@ -291,20 +298,26 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetFile/{contentid}/{filename}")]
         [Route("rest/v2/GetFile/proxy/{shortname}/{contentid}/{filename}")]
         [Route("wcf/RZService.svc/rest/v2/GetFile/{contentid}/{filename}")]
-        public async Task<IActionResult> GetFile(string contentid, string filename, string shortname = "")
+        public async Task<IActionResult> GetFile(string contentid, string filename, string shortname = "", string customerid = "")
         {
             string sPath = Path.Combine(contentid, filename);
             if (!string.IsNullOrEmpty(shortname))
                 sPath = Path.Combine("proxy", shortname, contentid, filename);
-            return File(await Base.GetFile(sPath), "application/octet-stream");
+            return File(await Base.GetFile(sPath, customerid), "application/octet-stream");
         }
 
         [HttpPost]
         [Route("rest/v2/checkforupdate")]
-        public ActionResult CheckForUpdate()
+        public ActionResult CheckForUpdate(string customerid = "")
         {
+            DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-            return Content(Base.CheckForUpdates(JArray.Parse(oGet.Result)).ToString());
+            JArray jItems = JArray.Parse(oGet.Result);
+            string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
+            TimeSpan tDuration = DateTime.Now - dStart;
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V2 API CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
+            Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
+            return Content(sResult);
         }
 
         //[HttpPost]
@@ -320,9 +333,9 @@ namespace RZ.Server.Controllers
 
         [HttpGet]
         [Route("rest/v2/GetPendingApproval")]
-        public ActionResult GetPendingApproval()
+        public ActionResult GetPendingApproval(string customerid = "")
         {
-            return Json(Base.GetPendingApproval());
+            return Json(Base.GetPendingApproval(customerid));
         }
 
         [HttpGet]
@@ -337,7 +350,7 @@ namespace RZ.Server.Controllers
 
         [HttpGet]
         [Route("rest/v2/feedback")]
-        public void Feedback(string name, string ver, string man, string ok, string user, string text)
+        public void Feedback(string name, string ver, string man, string ok, string user, string text, string customerid = "")
         {
             string ClientIP = "";
             try
@@ -349,7 +362,7 @@ namespace RZ.Server.Controllers
                 ClientIP = ex.Message.ToString(); 
             }
 
-            string Shortname = Base.GetShortname(name, ver, man);
+            string Shortname = Base.GetShortname(name, ver, man, customerid);
 
             if (!string.IsNullOrEmpty(Shortname))
             {
@@ -372,15 +385,15 @@ namespace RZ.Server.Controllers
                             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
                         }
 
-                        Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP);
+                        Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP, customerid);
                     }
                     catch { }
 
 
                     if (bWorking)
-                        Base.IncCounter(Shortname, "SUCCESS");
+                        Base.IncCounter(Shortname, "SUCCESS", customerid);
                     else
-                        Base.IncCounter(Shortname, "FAILURE");
+                        Base.IncCounter(Shortname, "FAILURE", customerid);
 
                 }
                 catch { }
@@ -389,7 +402,7 @@ namespace RZ.Server.Controllers
 
         [HttpPost]
         [Route("rest/v2/uploadswentry")]
-        public bool UploadSWEntry()
+        public bool UploadSWEntry(string customerid = "")
         {
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             string sJSON = oGet.Result;
@@ -398,14 +411,14 @@ namespace RZ.Server.Controllers
 
             if (sJSON.TrimStart().StartsWith('['))
             {
-                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON));
+                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON), customerid);
                 return bRes;
             }
             else
             {
                 JArray jSW = new JArray();
                 jSW.Add(JObject.Parse(sJSON));
-                bool bRes = Base.UploadSoftwareWaiting(jSW);
+                bool bRes = Base.UploadSoftwareWaiting(jSW, customerid);
 
                 return bRes;
             }

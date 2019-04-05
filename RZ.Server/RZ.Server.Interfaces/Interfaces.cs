@@ -27,37 +27,37 @@ namespace RZ.Server.Interfaces
 
         Dictionary<string, string> Settings { get; set; }
 
-        Task<Stream> GetIcon(string shortname);
+        Task<Stream> GetIcon(string shortname, string customerid = "");
 
-        Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "");
+        Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "");
 
-        JArray GetSoftwares(string shortname);
+        JArray GetSoftwares(string shortname, string customerid = "");
 
-        JArray GetSoftwares(string name = "", string ver = "", string man = "");
+        JArray GetSoftwares(string name = "", string ver = "", string man = "", string customerid = "");
 
-        string GetShortname(string name = "", string ver = "", string man = ""); 
+        string GetShortname(string name = "", string ver = "", string man = "", string customerid = ""); 
 
         //Upload SW without approval
-        bool UploadSoftware(JArray Software);
+        bool UploadSoftware(JArray Software, string customerid = "");
 
         //Upload SW but wait for approval
-        bool UploadSoftwareWaiting(JArray Software);
+        bool UploadSoftwareWaiting(JArray Software, string customerid = "");
 
         //Get list of pending approvals
-        List<string> GetPendingApproval();
+        List<string> GetPendingApproval(string customerid = "");
 
         //Approve a pending Software
-        bool Approve(string Software);
+        bool Approve(string Software, string customerid = "");
 
         //Decline a pending Software
-        bool Decline(string Software);
+        bool Decline(string Software, string customerid = "");
 
         //Get JSON of a pending Software
-        string GetPending(string Software);
+        string GetPending(string Software, string customerid = "");
 
-        Task<Stream> GetFile(string FilePath);
+        Task<Stream> GetFile(string FilePath, string customerid = "");
 
-        bool IncCounter(string shortname = "", string counter = "", string Customer = "");
+        bool IncCounter(string shortname = "", string counter = "", string customerid = "");
     }
 
     public interface ISWLookup
@@ -70,13 +70,13 @@ namespace RZ.Server.Interfaces
 
         Dictionary<string, string> Settings { get; set; }
 
-        string GetShortname(string name = "", string ver = "", string man = "");
+        string GetShortname(string name = "", string ver = "", string man = "", string customerid = "");
 
-        bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "");
+        bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "", string customerid = "");
 
-        IEnumerable<string> SWLookupItems(string filter);
+        IEnumerable<string> SWLookupItems(string filter, string customerid = "");
 
-        JArray CheckForUpdates(JArray Softwares);
+        JArray CheckForUpdates(JArray Softwares, string customerid = "");
 
     }
 
@@ -88,8 +88,8 @@ namespace RZ.Server.Interfaces
 
         Dictionary<string, string> Settings { get; set; }
 
-        Task<bool>  StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "");
+        Task<bool>  StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "");
 
-        Task<bool> SendNotification(string message = "", string body = "");
+        Task<bool> SendNotification(string message = "", string body = "", string customerid = "");
     }
 }
