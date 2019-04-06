@@ -725,6 +725,9 @@ namespace Plugin_Software
                 string sasToken = Settings["catSAS"];
                 string sURL = Settings["catURL"];
 
+                if (string.IsNullOrEmpty(Customer))
+                    Customer = "known";
+
                 switch (counter.ToUpper())
                 {
                     case "DL":

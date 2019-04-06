@@ -313,11 +313,16 @@ namespace RZ.Server.Controllers
             DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             JArray jItems = JArray.Parse(oGet.Result);
-            string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
-            TimeSpan tDuration = DateTime.Now - dStart;
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V2 API CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
-            Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
-            return Content(sResult);
+            if (jItems.Count > 0)
+            {
+                string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
+                TimeSpan tDuration = DateTime.Now - dStart;
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V2 API CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
+                Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
+                return Content(sResult);
+            }
+            else
+                return Content((new JArray()).ToString());
         }
 
         //[HttpPost]

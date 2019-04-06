@@ -407,7 +407,10 @@ namespace Plugin_Software
         
         public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
         {
-            return RZRestAPIv2.IncCounter(ShortName, counter);
+            if (string.IsNullOrEmpty(Customer))
+                Customer = "known";
+
+            return RZRestAPIv2.IncCounter(ShortName, counter, Customer);
         }
 
         //Upload SW and wait for approval

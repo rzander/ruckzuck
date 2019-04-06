@@ -92,7 +92,7 @@ namespace Plugin_Software
                 return false;
         }
 
-        public static bool IncCounter(string shortname = "", string counter = "DL")
+        public static bool IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             var oStat = oClient.GetAsync(sURL + "/rest/v2/IncCounter/" + WebUtility.UrlEncode(shortname) + "/" + WebUtility.UrlEncode(counter));
             oStat.Wait(10000);
