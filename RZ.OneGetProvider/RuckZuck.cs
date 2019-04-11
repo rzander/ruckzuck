@@ -6,6 +6,7 @@ using System.Management.Automation;
 using System.Collections.ObjectModel;
 using System.Security;
 using RuckZuck.Base;
+using Microsoft.Win32;
 
 namespace PackageManagement
 {
@@ -28,26 +29,25 @@ namespace PackageManagement
         /// <param name="request"></param>
         private void _initRZ(Request request)
         {
-            try
-            {
-                Properties.Settings.Default.Location = "";
-                Properties.Settings.Default.Save();
+            //try
+            //{
+            //    Properties.Settings.Default.Location = "";
+            //    Properties.Settings.Default.Save();
 
-                if (Properties.Settings.Default.Location.StartsWith("https:"))
-                {
-                    RZRestAPIv2.sURL = Properties.Settings.Default.Location;
-                }
-                else
-                {
-                    Properties.Settings.Default.Location = RZRestAPIv2.sURL;
-                    Properties.Settings.Default.Save();
-                }
+            //    if (Properties.Settings.Default.Location.StartsWith("https:"))
+            //    {
+            //        RZRestAPIv2.sURL = Properties.Settings.Default.Location;
+            //    }
+            //    else
+            //    {
+            //        Properties.Settings.Default.Location = RZRestAPIv2.sURL;
+            //        Properties.Settings.Default.Save();
+            //    }
+            //}
+            //catch { }
 
-                oScan = new RZScan(false, false);
-                oUpdate = new RZUpdate.RZUpdater();
-
-            }
-            catch { }
+            oScan = new RZScan(false, false);
+            oUpdate = new RZUpdate.RZUpdater();
         }
 
         private string _providerVersion
@@ -69,9 +69,10 @@ namespace PackageManagement
                     break;
 
                 case "provider":
-                    request.YieldDynamicOption("Username", Constants.OptionType.String, false);
-                    request.YieldDynamicOption("Password", Constants.OptionType.String, false);
-                    request.YieldDynamicOption("ContentURL", Constants.OptionType.String, false);
+                    //request.YieldDynamicOption("Username", Constants.OptionType.String, false);
+                    //request.YieldDynamicOption("Password", Constants.OptionType.String, false);
+                    //request.YieldDynamicOption("EndPointURL", Constants.OptionType.String, false);
+                    request.YieldDynamicOption("CustomerID", Constants.OptionType.String, false);
                     // todo: put any options used with this provider. Not currently used.
 
                     break;
@@ -91,70 +92,76 @@ namespace PackageManagement
 
         private void _resolvePackageSources(Request request)
         {
-            bool bValidated = false;
-            bool bIsTrusted = false;
-            try
-            {
-                //_reAuthenticate(request); //Check if AuthToken is still valid
-                bValidated = true;
-                //if (!string.IsNullOrEmpty(_AuthenticationToken))
-                //{
-                //    bValidated = true;
-                //}
+            bool bValidated = true;
+            bool bIsTrusted = true;
+            //try
+            //{
+            //    //_reAuthenticate(request); //Check if AuthToken is still valid
+            //    bValidated = true;
+            //    //if (!string.IsNullOrEmpty(_AuthenticationToken))
+            //    //{
+            //    //    bValidated = true;
+            //    //}
 
-                if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
-                    bIsTrusted = true;
-            }
-            catch (Exception ex)
-            {
-                request.Debug("RZ112: " + ex.Message);
-                return;
-            }
+            //    if(string.IsNullOrEmpty(Properties.Settings.Default.Location))
+            //    {
+            //        Properties.Settings.Default.Location = "";
+            //        Properties.Settings.Default.Save();
+            //    }
 
-            request.YieldPackageSource("RuckZuck", Properties.Settings.Default.Location, bIsTrusted, true, bValidated);
+            //    if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
+            //        bIsTrusted = true;
+            //}
+            //catch (Exception ex)
+            //{
+            //    request.Debug("RZ112: " + ex.Message);
+            //    return;
+            //}
+
+            request.YieldPackageSource("RuckZuck", RZRestAPIv2.sURL, bIsTrusted, true, bValidated);
         }
 
         private void _addPackageSource(string name, string location, bool trusted, Request request)
         {
-            Properties.Settings.Default.Location = location;
+            //Properties.Settings.Default.Location = location;
 
-            //Set default URL if no loaction is specified
-            if (!string.IsNullOrEmpty(location))
-            {
-                Properties.Settings.Default.Location = location;
-                Properties.Settings.Default.Save();
-            }
+            ////Set default URL if no loaction is specified
+            //if (!string.IsNullOrEmpty(location))
+            //{
+            //    Properties.Settings.Default.Location = location;
+            //    Properties.Settings.Default.Save();
+            //}
 
-            //RZRestAPI.sURL = Properties.Settings.Default.Location;
+            //RZRestAPIv2.sURL = Properties.Settings.Default.Location;
 
-            string sUser = "FreeRZ";
-            SecureString sPW = ToSecureString(GetTimeToken());
+            //string sUser = "FreeRZ";
+            //SecureString sPW = ToSecureString(GetTimeToken());
 
 
-            if (request.OptionKeys.Contains("Username"))
-            {
-                Properties.Settings.Default.Username = request.GetOptionValue("Username");
-                sUser = Properties.Settings.Default.Username;
-            }
-            else
-                Properties.Settings.Default.Username = "";
+            //if (request.OptionKeys.Contains("Username"))
+            //{
+            //    Properties.Settings.Default.Username = request.GetOptionValue("Username");
+            //    sUser = Properties.Settings.Default.Username;
+            //}
+            //else
+            //    Properties.Settings.Default.Username = "";
 
-            if (request.OptionKeys.Contains("Password"))
-            {
-                sPW = ToSecureString(request.GetOptionValue("Password"));
-                Properties.Settings.Default.Password = EncryptString(sPW);
-            }
-            else
-                Properties.Settings.Default.Password = "";
+            //if (request.OptionKeys.Contains("Password"))
+            //{
+            //    sPW = ToSecureString(request.GetOptionValue("Password"));
+            //    Properties.Settings.Default.Password = EncryptString(sPW);
+            //}
+            //else
+            //    Properties.Settings.Default.Password = "";
 
-            if (request.OptionKeys.Contains("ContentURL"))
-            {
-                Properties.Settings.Default.ContentURL = request.GetOptionValue("ContentURL");
-            }
-            else
-                Properties.Settings.Default.ContentURL = "";
+            //if (request.OptionKeys.Contains("EndPointURL"))
+            //{
+            //    Properties.Settings.Default.ContentURL = request.GetOptionValue("EndPointURL");
+            //}
+            //else
+            //    Properties.Settings.Default.ContentURL = "";
 
-            Properties.Settings.Default.Save();
+            //Properties.Settings.Default.Save();
 
             //_AuthenticationToken = RZRestAPI.GetAuthToken(sUser, ToInsecureString(sPW));
 
@@ -165,14 +172,46 @@ namespace PackageManagement
             //    dLastTokenRefresh = new DateTime();
             //    return;
             //}
+
+            //Set default URL if no loaction is specified
+            if (!string.IsNullOrEmpty(location))
+            {
+                try
+                {
+                    if (location.ToLower().StartsWith("http"))
+                    {
+                        RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies\\RuckZuck", true);
+                        key.SetValue("WebService", location);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    request.Debug("E189:" + ex.Message);
+                }
+            }
+
+            if (request.OptionKeys.Contains("CustomerID"))
+            {
+                try
+                {
+                    string custid = request.GetOptionValue("CustomerID");
+
+                    RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies\\RuckZuck", true);
+                    key.SetValue("CustomerID", custid);
+                }
+                catch (Exception ex)
+                {
+                    request.Debug("E204:" + ex.Message);
+                }
+            }
         }
 
         private void _removePackageSource(string name, Request request)
         {
-            Properties.Settings.Default.Location = RZRestAPIv2.sURL;
-            Properties.Settings.Default.Username = "";
-            Properties.Settings.Default.Password = "";
-            Properties.Settings.Default.Save();
+            //Properties.Settings.Default.Location = RZRestAPIv2.sURL;
+            //Properties.Settings.Default.Username = "";
+            //Properties.Settings.Default.Password = "";
+            //Properties.Settings.Default.Save();
 
             //dLastTokenRefresh = new DateTime();
 
@@ -374,12 +413,13 @@ namespace PackageManagement
 
                 foreach (var SW in lResult.OrderBy(t => t.ShortName))
                 {
-                    request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion + ";" + SW.Manufacturer, SW.ProductName, SW.ProductVersion, "", SW.Description, Properties.Settings.Default.Location, name, SW.SWId.ToString(), SW.ShortName);
+                    request.YieldSoftwareIdentity(SW.ProductName + ";" + SW.ProductVersion + ";" + SW.Manufacturer, SW.ProductName, SW.ProductVersion, "", SW.Description, RZRestAPIv2.sURL, name, SW.SWId.ToString(), SW.ShortName);
                     //Trust the original RucKZuck source
-                    if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        request.AddMetadata("FromTrustedSource", "True");
-                    }
+                    request.AddMetadata("FromTrustedSource", "True");
+                    //if (string.Equals(Properties.Settings.Default.Location, RZRestAPIv2.sURL , StringComparison.InvariantCultureIgnoreCase))
+                    //{
+                    //    request.AddMetadata("FromTrustedSource", "True");
+                    //}
                 }
 
             }

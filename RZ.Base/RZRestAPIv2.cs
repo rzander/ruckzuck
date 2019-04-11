@@ -305,15 +305,18 @@ namespace RuckZuck.Base
         {
             try
             {
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
-
-                var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
-                response.Wait(120000); //2min max
-                if (response.IsCompleted)
+                if (lSoftware.Count > 0)
                 {
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
-                    return lRes;
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                    response.Wait(120000); //2min max
+                    if (response.IsCompleted)
+                    {
+                        List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
+                        return lRes;
+                    }
                 }
 
             }
