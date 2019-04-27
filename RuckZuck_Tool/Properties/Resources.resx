@@ -322,12 +322,18 @@ namespace RuckZuck.Base
             return new List&lt;GetSoftware&gt;();
         }
 
-        public static List&lt;AddSoftware&gt; GetSoftwares(string productName, string productVersion, string manufacturer)
+        public static List&lt;AddSoftware&gt; GetSoftwares(string productName, string productVersion, string manufacturer, string customerid = "")
         {
 
             try
             {
-                Task&lt;string&gt; response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer));
+                Task&lt;string&gt; response;
+
+                if (string.IsNullOrEmpty(customerid))
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer));
+                else
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer) + "&amp;customerid=" + WebUtility.UrlEncode(customerid));
+
                 response.Wait(20000);
                 if (response.IsCompleted)
                 {
@@ -347,7 +353,7 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(string iconhash)
+        public static byte[] GetIcon(string iconhash, string customerid = "")
         {
             Task&lt;Stream&gt; response;
 
@@ -373,7 +379,7 @@ namespace RuckZuck.Base
             return null;
         }
 
-        public static async void IncCounter(string shortname = "", string counter = "DL")
+        public static async void IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             try
             {
@@ -394,7 +400,7 @@ namespace RuckZuck.Base
             return lResult.Distinct().OrderBy(t =&gt; t).ToList();
         }
 
-        public static async Task&lt;string&gt; Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback)
+        public static async Task&lt;string&gt; Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "")
         {
             if (!string.IsNullOrEmpty(feedback))
             {
@@ -409,7 +415,7 @@ namespace RuckZuck.Base
             return "";
         }
 
-        public static bool UploadSWEntry(AddSoftware lSoftware)
+        public static bool UploadSWEntry(AddSoftware lSoftware, string customerid = "")
         {
             try
             {
@@ -433,19 +439,22 @@ namespace RuckZuck.Base
             return false;
         }
 
-        public static List&lt;AddSoftware&gt; CheckForUpdate(List&lt;AddSoftware&gt; lSoftware)
+        public static List&lt;AddSoftware&gt; CheckForUpdate(List&lt;AddSoftware&gt; lSoftware, string customerid = "")
         {
             try
             {
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
-
-                var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
-                response.Wait(120000); //2min max
-                if (response.IsCompleted)
+                if (lSoftware.Count &gt; 0)
                 {
-                    List&lt;AddSoftware&gt; lRes = ser.Deserialize&lt;List&lt;AddSoftware&gt;&gt;(response.Result.Content.ReadAsStringAsync().Result);
-                    return lRes;
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                    response.Wait(120000); //2min max
+                    if (response.IsCompleted)
+                    {
+                        List&lt;AddSoftware&gt; lRes = ser.Deserialize&lt;List&lt;AddSoftware&gt;&gt;(response.Result.Content.ReadAsStringAsync().Result);
+                        return lRes;
+                    }
                 }
 
             }

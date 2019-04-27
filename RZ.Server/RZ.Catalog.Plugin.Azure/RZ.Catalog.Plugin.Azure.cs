@@ -58,7 +58,7 @@ namespace Plugin_Software
 
             jResult = new JArray();
 
-            jResult = getCatalog(Settings["catURL"] + "?" + Settings["catSAS"]);
+            jResult = getCatalog(Settings["catURL"] + "?" + Settings["catSAS"], customerid);
 
             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
             _cache.Set("swcat", jResult, cacheEntryOptions);
@@ -70,6 +70,9 @@ namespace Plugin_Software
         {
             try
             {
+                if (string.IsNullOrEmpty(Customer))
+                    Customer = "known";
+
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 

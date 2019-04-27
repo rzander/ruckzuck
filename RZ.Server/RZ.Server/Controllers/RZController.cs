@@ -23,7 +23,7 @@ namespace RZ.Server.Controllers
         private IMemoryCache _cache;
         private IHttpContextAccessor _accessor;
         public static string sbconnection = "";
-        TopicClient tcRuckZuck;
+        public static TopicClient tcRuckZuck = null;
 
         public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)
         {
@@ -32,10 +32,17 @@ namespace RZ.Server.Controllers
             _accessor = accessor;
 
             
+
             if (!string.IsNullOrEmpty(sbconnection))
             {
-                tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+                if (tcRuckZuck == null)
+                {
+                    Console.WriteLine("SBConnection:" + sbconnection);
+                    tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+                }
             }
+            else
+                tcRuckZuck = null;
         }
 
         [Route("rest/v2")]

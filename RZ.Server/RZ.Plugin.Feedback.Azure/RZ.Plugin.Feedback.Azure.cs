@@ -81,6 +81,9 @@ namespace RZ.Plugin.Feedback.Azure
                     if (!string.IsNullOrEmpty(ip))
                         bMSG.UserProperties.Add("ClientIP", ip);
 
+                    if (!string.IsNullOrEmpty(customerid))
+                        bMSG.UserProperties.Add("CustomerID", customerid);
+
                     tcRuckZuck.SendAsync(bMSG);
 
                     JObject jEntity = new JObject();

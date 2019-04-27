@@ -63,7 +63,7 @@ namespace RZ.Plugin.Feedback.Azure
                         Console.WriteLine("Success: " + name + " " + ver);
                     }
 
-                    RZRestAPIv2.StoreFeedback(name, ver, man, ok, user, feedback);
+                    RZRestAPIv2.StoreFeedback(name, ver, man, ok, user, feedback, customerid);
                     return true;
                 }
                 catch

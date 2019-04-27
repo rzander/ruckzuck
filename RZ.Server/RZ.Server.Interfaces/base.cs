@@ -442,7 +442,7 @@ namespace RZ.Server
                     {
                         try
                         {
-                            return item.Value.CheckForUpdates(Softwares);
+                            return item.Value.CheckForUpdates(Softwares, customerid);
                         }
                         catch { }
                     }
@@ -504,7 +504,11 @@ namespace RZ.Server
                             {
                                 if (!string.IsNullOrEmpty(sRZVersion))
                                     if (productversion == sRZVersion.ToLower()) //same version...
+                                    {
+                                        var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                                        _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                         continue;
+                                    }
                             }
                             catch { }
 
@@ -514,10 +518,16 @@ namespace RZ.Server
                                 {
                                     Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
                                     Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "Version", true);
+                                    var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                                    _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                     continue;
                                 }
                                 if (TrimVersion(Version.Parse(productversion)) == TrimVersion(Version.Parse(sRZVersion))) //version is  same
+                                {
+                                    var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                                    _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                     continue;
+                                }
                             }
                             catch
                             {
@@ -527,6 +537,8 @@ namespace RZ.Server
                                     {
                                         Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
                                         Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "String", true);
+                                        var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                                        _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                         continue;
                                     }
                                 }
@@ -588,6 +600,9 @@ namespace RZ.Server
                                 SetShortname(productname, productversion, manufacturer, ""); //No Shortname
                             });
                         }
+
+                        var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                        _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                     }
                     #endregion
 
@@ -631,7 +646,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        item.Value.StoreFeedback(name, ver, man, shortname, feedback, user, failure, ip);
+                        item.Value.StoreFeedback(name, ver, man, shortname, feedback, user, failure, ip, customerid);
                     }
                     catch { }
                 }
