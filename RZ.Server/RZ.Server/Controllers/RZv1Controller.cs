@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -18,11 +19,13 @@ namespace RZ.Server.Controllers
         public static string sbconnection = "";
         TopicClient tcRuckZuck;
         private readonly IHubContext<Default> _hubContext;
+        private IHttpContextAccessor _accessor;
 
-        public RZv1Controller(IMemoryCache memoryCache, IHubContext<Default> hubContext)
+        public RZv1Controller(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)
         {
             _cache = memoryCache;
             _hubContext = hubContext;
+            _accessor = accessor;
 
             if (!string.IsNullOrEmpty(sbconnection))
             {
@@ -98,7 +101,7 @@ namespace RZ.Server.Controllers
             string sRes = "";
             if (string.IsNullOrEmpty(search))
             {
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API Get Catalog</li>");
                 sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
             }
             else
@@ -141,9 +144,47 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/getswdefinition")[0];
 
+            string ClientIP = "";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+            catch (Exception ex)
+            {
+                ClientIP = ex.Message.ToString();
+            }
+
+            //9.Apr.2019: repeating requests without downloading content
+            if (ClientIP.StartsWith("147.171.73."))
+            {
+                if (name.ToLower() == "pdfcreator")
+                    return Content("");
+                if (name.ToLower().StartsWith("vlc"))
+                    return Content("");
+                if (name.ToLower().StartsWith("python"))
+                    return Content("");
+                if (name.ToLower().StartsWith("microsoft .net"))
+                    return Content("");
+            }
+
+            //20.Apr.2019: repeating requests without downloading content
+            if (ClientIP.StartsWith("128.95."))
+            {
+                if (name.ToLower().StartsWith("putty"))
+                    return Content("");
+                if (name.ToLower().StartsWith("texstudio"))
+                    return Content("");
+            }
+
+            //if (ClientIP.StartsWith("152.195.15"))
+            //{
+            //    if (name.ToLower().StartsWith("java 8"))
+            //        return Content("");
+            //}
+
             JArray jRes = Base.GetSoftwares(name, ver, man);
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - get definition for '" + name + "'</li>");
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API Get Definition for '" + name + "'</li>");
 
             //Send Status
             try
@@ -261,6 +302,22 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/Feedback")]
         public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
         {
+            string ClientIP = "";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+            catch (Exception ex)
+            {
+                ClientIP = ex.Message.ToString();
+            }
+
+            //9.Mar.2019: repeating failures for PDFCreator without downloading content
+            //if (ClientIP.StartsWith("147.171.73."))
+            //{
+            //    return;
+            //}
+
             string Shortname = Base.GetShortname(name, ver, man);
             try
             {
@@ -277,15 +334,15 @@ namespace RZ.Server.Controllers
                     if (bWorking)
                     {
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name+ ")</li>");
+                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - V1 API success (" + name+ ")</li>");
                     }
                     else
                     {
-                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
+                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - V1 API failed (" + name + ")</li>");
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                     }
 
-                    Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, "v1 API");
+                   Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP);
                 }
                 catch { }
 

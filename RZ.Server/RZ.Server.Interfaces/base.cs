@@ -451,7 +451,14 @@ namespace RZ.Server
             }
 
             JArray jResult = new JArray();
+            JArray oCat = GetCatalog("", false);
+            //foreach (JObject jObj in Softwares)
 
+            Parallel.ForEach(Softwares, (jObj) =>
+            {
+                
+            }
+            );
 
             foreach (JObject jObj in Softwares)
             {
@@ -462,7 +469,7 @@ namespace RZ.Server
                     string productname = Base.clean(jObj["ProductName"].ToString().ToLower());
                     string productversion = Base.clean(jObj["ProductVersion"].ToString().ToLower());
 
-                    string sID = Hash.CalculateMD5HashString((manufacturer+productname+productversion).Trim());
+                    string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
 
                     JObject oRes = new JObject();
                     string sRes = "";
@@ -484,20 +491,19 @@ namespace RZ.Server
                     #region compare versions
                     if (!string.IsNullOrEmpty(shortname))
                     {
-                        JArray oCat = GetCatalog("", false);
-
-                        var jobj = oCat.SelectTokens("[*].ShortName").Where(t => t.ToString().ToLower() == shortname.ToLower());
-                        if (jobj.FirstOrDefault() == null)
-                        {
-                            var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
-                            _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
-                            continue;
-                        }
-
-                        JObject jSW = jobj.FirstOrDefault().Parent.Parent as JObject;
-
                         try
                         {
+                            var jobj = oCat.SelectTokens("[*].ShortName").Where(t => t.ToString().ToLower() == shortname.ToLower());
+                            if (jobj.FirstOrDefault() == null)
+                            {
+                                var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                                _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
+                                continue;
+                            }
+
+                            JObject jSW = jobj.FirstOrDefault().Parent.Parent as JObject;
+
+
                             string sRZVersion = jSW["ProductVersion"].ToString();
 
                             try
@@ -557,7 +563,7 @@ namespace RZ.Server
                             oCatItem.Add("MSIProductID", productversion); //to show the old version in RuckZuck.exe
 
 
-                            if(jSW["Downloads"] == null)
+                            if (jSW["Downloads"] == null)
                                 oCatItem.Add("Downloads", 0);
                             else
                                 oCatItem.Add("Downloads", jSW["Downloads"]);
@@ -582,7 +588,11 @@ namespace RZ.Server
                             bFound = true;
                             continue;
                         }
-                        catch { }
+                        catch
+                        {
+                            //var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                            //_cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
+                        }
 
                         //JArray jItems = GetSoftwares(shortname);
                         //foreach (JObject jSW in jItems)
@@ -592,6 +602,9 @@ namespace RZ.Server
                     }
                     else
                     {
+                        //var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                        //_cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
+
                         if (shortname == null) //if shortname = ""; it's in SWLookup but without a shortname so we dont need to store it...
                         {
                             ThreadPool.QueueUserWorkItem(s =>
@@ -600,9 +613,6 @@ namespace RZ.Server
                                 SetShortname(productname, productversion, manufacturer, ""); //No Shortname
                             });
                         }
-
-                        var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
-                        _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                     }
                     #endregion
 
@@ -616,7 +626,7 @@ namespace RZ.Server
                 catch (Exception ex)
                 {
                     jObj.ToString();
-                    ex.Message.ToString();
+                    Console.WriteLine(ex.Message);
                 }
             }
 
