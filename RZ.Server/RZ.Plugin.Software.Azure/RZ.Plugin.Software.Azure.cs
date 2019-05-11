@@ -96,7 +96,18 @@ namespace Plugin_Software
                 string sID = Base.clean(man).ToLower() + "/" + Base.clean(name).ToLower() + "/" + Base.clean(ver).ToLower();
                 var oDir = oRepoContainer.GetDirectoryReference(sID);
 
-                foreach (CloudBlockBlob oItem in oDir.ListBlobsSegmentedAsync(new BlobContinuationToken()).Result.Results)
+                BlobContinuationToken continuationToken = null;
+                List<IListBlobItem> results = new List<IListBlobItem>();
+                do
+                {
+                    var response = oDir.ListBlobsSegmentedAsync(continuationToken).Result;
+                    continuationToken = response.ContinuationToken;
+                    results.AddRange(response.Results);
+                }
+                while (continuationToken != null);
+
+
+                foreach (CloudBlockBlob oItem in results)
                 {
                     if (oItem.Name.ToLower().EndsWith(".json"))
                     {
@@ -905,11 +916,25 @@ namespace Plugin_Software
             try
             {
                 CloudBlobContainer oWaitContainer = new CloudBlobContainer(new Uri(Settings["waitURL"] + "?" + Settings["waitSAS"]));
-                foreach(CloudBlockBlob lItem in oWaitContainer.ListBlobsSegmentedAsync(new BlobContinuationToken()).Result.Results)
+
+                BlobContinuationToken continuationToken = null;
+                List<IListBlobItem> results = new List<IListBlobItem>();
+                do
                 {
-                    lRes.Add(lItem.Name.Replace(Path.GetExtension(lItem.Name), ""));
+                    var response = oWaitContainer.ListBlobsSegmentedAsync(continuationToken).Result;
+                    continuationToken = response.ContinuationToken;
+                    results.AddRange(response.Results);
                 }
-                
+                while (continuationToken != null);
+
+                foreach(CloudBlockBlob lItem in results)
+                {
+                    try
+                    {
+                        lRes.Add(lItem.Name.Replace(Path.GetExtension(lItem.Name), ""));
+                    }
+                    catch { }
+                }
             }
             catch { }
 

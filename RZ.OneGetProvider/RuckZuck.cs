@@ -46,6 +46,10 @@ namespace PackageManagement
             //}
             //catch { }
 
+            RZRestAPIv2.sURL.ToString(); //get REST API URL
+
+            request.Debug("RZ Endpoint: " + RZRestAPIv2.sURL);
+
             oScan = new RZScan(false, false);
             oUpdate = new RZUpdate.RZUpdater();
         }
@@ -118,7 +122,19 @@ namespace PackageManagement
             //    return;
             //}
 
-            request.YieldPackageSource("RuckZuck", RZRestAPIv2.sURL, bIsTrusted, true, bValidated);
+            string sLocation = "https://ruckzuck.azurewebsites.net";
+
+            try
+            {
+                request.Debug("RZ Endpoint: " + RZRestAPIv2.sURL);
+                sLocation = RZRestAPIv2.sURL;
+            }
+            catch(Exception ex)
+            {
+                request.Debug("E130: " + ex.Message);
+            }
+
+            request.YieldPackageSource("RuckZuck", sLocation, bIsTrusted, true, bValidated);
         }
 
         private void _addPackageSource(string name, string location, bool trusted, Request request)
@@ -181,12 +197,15 @@ namespace PackageManagement
                     if (location.ToLower().StartsWith("http"))
                     {
                         RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies\\RuckZuck", true);
+                        if (key == null)
+                            key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies", true).CreateSubKey("RuckZuck");
+
                         key.SetValue("WebService", location);
                     }
                 }
                 catch(Exception ex)
                 {
-                    request.Debug("E189:" + ex.Message);
+                    request.Debug("E197:" + ex.Message);
                 }
             }
 
@@ -197,11 +216,15 @@ namespace PackageManagement
                     string custid = request.GetOptionValue("CustomerID");
 
                     RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies\\RuckZuck", true);
+
+                    if (key == null)
+                        key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Policies", true).CreateSubKey("RuckZuck");
+
                     key.SetValue("CustomerID", custid);
                 }
                 catch (Exception ex)
                 {
-                    request.Debug("E204:" + ex.Message);
+                    request.Debug("E212:" + ex.Message);
                 }
             }
         }
