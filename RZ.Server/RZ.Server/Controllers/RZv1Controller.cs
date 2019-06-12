@@ -101,8 +101,9 @@ namespace RZ.Server.Controllers
             string sRes = "";
             if (string.IsNullOrEmpty(search))
             {
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API Get Catalog</li>");
-                sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None);
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Catalog</li>");
+                //sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None); enable in Sept 2019
+                sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
             }
             else
             {
@@ -155,26 +156,26 @@ namespace RZ.Server.Controllers
             }
 
             //9.Apr.2019: repeating requests without downloading content
-            if (ClientIP.StartsWith("147.171.73."))
-            {
-                if (name.ToLower() == "pdfcreator")
-                    return Content("");
-                if (name.ToLower().StartsWith("vlc"))
-                    return Content("");
-                if (name.ToLower().StartsWith("python"))
-                    return Content("");
-                if (name.ToLower().StartsWith("microsoft .net"))
-                    return Content("");
-            }
+            //if (ClientIP.StartsWith("147.171.73."))
+            //{
+            //    if (name.ToLower() == "pdfcreator")
+            //        return Content("");
+            //    if (name.ToLower().StartsWith("vlc"))
+            //        return Content("");
+            //    if (name.ToLower().StartsWith("python"))
+            //        return Content("");
+            //    if (name.ToLower().StartsWith("microsoft .net"))
+            //        return Content("");
+            //}
 
             //20.Apr.2019: repeating requests without downloading content
-            if (ClientIP.StartsWith("128.95."))
-            {
-                if (name.ToLower().StartsWith("putty"))
-                    return Content("");
-                if (name.ToLower().StartsWith("texstudio"))
-                    return Content("");
-            }
+            //if (ClientIP.StartsWith("128.95."))
+            //{
+            //    if (name.ToLower().StartsWith("putty"))
+            //        return Content("");
+            //    if (name.ToLower().StartsWith("texstudio"))
+            //        return Content("");
+            //}
 
             //if (ClientIP.StartsWith("152.195.15"))
             //{
@@ -184,7 +185,7 @@ namespace RZ.Server.Controllers
 
             JArray jRes = Base.GetSoftwares(name, ver, man);
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API Get Definition for '" + name + "'</li>");
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Definition for '" + name + "'</li>");
 
             //Send Status
             try
@@ -222,7 +223,7 @@ namespace RZ.Server.Controllers
             JArray jItems = JArray.Parse(oGet.Result);
             string sResult = Base.CheckForUpdates(jItems).ToString();
             TimeSpan tDuration = DateTime.Now - dStart;
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
             Console.WriteLine("UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
             return Content(sResult);
         }

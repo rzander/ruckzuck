@@ -258,6 +258,52 @@ namespace RZ.Server
         public static JArray GetCatalog(string customerid = "", bool nocache = false)
         {
             JArray jResult = new JArray();
+
+            if(customerid == "V1")
+            {
+                if (!nocache) //skip cache ?!
+                {
+                    //Try to get value from Memory
+                    if (_cache.TryGetValue("swcatv1", out jResult))
+                    {
+                        return jResult;
+                    }
+
+                    jResult = new JArray();
+                }
+
+                try
+                {
+                    foreach (var item in Plugins._CatalogPlugins.OrderBy(t => t.Key))
+                    {
+                        try
+                        {
+                            jResult.Merge(item.Value.GetCatalog(customerid, nocache), new JsonMergeSettings
+                            {
+                                MergeArrayHandling = MergeArrayHandling.Union
+                            });
+                        }
+                        catch { }
+                    }
+
+                    List<string> lShortNames = new List<string>() { "RuckZuck" , "RuckZuck provider for OneGet", "RuckZuck for Configuration Manager", "SCCMCliCtr", "OneGet", "Collection Commander", "MonitorDetails"  };
+                    foreach(var oCatItem in jResult.ToArray())
+                    {
+                        if(!lShortNames.Contains(oCatItem["ShortName"].ToString()))
+                        {
+                            jResult.Remove(oCatItem);
+                        }
+                    }
+
+                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
+                    _cache.Set("swcatv1", jResult, cacheEntryOptions);
+
+                    return jResult;
+                }
+                catch { }
+            }
+
+
             if (!nocache) //skip cache ?!
             {
                 //Try to get value from Memory
