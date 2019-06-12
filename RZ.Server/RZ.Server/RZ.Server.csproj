@@ -46,7 +46,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
 
@@ -92,11 +92,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\content\" />
     <Folder Include="wwwroot\icons\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\repository\DevCDRAgent.json" />
+    <Folder Include="wwwroot\repository\" />
   </ItemGroup>
 
 </Project>

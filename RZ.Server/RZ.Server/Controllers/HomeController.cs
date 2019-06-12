@@ -173,6 +173,15 @@ namespace RZ.Server.Controllers
         }
 
         [AllowAnonymous]
+        public IActionResult Sponsors()
+        {
+            ViewBag.appVersion = typeof(HomeController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            //ViewData["Message"] = "About RuckZuck.tools.";
+
+            return View();
+        }
+
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

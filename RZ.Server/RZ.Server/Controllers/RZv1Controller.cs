@@ -102,7 +102,7 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(search))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V1 API Get Catalog</li>");
-                sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
+                sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None);
             }
             else
             {
