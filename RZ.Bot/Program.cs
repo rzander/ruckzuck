@@ -4,18 +4,20 @@ using Microsoft.ServiceBus.Messaging;
 using System.Threading;
 using RZUpdate;
 using RuckZuck.Base;
+using System.Collections.Generic;
 
 namespace RZ.Bot
 {
     class Program
     {
-
+        public static List<string> lPackages = new List<string>();
 
         static void Main(string[] args)
         {
             MessagingFactory messageFactory;
             NamespaceManager namespaceManager;
             //TopicClient myTopicClient;
+            lPackages.Add("AdobeReader DC MUI");
 
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             System.Net.ServicePointManager.CheckCertificateRevocationList = false;
@@ -82,6 +84,11 @@ namespace RZ.Bot
 
                         oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
                         //oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString());
+                        if (lPackages.IndexOf(oRZSW.SoftwareUpdate.SW.ShortName) >= 0) //check if there was a previous success
+                        {
+                            message.Complete();
+                            return;
+                        }
 
                         if (sLastPackage != oRZSW.SoftwareUpdate.SW.ShortName)
                         {
@@ -130,7 +137,8 @@ namespace RZ.Bot
                                         Console.WriteLine("... done.");
                                         message.Complete();
                                         RZRestAPIv2.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
-                                        sLastPackage = DateTime.Now.Ticks.ToString(); ;
+                                        sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
+                                        lPackages.Add(oRZSW.SoftwareUpdate.SW.ShortName);
                                         //return 0;
                                     }
                                     else
