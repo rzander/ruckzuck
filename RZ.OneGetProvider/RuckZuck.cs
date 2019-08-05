@@ -70,6 +70,10 @@ namespace PackageManagement
                     // todo: put any options required for install/uninstall/getinstalledpackages
                     request.YieldDynamicOption("SkipDependencies", Constants.OptionType.Switch, false);
                     request.YieldDynamicOption("LocalPath", Constants.OptionType.Folder, false);
+
+                    request.YieldDynamicOption("Manufacturer", Constants.OptionType.String, false);
+                    request.YieldDynamicOption("ProductVersion", Constants.OptionType.String, false);
+
                     break;
 
                 case "provider":
@@ -490,6 +494,16 @@ namespace PackageManagement
                     sManu = fastPackageReference.Split(';')[2].Trim();
                 }
                 catch { }
+            }
+
+            if (request.OptionKeys.Contains("Manufacturer"))
+            {
+                sManu = request.GetOptionValue("Manufacturer");
+            }
+
+            if (request.OptionKeys.Contains("ProductVersion"))
+            {
+                sVer = request.GetOptionValue("ProductVersion");
             }
 
             oUpdate = new RZUpdate.RZUpdater();
