@@ -542,6 +542,7 @@ namespace PackageManagement
             request.Debug(sProd);
             request.Debug(sVer);
 
+            oUpdate = new RZUpdate.RZUpdater();
             oUpdate.SoftwareUpdate.SW.ProductName = sProd;
             oUpdate.SoftwareUpdate.SW.ProductVersion = sVer;
             oUpdate.SoftwareUpdate.SW.Manufacturer = sManu;
