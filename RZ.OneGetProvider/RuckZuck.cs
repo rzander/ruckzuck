@@ -492,6 +492,7 @@ namespace PackageManagement
                 catch { }
             }
 
+            oUpdate = new RZUpdate.RZUpdater();
             oUpdate.SoftwareUpdate.SW.ProductName = sProd;
             oUpdate.SoftwareUpdate.SW.ProductVersion = sVer;
             oUpdate.SoftwareUpdate.SW.Manufacturer = sManu;
