@@ -18,8 +18,10 @@ namespace RZUpdate
         public static RZUpdater oUpdate;
         public static bool bRunning = true;
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            bool bError = false;
+
             //Get Proxy from IE
             WebRequest.DefaultWebProxy = WebRequest.GetSystemWebProxy();
 
@@ -33,7 +35,7 @@ namespace RZUpdate
                 Console.WriteLine("Install a Software from XML-File: RZUpdate.exe \"<File.json>\"");
                 Console.WriteLine("Update all installed Software-Versions: RZUpdate.exe /Update");
                 Console.WriteLine("");
-                return;
+                return 0;
             }
 
             if(!string.IsNullOrEmpty(Properties.Settings.Default.WebService))
@@ -77,6 +79,7 @@ namespace RZUpdate
                     }
                     else
                     {
+                        
                         foreach (string sArg in lArgs[0].Split(';'))
                         {
                             try
@@ -87,6 +90,7 @@ namespace RZUpdate
                                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                                 {
                                     Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                    bError = true;
                                     continue;
                                 }
 
@@ -112,6 +116,7 @@ namespace RZUpdate
                                             else
                                             {
                                                 Console.WriteLine("... Error. The installation failed.");
+                                                bError = true;
                                             }
                                         }
                                     }
@@ -128,46 +133,20 @@ namespace RZUpdate
                                     else
                                     {
                                         Console.WriteLine("... Error. The installation failed.");
+                                        bError = true;
                                     }
                                 }
                             }
                             catch(Exception ex)
                             {
                                 Console.WriteLine("Error: " + ex.Message);
+                                bError = true;
                             }
                         }
 
                     }
                 }
             }
-            //if (lArgs.Count == 2)
-            //{
-            //    RZUpdater oRZUpdate = new RZUpdater();
-            //    var oUpdate = oRZUpdate.CheckForUpdate(lArgs[0], lArgs[1]);
-            //    if (oUpdate != null)
-            //    {
-            //        Console.WriteLine("New Version: " + oUpdate.SW.ProductVersion);
-            //        Console.Write("Downloading...");
-
-            //        if (oUpdate.Download().Result)
-            //        {
-            //            Console.WriteLine("... done.");
-            //            Console.Write("Installing...");
-            //            if (oUpdate.Install(false, true).Result)
-            //            {
-            //                Console.WriteLine("... done.");
-            //            }
-            //            else
-            //            {
-            //                Console.WriteLine("... Error. The update installation failed.");
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("No Update found...");
-            //    }
-            //}
 
             if (lArgs.Count == 3)
             {
@@ -185,20 +164,29 @@ namespace RZUpdate
                         if (oRZUpdate.SoftwareUpdate.Install(false, true).Result)
                         {
                             Console.WriteLine("... done.");
+                            return 0;
                         }
                         else
                         {
                             Console.WriteLine("... Error. The update installation failed.");
+                            return 1;
                         }
                     }
+
+                    return 99;
                 }
                 else
                 {
                     Console.WriteLine("No Update found...");
+                    return 0;
                 }
             }
 
             System.Threading.Thread.Sleep(1000);
+            if(bError)
+                return 2;
+
+            return 0;
         }
 
         private static void OScan_OnUpdScanCompleted(object sender, EventArgs e)
