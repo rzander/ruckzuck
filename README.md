@@ -13,9 +13,9 @@ Select a software from the repository and RuckZuck handles the download and inst
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
 
-# Changes in V.Next (Soon):
+# Changes in V1.7.x:
 
-RuckZuck will soon get a new REST API which brings some general changes:
+New REST API which brings some general changes:
 * No RuckZuck accounts and therefore no authentication required anymore. 
   * You will be able to provide an E-Mail address if you upload new software, but as soon as the software is approved, the address will be removed from the package.
   * Moderators will have to log in with a Microsoft account.
