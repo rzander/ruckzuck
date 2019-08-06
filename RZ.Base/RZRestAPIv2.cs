@@ -57,7 +57,7 @@ namespace RuckZuck.Base
                     {
                         if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                            _sURL = sWebSVC.TrimEnd('/');
                         }
                     }
                 }
@@ -106,10 +106,25 @@ namespace RuckZuck.Base
             using (HttpClient hClient = new HttpClient())
             {
                 Task<string> tReq;
+
                 if (string.IsNullOrEmpty(customerid))
+                {
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                }
                 else
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+                if(string.IsNullOrEmpty(CustomerID))
+                {
+                    Task.Run(() =>
+                    {
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            CustomerID.ToString();
+                        }
+                    }).ConfigureAwait(false);
+                }
 
                 tReq.Wait(5000); //wait max 5s
 
@@ -221,11 +236,6 @@ namespace RuckZuck.Base
 
             response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?iconhash=" + iconhash);
 
-            //if (string.IsNullOrEmpty(iconhash))
-            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconid=" + iconid);
-            //else
-            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconhash=" + iconhash);
-
             response.Wait(10000);
 
             if (response.IsCompleted)
@@ -245,7 +255,7 @@ namespace RuckZuck.Base
         {
             try
             {
-               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname));
+               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) +"&customerid=" + WebUtility.UrlEncode(CustomerID));
             }
             catch { }
         }
@@ -268,7 +278,7 @@ namespace RuckZuck.Base
             {
                 try
                 {
-                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
+                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback) + "&customerid=" + WebUtility.UrlEncode(customerid));
                     return oRes;
                 }
                 catch { }

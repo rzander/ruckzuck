@@ -73,6 +73,7 @@ namespace PackageManagement
 
                     request.YieldDynamicOption("Manufacturer", Constants.OptionType.String, false);
                     request.YieldDynamicOption("ProductVersion", Constants.OptionType.String, false);
+                    request.YieldDynamicOption("ProductName", Constants.OptionType.String, false);
 
                     break;
 
@@ -504,6 +505,11 @@ namespace PackageManagement
             if (request.OptionKeys.Contains("ProductVersion"))
             {
                 sVer = request.GetOptionValue("ProductVersion");
+            }
+
+            if (request.OptionKeys.Contains("ProductName"))
+            {
+                sProd = request.GetOptionValue("ProductName");
             }
 
             oUpdate = new RZUpdate.RZUpdater();

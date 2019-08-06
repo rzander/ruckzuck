@@ -350,7 +350,7 @@ namespace RuckZuck_Tool
 
                                 if (oFeedBack.hasFeedback)
                                 {
-                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.CustomerID, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
+                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, oFeedBack.tbFeedback.Text, RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
                                 }
                             };
                             Dispatcher.Invoke(update);
@@ -635,86 +635,6 @@ namespace RuckZuck_Tool
                 Mouse.OverrideCursor = null;
             }
         }
-
-        /*private void miCreateArtifact_Click(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-            try
-            {
-                foreach (var oItem in lvSW.SelectedItems)
-                {
-                    try
-                    {
-                        SWUpdate oSW = null;
-                        if (oItem.GetType() == typeof(GetSoftware))
-                        {
-                            GetSoftware dgr = oItem as GetSoftware;
-                            //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
-                            oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer);
-                        }
-
-                        if (oItem.GetType() == typeof(AddSoftware))
-                        {
-                            AddSoftware dgr = oItem as AddSoftware;
-                            //sPS = GetSWInstallPS(dgr.ProductName, dgr.ProductVersion, "");
-                            oSW = new SWUpdate(dgr);
-                        }
-
-                        string sDir = AppDomain.CurrentDomain.BaseDirectory;
-                        sDir = Path.Combine(sDir, "windows-" + oSW.SW.ShortName.Replace(" ", "")).Trim();
-                        Directory.CreateDirectory(sDir);
-                        CreateExe oExe = new CreateExe(Path.Combine(sDir, oSW.SW.ShortName.Replace(" ", "") + "_setup.exe"));
-                        oExe.Icon = oSW.SW.Image;
-                        oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
-                        oExe.Sources.Add(Properties.Resources.RZUpdate);
-                        oExe.Sources.Add(Properties.Resources.RZRestApi);
-                        oExe.Sources.Add(Properties.Resources.Assembly.Replace("RZRZRZ", oSW.SW.ShortName));
-
-                        if (!oExe.Compile())
-                        {
-                            MessageBox.Show("Failed to create .Exe", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-
-                        List<string> lLines = new List<string>();
-                        lLines.Add("{");
-                        lLines.Add("\t\"title\": \"" + oSW.SW.ShortName + "\",");
-                        lLines.Add("\t\"description\": \"" + oSW.SW.Description + "\",");
-                        lLines.Add("\t\"publisher\": \"" + oSW.SW.Manufacturer + "\",");
-                        lLines.Add("\t\"tags\": [\"Windows\"");
-                        if (((GetSoftware)oItem).Categories.Count > 0)
-                        {
-                            foreach (string sCat in ((GetSoftware)oItem).Categories)
-                            {
-                                lLines.Add("\t, \"" + sCat + "\"");
-                            }
-                            lLines.Add("\t],");
-                        }
-                        else
-                        {
-                            lLines.Add("\t],");
-                        }
-                        lLines.Add("\t\"iconUri\": \"https://ruckzuck.azurewebsites.net/wcf/RZService.svc/rest/GetIcon?id=" + ((GetSoftware)oItem).IconId + "\",");
-                        lLines.Add("\t\"targetOsType\": \"Windows\",");
-                        lLines.Add("\t\"runCommand\": { \"commandToExecute\": \"" + oSW.SW.ShortName.Replace(" ", "") + "_setup.exe" + "\" }");
-                        lLines.Add("}");
-                        System.IO.File.WriteAllLines(Path.Combine(sDir, "artifactfile.json"), lLines.ToArray());
-
-                        //Non authenticated Users can create one EXE
-                        if (!EnableEdit)
-                        {
-                            miCreateArtifact.IsEnabled = false;
-                            return;
-                        }
-                    }
-                    catch { }
-                }
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }*/
-
     }
 
 
