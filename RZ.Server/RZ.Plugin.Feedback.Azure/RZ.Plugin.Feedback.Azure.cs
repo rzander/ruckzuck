@@ -72,7 +72,7 @@ namespace RZ.Plugin.Feedback.Azure
                         }
                     }
 
-                    bMSG.UserProperties.Add("User", "");
+                    bMSG.UserProperties.Add("User", user);
                     bMSG.UserProperties.Add("feedback", feedback);
                     bMSG.UserProperties.Add("ProductName", name);
                     bMSG.UserProperties.Add("ProductVersion", ver);

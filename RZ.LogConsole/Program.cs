@@ -52,8 +52,10 @@ namespace RZ.LogConsole
                         Console.ForegroundColor = ConsoleColor.Red;
                     if (message.Label.Contains(@"Feedback/success"))
                         Console.ForegroundColor = ConsoleColor.Green;
+
+                    string label = message.Label.Replace("RuckZuck/WCF/", "");
                     //Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Properties["WorkerServiceHost"].ToString() + "(" + message.Properties["Queue"].ToString() + ") : " + message.Properties["TargetComputer"].ToString()  + " : " + message.GetBody<string>());
-                    Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Label + " " + message.GetBody<string>());
+                    Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Label + " " + (message.Properties["ClientIP"] ?? "") as string );
 
 
                     Console.ResetColor();

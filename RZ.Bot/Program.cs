@@ -81,6 +81,11 @@ namespace RZ.Bot
 
 
                         RZUpdater oRZSW = new RZUpdater();
+                        if(lPackages.IndexOf(message.Properties["ProductName"].ToString() + message.Properties["ProductVersion"].ToString() + message.Properties["Manufacturer"].ToString()) >= 0)
+                        {
+                            message.Complete();
+                            return;
+                        }
 
                         oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
                         //oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString());
@@ -88,6 +93,11 @@ namespace RZ.Bot
                         {
                             message.Complete();
                             return;
+                        }
+
+                        if(message.Properties["ProductVersion"].ToString() != oRZSW.SoftwareUpdate.SW.ProductVersion)
+                        {
+                            oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.ShortName);
                         }
 
                         if (sLastPackage != oRZSW.SoftwareUpdate.SW.ShortName)
@@ -120,6 +130,7 @@ namespace RZ.Bot
                                         if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
                                         {
                                             Console.WriteLine("... done.");
+                                            lPackages.Add(oRZSWPreReq.SoftwareUpdate.SW.ShortName);
                                         }
                                         else
                                         {
@@ -139,6 +150,7 @@ namespace RZ.Bot
                                         RZRestAPIv2.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
                                         sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
                                         lPackages.Add(oRZSW.SoftwareUpdate.SW.ShortName);
+                                        lPackages.Add(message.Properties["ProductName"].ToString() + message.Properties["ProductVersion"].ToString() + message.Properties["Manufacturer"].ToString());
                                         //return 0;
                                     }
                                     else
@@ -163,6 +175,7 @@ namespace RZ.Bot
                         else
                         {
                             Console.WriteLine("... retry later..");
+                            sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
                             Thread.Sleep(5000);
                             //message.Abandon(); // retry later....
                         }
