@@ -81,15 +81,13 @@ namespace RuckZuck_Tool
 
             if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
             {
-                tbCustomerID.IsEnabled = true;
-                RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
-                btSettingsSave.IsEnabled = true;
+                //tbCustomerID.IsEnabled = true;
+                //RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
             }
             else
             {
                 tbCustomerID.Text = RZRestAPIv2.CustomerID;
                 tbCustomerID.IsEnabled = false;
-                btSettingsSave.IsEnabled = false;
             }
 
             oInstPanel.onEdit += oInstPanel_onEdit;
@@ -728,23 +726,6 @@ namespace RuckZuck_Tool
             tbCustomerID.Text = RZRestAPIv2.CustomerID; // Properties.Settings.Default.CustomerID;
         }
 
-        private void btSettingsSave_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Properties.Settings.Default.CustomerID = tbCustomerID.Text;
-                Properties.Settings.Default.Save();
-                RZRestAPIv2.CustomerID = tbCustomerID.Text;
-                btSettingsSave.IsEnabled = false;
-
-                oSCAN.SoftwareRepository = new List<GetSoftware>();
-                oSCAN.GetSWRepository().ConfigureAwait(false);
-            }
-            catch 
-            {
-            }
-        }
-
         private void btOpenSettings_Click(object sender, RoutedEventArgs e)
         {
             tabWizard.SelectedItem = tabSettings;
@@ -773,9 +754,5 @@ namespace RuckZuck_Tool
             Properties.Settings.Default.Save();
         }
 
-        private void TbCustomerID_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            btSettingsSave.IsEnabled = true;
-        }
     }
 }
