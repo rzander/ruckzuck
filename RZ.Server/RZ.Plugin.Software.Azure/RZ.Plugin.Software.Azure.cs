@@ -735,7 +735,7 @@ namespace Plugin_Software
             {
                 string sasToken = Settings["catSAS"];
                 string sURL = Settings["catURL"];
-                string PartitionKey = "feedback";
+                string PartKey = "known";
                 if (string.IsNullOrEmpty(Customer))
                     Customer = "known";
 
@@ -744,7 +744,7 @@ namespace Plugin_Software
                     case "DL":
                         try
                         {
-                            var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartitionKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey,Downloads&" + sasToken);
+                            var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey,Downloads&" + sasToken);
 
                             request.Method = "GET";
                             request.Headers.Add("x-ms-version", "2017-04-17");
