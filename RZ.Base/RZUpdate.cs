@@ -66,7 +66,7 @@ namespace RZUpdate
                         if (SW.PSPreReq == null)
                         {
                             //Load all MetaData for the specific SW
-                            foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+                            foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
                             {
                                 if (string.IsNullOrEmpty(SW.PSPreReq))
                                     SW.PSPreReq = "$true; ";
@@ -224,7 +224,7 @@ namespace RZUpdate
 
             if (SW == null)
             {
-                SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer).FirstOrDefault();
+                SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
 
                 if (SW.Files == null)
                     SW.Files = new List<contentFiles>();
@@ -287,7 +287,7 @@ namespace RZUpdate
 
                             if (SW.Architecture == null)
                             {
-                                SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer).FirstOrDefault();
+                                SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
                                 if (SW == null) { Console.WriteLine("No SW"); }
                                 SW.ShortName = ShortName;
 
@@ -323,7 +323,7 @@ namespace RZUpdate
             //Only get other DeploymentTypes if Architecture is not defined...
             if (string.IsNullOrEmpty(this.SW.Architecture))
             {
-                foreach (var DT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+                foreach (var DT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
                 {
                     try
                     {
