@@ -107,6 +107,21 @@ namespace RuckZuck.Base
             {
                 Task<string> tReq;
 
+                if (string.IsNullOrEmpty(CustomerID))
+                {
+                    using (HttpClient qClient = new HttpClient())
+                    {
+                        CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                        customerid = CustomerID.ToString();
+                    }
+
+                    //Task.Run(() =>
+                    //{
+
+                    //}).Wait(2000); //.ConfigureAwait(false);
+                }
+
+
                 if (string.IsNullOrEmpty(customerid))
                 {
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
@@ -114,17 +129,7 @@ namespace RuckZuck.Base
                 else
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
 
-                if(string.IsNullOrEmpty(CustomerID))
-                {
-                    Task.Run(() =>
-                    {
-                        using (HttpClient qClient = new HttpClient())
-                        {
-                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
-                            CustomerID.ToString();
-                        }
-                    }).ConfigureAwait(false);
-                }
+
 
                 tReq.Wait(5000); //wait max 5s
 
@@ -168,6 +173,8 @@ namespace RuckZuck.Base
 
             try
             {
+                sURL = "UDP"; //reset URL as this part is only called every 30 min
+
                 Task<string> response;
                 if (string.IsNullOrEmpty(customerid))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
@@ -184,7 +191,11 @@ namespace RuckZuck.Base
 
                     if (string.IsNullOrEmpty(customerid) && lRes.Count > 400)
                     {
-                        File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                        try
+                        {
+                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                        }
+                        catch { }
                     }
 
                     return lRes;
