@@ -19,6 +19,7 @@ namespace RZ.Server
         internal static Dictionary<string, ISoftware> _SoftwarePlugins = new Dictionary<string, ISoftware>();
         internal static Dictionary<string, ISWLookup> _SWLookupPlugins = new Dictionary<string, ISWLookup>();
         internal static Dictionary<string, IFeedback> _FeedbackPlugins = new Dictionary<string, IFeedback>();
+        internal static Dictionary<string, ILog> _LogPlugins = new Dictionary<string, ILog>();
 
         public static void loadPlugins(string PluginPath = "")
         {
@@ -29,6 +30,7 @@ namespace RZ.Server
             _SoftwarePlugins.Clear();
             _SWLookupPlugins.Clear();
             _FeedbackPlugins.Clear();
+            _LogPlugins.Clear();
 
             if (Base._cache != null)
             {
@@ -87,6 +89,17 @@ namespace RZ.Server
             foreach (var item in Feedbackplugins)
             {
                 _FeedbackPlugins.Add(item.Name, item);
+                Console.WriteLine(item.Name);
+                item.Settings = new Dictionary<string, string>();
+                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Init(PluginPath);
+                dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
+            }
+
+            ICollection<ILog> Logplugins = GenericPluginLoader<ILog>.LoadPlugins(PluginPath, "RZ.Plugin.Log");
+            foreach (var item in Logplugins)
+            {
+                _LogPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
                 item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
@@ -786,7 +799,26 @@ namespace RZ.Server
 
             return new Version(major, minor, build, rev);
         }
-            
+
+        public static void WriteLog(string Text, string clientip, int EventID = 0, string customerid = "")
+        {
+            try
+            {
+                foreach (var item in Plugins._LogPlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        item.Value.WriteLog(Text, clientip, EventID, customerid);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            return;
+        }
+
+
     }
 
     public static class GenericPluginLoader<T>
