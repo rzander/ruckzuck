@@ -25,12 +25,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\ipdb\**" />
     <Compile Remove="wwwroot\jaindb\**" />
     <Compile Remove="wwwroot\swlookup\**" />
+    <Content Remove="wwwroot\ipdb\**" />
     <Content Remove="wwwroot\jaindb\**" />
     <Content Remove="wwwroot\swlookup\**" />
+    <EmbeddedResource Remove="wwwroot\ipdb\**" />
     <EmbeddedResource Remove="wwwroot\jaindb\**" />
     <EmbeddedResource Remove="wwwroot\swlookup\**" />
+    <None Remove="wwwroot\ipdb\**" />
     <None Remove="wwwroot\jaindb\**" />
     <None Remove="wwwroot\swlookup\**" />
   </ItemGroup>

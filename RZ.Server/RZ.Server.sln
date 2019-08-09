@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Feedback.Proxy", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.SWLookup.Proxy", "RZ.SWLookup.Plugin.Proxy\RZ.Plugin.SWLookup.Proxy.csproj", "{CDD709A8-2863-4686-BC27-80AF3B048CBC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Log.Azure", "RZ.Plugin.Log.Azure\RZ.Plugin.Log.Azure.csproj", "{66703C28-1066-4C71-B387-D1F2C5146B7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDD709A8-2863-4686-BC27-80AF3B048CBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66703C28-1066-4C71-B387-D1F2C5146B7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66703C28-1066-4C71-B387-D1F2C5146B7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66703C28-1066-4C71-B387-D1F2C5146B7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66703C28-1066-4C71-B387-D1F2C5146B7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

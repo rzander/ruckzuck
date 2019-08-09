@@ -92,4 +92,15 @@ namespace RZ.Server.Interfaces
 
         Task<bool> SendNotification(string message = "", string body = "", string customerid = "");
     }
+
+    public interface ILog
+    {
+        void Init(string PluginPath);
+
+        string Name { get; }
+
+        Dictionary<string, string> Settings { get; set; }
+
+        void WriteLog(string Text, string clientip, int EventId = 0, string customerid = "");
+    }
 }

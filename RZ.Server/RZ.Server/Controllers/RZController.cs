@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -24,6 +21,7 @@ namespace RZ.Server.Controllers
         private IHttpContextAccessor _accessor;
         public static string sbconnection = "";
         public static TopicClient tcRuckZuck = null;
+        //public AzureLogAnalytics AzureLog = new AzureLogAnalytics("", "", "");
 
         public RZController(IMemoryCache memoryCache, IHubContext<Default> hubContext, IHttpContextAccessor accessor)
         {
@@ -31,7 +29,14 @@ namespace RZ.Server.Controllers
             _hubContext = hubContext;
             _accessor = accessor;
 
-            
+            //if (string.IsNullOrEmpty(AzureLog.WorkspaceId))
+            //{
+            //    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("Log-WorkspaceID")) && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("Log-SharedKey")))
+            //    {
+            //        AzureLog = new AzureLogAnalytics(Environment.GetEnvironmentVariable("Log-WorkspaceID"), Environment.GetEnvironmentVariable("Log-SharedKey"), "RuckZuck");
+            //        //AzureLog.PostAsync(new { Computer = Environment.MachineName, EventID = 0001, Description = "Controller started" });
+            //    }
+            //}
 
             if (!string.IsNullOrEmpty(sbconnection))
             {
@@ -56,6 +61,7 @@ namespace RZ.Server.Controllers
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            //Base.WriteLog("ttt", "83.77.117.28", 0, "1");
 
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
@@ -131,6 +137,8 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetSoftwares/{man}/{name}/{ver}")]
         public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "", bool image = false, string customerid = "" )  //result = array
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
 
@@ -189,6 +197,7 @@ namespace RZ.Server.Controllers
                 if (jObj["Shortname"] != null)
                 {
                     string sShortName = jObj["Shortname"].ToString();
+
                     jObj.Remove("Shortname");
 
                     if(jObj["ShortName"] == null)
@@ -227,6 +236,8 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetSoftwares/{shortname}")]
         public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
 
@@ -258,8 +269,17 @@ namespace RZ.Server.Controllers
                 ClientIP = ex.Message.ToString();
             }
 
+            if (string.IsNullOrEmpty(customerid))
+            {
+                if (ClientIP.StartsWith("152.195.1"))
+                    return false;
+                if (ClientIP.StartsWith("152.199.1"))
+                    return false;
+            }
+
             if (string.IsNullOrEmpty(shortname))
                 return false;
+
             else
             {
                 try
@@ -268,10 +288,13 @@ namespace RZ.Server.Controllers
                     bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
                     bMSG.UserProperties.Add("ShortName", shortname);
                     bMSG.UserProperties.Add("ClientIP", ClientIP);
-                    if(tcRuckZuck != null)
+                    bMSG.UserProperties.Add("CustomerID", customerid);
+                    if (tcRuckZuck != null)
                         tcRuckZuck.SendAsync(bMSG);
 
                     _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + shortname + ")</li>");
+
+                    Base.WriteLog($"Content donwloaded: {shortname}", ClientIP, 1300, customerid);
                 }
                 catch { }
 
@@ -307,9 +330,14 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/v2/GetFile/{contentid}/{filename}")]
         public async Task<IActionResult> GetFile(string contentid, string filename, string shortname = "", string customerid = "")
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             string sPath = Path.Combine(contentid, filename);
             if (!string.IsNullOrEmpty(shortname))
                 sPath = Path.Combine("proxy", shortname, contentid, filename);
+
+            Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
+
             return File(await Base.GetFile(sPath, customerid), "application/octet-stream");
         }
 
@@ -331,18 +359,6 @@ namespace RZ.Server.Controllers
             else
                 return Content((new JArray()).ToString());
         }
-
-        //[HttpPost]
-        //[Route("rest/v2/UploadSWLookup")]
-        //public bool UploadSWLookup() //only need to forward requests from V1 REST API,  otherwise SWLookup entries will be created from CheckForUpdate
-        //{
-        //    var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-        //    string sJSON = oGet.Result;
-        //    JObject jObj = JObject.Parse(sJSON);
-        //    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
-        //    return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
-        //}
-
         [HttpGet]
         [Route("rest/v2/GetPendingApproval")]
         public ActionResult GetPendingApproval(string customerid = "")
@@ -354,10 +370,40 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/geturl")]
         public ActionResult GetURL(string customerid = "")
         {
+            string ClientIP = "";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+                Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+            }
+            catch (Exception ex)
+            {
+            }
+
+
             if (customerid == "swtesting")
                 return Content("https://ruckzuck.azurewebsites.net", "text/html");
 
-            return Content("https://cdn.ruckzuck.tools", "text/html");
+            if(customerid.Split('.').Length == 4)
+                return Content("https://cdn.ruckzuck.tools", "text/html");
+
+            return Content("https://ruckzuck.tools", "text/html");
+            
+        }
+
+        [HttpGet]
+        [Route("rest/v2/getip")]
+        public ActionResult GetIP()
+        {
+            string ClientIP = "unknown";
+            try
+            {
+                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+            catch { }
+
+            return Content(ClientIP, "text/html");
         }
 
         [HttpGet]
@@ -371,7 +417,15 @@ namespace RZ.Server.Controllers
             }
             catch(Exception ex)
             {
-                ClientIP = ex.Message.ToString(); 
+                //ClientIP = ex.Message.ToString(); 
+            }
+
+            if (string.IsNullOrEmpty(customerid))
+            {
+                if (ClientIP.StartsWith("152.195.1"))
+                    return;
+                if (ClientIP.StartsWith("152.199.1"))
+                    return;
             }
 
             string Shortname = Base.GetShortname(name, ver, man, customerid);
@@ -391,10 +445,12 @@ namespace RZ.Server.Controllers
                         if (bWorking)
                         {
                             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
+                            Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
                         }
                         else
                         {
                             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
+                            Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
                         }
 
                         Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP, customerid);
@@ -410,6 +466,10 @@ namespace RZ.Server.Controllers
                 }
                 catch { }
             }
+            else
+            {
+                Base.WriteLog($"{man} {name} {ver} : {text}", ClientIP, 2001, customerid);
+            }
         }
 
         [HttpPost]
@@ -420,6 +480,9 @@ namespace RZ.Server.Controllers
             string sJSON = oGet.Result;
 
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
+
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1100, customerid);
 
             if (sJSON.TrimStart().StartsWith('['))
             {

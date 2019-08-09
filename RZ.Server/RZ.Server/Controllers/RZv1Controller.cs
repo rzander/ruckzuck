@@ -102,8 +102,8 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(search))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Catalog</li>");
-                //sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None); enable in Sept 2019
-                sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
+                sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None); //enable in Sept 2019
+                //sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
             }
             else
             {
@@ -169,13 +169,13 @@ namespace RZ.Server.Controllers
             //}
 
             //20.Apr.2019: repeating requests without downloading content
-            //if (ClientIP.StartsWith("128.95."))
-            //{
-            //    if (name.ToLower().StartsWith("putty"))
-            //        return Content("");
-            //    if (name.ToLower().StartsWith("texstudio"))
-            //        return Content("");
-            //}
+            if (ClientIP.StartsWith("128.95."))
+            {
+                if (name.ToLower().StartsWith("putty"))
+                    return Content("");
+                if (name.ToLower().StartsWith("texstudio"))
+                    return Content("");
+            }
 
             //if (ClientIP.StartsWith("152.195.15"))
             //{
