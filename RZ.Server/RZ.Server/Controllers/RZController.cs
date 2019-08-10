@@ -83,6 +83,7 @@ namespace RZ.Server.Controllers
             }
 
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
+            Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
 
             JArray aRes = Base.GetCatalog(customerid, nocache);
             
@@ -146,13 +147,13 @@ namespace RZ.Server.Controllers
             if (!string.IsNullOrEmpty(shortname))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
-
+                Base.WriteLog($"Get Definition for: {shortname}", ClientIP, 1500, customerid);
                 jSW = Base.GetSoftwares(shortname, customerid);
             }
             else
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
-
+                Base.WriteLog($"Get Definition for: {name}", ClientIP, 1500, customerid);
                 jSW = Base.GetSoftwares(name, ver, man, customerid);
             }
             //Cleanup
@@ -237,6 +238,7 @@ namespace RZ.Server.Controllers
         public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            Base.WriteLog($"Get Softwares: {shortname}", ClientIP, 1400, customerid);
 
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
@@ -345,6 +347,7 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/checkforupdate")]
         public ActionResult CheckForUpdate(string customerid = "")
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
             DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             JArray jItems = JArray.Parse(oGet.Result);
@@ -354,6 +357,7 @@ namespace RZ.Server.Controllers
                 TimeSpan tDuration = DateTime.Now - dStart;
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V2 API CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
                 Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
+                Base.WriteLog($"V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
                 return Content(sResult);
             }
             else
@@ -482,7 +486,7 @@ namespace RZ.Server.Controllers
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
 
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1100, customerid);
+            Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1050, customerid);
 
             if (sJSON.TrimStart().StartsWith('['))
             {
