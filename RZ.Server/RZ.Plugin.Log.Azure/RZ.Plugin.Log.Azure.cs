@@ -64,13 +64,20 @@ namespace RZ.Plugin.Feedback.Azure
                 {
                     try
                     {
-                        _cache.TryGetValue(clientip, out location Loc);
+                        string sourceIP = clientip;
+                        //if customerid is an IP use this instead of clientip because of CDN
+                        if(customerid.Count(f => f ==  '.') == 3)
+                        {
+                            sourceIP = customerid;
+                        }
+
+                        _cache.TryGetValue(sourceIP, out location Loc);
 
                         if (Loc == null)
-                            Loc = GetLocations(IP2Long(clientip.Trim())).FirstOrDefault();
+                            Loc = GetLocations(IP2Long(sourceIP.Trim())).FirstOrDefault();
 
                         var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(300)); //cache hash for x Seconds
-                        _cache.Set(clientip, Loc, cacheEntryOptions);
+                        _cache.Set(sourceIP, Loc, cacheEntryOptions);
 
                         if (Loc != null)
                             AzureLog.Post(new { Computer = clientip, EventID = EventId, CustomerID = customerid, Description = Text, Country = Loc.Country, State = Loc.State, Location = Loc.Location, Long = Loc.Long, Lat = Loc.Lat });
