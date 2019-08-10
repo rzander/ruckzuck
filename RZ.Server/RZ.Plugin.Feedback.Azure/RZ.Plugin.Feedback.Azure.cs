@@ -18,7 +18,7 @@ namespace RZ.Plugin.Feedback.Azure
     public class Plugin_Feedback : IFeedback
     {
         private IMemoryCache _cache;
-        static string sbconnection = "Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LtCxU2rKG6D9j/LQaqQWwkE2wU2hbV1y5RNzw8qcFlA=";
+        static string sbconnection = "";
         TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
 
         public string Name
@@ -44,6 +44,23 @@ namespace RZ.Plugin.Feedback.Azure
             if (Settings == null)
                 Settings = new Dictionary<string, string>();
 
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbconnection")))
+            {
+                sbconnection = Environment.GetEnvironmentVariable("sbconnection");
+            }
+
+            if (!string.IsNullOrEmpty(sbconnection))
+            {
+                if (tcRuckZuck == null)
+                {
+                    Console.WriteLine("SBConnection:" + sbconnection);
+                    tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+                }
+            }
+            else
+                tcRuckZuck = null;
+
         }
 
         public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "")
@@ -52,39 +69,44 @@ namespace RZ.Plugin.Feedback.Azure
             {
                 try
                 {
-                    Message bMSG;
-                    if (feedback == "NEW Version ?!")
+                    try
                     {
-                        bMSG = new Message() { Label = "RuckZuck/WCF/NEW/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                        failure = true;
-                    }
-                    else
-                    {
-                        if (failure == false)
+                        Message bMSG;
+                        if (feedback == "NEW Version ?!")
                         {
-                            bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
+                            bMSG = new Message() { Label = "RuckZuck/WCF/NEW/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                            failure = true;
                         }
                         else
                         {
-                            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
-                            bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                            if (failure == false)
+                            {
+                                bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                                //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
+                            }
+                            else
+                            {
+                                //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
+                                bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
+                            }
                         }
+
+                        bMSG.UserProperties.Add("User", user);
+                        bMSG.UserProperties.Add("feedback", feedback);
+                        bMSG.UserProperties.Add("ProductName", name);
+                        bMSG.UserProperties.Add("ProductVersion", ver);
+                        bMSG.UserProperties.Add("Manufacturer", man);
+
+                        if (!string.IsNullOrEmpty(ip))
+                            bMSG.UserProperties.Add("ClientIP", ip);
+
+                        if (!string.IsNullOrEmpty(customerid))
+                            bMSG.UserProperties.Add("CustomerID", customerid);
+
+                        if(tcRuckZuck != null)
+                            tcRuckZuck.SendAsync(bMSG);
                     }
-
-                    bMSG.UserProperties.Add("User", user);
-                    bMSG.UserProperties.Add("feedback", feedback);
-                    bMSG.UserProperties.Add("ProductName", name);
-                    bMSG.UserProperties.Add("ProductVersion", ver);
-                    bMSG.UserProperties.Add("Manufacturer", man);
-
-                    if (!string.IsNullOrEmpty(ip))
-                        bMSG.UserProperties.Add("ClientIP", ip);
-
-                    if (!string.IsNullOrEmpty(customerid))
-                        bMSG.UserProperties.Add("CustomerID", customerid);
-
-                    tcRuckZuck.SendAsync(bMSG);
+                    catch { }
 
                     JObject jEntity = new JObject();
                     jEntity.Add("Manufacturer", man);
