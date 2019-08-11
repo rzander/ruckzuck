@@ -114,11 +114,6 @@ namespace RuckZuck.Base
                         CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
                         customerid = CustomerID.ToString();
                     }
-
-                    //Task.Run(() =>
-                    //{
-
-                    //}).Wait(2000); //.ConfigureAwait(false);
                 }
 
 
@@ -217,7 +212,7 @@ namespace RuckZuck.Base
             {
                 Task<string> response;
 
-                if (string.IsNullOrEmpty(customerid))
+                if (string.IsNullOrEmpty(customerid) || customerid.Contains('.'))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid));
