@@ -422,7 +422,11 @@ namespace Plugin_Software
                     {
                         if (File.Exists(Path.Combine(sContentPath, oFiles["FileName"].Value<string>())))
                         {
-                            oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/"  + oContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                            string sBase = Base.localURL;
+                            if (Environment.GetEnvironmentVariable("localURL") != null)
+                                sBase = Environment.GetEnvironmentVariable("localURL"); //If hosted in a container, the localURL represensts the server URL
+
+                            oFiles["URL"] = sBase + "/rest/v2/GetFile/"  + oContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
                         }
                     }
                 }

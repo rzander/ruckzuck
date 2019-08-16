@@ -237,14 +237,16 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return item.Value.GetSoftwares(shortname, customerid);
+                        var oRes = item.Value.GetSoftwares(shortname, customerid);
+                        if (oRes != null && oRes.Count > 0)
+                            return oRes;
                     }
                     catch { }
                 }
             }
             catch { }
 
-            return null;
+            return new JArray(); 
         }
 
         public static JArray GetSoftwares(string name = "", string ver = "", string man = "_unknown", string customerid = "")
@@ -258,14 +260,16 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return item.Value.GetSoftwares(name, ver, man, customerid);
+                        var oRes = item.Value.GetSoftwares(name, ver, man, customerid);
+                        if (oRes != null && oRes.Count > 0)
+                            return oRes;
                     }
                     catch { }
                 }
             }
             catch { }
 
-            return null;
+            return new JArray();
         }
 
         public static JArray GetCatalog(string customerid = "", bool nocache = false)
@@ -334,12 +338,27 @@ namespace RZ.Server
                 {
                     try
                     {
-                        jResult.Merge(item.Value.GetCatalog(customerid, nocache), new JsonMergeSettings
+                        var oNewCat = item.Value.GetCatalog(customerid, nocache);
+                        foreach(JObject oNewItem in oNewCat)
                         {
-                            MergeArrayHandling = MergeArrayHandling.Union
-                        });
+                            if(jResult.FirstOrDefault(t=>t["ShortName"].Value<string>() == oNewItem["ShortName"].Value<string>()) == null)
+                            {
+                                jResult.Add(oNewItem); //Only add non existing Items
+                            }
+                        }
+                        //jResult.Merge(oNewCat, new JsonMergeSettings
+                        //{
+                        //    MergeArrayHandling = MergeArrayHandling.Union
+                        //});
                     }
                     catch { }
+                }
+
+                //Cleanup Items (this allows local JSON Files to remove an Item in the Catalog)
+                foreach (var oItem in jResult.ToList())
+                {
+                    if (string.IsNullOrEmpty(oItem["ProductName"].Value<string>()) && string.IsNullOrEmpty(oItem["Manufacturer"].Value<string>()) && string.IsNullOrEmpty(oItem["ProductVersion"].Value<string>()))
+                        oItem.Remove();
                 }
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
@@ -360,7 +379,10 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return await item.Value.GetIcon(shortname);
+                        var oRes = await item.Value.GetIcon(shortname);
+
+                        if (oRes != null)
+                            return oRes;
                     }
                     catch { }
                 }
@@ -378,7 +400,10 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return await item.Value.GetIcon(iconid, iconhash);
+                        var oRes = await item.Value.GetIcon(iconid, iconhash);
+                        
+                        if (oRes != null)
+                            return oRes;
                     }
                     catch { }
                 }
@@ -396,7 +421,10 @@ namespace RZ.Server
                 {
                     try
                     {
-                        return await item.Value.GetFile(FilePath, customerid);
+                        var oRes = await item.Value.GetFile(FilePath, customerid);
+
+                        if (oRes != null)
+                            return oRes;
                     }
                     catch { }
                 }
@@ -453,7 +481,7 @@ namespace RZ.Server
             }
             catch { }
 
-            return null; //Not it SWLookup
+            return null; //Not in SWLookup
         }
 
         public static bool SetShortname(string name = "", string ver = "", string man = "", string shortname = "", string customerid = "")
@@ -473,6 +501,9 @@ namespace RZ.Server
         internal static bool? bForward = null;
         public static JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
+            if (Plugins._SWLookupPlugins.Count == 0)
+                return new JArray();
+
             if (bForward == null)
             {
                 try
@@ -511,13 +542,6 @@ namespace RZ.Server
 
             JArray jResult = new JArray();
             JArray oCat = GetCatalog("", false);
-            //foreach (JObject jObj in Softwares)
-
-            Parallel.ForEach(Softwares, (jObj) =>
-            {
-                
-            }
-            );
 
             foreach (JObject jObj in Softwares)
             {

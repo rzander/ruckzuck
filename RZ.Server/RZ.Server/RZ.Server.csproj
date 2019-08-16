@@ -102,7 +102,6 @@
   <ItemGroup>
     <Folder Include="wwwroot\content\" />
     <Folder Include="wwwroot\icons\" />
-    <Folder Include="wwwroot\repository\" />
   </ItemGroup>
 
 </Project>
