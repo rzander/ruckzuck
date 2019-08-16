@@ -102,6 +102,8 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(search))
             {
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Catalog</li>");
+                string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                Base.WriteLog($"Get Catalog", ClientIP, 1201, "V1");
                 sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None); //enable in Sept 2019
                 //sRes = Base.GetCatalog("", false).ToString(Newtonsoft.Json.Formatting.None);
             }

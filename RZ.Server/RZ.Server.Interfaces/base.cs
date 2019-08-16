@@ -299,7 +299,7 @@ namespace RZ.Server
                         catch { }
                     }
 
-                    List<string> lShortNames = new List<string>() { "RuckZuck" , "RuckZuck provider for OneGet", "RuckZuck for Configuration Manager", "SCCMCliCtr", "OneGet", "Collection Commander", "MonitorDetails"  };
+                    List<string> lShortNames = new List<string>() { "RuckZuck" , "RuckZuck provider for OneGet", "RuckZuck for Configuration Manager", "SCCMCliCtr", "OneGet"  };
                     foreach(var oCatItem in jResult.ToArray())
                     {
                         if(!lShortNames.Contains(oCatItem["ShortName"].ToString()))
@@ -308,7 +308,7 @@ namespace RZ.Server
                         }
                     }
 
-                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
+                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
                     _cache.Set("swcatv1", jResult, cacheEntryOptions);
 
                     return jResult;

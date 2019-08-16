@@ -273,10 +273,10 @@ namespace RZ.Server.Controllers
 
             if (string.IsNullOrEmpty(customerid))
             {
-                if (ClientIP.StartsWith("152.195.1"))
-                    return false;
-                if (ClientIP.StartsWith("152.199.1"))
-                    return false;
+                //if (ClientIP.StartsWith("152.195.1"))
+                //    return false;
+                //if (ClientIP.StartsWith("152.199.1"))
+                //    return false;
             }
 
             if (string.IsNullOrEmpty(shortname))
@@ -385,15 +385,18 @@ namespace RZ.Server.Controllers
             {
             }
 
+            if(ClientIP == "212.25.2.73") //need to monitor this ip as it generates a lot of failed feedback
+                return Content("https://ruckzuck.azurewebsites.net", "text/html");
 
             if (customerid == "swtesting")
                 return Content("https://ruckzuck.azurewebsites.net", "text/html");
 
-            if(customerid.Split('.').Length == 4)
+            if(customerid.Split('.').Length == 3)
                 return Content("https://cdn.ruckzuck.tools", "text/html");
 
+            //return Content("https://cdn.ruckzuck.tools", "text/html");
             return Content("https://ruckzuck.tools", "text/html");
-            
+
         }
 
         [HttpGet]
@@ -426,9 +429,11 @@ namespace RZ.Server.Controllers
 
             if (string.IsNullOrEmpty(customerid))
             {
-                if (ClientIP.StartsWith("152.195.1"))
-                    return;
-                if (ClientIP.StartsWith("152.199.1"))
+                //if (ClientIP.StartsWith("152.195.1"))
+                //    return;
+                //if (ClientIP.StartsWith("152.199.1"))
+                //    return;
+                if (ClientIP.StartsWith("212.25.2.73"))
                     return;
             }
 

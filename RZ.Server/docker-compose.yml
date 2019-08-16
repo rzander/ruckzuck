@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  rz.server:
+    container_name: ruckzuck
+    image: zanderr/ruckzuck:latest
+    build:
+      context: .
+      dockerfile: RZ.Server/Dockerfile

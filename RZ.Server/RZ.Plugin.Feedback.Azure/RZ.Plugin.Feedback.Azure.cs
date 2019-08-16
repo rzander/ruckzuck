@@ -19,7 +19,7 @@ namespace RZ.Plugin.Feedback.Azure
     {
         private IMemoryCache _cache;
         static string sbconnection = "";
-        TopicClient tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+        TopicClient tcRuckZuck = null;
 
         public string Name
         {

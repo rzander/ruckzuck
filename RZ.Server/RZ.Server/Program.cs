@@ -37,6 +37,10 @@ namespace RZ.Server
 
                         Console.WriteLine("Discovery request from {0}...", ClientRequest);
                         string sLocalURL = Base.localURL;
+
+                        if (Environment.GetEnvironmentVariable("localURL") != null)
+                            sLocalURL = Environment.GetEnvironmentVariable("localURL");
+
                         if (string.IsNullOrEmpty(sLocalURL))
                         {
                             string sIP = "localhost";
