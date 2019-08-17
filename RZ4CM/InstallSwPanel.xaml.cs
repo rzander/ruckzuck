@@ -248,7 +248,7 @@ namespace RuckZuck_Tool
                                 oSW.SW.Author = "BootstrapTrue";
                             }
 
-                            oSW.sUserName = Properties.Settings.Default.UserKey;
+                            //oSW.sUserName = Properties.Settings.Default.UserKey;
 
                             try
                             {
@@ -287,7 +287,7 @@ namespace RuckZuck_Tool
                                             {
                                                 oPreReq.SW.Author = "BootstrapTrue";
                                             }
-                                            oPreReq.sUserName = Properties.Settings.Default.UserKey;
+                                            //oPreReq.sUserName = Properties.Settings.Default.UserKey;
                                             if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
                                             {
                                                 //oPreReq.Downloaded += OSW_Downloaded;

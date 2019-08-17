@@ -25,7 +25,7 @@ namespace RuckZuck.Base
         {
             get
             {
-                if (_sURL != "UDP" && ! string.IsNullOrEmpty(_sURL))
+                if (_sURL != "UDP" && !string.IsNullOrEmpty(_sURL))
                     return _sURL;
 
                 try
@@ -57,7 +57,7 @@ namespace RuckZuck.Base
                     {
                         if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            RZRestAPIv2._sURL = sWebSVC.TrimEnd('/');
+                            _sURL = sWebSVC.TrimEnd('/');
                         }
                     }
                 }
@@ -106,10 +106,25 @@ namespace RuckZuck.Base
             using (HttpClient hClient = new HttpClient())
             {
                 Task<string> tReq;
+
+                if (string.IsNullOrEmpty(CustomerID))
+                {
+                    using (HttpClient qClient = new HttpClient())
+                    {
+                        CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                        customerid = CustomerID.ToString();
+                    }
+                }
+
+
                 if (string.IsNullOrEmpty(customerid))
+                {
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                }
                 else
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
 
                 tReq.Wait(5000); //wait max 5s
 
@@ -153,6 +168,8 @@ namespace RuckZuck.Base
 
             try
             {
+                sURL = "UDP"; //reset URL as this part is only called every 30 min
+
                 Task<string> response;
                 if (string.IsNullOrEmpty(customerid))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
@@ -169,13 +186,17 @@ namespace RuckZuck.Base
 
                     if (string.IsNullOrEmpty(customerid) && lRes.Count > 400)
                     {
-                        File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                        try
+                        {
+                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                        }
+                        catch { }
                     }
 
                     return lRes;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("E2" + ex.Message, "GetCatalog");
                 _sURL = ""; //enforce reload endpoint URL
@@ -184,12 +205,18 @@ namespace RuckZuck.Base
             return new List<GetSoftware>();
         }
 
-        public static List<AddSoftware> GetSoftwares(string productName, string productVersion, string manufacturer)
+        public static List<AddSoftware> GetSoftwares(string productName, string productVersion, string manufacturer, string customerid = "")
         {
 
             try
             {
-                Task<string> response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                Task<string> response;
+
+                if (string.IsNullOrEmpty(customerid) || customerid.Contains('.'))
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
+                else
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid));
+
                 response.Wait(20000);
                 if (response.IsCompleted)
                 {
@@ -199,7 +226,7 @@ namespace RuckZuck.Base
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("E1" + ex.Message, "GetSoftwares");
                 _sURL = ""; //enforce reload endpoint URL
@@ -209,16 +236,11 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(string iconhash)
+        public static byte[] GetIcon(string iconhash, string customerid = "")
         {
             Task<Stream> response;
 
             response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?iconhash=" + iconhash);
-
-            //if (string.IsNullOrEmpty(iconhash))
-            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconid=" + iconid);
-            //else
-            //    response = oClient.GetStreamAsync(sURL + "rest/v2/GetIcon?iconhash=" + iconhash);
 
             response.Wait(10000);
 
@@ -235,11 +257,11 @@ namespace RuckZuck.Base
             return null;
         }
 
-        public static async void IncCounter(string shortname = "", string counter = "DL")
+        public static async void IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             try
             {
-               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname));
+                await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(CustomerID));
             }
             catch { }
         }
@@ -256,13 +278,13 @@ namespace RuckZuck.Base
             return lResult.Distinct().OrderBy(t => t).ToList();
         }
 
-        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback)
+        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "")
         {
             if (!string.IsNullOrEmpty(feedback))
             {
                 try
                 {
-                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback));
+                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback) + "&customerid=" + WebUtility.UrlEncode(customerid));
                     return oRes;
                 }
                 catch { }
@@ -271,7 +293,7 @@ namespace RuckZuck.Base
             return "";
         }
 
-        public static bool UploadSWEntry(AddSoftware lSoftware)
+        public static bool UploadSWEntry(AddSoftware lSoftware, string customerid = "")
         {
             try
             {
@@ -295,19 +317,22 @@ namespace RuckZuck.Base
             return false;
         }
 
-        public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware)
+        public static List<AddSoftware> CheckForUpdate(List<AddSoftware> lSoftware, string customerid = "")
         {
             try
             {
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
-
-                var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
-                response.Wait(120000); //2min max
-                if (response.IsCompleted)
+                if (lSoftware.Count > 0)
                 {
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
-                    return lRes;
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                    response.Wait(120000); //2min max
+                    if (response.IsCompleted)
+                    {
+                        List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
+                        return lRes;
+                    }
                 }
 
             }
