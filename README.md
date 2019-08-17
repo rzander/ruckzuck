@@ -63,7 +63,7 @@ Allows applications to be imported from the RZ repository into Microsofts System
 
 ### RuckZuck Caching Service ###
 Docker container to cache RuckZuck traffic (SW definitions, Icons and binary-downloads).
-https://rzander.azurewebsites.net/ruckzuck-cache/   
+https://github.com/rzander/ruckzuck/wiki/RuckZuck-Proxy-Server 
 https://hub.docker.com/r/zanderr/ruckzuck/
 
 ### RZ.Server
