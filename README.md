@@ -24,6 +24,18 @@ New REST API which brings some general changes:
   * If a product does not provide a URL for automatic download and the license allows redistribution of binaries, RuckZuck will be able to host these files.
 * Support for private/disconnected repostories if you host your own RuckZuck Server (no sync from the public repository).
 
+# Shutdown of REST API V1
+The "old" REST API will shutdown by end of August 2019
+Affected (known) Products:
+* RuckZuck.exe < V1.7
+* RZUpdate.exe < V1.7
+* RZOneGet Provider < 1.7
+* RZ4CM < 1.7
+* DeviceCommander Server < 2.0.0.24
+* DeviceCommander Agent < 1.0.0.24
+* Self-Update of SCCMCliCtr < 1.0.5.2
+* RuckZuck Plugin of SCCMCliCtr < 1.0.5.2
+
 ## Statistics and Figures of the Project: 
 
 2015:  http://rzander.azurewebsites.net/ruckzuck-packagemanager-v1-0/ 
