@@ -1475,7 +1475,7 @@ namespace RZUpdate
                 PowerShellInstance.Streams.Error.DataAdding += ConsoleError;
 
                 IAsyncResult async = PowerShellInstance.BeginInvoke<PSObject, PSObject>(null, outputCollection);
-                while (async.IsCompleted == false || dDuration > timeout)
+                while (async.IsCompleted == false && dDuration <= timeout)
                 {
                     Thread.Sleep(200);
                     dDuration = DateTime.Now - dStart;

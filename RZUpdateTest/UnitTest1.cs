@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RZUpdate;
+using System.Management.Automation;
 
 namespace RZUpdateTest
 {
@@ -23,6 +24,17 @@ namespace RZUpdateTest
                 Console.WriteLine("..done.");
             else
                 Console.WriteLine("download failed !!");
+        }
+
+        [TestMethod]
+        public void RUNPS()
+        {
+            Console.WriteLine("Check RunPS...");
+
+            var oRes = SWUpdate._RunPS("sleep 5", "", new TimeSpan(0, 0, 40));
+
+            oRes.ToString();
+            Assert.IsNotNull(oRes);
         }
     }
 }
