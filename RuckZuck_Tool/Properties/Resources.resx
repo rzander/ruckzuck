@@ -132,8 +132,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("2193048a-dcd5-433e-a2c0-28384b9ebad2")]
-[assembly: AssemblyVersion("1.7.0.0")]
-[assembly: AssemblyFileVersion("1.7.0.0")]</value>
+[assembly: AssemblyVersion("1.7.0.5")]
+[assembly: AssemblyFileVersion("1.7.0.5")]</value>
   </data>
   <data name="RZRestApi" xml:space="preserve">
     <value>using Microsoft.Win32;
@@ -245,6 +245,16 @@ namespace RuckZuck.Base
             {
                 Task&lt;string&gt; tReq;
 
+                if (string.IsNullOrEmpty(CustomerID))
+                {
+                    using (HttpClient qClient = new HttpClient())
+                    {
+                        CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                        customerid = CustomerID.ToString();
+                    }
+                }
+
+
                 if (string.IsNullOrEmpty(customerid))
                 {
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
@@ -252,17 +262,7 @@ namespace RuckZuck.Base
                 else
                     tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
 
-                if(string.IsNullOrEmpty(CustomerID))
-                {
-                    Task.Run(() =&gt;
-                    {
-                        using (HttpClient qClient = new HttpClient())
-                        {
-                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
-                            CustomerID.ToString();
-                        }
-                    }).ConfigureAwait(false);
-                }
+
 
                 tReq.Wait(5000); //wait max 5s
 
@@ -350,7 +350,7 @@ namespace RuckZuck.Base
             {
                 Task&lt;string&gt; response;
 
-                if (string.IsNullOrEmpty(customerid))
+                if (string.IsNullOrEmpty(customerid) || customerid.Contains('.'))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer));
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer) + "&amp;customerid=" + WebUtility.UrlEncode(customerid));
@@ -2201,7 +2201,7 @@ namespace RZUpdate
                 PowerShellInstance.Streams.Error.DataAdding += ConsoleError;
 
                 IAsyncResult async = PowerShellInstance.BeginInvoke&lt;PSObject, PSObject&gt;(null, outputCollection);
-                while (async.IsCompleted == false || dDuration &gt; timeout)
+                while (async.IsCompleted == false &amp;&amp; dDuration &lt;= timeout)
                 {
                     Thread.Sleep(200);
                     dDuration = DateTime.Now - dStart;

@@ -51,6 +51,7 @@ namespace RuckZuck_Tool
 
         private void TSearch_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+
             AnonymousDelegate update = delegate ()
             {
                 if (tbSearch.IsFocused)
@@ -113,6 +114,7 @@ namespace RuckZuck_Tool
 
         private void tbSearch_Search(object sender, RoutedEventArgs e)
         {
+
             Mouse.OverrideCursor = Cursors.Wait;
             if (string.IsNullOrEmpty(tbSearch.Text))
             {
@@ -492,14 +494,6 @@ namespace RuckZuck_Tool
                     catch { }
                 }
             }
-        }
-
-        private void tbSearch_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            tSearch.Stop();
-            lAllSoftware = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).Select(x => new GetSoftware() { isInstalled = false }).ToList();
-            //Mark all installed...
-            lAllSoftware.ToList().ForEach(x => { if (lSoftware.FirstOrDefault(t => (t.ProductName == x.ProductName && t.ProductVersion == x.ProductVersion)) != null) { x.isInstalled = true; } });
         }
 
         private void miInstall_Click(object sender, RoutedEventArgs e)
