@@ -224,7 +224,21 @@ namespace RZUpdate
 
             if (SW == null)
             {
-                SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+                //Load all MetaData for the specific SW
+                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                {
+                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                        SWCheck.PSPreReq = "$true; ";
+
+                    //Check PreReq for all Installation-types of the Software
+                    if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                    {
+                        SW = SWCheck;
+                        break;
+                    }
+                }
+
+                //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
 
                 if (SW.Files == null)
                     SW.Files = new List<contentFiles>();
@@ -287,7 +301,21 @@ namespace RZUpdate
 
                             if (SW.Architecture == null)
                             {
-                                SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+                                //Load all MetaData for the specific SW
+                                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                                {
+                                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                                        SWCheck.PSPreReq = "$true; ";
+
+                                    //Check PreReq for all Installation-types of the Software
+                                    if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                                    {
+                                        SW = SWCheck;
+                                        break;
+                                    }
+                                }
+
+                                //SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
                                 if (SW == null) { Console.WriteLine("No SW"); }
                                 SW.ShortName = ShortName;
 
