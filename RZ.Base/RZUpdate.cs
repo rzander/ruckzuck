@@ -326,7 +326,7 @@ namespace RZUpdate
                             }
                         }
 
-                        if (string.IsNullOrEmpty(SW.ShortName))
+                        if (string.IsNullOrEmpty(SW.PSInstall))
                             return;
 
                         //Get Install-type
