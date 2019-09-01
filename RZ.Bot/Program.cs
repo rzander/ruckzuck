@@ -11,14 +11,29 @@ namespace RZ.Bot
     class Program
     {
         public static List<string> lPackages = new List<string>();
+        public static DateTime tStart = DateTime.Now;
 
         static void Main(string[] args)
         {
             MessagingFactory messageFactory;
             NamespaceManager namespaceManager;
             //TopicClient myTopicClient;
-            lPackages.Add("AdobeReader DC MUI");
-
+            //lPackages.Add("AdobeReader DC MUI");
+            tStart = DateTime.Now;
+            RZRestAPIv2.CustomerID = "swtesting";
+            RZRestAPIv2.DisableBroadcast = true;
+            RZRestAPIv2.GetURL(RZRestAPIv2.CustomerID);
+            
+#if !DEBUG
+            RZScan oScan = new RZScan(false, false);
+            oScan.SWScan().Wait();
+            if(oScan.InstalledSoftware.Count >= 2)
+            {
+                Console.WriteLine("Please run RZ.Bot.exe on a clean Machine !!!");
+                Console.ReadLine();
+                return;
+            }
+#endif
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             System.Net.ServicePointManager.CheckCertificateRevocationList = false;
 
@@ -48,63 +63,65 @@ namespace RZ.Bot
                 namespaceManager.CreateSubscription(TopicName, string.Format(Properties.Settings.Default.Filtername, Environment.MachineName), dashboardFilter);
                 return;
             }
+
             string sLastPackage = "";
             var Client = messageFactory.CreateSubscriptionClient(TopicName, string.Format(Properties.Settings.Default.Filtername, Environment.MachineName), ReceiveMode.PeekLock);
             Client.OnMessage((message) =>
             {
                 try
                 {
-                    /*if (message.Label.Contains(@"Feedback/failure"))
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    if (message.Label.Contains(@"Feedback/success"))
-                        Console.ForegroundColor = ConsoleColor.Green;*/
-                    //Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Properties["WorkerServiceHost"].ToString() + "(" + message.Properties["Queue"].ToString() + ") : " + message.Properties["TargetComputer"].ToString()  + " : " + message.GetBody<string>());
-                    //Console.WriteLine(message.EnqueuedTimeUtc.ToLocalTime().ToString("HH:mm") + " " + message.Label + " " + message.GetBody<string>());
-
+                    if((DateTime.Now - tStart).TotalHours >= 6)
+                    {
+                        Console.WriteLine("Max. runtime of 6h exceeded...");
+                        return;
+                    }
                     try
                     {
-                        /*if (message.Properties["IP"].ToString() == "193.5.178.34")
-                        {
-                            message.Abandon();
-                            return;
-                        }
-                        if (message.Properties["ProductName"].ToString() == "Adobe Acrobat Reader DC")
-                        {
-                            message.Abandon();
-                            return;
-                        }
-                        if (message.Properties["ProductName"].ToString() == "Adobe Acrobat Reader DC MUI")
-                        {
-                            message.Abandon();
-                            return;
-                        }*/
-
-
-                        RZUpdater oRZSW = new RZUpdater();
-                        if(lPackages.IndexOf(message.Properties["ProductName"].ToString() + message.Properties["ProductVersion"].ToString() + message.Properties["Manufacturer"].ToString()) >= 0)
+                        if (lPackages.IndexOf(message.Properties["ProductName"].ToString() + message.Properties["ProductVersion"].ToString() + message.Properties["Manufacturer"].ToString()) >= 0)
                         {
                             message.Complete();
                             return;
                         }
+                        List<GetSoftware> lCat = RZRestAPIv2.GetCatalog();
 
-                        oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
-                        //oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString());
+                        RZUpdater oRZSW = new RZUpdater();
+                        
+                        var CatItem = lCat.Find(t => t.ProductName.ToLower() == message.Properties["ProductName"].ToString().ToLower() && t.ProductVersion.ToLower() == message.Properties["ProductVersion"].ToString().ToLower() && t.Manufacturer.ToLower() == message.Properties["Manufacturer"].ToString().ToLower());
+
+                        if(CatItem != null)
+                        {
+                            oRZSW.SoftwareUpdate = new SWUpdate(CatItem.ShortName);
+                            if(oRZSW.SoftwareUpdate.SW.ShortName == null)
+                                oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
+                        }
+                        else
+                        {
+                            oRZSW.SoftwareUpdate = new SWUpdate(message.Properties["ProductName"].ToString(), message.Properties["ProductVersion"].ToString(), message.Properties["Manufacturer"].ToString());
+                            oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.ShortName);
+                        }
+
                         if (lPackages.IndexOf(oRZSW.SoftwareUpdate.SW.ShortName) >= 0) //check if there was a previous success
                         {
                             message.Complete();
                             return;
                         }
 
-                        if(message.Properties["ProductVersion"].ToString() != oRZSW.SoftwareUpdate.SW.ProductVersion)
-                        {
-                            oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.ShortName);
-                        }
+                        //if(message.Properties["ProductVersion"].ToString() != oRZSW.SoftwareUpdate.SW.ProductVersion)
+                        //{
+                        //    oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.ShortName);
+                        //}
 
                         if (sLastPackage != oRZSW.SoftwareUpdate.SW.ShortName)
                         {
                             //oRZSW.SoftwareUpdate = new SWUpdate(oRZSW.SoftwareUpdate.SW.Shortname);
 
                             oRZSW.SoftwareUpdate.SendFeedback = false; //we already process feedback...
+                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                            {
+                                Console.WriteLine("PreRequisites not valid ...!");
+                                message.Abandon();
+                                return;
+                            }
 
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                             {
@@ -121,6 +138,7 @@ namespace RZ.Bot
                                 {
                                     RZUpdater oRZSWPreReq = new RZUpdater();
                                     oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
+                                    oRZSWPreReq.SoftwareUpdate.SendFeedback = false;
                                     Console.WriteLine();
                                     Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
                                     if (oRZSWPreReq.SoftwareUpdate.Download().Result)
@@ -135,6 +153,7 @@ namespace RZ.Bot
                                         else
                                         {
                                             Console.WriteLine("... Error. The installation failed.");
+                                            message.Abandon();
                                         }
                                     }
                                 }
@@ -147,7 +166,7 @@ namespace RZ.Bot
                                     {
                                         Console.WriteLine("... done.");
                                         message.Complete();
-                                        RZRestAPIv2.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
+                                        //RZRestAPIv2.Feedback(oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer, "true", "RZBot", "ok..").Wait(3000);
                                         sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
                                         lPackages.Add(oRZSW.SoftwareUpdate.SW.ShortName);
                                         lPackages.Add(message.Properties["ProductName"].ToString() + message.Properties["ProductVersion"].ToString() + message.Properties["Manufacturer"].ToString());
@@ -176,8 +195,8 @@ namespace RZ.Bot
                         {
                             Console.WriteLine("... retry later..");
                             sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
-                            Thread.Sleep(5000);
-                            //message.Abandon(); // retry later....
+                            Thread.Sleep(3000);
+                            message.Abandon(); // retry later....
                         }
 
                     }
