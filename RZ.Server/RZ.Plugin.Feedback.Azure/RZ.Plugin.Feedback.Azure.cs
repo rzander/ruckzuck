@@ -72,6 +72,7 @@ namespace RZ.Plugin.Feedback.Azure
                     try
                     {
                         Message bMSG;
+
                         if (feedback == "NEW Version ?!")
                         {
                             bMSG = new Message() { Label = "RuckZuck/WCF/NEW/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
@@ -103,32 +104,36 @@ namespace RZ.Plugin.Feedback.Azure
                         if (!string.IsNullOrEmpty(customerid))
                             bMSG.UserProperties.Add("CustomerID", customerid);
 
-                        if(tcRuckZuck != null)
+                        if (tcRuckZuck != null)
                             tcRuckZuck.SendAsync(bMSG);
+
                     }
                     catch { }
 
-                    JObject jEntity = new JObject();
-                    jEntity.Add("Manufacturer", man);
-                    jEntity.Add("ProductName", name);
-                    jEntity.Add("ProductVersion", ver);
-                    jEntity.Add("Shortname", shortname);
-                    jEntity.Add("Feedback", feedback);
-                    jEntity.Add("User", user);
-                    jEntity.Add("Failure", failure ?? false);
-
-                    string manufacturer = Server.Base.clean(man).Trim();
-                    string productname = Server.Base.clean(name).Trim();
-                    string productversion = Server.Base.clean(ver).Trim();
-
-                    string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
-                    string sRowKey = Hash.CalculateMD5HashString(sID);
-
-                    if (failure == true) //only store failures...
+                    if (feedback.ToLower().Trim() != "test")
                     {
-                        InsertEntityAsync(Settings["feedbackURL"] + "?" + Settings["feedbackSAS"], "feedback", sRowKey, jEntity.ToString());
-                    }
+                        JObject jEntity = new JObject();
+                        jEntity.Add("Manufacturer", man);
+                        jEntity.Add("ProductName", name);
+                        jEntity.Add("ProductVersion", ver);
+                        jEntity.Add("Shortname", shortname);
+                        jEntity.Add("Feedback", feedback);
+                        jEntity.Add("User", user);
+                        jEntity.Add("Failure", failure ?? false);
 
+                        string manufacturer = Server.Base.clean(man).Trim();
+                        string productname = Server.Base.clean(name).Trim();
+                        string productversion = Server.Base.clean(ver).Trim();
+
+                        string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
+                        string sRowKey = Hash.CalculateMD5HashString(sID);
+
+
+                        if (failure == true) //only store failures...
+                        {
+                            InsertEntityAsync(Settings["feedbackURL"] + "?" + Settings["feedbackSAS"], "feedback", sRowKey, jEntity.ToString());
+                        }
+                    }
                     return true;
                 }
                 catch { }

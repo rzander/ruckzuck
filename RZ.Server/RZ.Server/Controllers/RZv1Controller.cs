@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -101,7 +102,7 @@ namespace RZ.Server.Controllers
             string sRes = "";
             if (string.IsNullOrEmpty(search))
             {
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Catalog</li>");
+                //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Catalog</li>");
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.WriteLog($"Get Catalog", ClientIP, 1201, "V1");
                 sRes = Base.GetCatalog("V1", false).ToString(Newtonsoft.Json.Formatting.None); //enable in Sept 2019
@@ -109,20 +110,21 @@ namespace RZ.Server.Controllers
             }
             else
             {
-                if (search.ToLower() == "--new--")
-                {
-                    JArray oRes = Base.GetCatalog("", true);
-                    JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
-                    JArray jTop = JArray.FromObject(jsorted.Take(20));
-                    return Content(jTop.ToString());
-                }
-                if (search.ToLower() == "--old--")
-                {
-                    JArray oRes = Base.GetCatalog("", true);
-                    JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
-                    JArray jTop = JArray.FromObject(jsorted.Take(20));
-                    return Content(jTop.ToString());
-                }
+                return NotFound();
+                //if (search.ToLower() == "--new--")
+                //{
+                //    JArray oRes = Base.GetCatalog("", true);
+                //    JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
+                //    JArray jTop = JArray.FromObject(jsorted.Take(20));
+                //    return Content(jTop.ToString());
+                //}
+                //if (search.ToLower() == "--old--")
+                //{
+                //    JArray oRes = Base.GetCatalog("", true);
+                //    JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
+                //    JArray jTop = JArray.FromObject(jsorted.Take(20));
+                //    return Content(jTop.ToString());
+                //}
             }
             return Content(sRes);
         }
@@ -147,7 +149,17 @@ namespace RZ.Server.Controllers
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/getswdefinition")[0];
 
-            string ClientIP = "";
+            List<string> lShortNames = new List<string>() { "RuckZuck", "RuckZuck provider for OneGet", "RuckZuck for Configuration Manager", "SCCMCliCtr", "OneGet" };
+            if(name.StartsWith("ruckzuck", StringComparison.CurrentCultureIgnoreCase) || !name.StartsWith("oneget", StringComparison.CurrentCultureIgnoreCase) || !name.StartsWith("Client Center", StringComparison.CurrentCultureIgnoreCase))
+            {
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Definition for '" + name + "'</li>");
+            }
+            else
+            {
+                return NotFound();
+            }
+
+                string ClientIP = "";
             try
             {
                 ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -157,50 +169,22 @@ namespace RZ.Server.Controllers
                 ClientIP = ex.Message.ToString();
             }
 
-            //9.Apr.2019: repeating requests without downloading content
-            //if (ClientIP.StartsWith("147.171.73."))
-            //{
-            //    if (name.ToLower() == "pdfcreator")
-            //        return Content("");
-            //    if (name.ToLower().StartsWith("vlc"))
-            //        return Content("");
-            //    if (name.ToLower().StartsWith("python"))
-            //        return Content("");
-            //    if (name.ToLower().StartsWith("microsoft .net"))
-            //        return Content("");
-            //}
-
-            //20.Apr.2019: repeating requests without downloading content
-            if (ClientIP.StartsWith("128.95."))
-            {
-                if (name.ToLower().StartsWith("putty"))
-                    return Content("");
-                if (name.ToLower().StartsWith("texstudio"))
-                    return Content("");
-            }
-
-            //if (ClientIP.StartsWith("152.195.15"))
-            //{
-            //    if (name.ToLower().StartsWith("java 8"))
-            //        return Content("");
-            //}
-
             JArray jRes = Base.GetSoftwares(name, ver, man);
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Definition for '" + name + "'</li>");
+            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API Get Definition for '" + name + "'</li>");
 
             //Send Status
-            try
-            {
-                Message bMSG = new Message() { Label = "RuckZuck/WCF/GetSWDefinitions/" + name, TimeToLive = new TimeSpan(4, 0, 0) };
-                bMSG.UserProperties.Add("Count", jRes.Count);
-                bMSG.UserProperties.Add("ProductName", name);
-                bMSG.UserProperties.Add("ProductVersion", ver);
-                bMSG.UserProperties.Add("Manufacturer", man);
-                if(tcRuckZuck != null)
-                    tcRuckZuck.SendAsync(bMSG);
-            }
-            catch { }
+            //try
+            //{
+            //    Message bMSG = new Message() { Label = "RuckZuck/WCF/GetSWDefinitions/" + name, TimeToLive = new TimeSpan(4, 0, 0) };
+            //    bMSG.UserProperties.Add("Count", jRes.Count);
+            //    bMSG.UserProperties.Add("ProductName", name);
+            //    bMSG.UserProperties.Add("ProductVersion", ver);
+            //    bMSG.UserProperties.Add("Manufacturer", man);
+            //    if(tcRuckZuck != null)
+            //        tcRuckZuck.SendAsync(bMSG);
+            //}
+            //catch { }
 
             return Content(jRes.ToString(Newtonsoft.Json.Formatting.None));
         }
@@ -212,7 +196,11 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/SWGetShort/{name}")]
         public ActionResult SWGet(string name = "", string customerid = "")
         {
-            return Content(Base.GetSoftwares(name, customerid).ToString());
+            List<string> lShortNames = new List<string>() { "RuckZuck", "RuckZuck provider for OneGet", "RuckZuck for Configuration Manager", "SCCMCliCtr", "OneGet" };
+            if (lShortNames.Contains(name.ToLower().Trim()))
+                return Content(Base.GetSoftwares(name, customerid).ToString());
+            else
+                return NotFound();
         }
 
         [HttpPost]
@@ -223,9 +211,13 @@ namespace RZ.Server.Controllers
             DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             JArray jItems = JArray.Parse(oGet.Result);
+
+            if (jItems.Count > 1) //keep it just for SCCMCliCtr updates
+                return NotFound();
+
             string sResult = Base.CheckForUpdates(jItems).ToString();
             TimeSpan tDuration = DateTime.Now - dStart;
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
+            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - V1 API CheckForUpdates(items: " + jItems.Count +" , duration: " + Math.Round(tDuration.TotalSeconds).ToString() +"s) </li>");
             Console.WriteLine("UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
             return Content(sResult);
         }
@@ -233,45 +225,48 @@ namespace RZ.Server.Controllers
         [HttpPost]
         [Route("rest/UploadSWEntry")]
         [Route("wcf/RZService.svc/rest/UploadSWEntry")]
-        public bool UploadSWEntry()
+        public ActionResult UploadSWEntry()
         {
-            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-            string sJSON = oGet.Result;
+            return NotFound();
+            //var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            //string sJSON = oGet.Result;
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
+            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
 
-            if (sJSON.TrimStart().StartsWith('['))
-            {
-                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON));
+            //if (sJSON.TrimStart().StartsWith('['))
+            //{
+            //    bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON));
 
-                //if (bRes)
-                //    Base.GetCatalog("", true); //reload Catalog
+            //    //if (bRes)
+            //    //    Base.GetCatalog("", true); //reload Catalog
 
-                return bRes;
-            }
-            else
-            {
-                JArray jSW = new JArray();
-                jSW.Add(JObject.Parse(sJSON));
-                bool bRes = Base.UploadSoftwareWaiting(jSW);
+            //    return bRes;
+            //}
+            //else
+            //{
+            //    JArray jSW = new JArray();
+            //    jSW.Add(JObject.Parse(sJSON));
+            //    bool bRes = Base.UploadSoftwareWaiting(jSW);
 
-                //if (bRes)
-                //    Base.GetCatalog("", true); //reload Catalog
+            //    //if (bRes)
+            //    //    Base.GetCatalog("", true); //reload Catalog
 
-                return bRes;
-            }
+            //    return bRes;
+            //}
         }
 
         [HttpPost]
         [Route("rest/UploadSWLookup")]
         [Route("wcf/RZService.svc/rest/UploadSWLookup")]
-        public bool UploadSWLookup()
+        public ActionResult UploadSWLookup()
         {
-            var oGet = new StreamReader(Request.Body).ReadToEndAsync();
-            string sJSON = oGet.Result;
-            JObject jObj = JObject.Parse(sJSON);
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
-            return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
+            return NotFound();
+
+            //var oGet = new StreamReader(Request.Body).ReadToEndAsync();
+            //string sJSON = oGet.Result;
+            //JObject jObj = JObject.Parse(sJSON);
+            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - UploadSWLookup (" + jObj["ProductName"].ToString() + ")</li>");
+            //return Base.SetShortname(jObj["ProductName"].ToString(), jObj["ProductVersion"].ToString(), jObj["Manufacturer"].ToString());
         }
 
         [HttpGet]
@@ -283,16 +278,16 @@ namespace RZ.Server.Controllers
             string sLabel = shortname;
             if (string.IsNullOrEmpty(shortname))
                 sLabel = SWId;
-            Message bMSG;
-            bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + sLabel, TimeToLive = new TimeSpan(24, 0, 0) };
+            //Message bMSG;
+            //bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + sLabel, TimeToLive = new TimeSpan(24, 0, 0) };
 
-            bMSG.UserProperties.Add("SWId", SWId);
-            bMSG.UserProperties.Add("Architecture", arch);
-            bMSG.UserProperties.Add("ShortName", shortname);
-            if (tcRuckZuck != null)
-                tcRuckZuck.SendAsync(bMSG);
+            //bMSG.UserProperties.Add("SWId", SWId);
+            //bMSG.UserProperties.Add("Architecture", arch);
+            //bMSG.UserProperties.Add("ShortName", shortname);
+            //if (tcRuckZuck != null)
+            //    tcRuckZuck.SendAsync(bMSG);
 
-            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - content downloaded (" + sLabel + ")</li>");
+            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-info\">%tt% - V1 content downloaded (" + sLabel + ")</li>");
 
             if (string.IsNullOrEmpty(shortname))
                 return false;
@@ -303,8 +298,9 @@ namespace RZ.Server.Controllers
         [HttpGet]
         [Route("rest/Feedback")]
         [Route("wcf/RZService.svc/rest/Feedback")]
-        public void Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
+        public ActionResult Feedback(string name, string ver, string man, string arch, string ok, string user, string text)
         {
+            return NotFound();
             string ClientIP = "";
             try
             {
@@ -314,12 +310,6 @@ namespace RZ.Server.Controllers
             {
                 ClientIP = ex.Message.ToString();
             }
-
-            //9.Mar.2019: repeating failures for PDFCreator without downloading content
-            //if (ClientIP.StartsWith("147.171.73."))
-            //{
-            //    return;
-            //}
 
             string Shortname = Base.GetShortname(name, ver, man);
             try
@@ -337,11 +327,11 @@ namespace RZ.Server.Controllers
                     if (bWorking)
                     {
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - V1 API success (" + name+ ")</li>");
+                        //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - V1 API success (" + name+ ")</li>");
                     }
                     else
                     {
-                        _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - V1 API failed (" + name + ")</li>");
+                        //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - V1 API failed (" + name + ")</li>");
                         //bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
                     }
 

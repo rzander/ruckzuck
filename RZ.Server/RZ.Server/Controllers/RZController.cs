@@ -38,16 +38,7 @@ namespace RZ.Server.Controllers
             //    }
             //}
 
-            if (!string.IsNullOrEmpty(sbconnection))
-            {
-                if (tcRuckZuck == null)
-                {
-                    Console.WriteLine("SBConnection:" + sbconnection);
-                    tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
-                }
-            }
-            else
-                tcRuckZuck = null;
+
         }
 
         [Route("rest/v2")]
@@ -261,15 +252,7 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/IncCounter/{shortname}/{counter}")]
         public bool IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
-            string ClientIP = "";
-            try
-            {
-                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            }
-            catch (Exception ex)
-            {
-                ClientIP = ex.Message.ToString();
-            }
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
             if (string.IsNullOrEmpty(customerid))
             {
@@ -281,7 +264,6 @@ namespace RZ.Server.Controllers
 
             if (string.IsNullOrEmpty(shortname))
                 return false;
-
             else
             {
                 try
@@ -291,6 +273,18 @@ namespace RZ.Server.Controllers
                     bMSG.UserProperties.Add("ShortName", shortname);
                     bMSG.UserProperties.Add("ClientIP", ClientIP);
                     bMSG.UserProperties.Add("CustomerID", customerid);
+
+                    if (!string.IsNullOrEmpty(sbconnection))
+                    {
+                        if (tcRuckZuck == null)
+                        {
+                            Console.WriteLine("SBConnection:" + sbconnection);
+                            tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
+                        }
+                    }
+                    else
+                        tcRuckZuck = null;
+
                     if (tcRuckZuck != null)
                         tcRuckZuck.SendAsync(bMSG);
 
@@ -355,9 +349,9 @@ namespace RZ.Server.Controllers
             {
                 string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
                 TimeSpan tDuration = DateTime.Now - dStart;
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - V2 API CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
+                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
                 Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
-                Base.WriteLog($"V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
+                Base.WriteLog("V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
                 return Content(sResult);
             }
             else
@@ -374,29 +368,28 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/geturl")]
         public ActionResult GetURL(string customerid = "")
         {
-            string ClientIP = "";
             try
             {
-                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-
+                string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+
+                //if (ClientIP == "212.25.2.73") //need to monitor this ip as it generates a lot of failed feedback
+                //    return Content("https://ruckzuck.azurewebsites.net", "text/html");
+
+                if (customerid == "swtesting")
+                    return Content("https://ruckzuck.azurewebsites.net", "text/html");
+
+                if (customerid.Split('.').Length == 3)
+                    return Content("https://cdn.ruckzuck.tools", "text/html");
+
             }
-            catch (Exception ex)
+            catch
             {
+                //return Content("https://cdn.ruckzuck.tools", "text/html");
+                return Content("https://ruckzuck.tools", "text/html");
             }
 
-            if(ClientIP == "212.25.2.73") //need to monitor this ip as it generates a lot of failed feedback
-                return Content("https://ruckzuck.azurewebsites.net", "text/html");
-
-            if (customerid == "swtesting")
-                return Content("https://ruckzuck.azurewebsites.net", "text/html");
-
-            if(customerid.Split('.').Length == 3)
-                return Content("https://cdn.ruckzuck.tools", "text/html");
-
-            //return Content("https://cdn.ruckzuck.tools", "text/html");
-            return Content("https://ruckzuck.tools", "text/html");
-
+            return Content("https://cdn.ruckzuck.tools", "text/html");
         }
 
         [HttpGet]
@@ -451,15 +444,18 @@ namespace RZ.Server.Controllers
 
                         bool.TryParse(ok, out bWorking);
 
-                        if (bWorking)
+                        if (text.ToLower().Trim() != "test")
                         {
-                            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
-                            Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
-                        }
-                        else
-                        {
-                            _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
-                            Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
+                            if (bWorking)
+                            {
+                                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
+                                Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
+                            }
+                            else
+                            {
+                                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
+                                Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
+                            }
                         }
 
                         Base.StoreFeedback(name, ver, man, Shortname, text, user, !bWorking, ClientIP, customerid);
