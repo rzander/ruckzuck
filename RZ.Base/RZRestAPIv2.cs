@@ -105,39 +105,48 @@ namespace RuckZuck.Base
         {
             using (HttpClient hClient = new HttpClient())
             {
-                Task<string> tReq;
-
-                if (string.IsNullOrEmpty(CustomerID))
+                try
                 {
-                    using (HttpClient qClient = new HttpClient())
+                    Task<string> tReq;
+
+                    if (string.IsNullOrEmpty(CustomerID))
                     {
-                        CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
-                        customerid = CustomerID.ToString();
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            customerid = CustomerID.ToString();
+                        }
+                    }
+
+
+                    if (string.IsNullOrEmpty(customerid))
+                    {
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    }
+                    else
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
+
+                    tReq.Wait(5000); //wait max 5s
+
+                    if (tReq.IsCompleted)
+                    {
+                        _sURL = tReq.Result;
+                        return _sURL;
+                    }
+                    else
+                    {
+                        _sURL = "https://ruckzuck.azurewebsites.net";
+                        return _sURL;
                     }
                 }
-
-
-                if (string.IsNullOrEmpty(customerid))
+                catch (Exception ex)
                 {
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    Debug.WriteLine("ERROR 145: " + ex.Message);
                 }
-                else
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
 
-
-
-                tReq.Wait(5000); //wait max 5s
-
-                if (tReq.IsCompleted)
-                {
-                    _sURL = tReq.Result;
-                    return _sURL;
-                }
-                else
-                {
-                    _sURL = "https://ruckzuck.azurewebsites.net";
-                    return _sURL;
-                }
+                return "https://ruckzuck.azurewebsites.net";
             }
         }
 
