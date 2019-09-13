@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Plugin_Software
@@ -61,7 +62,7 @@ namespace Plugin_Software
                 return jResult;
             }
 
-            foreach(JObject jObj in getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(), "known"))
+            foreach (JObject jObj in getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(), "known"))
             {
                 jResult = GetSoftwares(jObj["ProductName"].ToString().ToLower(), jObj["ProductVersion"].ToString().ToLower(), jObj["Manufacturer"].ToString().ToLower(), customerid);
 
@@ -70,7 +71,7 @@ namespace Plugin_Software
 
                 return jResult;
             }
-            
+
 
 
             return new JArray();
@@ -150,7 +151,7 @@ namespace Plugin_Software
                     shortname = jSoftware["Shortname"].ToString();
                 }
 
-                if(string.IsNullOrEmpty(shortname))
+                if (string.IsNullOrEmpty(shortname))
                     return false;
 
                 if (!jSoftware.TryGetValue("Manufacturer", out oOut))
@@ -271,23 +272,23 @@ namespace Plugin_Software
                         jEntity.Add("shortname", jObj["Shortname"].ToString().ToLower());
                     }
 
-                    if(jObj["ProductDescription"] != null)
+                    if (jObj["ProductDescription"] != null)
                         jEntity.Add("Description", jObj["ProductDescription"].ToString());
                     else
                         jEntity.Add("Description", jObj["Description"].ToString());
 
-                    if(jObj["ProjectURL"] != null)
+                    if (jObj["ProjectURL"] != null)
                         jEntity.Add("ProductURL", jObj["ProjectURL"].ToString());
                     else
                         jEntity.Add("ProductURL", jObj["ProductURL"].ToString());
 
-                    if(jObj["Category"] != null)
+                    if (jObj["Category"] != null)
                         jEntity.Add("Category", jObj["Category"].ToString());
                     else
                         jEntity.Add("Category", string.Join(';', jObj["Categories"].Value<List<string>>()));
 
                     jEntity.Add("IsLatest", true);
-                    
+
                     //DL, Fail and Success on Insert only
                     jEntity.Add("Downloads", 0);
                     jEntity.Add("Failures", 0);
@@ -311,7 +312,7 @@ namespace Plugin_Software
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ex.Message.ToString();
             }
@@ -478,7 +479,7 @@ namespace Plugin_Software
                             {
                                 //oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
                                 oFiles["URL"] = "https://cdn.ruckzuck.tools/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
-                                
+
                             }
                         }
                     }
@@ -491,11 +492,11 @@ namespace Plugin_Software
 
         public async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
-                string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
+            string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
 
-                WebRequest myWebRequest = WebRequest.Create(sURL);
-                WebResponse myWebResponse = myWebRequest.GetResponse();
-                return myWebResponse.GetResponseStream();
+            WebRequest myWebRequest = WebRequest.Create(sURL);
+            WebResponse myWebResponse = myWebRequest.GetResponse();
+            return myWebResponse.GetResponseStream();
         }
 
         public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
@@ -512,7 +513,7 @@ namespace Plugin_Software
 
             JArray jRes = getlatestSoftwareHash(Settings["catURL"] + "?" + Settings["catSAS"], sRowKey, "known");
             //JArray jRes = GetSoftwares(name.ToLower(), ver.ToLower(), man.ToLower());
-            foreach(JObject jObj in jRes)
+            foreach (JObject jObj in jRes)
             {
                 string shortname = jObj["ShortName"].ToString();
 
@@ -521,7 +522,7 @@ namespace Plugin_Software
 
                 return shortname;
             }
-            
+
             return "";
         }
 
@@ -586,7 +587,7 @@ namespace Plugin_Software
 
         }
 
-        private void MergeEntityAsync(string url, string PartitionKey, string RowKey, string JSON, string ETag = "*")
+        private static void MergeEntityAsync(string url, string PartitionKey, string RowKey, string JSON, string ETag = "*")
         {
             Task.Run(() =>
             {
@@ -729,145 +730,76 @@ namespace Plugin_Software
             return new JArray();
         }
 
-        public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
+        private static readonly object syncObject = new object();
+        private Mutex mut = new Mutex(true, "inccounter");
+
+        private void inc(string ShortName, string sasToken, string sURL, string PartKey, string AttributeName = "Downloads")
         {
             try
             {
-                string sasToken = Settings["catSAS"];
-                string sURL = Settings["catURL"];
-                string PartKey = "known";
-                if (string.IsNullOrEmpty(Customer))
-                    Customer = "known";
-
-                switch (counter.ToUpper())
+                //if (Monitor.TryEnter(syncObject, new TimeSpan(0, 0, 90)))
+                mut.WaitOne(10000);
+                try
                 {
-                    case "DL":
-                        try
+                    var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey,Downloads&" + sasToken);
+
+                    request.Method = "GET";
+                    request.Headers.Add("x-ms-version", "2017-04-17");
+                    request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                    request.Accept = "application/json";
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                    var content = string.Empty;
+                    string ETag = "";
+                    using (var response = (HttpWebResponse)request.GetResponse())
+                    {
+                        using (var stream = response.GetResponseStream())
                         {
-                            var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey,Downloads&" + sasToken);
-
-                            request.Method = "GET";
-                            request.Headers.Add("x-ms-version", "2017-04-17");
-                            request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                            request.Accept = "application/json";
-                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                            var content = string.Empty;
-                            string ETag = "";
-                            using (var response = (HttpWebResponse)request.GetResponse())
+                            using (var sr = new StreamReader(stream))
                             {
-                                using (var stream = response.GetResponseStream())
-                                {
-                                    using (var sr = new StreamReader(stream))
-                                    {
-                                        content = sr.ReadToEnd();
-                                    }
-                                }
+                                content = sr.ReadToEnd();
                             }
-
-                            var jres = JObject.Parse(content);
-
-                            JArray jResult = jres["value"] as JArray;
-                            ETag = jResult[0]["odata.etag"].ToString();
-                            string PartitionKey = jResult[0]["PartitionKey"].ToString();
-                            string RowKey = jResult[0]["RowKey"].ToString();
-                            int iCount = jResult[0]["Downloads"].Value<int>();
-                            iCount++;
-                            JObject jUpd = new JObject();
-                            jUpd.Add("Downloads", iCount);
-
-                            MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
                         }
-                        catch { }
-                        break;
+                    }
 
-                    case "FAILURE":
-                        try
-                        {
-                            var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer.ToLower() + "' and shortname eq '" + ShortName.ToLower() + "' and IsLatest eq true&$select=PartitionKey,RowKey,Failures&" + sasToken);
+                    var jres = JObject.Parse(content);
 
-                            request.Method = "GET";
-                            request.Headers.Add("x-ms-version", "2017-04-17");
-                            request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                            request.Accept = "application/json";
-                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    JArray jResult = jres["value"] as JArray;
+                    ETag = jResult[0]["odata.etag"].ToString();
+                    string PartitionKey = jResult[0]["PartitionKey"].ToString();
+                    string RowKey = jResult[0]["RowKey"].ToString();
+                    int iCount = jResult[0][AttributeName].Value<int>();
+                    iCount++;
+                    JObject jUpd = new JObject();
+                    jUpd.Add(AttributeName, iCount);
 
-                            var content = string.Empty;
-                            string ETag = "";
-                            using (var response = (HttpWebResponse)request.GetResponse())
-                            {
-                                using (var stream = response.GetResponseStream())
-                                {
-                                    using (var sr = new StreamReader(stream))
-                                    {
-                                        content = sr.ReadToEnd();
-                                    }
-                                }
-                            }
-
-                            var jres = JObject.Parse(content);
-
-                            JArray jResult = jres["value"] as JArray;
-                            ETag = jResult[0]["odata.etag"].ToString();
-                            string PartitionKey = jResult[0]["PartitionKey"].ToString();
-                            string RowKey = jResult[0]["RowKey"].ToString();
-                            int iCount = jResult[0]["Failures"].Value<int>();
-                            iCount++;
-                            JObject jUpd = new JObject();
-                            jUpd.Add("Failures", iCount);
-
-                            MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
-                        }
-                        catch { }
-                        break;
-
-                    case "SUCCESS":
-                        try
-                        {
-                            var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer.ToLower() + "' and shortname eq '" + ShortName.ToLower() + "' and IsLatest eq true&$select=PartitionKey,RowKey,Success&" + sasToken);
-
-                            request.Method = "GET";
-                            request.Headers.Add("x-ms-version", "2017-04-17");
-                            request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                            request.Accept = "application/json";
-                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                            var content = string.Empty;
-                            string ETag = "";
-                            using (var response = (HttpWebResponse)request.GetResponse())
-                            {
-                                using (var stream = response.GetResponseStream())
-                                {
-                                    using (var sr = new StreamReader(stream))
-                                    {
-                                        content = sr.ReadToEnd();
-                                    }
-                                }
-                            }
-
-                            var jres = JObject.Parse(content);
-
-                            JArray jResult = jres["value"] as JArray;
-                            ETag = jResult[0]["odata.etag"].ToString();
-                            string PartitionKey = jResult[0]["PartitionKey"].ToString();
-                            string RowKey = jResult[0]["RowKey"].ToString();
-                            int iCount = jResult[0]["Success"].Value<int>();
-                            iCount++;
-                            JObject jUpd = new JObject();
-                            jUpd.Add("Success", iCount);
-
-                            MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
-                        }
-                        catch { }
-                        break;
+                    MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
                 }
- 
-
-                return true;
+                catch { }
             }
-            catch { }
+            finally
+            {
+                // Release the Mutex.
+                mut.ReleaseMutex();
+            }
+        }
 
-            return false;
+        public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
+        {
+            switch (counter.ToUpper())
+            {
+                case "DL":
+                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Downloads");
+                    break;
+                case "FAILURE":
+                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Failures");
+                    break;
+                case "SUCCESS":
+                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Success");
+                    break;
+            }
+
+            return true;
         }
 
         //Upload SW and wait for approval
@@ -899,7 +831,7 @@ namespace Plugin_Software
                     catch { }
                 }
                 CloudBlobContainer oWaitContainer = new CloudBlobContainer(new Uri(Settings["waitURL"] + "?" + Settings["waitSAS"]));
-                CloudBlockBlob cJsonBlock = oWaitContainer.GetBlockBlobReference(Manufacturer + "-" + ProductName+ "-" + ProductVersion + ".json");
+                CloudBlockBlob cJsonBlock = oWaitContainer.GetBlockBlobReference(Manufacturer + "-" + ProductName + "-" + ProductVersion + ".json");
                 var upl = cJsonBlock.UploadTextAsync(Software.ToString());
                 upl.Wait(5000);
 
@@ -927,7 +859,7 @@ namespace Plugin_Software
                 }
                 while (continuationToken != null);
 
-                foreach(CloudBlockBlob lItem in results)
+                foreach (CloudBlockBlob lItem in results)
                 {
                     try
                     {
@@ -958,7 +890,7 @@ namespace Plugin_Software
                         try
                         {
                             string shortname = "";
-                            if(jSW[0]["Shortname"] != null)
+                            if (jSW[0]["Shortname"] != null)
                                 shortname = jSW[0]["Shortname"].ToString();
                             else
                             {
@@ -968,8 +900,8 @@ namespace Plugin_Software
 
                             if (!string.IsNullOrEmpty(shortname))
                             {
-                                JArray joldSW = getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(),  "known");
-                                foreach(JObject jOldItem in joldSW)
+                                JArray joldSW = getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(), "known");
+                                foreach (JObject jOldItem in joldSW)
                                 {
                                     jOldItem["IsLatest"] = false; //disable isLatest Flag
                                     UpdateEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], jOldItem["PartitionKey"].ToString(), jOldItem["RowKey"].ToString(), jOldItem.ToString());
