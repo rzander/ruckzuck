@@ -221,7 +221,7 @@ namespace RuckZuck.Base
             {
                 Task<string> response;
 
-                if (string.IsNullOrEmpty(customerid) || customerid.Contains('.'))
+                if (string.IsNullOrEmpty(customerid))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid));
