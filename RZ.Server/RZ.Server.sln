@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Log.Azure", "RZ.P
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{98F21479-2840-4AD6-983E-4C9E7D38EF53}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Customer.Azure", "RZ.Plugin.Customer.Azure\RZ.Plugin.Customer.Azure.csproj", "{DE21E64F-9356-449A-9827-F495AA677D74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{98F21479-2840-4AD6-983E-4C9E7D38EF53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98F21479-2840-4AD6-983E-4C9E7D38EF53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98F21479-2840-4AD6-983E-4C9E7D38EF53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE21E64F-9356-449A-9827-F495AA677D74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE21E64F-9356-449A-9827-F495AA677D74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE21E64F-9356-449A-9827-F495AA677D74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE21E64F-9356-449A-9827-F495AA677D74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

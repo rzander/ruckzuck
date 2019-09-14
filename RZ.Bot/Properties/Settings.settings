@@ -3,13 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="ConnectionString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxx</Value>
+      <Value Profile="(Default)">Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RZBot;SharedAccessKey=juTGyw3RWxptimG3c4mumxQ6fTpmGinSJVvh1bE3mh8=</Value>
     </Setting>
     <Setting Name="TopicName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ruckzuck</Value>
     </Setting>
     <Setting Name="Filtername" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Failure</Value>
+      <Value Profile="(Default)">Failure2</Value>
     </Setting>
     <Setting Name="SQLFilter" Type="System.String" Scope="Application">
       <Value Profile="(Default)">sys.Label like 'RuckZuck/WCF/Feedback/failure/%'</Value>

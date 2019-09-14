@@ -339,3 +339,16 @@ RZ4CM/AdminUI.WqlQueryEngine.dll
 RZ4CM/AdminUI.DcmObjectWrapper.dll
 RZ4CM/AdminUI.AppManFoundation.dll
 RZ4CM/DcmObjectModel.dll
+RZ.Bot/App.config
+RZ.Bot/App.config
+RZ.Bot/App.config
+RZ.LogConsole/Microsoft.ServiceBus.dll
+*.csv
+RZ4CM/Artifact.txt
+RZ4CM/setup/ConfuserEx_bin/Confuser.Core.dll
+RZ4CM/setup/ConfuserEx_bin/Confuser.Core.xml
+RZ4CM/setup/Icon096.ico
+RZ4CM/setup/RZ4CM.exe - Copy.config
+RZ4CM/setup/RZ4CM.exe.config
+RZ4CM/setup/RZ4CM.xml
+RZ4CM/setup/setup.iss

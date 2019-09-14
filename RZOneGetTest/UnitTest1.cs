@@ -25,5 +25,41 @@ namespace RZOneGetTest
                 }
             }
         }
+
+        [TestMethod]
+        public void InstallPackage()
+        {
+            var pkg = new PackageProvider();
+            {
+                var oRes = pkg.RunPS("Install-Package -Provider RuckZuck -Name vcredist2019x64");
+                Assert.AreEqual(pkg.PackageProviderName, "RuckZuck");
+                Assert.IsNotNull(oRes);
+                if (oRes != null)
+                {
+                    if (oRes.Count > 0)
+                    {
+                        Console.Write("Latest Version of 'vcredist2019x86': ");
+                        string sVersion = (((System.Management.Automation.PSProperty)oRes[0].Properties["Version"]).Value as string) ?? "";
+                        Console.WriteLine(sVersion);
+                        Assert.AreNotEqual(sVersion, "");
+                    }
+                }
+            }
+            {
+                var oRes = pkg.RunPS("Install-Package -Provider RuckZuck -Name vcredist2019x64");
+                Assert.AreEqual(pkg.PackageProviderName, "RuckZuck");
+                Assert.IsNotNull(oRes);
+                if (oRes != null)
+                {
+                    if (oRes.Count > 0)
+                    {
+                        Console.Write("Latest Version of 'vcredist2019x64': ");
+                        string sVersion = (((System.Management.Automation.PSProperty)oRes[0].Properties["Version"]).Value as string) ?? "";
+                        Console.WriteLine(sVersion);
+                        Assert.AreNotEqual(sVersion, "");
+                    }
+                }
+            }
+        }
     }
 }

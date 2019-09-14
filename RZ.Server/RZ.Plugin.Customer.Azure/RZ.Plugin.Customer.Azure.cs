@@ -148,7 +148,7 @@ namespace RZ.Plugin.Customer.Azure
             if (customerid == "proxy")
                 return "https://rzproxy.azurewebsites.net";
 
-            if (customerid.Split('.').Length == 3) // if customerid is IP, use CDN as we know the source ip
+            if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
                 return "https://cdn.ruckzuck.tools";
 
 
