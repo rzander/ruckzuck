@@ -103,4 +103,15 @@ namespace RZ.Server.Interfaces
 
         void WriteLog(string Text, string clientip, int EventId = 0, string customerid = "");
     }
+
+    public interface ICustomer
+    {
+        void Init(string PluginPath);
+
+        string Name { get; }
+
+        Dictionary<string, string> Settings { get; set; }
+
+        string GetURL(string customerid = "", string ip = "");
+    }
 }

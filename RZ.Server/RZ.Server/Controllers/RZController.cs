@@ -52,7 +52,6 @@ namespace RZ.Server.Controllers
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            //Base.WriteLog("ttt", "83.77.117.28", 0, "1");
 
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
@@ -372,24 +371,13 @@ namespace RZ.Server.Controllers
             {
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.WriteLog("Get URL", ClientIP, 1000, customerid);
-
-                //if (ClientIP == "212.25.2.73") //need to monitor this ip as it generates a lot of failed feedback
-                //    return Content("https://ruckzuck.azurewebsites.net", "text/html");
-
-                if (customerid == "swtesting")
-                    return Content("https://ruckzuck.azurewebsites.net", "text/html");
-
-                if (customerid.Split('.').Length == 3)
-                    return Content("https://cdn.ruckzuck.tools", "text/html");
-
+                return Content(Base.GetURL(customerid, ClientIP), "text/html");
             }
             catch
             {
                 //return Content("https://cdn.ruckzuck.tools", "text/html");
-                return Content("https://ruckzuck.tools", "text/html");
+                return Content("https://ruckzuck.azurewebsites.net", "text/html");
             }
-
-            return Content("https://cdn.ruckzuck.tools", "text/html");
         }
 
         [HttpGet]

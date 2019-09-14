@@ -20,6 +20,7 @@ namespace RZ.Server
         internal static Dictionary<string, ISWLookup> _SWLookupPlugins = new Dictionary<string, ISWLookup>();
         internal static Dictionary<string, IFeedback> _FeedbackPlugins = new Dictionary<string, IFeedback>();
         internal static Dictionary<string, ILog> _LogPlugins = new Dictionary<string, ILog>();
+        internal static Dictionary<string, ICustomer> _CustomerPlugins = new Dictionary<string, ICustomer>();
 
         public static void loadPlugins(string PluginPath = "")
         {
@@ -31,6 +32,7 @@ namespace RZ.Server
             _SWLookupPlugins.Clear();
             _FeedbackPlugins.Clear();
             _LogPlugins.Clear();
+            _CustomerPlugins.Clear();
 
             if (Base._cache != null)
             {
@@ -107,7 +109,16 @@ namespace RZ.Server
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
 
-            Console.WriteLine("");
+            ICollection<ICustomer> Customerplugins = GenericPluginLoader<ICustomer>.LoadPlugins(PluginPath, "RZ.Plugin.Customer");
+            foreach (var item in Customerplugins)
+            {
+                _CustomerPlugins.Add(item.Name, item);
+                Console.WriteLine(item.Name);
+                item.Settings = new Dictionary<string, string>();
+                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Init(PluginPath);
+                dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
+            }
         }
     }
 
@@ -840,6 +851,24 @@ namespace RZ.Server
             catch { }
 
             return;
+        }
+
+        public static string GetURL(string customerid, string clientip)
+        {
+            try
+            {
+                foreach (var item in Plugins._CustomerPlugins.OrderBy(t => t.Key))
+                {
+                    try
+                    {
+                        return item.Value.GetURL(customerid, clientip);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            return "https://ruckzuck.azurewebsites.net";
         }
 
 
