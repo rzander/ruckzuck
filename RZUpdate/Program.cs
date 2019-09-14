@@ -25,6 +25,11 @@ namespace RZUpdate
             //Get Proxy from IE
             WebRequest.DefaultWebProxy = WebRequest.GetSystemWebProxy();
 
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.Customerid))
+                RZRestAPIv2.CustomerID = Properties.Settings.Default.Customerid;
+
+            RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
+
             List<string> lArgs = args.ToList();
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
@@ -37,9 +42,6 @@ namespace RZUpdate
                 Console.WriteLine("");
                 return 0;
             }
-
-            if(!string.IsNullOrEmpty(Properties.Settings.Default.WebService))
-                RZRestAPIv2.sURL = Properties.Settings.Default.WebService;
 
             if (lArgs.Count == 1)
             {
@@ -91,6 +93,12 @@ namespace RZUpdate
                                 {
                                     Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
                                     bError = true;
+                                    continue;
+                                }
+                                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                                {
+                                    Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                    bError = false;
                                     continue;
                                 }
 
@@ -182,7 +190,7 @@ namespace RZUpdate
                 }
             }
 
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(500);
             if(bError)
                 return 2;
 
@@ -198,6 +206,11 @@ namespace RZUpdate
             {
                 try
                 {
+                    if (Properties.Settings.Default.Excludes.Cast<string>().ToList().FirstOrDefault(t => t.ToLower() == oSW.ShortName.ToLower()) != null)
+                    {
+                        Console.WriteLine("Skipping: " + oSW.ShortName + " (excluded)");
+                        continue;
+                    }
                     Console.WriteLine(oSW.Manufacturer + " " + oSW.ProductName + " new Version: " + oSW.ProductVersion);
                     oUpdate.SoftwareUpdate.SW = oSW;
                     oUpdate.SoftwareUpdate.GetInstallType();

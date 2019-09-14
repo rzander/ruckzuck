@@ -25,10 +25,27 @@ namespace RZUpdate.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string WebService {
+        public global::System.Collections.Specialized.StringCollection Excludes {
             get {
-                return ((string)(this["WebService"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["Excludes"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Customerid {
+            get {
+                return ((string)(this["Customerid"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DisableBroadcast {
+            get {
+                return ((bool)(this["DisableBroadcast"]));
             }
         }
     }
