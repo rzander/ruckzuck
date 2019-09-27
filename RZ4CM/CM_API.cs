@@ -21,6 +21,7 @@ using System.Xml;
 using RuckZuck_Tool;
 using System.Threading;
 using RuckZuck.Base;
+using RZUpdate;
 
 namespace RuckZuck_Tool
 {
@@ -47,7 +48,7 @@ namespace RuckZuck_Tool
                     _CMSiteServer = RuckZuck_Tool.Properties.Settings.Default.CM_Server;
 
                 connectionManager = new WqlConnectionManager();
-                
+
                 try
                 {
                     //connectionManager.Connect(_CMSiteServer, "WP01\\roger.zander", "password123$");
@@ -55,7 +56,7 @@ namespace RuckZuck_Tool
 
                     CM12SiteCode = connectionManager.NamedValueDictionary["ConnectedSiteCode"].ToString();
                 }
-                catch(SmsException ex)
+                catch (SmsException ex)
                 {
                     ex.Message.ToString();
                 }
@@ -86,7 +87,7 @@ namespace RuckZuck_Tool
 
         internal string _CMSiteServer = "";
         //string sAuthToken = "";
-        string CM12SQLConnectionString = "";
+        internal string CM12SQLConnectionString = "";
         string SQLSWIDLookup = ";WITH XMLNAMESPACES ( DEFAULT 'http://schemas.microsoft.com/SystemCenterConfigurationManager/2009/AppMgmtDigest')   SELECT * FROM  ( SELECT  SDMPackageDigest.value('(/AppMgmtDigest/Application/DisplayInfo[1]/Info[1]/Title)[1]', 'nvarchar(MAX)') + ' ' + SDMPackageDigest.value('(/AppMgmtDigest/Application/SoftwareVersion)[1]', 'nvarchar(MAX)') + ' (' + SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)') + ')' as [DisplayName],  SDMPackageDigest.value('(/AppMgmtDigest/Application/DisplayInfo[1]/Info[1]/Title)[1]', 'nvarchar(MAX)') as Name,  SDMPackageDigest.value('(/AppMgmtDigest/Application/SoftwareVersion)[1]', 'nvarchar(MAX)') as [Version],  SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)') [SoftwareID], vCI.CI_ID   FROM v_ConfigurationItems as vCI WHERE CIType_ID = 10 and IsLatest = 1  ) as app WHERE SoftwareID = @SWID";
         //string SQLSRZIDLookup = ";WITH XMLNAMESPACES ( DEFAULT 'http://schemas.microsoft.com/SystemCenterConfigurationManager/2009/AppMgmtDigest')   SELECT * FROM  ( SELECT  SDMPackageDigest.value('(/AppMgmtDigest/Application/DisplayInfo[1]/Info[1]/Title)[1]', 'nvarchar(MAX)') + ' ' + SDMPackageDigest.value('(/AppMgmtDigest/Application/SoftwareVersion)[1]', 'nvarchar(MAX)') + ' (' + SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)') + ')' as [DisplayName],  SDMPackageDigest.value('(/AppMgmtDigest/Application/DisplayInfo[1]/Info[1]/Title)[1]', 'nvarchar(MAX)') as Name,  SDMPackageDigest.value('(/AppMgmtDigest/Application/SoftwareVersion)[1]', 'nvarchar(MAX)') as [Version],  SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)') [SoftwareID], RIGHT(SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)'), LEN(SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)')) - 2) AS RZID, vCI.CI_ID   FROM v_ConfigurationItems as vCI WHERE CIType_ID = 10 and IsLatest = 1  ) as app WHERE SoftwareID like 'RZ%' ORDER BY DisplayName";
         string SQLSRZIDLookup = ";WITH XMLNAMESPACES ( DEFAULT 'http://schemas.microsoft.com/SystemCenterConfigurationManager/2009/AppMgmtDigest')   SELECT RZID, Shortname, Bootstrap, [Version] FROM  ( SELECT  SDMPackageDigest.value('(/AppMgmtDigest/Application/SoftwareVersion)[1]', 'nvarchar(MAX)') as [Version], SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomProperties/Property[@Name=\"Bootstrap\"]/@Value)[1]', 'nvarchar(MAX)') [Bootstrap], SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomProperties/Property[@Name=\"Shortname\"]/@Value)[1]', 'nvarchar(MAX)') [Shortname],  RIGHT(SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomProperties/Property[@Name=\"SWID\"]/@Value)[1]', 'nvarchar(MAX)'), LEN(SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomProperties/Property[@Name=\"SWID\"]/@Value)[1]', 'nvarchar(MAX)')) - 2) AS RZID, vCI.CI_ID FROM v_ConfigurationItems as vCI WHERE CIType_ID = 10 and IsLatest = 1 and LEN(SDMPackageDigest.value('(/AppMgmtDigest/Application/CustomId)[1]', 'nvarchar(MAX)')) > 2  ) as app WHERE RZID is not null";
@@ -319,7 +320,7 @@ namespace RuckZuck_Tool
         public List<SQLRZ> getRZIDs()
         {
 #if DEBUG
-            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R1;" + "Getting RuckZuck Id's from SQL.."});
+            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R1;" + "Getting RuckZuck Id's from SQL.." });
 #endif
             SqlConnection sqlConnection = new SqlConnection(CM12SQLConnectionString);
             List<SQLRZ> lResult = new List<SQLRZ>();
@@ -329,7 +330,7 @@ namespace RuckZuck_Tool
                 sqlConnection.Open();
 
 #if DEBUG
-    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R2;" + "SQL Connected based on ConnectionString: " + CM12SQLConnectionString });
+                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R2;" + "SQL Connected based on ConnectionString: " + CM12SQLConnectionString });
 #endif
                 //Connect SQL and run query to get List of active local admin usernames
                 SqlCommand sqlCommand = new SqlCommand(SQLSRZIDLookup, sqlConnection);
@@ -366,7 +367,7 @@ namespace RuckZuck_Tool
 
                         lResult.Add(oRes);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F230E1" + ex.Message, "SQL:" + SQLSRZIDLookup, "Connection:" + CM12SQLConnectionString });
                     }
@@ -959,9 +960,9 @@ namespace RuckZuck_Tool
                         return;
                 }
 
-                
+
                 downloadTask.Status = "Creating Application...";
-                
+
                 //Listener.WriteLine(SW.Shortname, "Creating Application...");
                 Application oApp = createApplication(SW.ProductName, SW.Description, sLanguage, SW.ProductVersion, SW.Manufacturer, SWID, new string[] { "RuckZuck" }, true);
 
@@ -1257,7 +1258,7 @@ namespace RuckZuck_Tool
                     {
                         //Fix Icon
                         oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL)); //testing only !!!
-                        
+
                         //Try to Add in Icon
                         /*if (oApp.DisplayInfo.First().Icon == null)
                         {
@@ -1300,7 +1301,7 @@ namespace RuckZuck_Tool
 
 
 
-#region Collection
+                #region Collection
                 bool EnabledDeployment = bDownloadStatus; //disable deployment if download is not complete.
 
                 if (!string.IsNullOrEmpty(sADGroup))
@@ -1439,7 +1440,7 @@ namespace RuckZuck_Tool
                         }
                     }
                 }
-#endregion
+                #endregion
 
             }
 
@@ -1577,7 +1578,7 @@ namespace RuckZuck_Tool
 
         public class SQLRZ
         {
-            public long RZID { get; set;  }
+            public long RZID { get; set; }
             public string Shortname { get; set; }
             public bool Bootstrap { get; set; }
             public string Version { get; set; }
@@ -1600,9 +1601,20 @@ namespace RuckZuck_Tool
         [Parameter(Mandatory = false, HelpMessage = "Create a bootstrap .exe instead of downloading the source files", ValueFromRemainingArguments = true)]
         public bool Bootstrap { get; set; }
 
-        public void Run()
+        public List<AddSoftware> SWUpdates { get; set; }
+
+        internal CMAPI oCM12 = new CMAPI();
+        public void Scan()
         {
+            //Disable SSL/TLS Errors
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            //Disable CRL Check
+            System.Net.ServicePointManager.CheckCertificateRevocationList = false;
+            //Get Proxy from IE
+            WebRequest.DefaultWebProxy = WebRequest.GetSystemWebProxy();
+
             XmlDocument xDoc = new XmlDocument();
+
             string sConfigPath = System.Reflection.Assembly.GetExecutingAssembly().Location + ".config";
             if (!File.Exists(sConfigPath))
             {
@@ -1615,7 +1627,10 @@ namespace RuckZuck_Tool
                 {
                     xDoc.Load(System.Reflection.Assembly.GetExecutingAssembly().Location + ".config");
 
-                    CMAPI oCM12 = new CMAPI();
+
+                    string sSQL = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CM_SQLServer']").InnerText ?? "";
+                    string sSQLDB = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CM_SQLServerDBName']").InnerText ?? "";
+                    oCM12.CM12SQLConnectionString = "Data Source=" + sSQL + ";Initial Catalog=" + sSQLDB + ";Integrated Security=True";
                     oCM12._CMSiteServer = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CM_Server']").InnerText ?? "";
                     oCM12.sSourcePath = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CMContentSourceUNC']").InnerText;
                     oCM12.sADGroup = Environment.ExpandEnvironmentVariables(xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='DefaultADGroup']").InnerText ?? "");
@@ -1624,18 +1639,60 @@ namespace RuckZuck_Tool
                     oCM12.CM12SiteCode = oCM12.connectionManager.NamedValueDictionary["ConnectedSiteCode"].ToString();
                     oCM12.NewAppSecurityScopeName = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CMSecurityScope']").InnerText ?? "";
                     oCM12.bPrimaryUserRequired = bool.Parse(xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='PrimaryUserRequired']").InnerText ?? "true");
-                    AddSoftware oSW = new AddSoftware() { ProductName = ProductName, ProductVersion = ProductVersion, Manufacturer = Manufacturer };
-                    oCM12.RuckZuckSync(oSW, new DLTask(), Bootstrap);
 
+                }
+                catch { }
+            }
+            RZScan oSCAN = new RZScan(false, false);
+            Console.WriteLine("Connecting RuckZuck Repository...");
+            oSCAN.GetSWRepository().Wait();
+            Console.WriteLine(oSCAN.SoftwareRepository.Count.ToString() + " Items in Repsoitory");
+            Console.WriteLine("Checking current Applications...");
+
+            oSCAN.scan(oCM12);
+
+            Console.WriteLine(oSCAN.InstalledSoftware.Count.ToString() + " Applications detected");
+            Console.WriteLine("Checking for Updates...");
+            oSCAN.CheckUpdates(null).Wait();
+            Console.WriteLine(oSCAN.NewSoftwareVersions.Count.ToString() + " Updates detected.");
+            SWUpdates = oSCAN.NewSoftwareVersions;
+        }
+
+        public void Update()
+        {
+            foreach (AddSoftware oItem in SWUpdates)
+            {
+                try
+                {
+                    SWUpdate oSW = new SWUpdate(oItem);
+                    oSW.GetInstallType();
+                    oSW.SW.Author = oItem.Author; //Author is used to store the Bootstrap flag
+
+                    Console.WriteLine("Preparig Application: " + oSW.SW.ShortName + " " + oSW.SW.ProductVersion);
+                    oSW.downloadTask.AutoInstall = true;
+                    oSW.InstallCM_cmd(oCM12, false, false);
+
+                    foreach (string sPreReq in oSW.SW.PreRequisites)
+                    {
+                        try
+                        {
+                            SWUpdate oPreReq = new SWUpdate(sPreReq);
+                            oPreReq.GetInstallType();
+                            Console.WriteLine("Preparig PreRequisite: " + oSW.SW.ShortName + " " + oSW.SW.ProductVersion);
+                            oPreReq.downloadTask.AutoInstall = true;
+                            oPreReq.InstallCM_cmd(oCM12, false, false);
+                        }
+                        catch { }
+                    }
                 }
                 catch { }
             }
         }
 
-        protected override void BeginProcessing()
-        {
-            Run();
-        }
+        //protected override void BeginProcessing()
+        //{
+        //    Scan();
+        //}
     }
 }
 
@@ -1692,7 +1749,67 @@ namespace RZUpdate
                 GC.Collect();
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
+            {
+                downloadTask.Status = "";
+                downloadTask.Installing = false;
+                downloadTask.Downloading = false;
+                downloadTask.Error = true;
+                downloadTask.ErrorMessage = ex.Message;
+                ProgressDetails(downloadTask, EventArgs.Empty);
+                return false;
+            }
+            return true;
+        }
+
+        internal bool InstallCM_cmd(CMAPI oAPI, bool Force = false, bool Retry = false)
+        {
+            try
+            {
+                downloadTask.Downloading = false;
+                downloadTask.Installing = true;
+                ProgressDetails(downloadTask, EventArgs.Empty);
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuckCM"))
+                    {
+                        if (Retry)
+                        {
+                            Thread.Sleep(new TimeSpan(0, 0, 2));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                }
+
+                bool bMutexCreated = false;
+                using (Mutex mutex = new Mutex(false, "Global\\RuckZuckCM", out bMutexCreated))
+                {
+                    bool bBootStrap = false;
+                    if (!string.IsNullOrEmpty(SW.Author))
+                    {
+                        if (SW.Author == "BootstrapTrue")
+                            bBootStrap = true;
+                    }
+
+                    oAPI.RuckZuckSync(SW, this.downloadTask, bBootStrap);
+                    downloadTask.Installed = true;
+                    downloadTask.Installing = false;
+                    ProgressDetails(downloadTask, EventArgs.Empty);
+
+                    if (bMutexCreated)
+                        mutex.Close();
+                }
+                GC.Collect();
+
+            }
+            catch (Exception ex)
             {
                 downloadTask.Status = "";
                 downloadTask.Installing = false;
@@ -1723,7 +1840,7 @@ namespace RZUpdate
         {
             string sSourcePath = RuckZuck_Tool.Properties.Settings.Default.CMContentSourceUNC;
             var lSW = RZRestAPIv2.GetCatalog().Where(t => t.ProductName == SW.ProductName && t.Manufacturer == SW.Manufacturer && t.ProductVersion == SW.ProductVersion);
-            
+
             string sDir = Path.Combine(sSourcePath, SW.ProductName + " " + SW.ProductVersion + " " + SW.Architecture + "_" + lSW.First().SWId);
             DirectoryInfo oDir = new DirectoryInfo(Path.Combine(sSourcePath, SW.ProductName + " " + SW.ProductVersion + " " + SW.Architecture + "_" + lSW.First().SWId));
             if (!oDir.Exists)
@@ -1741,125 +1858,10 @@ namespace RuckZuck.Base
     {
         public Task SWScan()
         {
+            CMAPI oAPI = new CMAPI();
             var tSWScan = Task.Run(() =>
             {
-                try
-                {
-                    CMAPI oAPI = new CMAPI();
-
-                    List<CMAPI.SQLRZ> lIDs = oAPI.getRZIDs();
-                    //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "Repository-Items:" + SoftwareRepository.Count.ToString() });
-
-#if DEBUG
-                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S0;" + "RZItems detected: ", lIDs.Count.ToString() });
-#endif
-#if DEBUG
-                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S0;" + "Repository Items: ", SoftwareRepository.Count().ToString() });
-#endif
-
-                    foreach (CMAPI.SQLRZ SQLRZ in lIDs)
-                    {
-                        try
-                        {
-                            if (SoftwareRepository.Count(t => t.SWId == SQLRZ.RZID) == 0)
-                            {
-                                //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "not match, IconId:" + SQLRZ.RZID.ToString() });
-
-                                var oSW = SoftwareRepository.FirstOrDefault(t => t.ShortName == SQLRZ.Shortname);
-
-                                if (oSW != null)
-                                {
-                                    AddSoftware oNew = new AddSoftware()
-                                    {
-                                        ProductName = oSW.ProductName,
-                                        ProductVersion = oSW.ProductVersion,
-                                        Manufacturer = oSW.Manufacturer,
-                                        ShortName = oSW.ShortName,
-                                        Description = oSW.Description,
-                                        SWId = oSW.SWId,
-                                        IconHash = oSW.IconHash,
-                                        MSIProductID = SQLRZ.Version
-                                    };
-
-                                    if (SQLRZ.Bootstrap)
-                                        oNew.Author = "BootstrapTrue";
-                                    else
-                                        oNew.Author = "BootstrapFalse";
-
-#if DEBUG
-                                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S1;" + "New SWVersion: ", oNew.ProductName, oNew.ProductVersion, oNew.MSIProductID });
-#endif
-                                    NewSoftwareVersions.Add(oNew);
-                                }
-
-                                /*var oUpd = (new SWUpdate(SQLRZ.Shortname)).SW;
-                                oUpd.MSIProductID = SQLRZ.Version;
-
-                                //We use the Author filed to store the Bootstarp status
-                                if (SQLRZ.Bootstrap)
-                                    oUpd.Author = "BootstrapTrue";
-                                else
-                                    oUpd.Author = "BootstrapFalse";
-
-                                if (!string.IsNullOrEmpty(oUpd.Shortname))
-                                {
-                                    NewSoftwareVersions.Add(oUpd);
-                                }*/
-
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    var oSW = SoftwareRepository.FirstOrDefault(t => t.SWId == SQLRZ.RZID);
-                                    if (oSW != null)
-                                    {
-                                        try
-                                        {
-                                            AddSoftware oExisting = new AddSoftware()
-                                            {
-                                                ProductName = oSW.ProductName,
-                                                ProductVersion = oSW.ProductVersion,
-                                                Manufacturer = oSW.Manufacturer,
-                                                ShortName = oSW.ShortName,
-                                                Description = oSW.Description,
-                                                IconHash = oSW.IconHash,
-                                                SWId = oSW.SWId
-                                            };
-
-                                            if (SQLRZ.Bootstrap)
-                                                oExisting.Author = "BootstrapTrue";
-                                            else
-                                                oExisting.Author = "BootstrapFalse";
-
-#if DEBUG
-                                            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S2;" + "Installed SWVersion: ", oExisting.ProductName, oExisting.ProductVersion });
-#endif
-                                            InstalledSoftware.Add(oExisting);
-                                        }
-                                        catch { }
-                                    }
-
-                                }
-                                catch { }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1814E1" + ex.Message });
-                        }
-                    }
-
-                    //Cleanup SW where new Version already exists
-                    foreach (var oSW in InstalledSoftware)
-                    {
-                        NewSoftwareVersions.RemoveAll(t => t.ShortName == oSW.ShortName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1845E1" + ex.Message });
-                }
+                scan(oAPI);
                 OnUpdScanCompleted(this, new EventArgs());
                 OnSWScanCompleted(this, new EventArgs());
             });
@@ -1867,6 +1869,113 @@ namespace RuckZuck.Base
             return tSWScan;
         }
 
+        internal void scan(CMAPI oAPI)
+        {
+
+            try
+            {
+                List<CMAPI.SQLRZ> lIDs = oAPI.getRZIDs();
+                //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "Repository-Items:" + SoftwareRepository.Count.ToString() });
+
+#if DEBUG
+                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S0;" + "RZItems detected: ", lIDs.Count.ToString() });
+#endif
+#if DEBUG
+                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S0;" + "Repository Items: ", SoftwareRepository.Count().ToString() });
+#endif
+
+                foreach (CMAPI.SQLRZ SQLRZ in lIDs)
+                {
+                    try
+                    {
+                        if (SoftwareRepository.Count(t => t.SWId == SQLRZ.RZID) == 0)
+                        {
+                            //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "not match, IconId:" + SQLRZ.RZID.ToString() });
+
+                            var oSW = SoftwareRepository.FirstOrDefault(t => t.ShortName == SQLRZ.Shortname);
+
+                            if (oSW != null)
+                            {
+                                AddSoftware oNew = new AddSoftware()
+                                {
+                                    ProductName = oSW.ProductName,
+                                    ProductVersion = oSW.ProductVersion,
+                                    Manufacturer = oSW.Manufacturer,
+                                    ShortName = oSW.ShortName,
+                                    Description = oSW.Description,
+                                    SWId = oSW.SWId,
+                                    IconHash = oSW.IconHash,
+                                    MSIProductID = SQLRZ.Version
+                                };
+
+                                if (SQLRZ.Bootstrap)
+                                    oNew.Author = "BootstrapTrue";
+                                else
+                                    oNew.Author = "BootstrapFalse";
+
+#if DEBUG
+                                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S1;" + "New SWVersion: ", oNew.ProductName, oNew.ProductVersion, oNew.MSIProductID });
+#endif
+                                NewSoftwareVersions.Add(oNew);
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                var oSW = SoftwareRepository.FirstOrDefault(t => t.SWId == SQLRZ.RZID);
+                                if (oSW != null)
+                                {
+                                    try
+                                    {
+                                        AddSoftware oExisting = new AddSoftware()
+                                        {
+                                            ProductName = oSW.ProductName,
+                                            ProductVersion = oSW.ProductVersion,
+                                            Manufacturer = oSW.Manufacturer,
+                                            ShortName = oSW.ShortName,
+                                            Description = oSW.Description,
+                                            IconHash = oSW.IconHash,
+                                            SWId = oSW.SWId
+                                        };
+
+                                        if (SQLRZ.Bootstrap)
+                                            oExisting.Author = "BootstrapTrue";
+                                        else
+                                            oExisting.Author = "BootstrapFalse";
+
+#if DEBUG
+                                        System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S2;" + "Installed SWVersion: ", oExisting.ProductName, oExisting.ProductVersion });
+#endif
+                                        InstalledSoftware.Add(oExisting);
+                                    }
+                                    catch { }
+                                }
+
+                            }
+                            catch { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1814E1" + ex.Message });
+                    }
+                }
+
+                //Cleanup SW where new Version already exists
+                foreach (var oSW in InstalledSoftware)
+                {
+                    NewSoftwareVersions.RemoveAll(t => t.ShortName == oSW.ShortName);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1845E1" + ex.Message });
+            }
+            OnUpdScanCompleted(this, new EventArgs());
+            OnSWScanCompleted(this, new EventArgs());
+
+        }
     }
 }
 
