@@ -53,6 +53,15 @@ namespace RZ.Server.Controllers
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return Content("[]");
+            }
+            else
+            {
+            }
+
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
 
@@ -136,14 +145,32 @@ namespace RZ.Server.Controllers
             JArray jSW;
             if (!string.IsNullOrEmpty(shortname))
             {
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
-                Base.WriteLog($"Get Definition for: {shortname}", ClientIP, 1500, customerid);
+                if (!Base.ValidateIP(ClientIP))
+                {
+                    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                        return Content("[]");
+                }
+                else
+                {
+                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + shortname + "'</li>");
+                    Base.WriteLog($"Get Definition for: {shortname}", ClientIP, 1500, customerid);
+                }
+
                 jSW = Base.GetSoftwares(shortname, customerid);
             }
             else
             {
-                _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
-                Base.WriteLog($"Get Definition for: {name}", ClientIP, 1500, customerid);
+                if (!Base.ValidateIP(ClientIP))
+                {
+                    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                        return Content("[]");
+                }
+                else
+                {
+                    _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Definition for '" + name + "'</li>");
+                    Base.WriteLog($"Get Definition for: {name}", ClientIP, 1500, customerid);
+                }
+
                 jSW = Base.GetSoftwares(name, ver, man, customerid);
             }
             //Cleanup
@@ -228,7 +255,15 @@ namespace RZ.Server.Controllers
         public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            Base.WriteLog($"Get Softwares: {shortname}", ClientIP, 1400, customerid);
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if(Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return Content("[]");
+            }
+            else
+            {
+                Base.WriteLog($"Get Softwares: {shortname}", ClientIP, 1400, customerid);
+            }
 
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
@@ -252,6 +287,15 @@ namespace RZ.Server.Controllers
         public bool IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return false;
+            }
+            else
+            {
+            }
 
             if (string.IsNullOrEmpty(customerid))
             {
@@ -327,6 +371,15 @@ namespace RZ.Server.Controllers
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return Content("");
+            }
+            else
+            {
+            }
+
             string sPath = Path.Combine(contentid, filename);
             if (!string.IsNullOrEmpty(shortname))
                 sPath = Path.Combine("proxy", shortname, contentid, filename);
@@ -341,6 +394,16 @@ namespace RZ.Server.Controllers
         public ActionResult CheckForUpdate(string customerid = "")
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return Content((new JArray()).ToString());
+            }
+            else
+            {
+            }
+
             DateTime dStart = DateTime.Now;
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             JArray jItems = JArray.Parse(oGet.Result);
@@ -370,13 +433,14 @@ namespace RZ.Server.Controllers
             try
             {
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                Base.SetValidIP(ClientIP);
                 Base.WriteLog("Get URL", ClientIP, 1000, customerid);
                 return Content(Base.GetURL(customerid, ClientIP), "text/html");
             }
             catch
             {
                 //return Content("https://cdn.ruckzuck.tools", "text/html");
-                return Content("https://ruckzuck.azurewebsites.net", "text/html");
+                return Content("https://ruckzuck.tools", "text/html");
             }
         }
 
@@ -398,24 +462,21 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/feedback")]
         public void Feedback(string name, string ver, string man, string ok, string user, string text, string customerid = "")
         {
-            string ClientIP = "";
-            try
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            if (!Base.ValidateIP(ClientIP))
             {
-                ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return;
             }
-            catch(Exception ex)
+            else
             {
-                //ClientIP = ex.Message.ToString(); 
             }
 
             if (string.IsNullOrEmpty(customerid))
             {
-                //if (ClientIP.StartsWith("152.195.1"))
+                //if (ClientIP.StartsWith("212.25.2.73"))
                 //    return;
-                //if (ClientIP.StartsWith("152.199.1"))
-                //    return;
-                if (ClientIP.StartsWith("212.25.2.73"))
-                    return;
             }
 
             string Shortname = Base.GetShortname(name, ver, man, customerid);
@@ -469,12 +530,22 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/uploadswentry")]
         public bool UploadSWEntry(string customerid = "")
         {
+            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return false;
+            }
+            else
+            {
+            }
+
             var oGet = new StreamReader(Request.Body).ReadToEndAsync();
             string sJSON = oGet.Result;
 
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - NEW SW is waiting for approval !!!</li>");
 
-            string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1050, customerid);
 
             if (sJSON.TrimStart().StartsWith('['))

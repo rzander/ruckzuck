@@ -871,7 +871,20 @@ namespace RZ.Server
             return "https://ruckzuck.azurewebsites.net";
         }
 
+        public static bool ValidateIP(string clientip, string customerid = "")
+        {
+            if (string.IsNullOrEmpty(clientip))
+                return false;
+            return Base._cache.TryGetValue(clientip, out _);
+        }
 
+        public static void SetValidIP(string clientip, string customerid = "")
+        {
+            if (string.IsNullOrEmpty(clientip))
+                return;
+            Base._cache.Set(clientip, "ip", new TimeSpan(0, 60, 0));
+            return;
+        }
     }
 
     public static class GenericPluginLoader<T>
