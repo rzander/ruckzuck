@@ -28,31 +28,32 @@ namespace IP2Location
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            //log.LogInformation("C# HTTP trigger function processed a request.");
 
             string ip = req.Query["ip"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            ip = ip ?? data?.ip;
+            ip = ip ?? data?.ip ?? GetIpFromRequestHeaders(req);
 
             DateTime dStart = DateTime.Now;
-
-            string result = memoryCache[ip] as string;
-            if (result == null)
+            string result = "";
+            if (!string.IsNullOrEmpty(ip))
             {
-                long longip = IP2Long(ip);
-                //longip = 16777216;
+                result = memoryCache[ip] as string;
+                if (string.IsNullOrEmpty(result))
+                {
+                    long longip = IP2Long(ip);
+                    var Locs = GetLocations(longip);
+                    var oFirst = Locs.Where(t => t.loIP <= longip & t.hiIP >= longip);
+                    result = JsonConvert.SerializeObject(oFirst.FirstOrDefault());
 
-                var Locs = GetLocations(longip);
-                var oFirst = Locs.Where(t => t.loIP <= longip & t.hiIP >= longip);
-                result = JsonConvert.SerializeObject(oFirst.FirstOrDefault());
+                    memoryCache.Set(ip, result, DateTimeOffset.Now.AddHours(4));
 
-                memoryCache.Set(ip, result, DateTimeOffset.Now.AddHours(4));
+                }
 
+                log.LogInformation($"IP lookup duration for {ip} was {Math.Round((DateTime.Now - dStart).TotalMilliseconds, 0, MidpointRounding.AwayFromZero)}ms");
             }
-
-            log.LogInformation($"IP lookup duration for {ip} was {(DateTime.Now - dStart).TotalMilliseconds}ms");
 
             return ip != null
                 ? (ActionResult)new OkObjectResult(result)
@@ -105,8 +106,8 @@ namespace IP2Location
 
                 csvStream.Position = 0; // Rewind!
                 List<string> rows = new List<string>();
-                // Are you *sure* you want ASCII?
-                using (var reader = new StreamReader(csvStream, Encoding.ASCII))
+
+                using (var reader = new StreamReader(csvStream, Encoding.UTF8))
                 {
                     string line;
                     while ((line = reader.ReadLine()) != null)
@@ -143,6 +144,11 @@ namespace IP2Location
                 }
             }
             return (long)num;
+        }
+
+        private static string GetIpFromRequestHeaders(HttpRequest request)
+        {
+            return (request.Headers["X-Forwarded-For"].FirstOrDefault() ?? "").Split(new char[] { ':' }).FirstOrDefault();
         }
     }
 
