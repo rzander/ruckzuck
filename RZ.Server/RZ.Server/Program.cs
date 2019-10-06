@@ -68,7 +68,7 @@ namespace RZ.Server
             });
 
             var host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(c => c.AddServerHeader = false)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>().ConfigureAppConfiguration((builderContext, config) =>

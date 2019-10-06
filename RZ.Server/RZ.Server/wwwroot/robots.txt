@@ -1,0 +1,3 @@
+﻿Sitemap: https://ruckzuck.tools/sitemap.xml
+User-agent: *
+Disallow: 
