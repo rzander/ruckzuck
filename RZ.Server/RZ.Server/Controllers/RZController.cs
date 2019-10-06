@@ -127,6 +127,9 @@ namespace RZ.Server.Controllers
                 return Base.GetIcon(0, iconhash);
             }
 
+            if (iconid == 0)
+                return null;
+
             //iconid is obsolete !!
             return Base.GetIcon(iconid);
         }

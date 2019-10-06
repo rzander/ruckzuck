@@ -378,6 +378,9 @@ namespace Plugin_Software
             Stream bResult;
             byte[] bCache;
 
+            if (string.IsNullOrEmpty(sico))
+                return null;
+
             //Try to get value from Memory
             if (_cache.TryGetValue("ico-" + sico, out bCache))
             {
