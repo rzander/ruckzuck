@@ -394,7 +394,8 @@ namespace RZ.Server.Controllers
 
         [HttpPost]
         [Route("rest/v2/checkforupdate")]
-        public ActionResult CheckForUpdate(string customerid = "")
+        [Route("rest/v2/checkforupdate/{updateshash}")]
+        public ActionResult CheckForUpdate(string customerid = "", string updateshash = "")
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -412,6 +413,13 @@ namespace RZ.Server.Controllers
             JArray jItems = JArray.Parse(oGet.Result);
             if (jItems.Count > 0)
             {
+                if(!string.IsNullOrEmpty(updateshash))
+                {
+                    if (updateshash != Hash.CalculateMD5HashString(oGet.Result))
+                        return Content((new JArray()).ToString());
+                    else
+                        Console.WriteLine("CheckForUpdates Hash Error !");
+                }
                 string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
                 TimeSpan tDuration = DateTime.Now - dStart;
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
@@ -422,6 +430,7 @@ namespace RZ.Server.Controllers
             else
                 return Content((new JArray()).ToString());
         }
+        
         [HttpGet]
         [Route("rest/v2/GetPendingApproval")]
         public ActionResult GetPendingApproval(string customerid = "")
