@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -337,8 +336,7 @@ namespace RuckZuck.Base
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     string sSoftware = ser.Serialize(lSoftware);
                     HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
-                    string sHash = CalculateMD5HashString(sSoftware);
-                    var response = oClient.PostAsync(sURL + $"/rest/v2/checkforupdate/{sHash}", oCont);
+                    var response = oClient.PostAsync(sURL + $"/rest/v2/checkforupdate", oCont);
                     response.Wait(120000); //2min max
                     if (response.IsCompleted)
                     {
@@ -355,57 +353,6 @@ namespace RuckZuck.Base
 
             return new List<AddSoftware>();
         }
-
-        #region Hash
-        private const string Digits = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-        private static byte[] CalculateMD5Hash(string input)
-        {
-            MD5 md5 = System.Security.Cryptography.MD5.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
-            byte[] mhash = new byte[hash.Length + 2];
-            hash.CopyTo(mhash, 2);
-            //Add Multihash identifier
-            mhash[0] = 0xD5; //MD5
-            mhash[1] = Convert.ToByte(hash.Length); //Hash legth
-            return mhash;
-        }
-
-        private static string Encode58(byte[] data)
-        {
-            // Decode byte[] to BigInteger
-            BigInteger intData = 0;
-            for (int i = 0; i < data.Length; i++)
-            {
-                intData = intData * 256 + data[i];
-            }
-
-            // Encode BigInteger to Base58 string
-            string result = "";
-            while (intData > 0)
-            {
-                int remainder = (int)(intData % 58);
-                intData /= 58;
-                result = Digits[remainder] + result;
-            }
-
-            // Append `1` for each leading 0 byte
-            for (int i = 0; i < data.Length && data[i] == 0; i++)
-            {
-                result = '1' + result;
-            }
-
-            return result;
-        }
-
-        public static string CalculateMD5HashString(string input)
-        {
-            return Encode58(CalculateMD5Hash(input));
-        }
-
-        #endregion
-
     }
 
     public class GetSoftware
