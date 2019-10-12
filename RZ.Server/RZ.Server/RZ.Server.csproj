@@ -7,8 +7,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>(c) 2019 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.0.0.30</AssemblyVersion>
-    <FileVersion>2.0.0.30</FileVersion>
+    <AssemblyVersion>2.0.0.31</AssemblyVersion>
+    <FileVersion>2.0.0.31</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>
@@ -55,7 +55,7 @@
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.3.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.5" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
