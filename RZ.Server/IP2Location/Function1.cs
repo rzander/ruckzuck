@@ -114,7 +114,7 @@ namespace IP2Location
                     {
                         var values = line.Split("\",\"");
 
-                        Locations.Add(new location() { loIP = long.Parse(values[0].TrimStart('"')), hiIP = long.Parse(values[1]), ISO = values[2], Country = values[3], State = values[4], Location = values[5], Long = values[6], Lat = values[7], ZIP = values[8], TimeZone = values[9].TrimEnd('"') });
+                        Locations.Add(new location() { loIP = long.Parse(values[0].TrimStart('"')), hiIP = long.Parse(values[1]), ISO = values[2], Country = values[3], State = values[4], Location = values[5], Long = values[7], Lat = values[6], ZIP = values[8], TimeZone = values[9].TrimEnd('"') });
                     }
                 }
             }
