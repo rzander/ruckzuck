@@ -96,9 +96,11 @@ namespace RuckZuck_Tool
         string GlobalConditionName = "";
 
         internal string sADGroup = "";
-        string SQLCollQueryLookup = "SELECT [SiteID] as [CollectionID],[CollectionName] FROM [vCollections] WHERE CollectionComment like @SWID";
+        internal string SQLCollQueryLookup = "SELECT [SiteID] as [CollectionID],[CollectionName] FROM [vCollections] WHERE CollectionComment like @SWID";
         internal string LimitingUserCollectionID = Properties.Settings.Default.LimitingUserCollectionID;
-        string LimitingDeviceCollectionID = "SMS00001";
+        internal string LimitingDeviceCollectionID = "SMS00001";
+        internal string DPGroup = Properties.Settings.Default.DPGroup;
+        internal string CollFolder = Properties.Settings.Default.CollectionFolder ?? "RuckZuck";
         internal string CM12SiteCode = "";
         internal string sSourcePath = Properties.Settings.Default.CMContentSourceUNC;
         internal bool bPrimaryUserRequired = Properties.Settings.Default.PrimaryUserRequired;
@@ -1258,14 +1260,6 @@ namespace RuckZuck_Tool
                     {
                         //Fix Icon
                         oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL)); //testing only !!!
-
-                        //Try to Add in Icon
-                        /*if (oApp.DisplayInfo.First().Icon == null)
-                        {
-                            var oImg = new System.Windows.Media.Imaging.BitmapImage(new Uri(SW.IconURL));
-
-                            oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL));
-                        }*/
                     }
                     catch (Exception ex)
                     {
@@ -1279,16 +1273,16 @@ namespace RuckZuck_Tool
                     if (bDownloadStatus)
                     {
                         //Add to DP
-                        if (!string.IsNullOrEmpty(RuckZuck_Tool.Properties.Settings.Default.DPGroup))
+                        if (!string.IsNullOrEmpty(DPGroup))
                         {
-                            downloadTask.Status = "Assigning content to DP-Group: " + RuckZuck_Tool.Properties.Settings.Default.DPGroup;
+                            downloadTask.Status = "Assigning content to DP-Group: " +DPGroup;
                             //Listener.WriteLine(SW.Shortname, "Assigning content to DP-Group: " + RuckZuck_Tool.Properties.Settings.Default.DPGroup);
                             try
                             {
                                 oRAWApp.Get();
                                 string sPkgID = oRAWApp["PackageID"].StringValue;
                                 if (!string.IsNullOrEmpty(sPkgID))
-                                    addDPgroupConentInfo(RuckZuck_Tool.Properties.Settings.Default.DPGroup, sPkgID);
+                                    addDPgroupConentInfo(DPGroup, sPkgID);
                             }
                             catch (Exception ex)
                             {
@@ -1386,7 +1380,7 @@ namespace RuckZuck_Tool
                             try
                             {
                                 //Create Device Collection
-                                oCollection = createDeviceCollection(Properties.Settings.Default.CollPrefix_DRI + SW.ShortName + " " + SW.ProductVersion, LimitingDeviceCollectionID);
+                                oCollection = createDeviceCollection(Properties.Settings.Default.CollPrefix_DRI ?? "DRI_" + SW.ShortName + " " + SW.ProductVersion, LimitingDeviceCollectionID);
                                 oCollection["RefreshType"].ObjectValue = CollectionRefreshType.None;
                                 oCollection["Comment"].ObjectValue = SWID;
                                 oCollection.Put();
@@ -1394,9 +1388,9 @@ namespace RuckZuck_Tool
                                 //Create and move Collection to the new Folder
                                 try
                                 {
-                                    if (!string.IsNullOrEmpty(RuckZuck_Tool.Properties.Settings.Default.CollectionFolder))
+                                    if (!string.IsNullOrEmpty(CollFolder))
                                     {
-                                        IResultObject oFolder = createConsoleFolder(RuckZuck_Tool.Properties.Settings.Default.CollectionFolder, 5000);
+                                        IResultObject oFolder = createConsoleFolder(CollFolder, 5000);
                                         createConsoleFolderItem(oCollection["CollectionID"].StringValue, 5000, oFolder["ContainerNodeID"].IntegerValue);
                                     }
                                 }
@@ -1639,7 +1633,8 @@ namespace RuckZuck_Tool
                     oCM12.CM12SiteCode = oCM12.connectionManager.NamedValueDictionary["ConnectedSiteCode"].ToString();
                     oCM12.NewAppSecurityScopeName = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CMSecurityScope']").InnerText ?? "";
                     oCM12.bPrimaryUserRequired = bool.Parse(xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='PrimaryUserRequired']").InnerText ?? "true");
-
+                    oCM12.DPGroup = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='DPGroup']").InnerText;
+                    oCM12.CollFolder = xDoc.SelectSingleNode(@"configuration/applicationSettings/RuckZuck_Tool.Properties.Settings/setting[@name='CollectionFolder']").InnerText;
                 }
                 catch { }
             }
