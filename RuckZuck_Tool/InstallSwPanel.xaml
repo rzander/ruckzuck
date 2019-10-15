@@ -16,10 +16,10 @@
                 <TextBox x:Name="tbSearch" DockPanel.Dock="Right" Height="24" Width="150" Text="Search..." Foreground="#FFAEACAC" Tag="Search" GotFocus="tbSearch_GotFocus" LostFocus="tbSearch_LostFocus" KeyDown="tbSearch_KeyDown"/>
                 <Image Width="24" Height="24" Source="Images/Search_24.png" Margin="1,0,0,0" />
             </StackPanel>
-            <StackPanel x:Name="spSupport" Orientation="Horizontal" HorizontalAlignment="Right" Background="{x:Null}">
-                <ToolBar IsTabStop="True" ToolBarTray.IsLocked="True" Background="{x:Null}" AllowDrop="True">
+            <StackPanel x:Name="spSupport" Orientation="Horizontal" HorizontalAlignment="Right" Background="{x:Null}" ClipToBounds="True">
+                <ToolBar IsTabStop="True" ToolBarTray.IsLocked="True" Background="{x:Null}" AllowDrop="True" Margin="0,0,-15,0" >
                     <Menu Background="{x:Null}" >
-                        <MenuItem Header="Favorites">
+                        <MenuItem Header="Favorites ">
                             <MenuItem.Icon>
                                 <Image Source="Images/Star.ico" />
                             </MenuItem.Icon>
