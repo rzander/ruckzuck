@@ -382,7 +382,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetIcon(string shortname, string customerid = "")
+        public static async Task<Stream> GetIcon(string shortname, string customerid = "", int size = 0)
         {
             try
             {
@@ -390,7 +390,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        var oRes = await item.Value.GetIcon(shortname);
+                        var oRes = await item.Value.GetIcon(shortname, customerid, size);
 
                         if (oRes != null)
                             return oRes;
@@ -403,7 +403,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
+        public static async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "", int size = 0)
         {
             try
             {
@@ -411,7 +411,7 @@ namespace RZ.Server
                 {
                     try
                     {
-                        var oRes = await item.Value.GetIcon(iconid, iconhash);
+                        var oRes = await item.Value.GetIcon(iconid, iconhash, customerid, size);
                         
                         if (oRes != null)
                             return oRes;

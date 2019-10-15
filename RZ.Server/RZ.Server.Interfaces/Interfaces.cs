@@ -27,9 +27,9 @@ namespace RZ.Server.Interfaces
 
         Dictionary<string, string> Settings { get; set; }
 
-        Task<Stream> GetIcon(string shortname, string customerid = "");
+        Task<Stream> GetIcon(string shortname, string customerid = "", int size = 0);
 
-        Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "");
+        Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "", int size = 0);
 
         JArray GetSoftwares(string shortname, string customerid = "");
 

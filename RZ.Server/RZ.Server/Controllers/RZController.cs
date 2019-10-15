@@ -115,23 +115,23 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetIcon")]
         [Route("rest/v2/GetIcon/{shortname}")]
         [Route("wcf/RZService.svc/rest/v2/GetIcon")]
-        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "")
+        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "" , int size = 0)
         {
             if (!string.IsNullOrEmpty(shortname))
             {
-                return Base.GetIcon(shortname);
+                return Base.GetIcon(shortname, customerid, size);
             }
 
             if (!string.IsNullOrEmpty(iconhash))
             {
-                return Base.GetIcon(0, iconhash);
+                return Base.GetIcon(0, iconhash, customerid, size);
             }
 
             if (iconid == 0)
                 return null;
 
             //iconid is obsolete !!
-            return Base.GetIcon(iconid);
+            return Base.GetIcon(iconid, "", customerid, size);
         }
 
 
@@ -487,8 +487,12 @@ namespace RZ.Server.Controllers
 
             if (string.IsNullOrEmpty(customerid))
             {
-                //if (ClientIP.StartsWith("212.25.2.73"))
-                //    return;
+                return; //Skip Feedback from old Clients
+            }
+            else
+            {
+                if (customerid.StartsWith("212.25.2.73"))
+                    return;
             }
 
             string Shortname = Base.GetShortname(name, ver, man, customerid);

@@ -5,6 +5,7 @@ using RZ.Server;
 using RZ.Server.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +14,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace Plugin_Software
 {
@@ -320,13 +328,13 @@ namespace Plugin_Software
             return false;
         }
 
-        public async Task<Stream> GetIcon(string shortname, string customerid = "")
+        public async Task<Stream> GetIcon(string shortname, string customerid = "", int size = 0)
         {
             Stream bResult;
             byte[] bCache;
 
             //ry to get value from Memory
-            if (_cache.TryGetValue("ico-" + shortname.ToLower(), out bCache))
+            if (_cache.TryGetValue("ico-" + size.ToString() + shortname.ToLower(), out bCache))
             {
                 return new MemoryStream(bCache);
             }
@@ -341,9 +349,24 @@ namespace Plugin_Software
                         bResult = new MemoryStream(jObj["Image"].ToObject(typeof(byte[])) as byte[]);
                         MemoryStream ms = new MemoryStream();
                         bResult.CopyTo(ms);
+                        bCache = ms.ToArray();
+
+                        if (size > 0)
+                        {
+                            using (Image image = Image.Load(bCache))
+                            {
+                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                using (var imgs = new MemoryStream())
+                                {
+                                    var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                    image.Save(imgs, imageEncoder);
+                                    bCache = imgs.ToArray();
+                                }
+                            }
+                        }
 
                         var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
-                        _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+                        _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
                         return bResult;
                     }
@@ -351,12 +374,27 @@ namespace Plugin_Software
                     {
                         if (jObj["IconHash"] != null)
                         {
-                            bResult = await GetIcon(0, jObj["IconHash"].ToString());
+                            bResult = await GetIcon(0, jObj["IconHash"].ToString(), customerid, size);
                             MemoryStream ms = new MemoryStream();
                             bResult.CopyTo(ms);
+                            bCache = ms.ToArray();
+
+                            if (size > 0)
+                            {
+                                using (Image image = Image.Load(bCache))
+                                {
+                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                    using (var imgs = new MemoryStream())
+                                    {
+                                        var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                        image.Save(imgs, imageEncoder);
+                                        bCache = imgs.ToArray();
+                                    }
+                                }
+                            }
 
                             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
-                            _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+                            _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
                             return bResult;
                         }
@@ -368,7 +406,7 @@ namespace Plugin_Software
             return null;
         }
 
-        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
+        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "", int size = 0)
         {
             string sico = iconhash;
 
@@ -382,22 +420,22 @@ namespace Plugin_Software
                 return null;
 
             //Try to get value from Memory
-            if (_cache.TryGetValue("ico-" + sico, out bCache))
+            if (_cache.TryGetValue("ico-" + size.ToString() + sico, out bCache))
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
-                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                 return new MemoryStream(bCache);
             }
 
             //Try to load Icon from Disk
-            if (File.Exists(Path.Combine(Settings["icons"], sico + ".jpg")))
+            if (File.Exists(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg")))
             {
 
-                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + ".jpg"));
+                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg"));
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
-                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                 return new MemoryStream(bCache);
             }
@@ -414,12 +452,27 @@ namespace Plugin_Software
                 bResult.CopyTo(ms);
                 bCache = ms.ToArray();
 
+                if (size > 0)
+                {
+                    using (Image image = Image.Load(bCache))
+                    {
+                        image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                        using (var imgs = new MemoryStream())
+                        {
+                            var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                            image.Save(imgs, imageEncoder);
+                            bCache = imgs.ToArray();
+                        }
+                    }
+                }
+
+
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for 90 Minutes
-                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                 try
                 {
-                    File.WriteAllBytes(Path.Combine(Settings["icons"], sico + ".jpg"), bCache);
+                    File.WriteAllBytes(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg"), bCache);
                 }
                 catch { }
 
@@ -744,7 +797,7 @@ namespace Plugin_Software
                 mut.WaitOne(10000);
                 try
                 {
-                    var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey,Downloads&" + sasToken);
+                    var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey," + AttributeName + "&" + sasToken);
 
                     request.Method = "GET";
                     request.Headers.Add("x-ms-version", "2017-04-17");
@@ -787,18 +840,34 @@ namespace Plugin_Software
             }
         }
 
+        private void incQueue(string ShortName, string sasToken, string sURL)
+        {
+            using (HttpClient oClient = new HttpClient())
+            {
+                string url = $"{sURL}?timeout=10&{sasToken}";
+                string body = $"<QueueMessage><MessageText>{ShortName}</MessageText></QueueMessage>";
+                HttpContent oCont = new StringContent(body);
+                var oRes = oClient.PostAsync(url, oCont);
+                oRes.Wait(5000);
+                oRes.Result.ToString();
+            }
+        }
+
         public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")
         {
             switch (counter.ToUpper())
             {
                 case "DL":
-                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Downloads");
+                    incQueue(ShortName, Settings["dlqSAS"], Settings["dlqURL"]);
+                    //inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Downloads");
                     break;
                 case "FAILURE":
-                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Failures");
+                    incQueue(ShortName, Settings["faqSAS"], Settings["faqURL"]);
+                    //inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Failures");
                     break;
                 case "SUCCESS":
-                    inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Success");
+                    incQueue(ShortName, Settings["suqSAS"], Settings["suqURL"]);
+                    //inc(ShortName, Settings["catSAS"], Settings["catURL"], "known", "Success");
                     break;
             }
 

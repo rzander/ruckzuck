@@ -136,7 +136,7 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/GetIcon/{id}")]
         public Task<Stream> GetIcon(Int32 id = 575633)
         {
-            return Base.GetIcon(id);
+            return Base.GetIcon(id, "", "", 32);
         }
 
         [HttpGet]

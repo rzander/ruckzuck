@@ -320,7 +320,7 @@ namespace Plugin_Software
             return false;
         }
 
-        public async Task<Stream> GetIcon(string shortname, string customerid = "")
+        public async Task<Stream> GetIcon(string shortname, string customerid = "", int size = 0)
         {
             Stream bResult;
             byte[] bCache;
@@ -370,7 +370,7 @@ namespace Plugin_Software
             return null;
         }
 
-        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "")
+        public async Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", string customerid = "", int size = 0)
         {
             string sico = iconhash;
 

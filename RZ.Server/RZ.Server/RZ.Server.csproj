@@ -71,6 +71,9 @@
     <Content Update="wwwroot\DL\RZUpdate.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\plugins\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\plugins\RZ.Plugin.Software.Proxy.pdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
