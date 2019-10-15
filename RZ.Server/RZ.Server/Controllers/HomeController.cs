@@ -34,9 +34,9 @@ namespace RZ.Server.Controllers
                 oSW.Shortname = jSW["ShortName"].ToString();
                 oSW.Version = jSW["ProductVersion"].ToString();
                 if (jSW["IconHash"] != null)
-                    oSW.IconURL = sURL + "/rest/v2/GetIcon?iconhash=" + jSW["IconHash"].ToString();
+                    oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&iconhash=" + jSW["IconHash"].ToString();
                 else
-                    oSW.IconURL = sURL + "/rest/v2/GetIcon?id=" + jSW["SWId"].ToString();
+                    oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&id=" + jSW["SWId"].ToString();
                 oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
                 lSW.Add(oSW);
             }
@@ -83,7 +83,7 @@ namespace RZ.Server.Controllers
             JArray jTop = JArray.FromObject(jsorted.Take(30));
             foreach (JObject jSW in jTop)
             {
-                string sImgUrl = string.Format("https://ruckzuck.azureedge.net/rest/v2/GetIcon?iconhash={0}", jSW["IconHash"].Value<string>());
+                string sImgUrl = string.Format("https://ruckzuck.azureedge.net/rest/v2/GetIcon?size=64&iconhash={0}", jSW["IconHash"].Value<string>());
                 //string sImg = "&lt;img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /&gt;";
                 string sImg = "<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /></br>";
                 //string sImg = "<![CDATA[<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /> ]]>";
@@ -135,13 +135,13 @@ namespace RZ.Server.Controllers
                     oSW.Shortname = jSW["ShortName"].ToString();
                     oSW.Version = jSW["ProductVersion"].ToString();
                     if (!string.IsNullOrEmpty(jSW["IconHash"].Value<string>()))
-                        oSW.IconURL = sURL + "/rest/v2/GetIcon?iconhash=" + jSW["IconHash"].ToString();
+                        oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconhash=" + jSW["IconHash"].ToString();
                     else
                     {
                         if (jSW["SWId"] != null)
-                            oSW.IconURL = sURL + "/rest/v2/GetIcon?iconid=" + jSW["SWId"].ToString();
+                            oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["SWId"].ToString();
                         else
-                            oSW.IconURL = sURL + "/rest/v2/GetIcon?iconid=" + jSW["IconId"].ToString();
+                            oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["IconId"].ToString();
                     }
                     //oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
                     oSW.Manufacturer = jSW["Manufacturer"].ToString();
