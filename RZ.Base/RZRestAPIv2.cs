@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -246,11 +245,11 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(string iconhash, string customerid = "")
+        public static byte[] GetIcon(string iconhash, string customerid = "", int size = 0)
         {
             Task<Stream> response;
 
-            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?iconhash=" + iconhash);
+            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size=" + size + "&iconhash=" + iconhash);
 
             response.Wait(10000);
 
@@ -336,7 +335,7 @@ namespace RuckZuck.Base
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     string sSoftware = ser.Serialize(lSoftware);
                     HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
-                    var response = oClient.PostAsync(sURL + $"/rest/v2/checkforupdate", oCont);
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
                     response.Wait(120000); //2min max
                     if (response.IsCompleted)
                     {
@@ -475,13 +474,13 @@ namespace RuckZuck.Base
                 //Support new V2 REST API
                 if (!string.IsNullOrEmpty(IconHash))
                 {
-                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconhash=" + IconHash;
                 }
 
                 if (SWId > 0)
                 {
                     //IconId = SWId;
-                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
+                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconid=" + SWId.ToString();
                     return sURL;
                 }
 

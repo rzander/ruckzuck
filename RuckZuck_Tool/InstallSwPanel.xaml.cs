@@ -604,7 +604,7 @@ namespace RuckZuck_Tool
 
                         //Get Icon if missing
                         if (oSW.SW.Image == null)
-                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash, "", 48);
 
                         oExe.Icon = oSW.SW.Image;
                         oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
