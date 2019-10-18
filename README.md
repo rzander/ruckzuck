@@ -10,7 +10,7 @@ Select a software from the repository and RuckZuck handles the download and inst
  * Main Page: https://RuckZuck.tools
  * Software Repository: https://ruckzuck.tools/Home/Repository
  * RSS Feed: http://ruckzuck.tools/rss.aspx
- * RuckZuck Users (last 48h): https://app.powerbi.com/view?r=eyJrIjoiN2YyOTUxODYtYTc4My00ZmM0LWI5NjQtYmQzZmQ2MzAyOTczIiwidCI6ImVkNDI1ODAyLTExODYtNDRkZS04ODIzLWE0YTU3ZDE0MGEyOCIsImMiOjh9
+ * RuckZuck Users (last 48h): (app.piwerbi.com)[https://app.powerbi.com/view?r=eyJrIjoiN2YyOTUxODYtYTc4My00ZmM0LWI5NjQtYmQzZmQ2MzAyOTczIiwidCI6ImVkNDI1ODAyLTExODYtNDRkZS04ODIzLWE0YTU3ZDE0MGEyOCIsImMiOjh9]
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
 
