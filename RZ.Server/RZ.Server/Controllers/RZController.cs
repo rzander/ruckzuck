@@ -117,6 +117,11 @@ namespace RZ.Server.Controllers
         [Route("wcf/RZService.svc/rest/v2/GetIcon")]
         public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "" , int size = 0)
         {
+            if (size > 256) //set max size 256
+                size = 256;
+            if (size < 0) //prevent negative numbers
+                size = 0;
+
             if (!string.IsNullOrEmpty(shortname))
             {
                 return Base.GetIcon(shortname, customerid, size);

@@ -37,9 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Customer.Azure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IP2Location", "IP2Location\IP2Location.csproj", "{224D50AB-ABB6-4C8F-923C-BB38D17F6EE0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DLQueue", "..\DLQueue\DLQueue.csproj", "{1F3EAF41-8F29-4BAA-89DB-5159046E457E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateCounters", "..\UpdateCounters\UpdateCounters.csproj", "{6A01ABF9-3685-4A81-9191-02158F9BA9C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UpdateCounters", "..\UpdateCounters\UpdateCounters.csproj", "{6A01ABF9-3685-4A81-9191-02158F9BA9C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,10 +113,6 @@ Global
 		{224D50AB-ABB6-4C8F-923C-BB38D17F6EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{224D50AB-ABB6-4C8F-923C-BB38D17F6EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{224D50AB-ABB6-4C8F-923C-BB38D17F6EE0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F3EAF41-8F29-4BAA-89DB-5159046E457E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F3EAF41-8F29-4BAA-89DB-5159046E457E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F3EAF41-8F29-4BAA-89DB-5159046E457E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F3EAF41-8F29-4BAA-89DB-5159046E457E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A01ABF9-3685-4A81-9191-02158F9BA9C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A01ABF9-3685-4A81-9191-02158F9BA9C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A01ABF9-3685-4A81-9191-02158F9BA9C5}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -429,10 +429,10 @@ namespace Plugin_Software
             }
 
             //Try to load Icon from Disk
-            if (File.Exists(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg")))
+            if (File.Exists(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg")))
             {
 
-                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg"));
+                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg"));
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
                 _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
@@ -472,7 +472,7 @@ namespace Plugin_Software
 
                 try
                 {
-                    File.WriteAllBytes(Path.Combine(Settings["icons"], sico + size.ToString() + ".jpg"), bCache);
+                    File.WriteAllBytes(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg"), bCache);
                 }
                 catch { }
 

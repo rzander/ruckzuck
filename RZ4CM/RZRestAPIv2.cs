@@ -236,11 +236,11 @@ namespace RuckZuck.Base
 
         }
 
-        public static byte[] GetIcon(string iconhash, string customerid = "")
+        public static byte[] GetIcon(string iconhash, string customerid = "", int size = 0)
         {
             Task<Stream> response;
 
-            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?iconhash=" + iconhash);
+            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size={size}&iconhash=" + iconhash);
 
             response.Wait(10000);
 
@@ -466,13 +466,13 @@ namespace RuckZuck.Base
                 //Support new V2 REST API
                 if (!string.IsNullOrEmpty(IconHash))
                 {
-                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconhash=" + IconHash;
                 }
 
                 if (SWId > 0)
                 {
                     //IconId = SWId;
-                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
+                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconid=" + SWId.ToString();
                     return sURL;
                 }
 
