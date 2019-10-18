@@ -176,7 +176,7 @@ namespace RZ.Bot
                                     {
                                         Console.WriteLine("... Error. Installation failed.");
                                         sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
-                                        message.Abandon();
+                                        message.DeadLetter();
                                         //return 1603;
                                     }
 
@@ -185,7 +185,7 @@ namespace RZ.Bot
                                 {
                                     Console.WriteLine("... Error. Download failed.");
                                     sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
-                                    message.Abandon();
+                                    message.DeadLetter();
                                     //return 1602;
                                 }
 
@@ -193,15 +193,19 @@ namespace RZ.Bot
                         }
                         else
                         {
-                            Console.WriteLine("... retry later..");
+                            //Console.WriteLine("... retry later..");
                             sLastPackage = oRZSW.SoftwareUpdate.SW.ShortName;
-                            Thread.Sleep(3000);
-                            message.Abandon(); // retry later....
+
+                            Thread.Sleep(1000);
+                            //message.Abandon(); // retry later....
+                            message.DeadLetter(); 
+                            return;
                         }
 
                     }
-                    catch
+                    catch(Exception ex)
                     {
+                        Console.WriteLine("ERROR: " + ex.Message);
                         message.Abandon();
                     }
 
