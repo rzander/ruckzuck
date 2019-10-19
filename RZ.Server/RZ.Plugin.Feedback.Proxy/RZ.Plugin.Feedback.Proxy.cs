@@ -44,7 +44,7 @@ namespace RZ.Plugin.Feedback.Azure
 
         }
 
-        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "")
+        public Task<bool> StoreFeedback(string name = "", string ver = "", string man = "", string shortname = "", string feedback = "", string user = "", bool? failure = null, string ip = "", string customerid = "rzproxy")
         {
             var tFeedback = Task.Run(() =>
             {

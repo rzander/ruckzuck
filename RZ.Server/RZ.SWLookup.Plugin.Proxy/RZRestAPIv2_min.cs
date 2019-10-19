@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -13,6 +14,7 @@ namespace RZ.SWLookup.Plugin
     {
         private static string _sURL = "";
         private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
+        public static string CustomerID = "";
 
         public static string sURL
         {
@@ -34,28 +36,52 @@ namespace RZ.SWLookup.Plugin
         {
             using (HttpClient hClient = new HttpClient())
             {
-                Task<string> tReq;
-                if (string.IsNullOrEmpty(customerid))
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
-                else
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
-
-                tReq.Wait(5000); //wait max 5s
-
-                if (tReq.IsCompleted)
+                try
                 {
-                    _sURL = tReq.Result;
-                    return _sURL;
+                    Task<string> tReq;
+
+                    if (string.IsNullOrEmpty(CustomerID))
+                    {
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            customerid = CustomerID.ToString();
+                        }
+                    }
+
+
+                    if (string.IsNullOrEmpty(customerid))
+                    {
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    }
+                    else
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
+
+                    tReq.Wait(5000); //wait max 5s
+
+                    if (tReq.IsCompleted)
+                    {
+                        _sURL = tReq.Result;
+                        return _sURL;
+                    }
+                    else
+                    {
+                        _sURL = "https://ruckzuck.azurewebsites.net";
+                        return _sURL;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _sURL = "https://ruckzuck.azurewebsites.net";
-                    return _sURL;
+                    Debug.WriteLine("ERROR 145: " + ex.Message);
                 }
+
+                return "https://ruckzuck.azurewebsites.net";
             }
         }
 
-        public static JArray CheckForUpdates(JArray Softwares)
+        public static JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
             HttpContent oCont = new StringContent(Softwares.ToString(Formatting.None), Encoding.UTF8, "application/json");
             var tChek = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);

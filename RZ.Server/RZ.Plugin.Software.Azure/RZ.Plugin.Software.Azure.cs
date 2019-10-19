@@ -368,7 +368,7 @@ namespace Plugin_Software
                         var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
                         _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
-                        return bResult;
+                        return new MemoryStream(bCache);
                     }
                     else
                     {
@@ -396,7 +396,7 @@ namespace Plugin_Software
                             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
                             _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
-                            return bResult;
+                            return new MemoryStream(bCache);
                         }
                     }
                 }

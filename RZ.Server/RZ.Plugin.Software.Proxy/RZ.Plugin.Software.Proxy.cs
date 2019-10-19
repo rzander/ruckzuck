@@ -2,6 +2,10 @@
 using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -126,7 +130,7 @@ namespace Plugin_Software
             byte[] bCache;
 
             //ry to get value from Memory
-            if (_cache.TryGetValue("ico-" + shortname.ToLower(), out bCache))
+            if (_cache.TryGetValue("ico-" + size.ToString() + shortname.ToLower(), out bCache))
             {
                 return new MemoryStream(bCache);
             }
@@ -141,24 +145,54 @@ namespace Plugin_Software
                         bResult = new MemoryStream(jObj["Image"].ToObject(typeof(byte[])) as byte[]);
                         MemoryStream ms = new MemoryStream();
                         bResult.CopyTo(ms);
+                        bCache = ms.ToArray();
+
+                        if (size > 0)
+                        {
+                            using (Image image = Image.Load(bCache))
+                            {
+                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                using (var imgs = new MemoryStream())
+                                {
+                                    var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                    image.Save(imgs, imageEncoder);
+                                    bCache = imgs.ToArray();
+                                }
+                            }
+                        }
 
                         var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
-                        _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+                        _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
-                        return bResult;
+                        return new MemoryStream(bCache);
                     }
                     else
                     {
                         if (jObj["IconHash"] != null)
                         {
-                            bResult = await GetIcon(0, jObj["IconHash"].ToString());
+                            bResult = await GetIcon(0, jObj["IconHash"].ToString(), customerid, size);
                             MemoryStream ms = new MemoryStream();
                             bResult.CopyTo(ms);
+                            bCache = ms.ToArray();
+
+                            if (size > 0)
+                            {
+                                using (Image image = Image.Load(bCache))
+                                {
+                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                    using (var imgs = new MemoryStream())
+                                    {
+                                        var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                        image.Save(imgs, imageEncoder);
+                                        bCache = imgs.ToArray();
+                                    }
+                                }
+                            }
 
                             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(90)); //cache icon for 90 Minutes
-                            _cache.Set("ico-" + shortname.ToLower(), ms.ToArray(), cacheEntryOptions);
+                            _cache.Set("ico-" + size.ToString() + shortname.ToLower(), bCache, cacheEntryOptions);
 
-                            return bResult;
+                            return new MemoryStream(bCache);
                         }
                     }
                 }
@@ -179,22 +213,22 @@ namespace Plugin_Software
             byte[] bCache;
 
             //Try to get value from Memory
-            if (_cache.TryGetValue("ico-" + sico, out bCache))
+            if (_cache.TryGetValue("ico-" + size.ToString() + sico, out bCache))
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
-                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                 return new MemoryStream(bCache);
             }
 
             //Try to load Icon from Disk
-            if (File.Exists(Path.Combine(Settings["icons"], sico + ".jpg")))
+            if (File.Exists(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg")))
             {
 
-                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + ".jpg"));
+                bCache = File.ReadAllBytes(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg"));
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for other 90 Minutes
-                _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                 return new MemoryStream(bCache);
             }
@@ -203,20 +237,34 @@ namespace Plugin_Software
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    Stream x = await RZRestAPIv2.GetIcon(iconid, iconhash);
+                    Stream x = await RZRestAPIv2.GetIcon(iconid, iconhash, size);
                     await x.CopyToAsync(ms);
                     bCache = ms.ToArray();
+
+                    if (size > 0)
+                    {
+                        using (Image image = Image.Load(bCache))
+                        {
+                            image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                            using (var imgs = new MemoryStream())
+                            {
+                                var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                image.Save(imgs, imageEncoder);
+                                bCache = imgs.ToArray();
+                            }
+                        }
+                    }
                 }
 
                 if (bCache.Length > 0)
                 {
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(95)); //cache icon for 90 Minutes
-                    _cache.Set("ico-" + sico, bCache, cacheEntryOptions);
+                    _cache.Set("ico-" + size.ToString() + sico, bCache, cacheEntryOptions);
 
                     try
                     {
-                        File.WriteAllBytes(Path.Combine(Settings["icons"], sico + ".jpg"), bCache);
+                        File.WriteAllBytes(Path.Combine(Settings["icons"], sico + "_" + size.ToString() + ".jpg"), bCache);
                     }
                     catch { }
                 }

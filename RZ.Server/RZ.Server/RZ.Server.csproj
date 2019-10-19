@@ -7,8 +7,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>Copyright (c) 2019 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyVersion>2.1.0.1</AssemblyVersion>
+    <FileVersion>2.1.0.1</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>

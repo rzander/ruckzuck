@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -14,6 +15,7 @@ namespace Plugin_Software
     {
         private static string _sURL = "";
         private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
+        public static string CustomerID = "";
 
         public static string sURL
         {
@@ -35,33 +37,57 @@ namespace Plugin_Software
         {
             using (HttpClient hClient = new HttpClient())
             {
-                Task<string> tReq;
-                if (string.IsNullOrEmpty(customerid))
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
-                else
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
-
-                tReq.Wait(5000); //wait max 5s
-
-                if (tReq.IsCompleted)
+                try
                 {
-                    _sURL = tReq.Result;
-                    return _sURL;
+                    Task<string> tReq;
+
+                    if (string.IsNullOrEmpty(CustomerID))
+                    {
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            customerid = CustomerID.ToString();
+                        }
+                    }
+
+
+                    if (string.IsNullOrEmpty(customerid))
+                    {
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    }
+                    else
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
+
+                    tReq.Wait(5000); //wait max 5s
+
+                    if (tReq.IsCompleted)
+                    {
+                        _sURL = tReq.Result;
+                        return _sURL;
+                    }
+                    else
+                    {
+                        _sURL = "https://ruckzuck.azurewebsites.net";
+                        return _sURL;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _sURL = "https://ruckzuck.azurewebsites.net";
-                    return _sURL;
+                    Debug.WriteLine("ERROR 145: " + ex.Message);
                 }
+
+                return "https://ruckzuck.azurewebsites.net";
             }
         }
 
-        public static Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "")
+        public static Task<Stream> GetIcon(Int32 iconid = 0, string iconhash = "", int size = 0)
         {
-            string IcoURL = sURL + "/rest/v2/geticon?iconhash=" + iconhash;
+            string IcoURL = sURL + $"/rest/v2/geticon?size={size}&iconhash=" + iconhash;
 
             if (string.IsNullOrEmpty(iconhash))
-                IcoURL = sURL + "/rest/v2/geticon?iconid=" + iconid.ToString();
+                IcoURL = sURL + $"/rest/v2/geticon?size={size}&iconid=" + iconid.ToString();
 
             return oClient.GetStreamAsync(IcoURL);
 
@@ -94,7 +120,7 @@ namespace Plugin_Software
 
         public static bool IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
-            var oStat = oClient.GetAsync(sURL + "/rest/v2/IncCounter/" + WebUtility.UrlEncode(shortname) + "/" + WebUtility.UrlEncode(counter));
+            var oStat = oClient.GetAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) + "&counter=" + WebUtility.UrlEncode(counter) + "&customerid=" + WebUtility.UrlEncode(customerid));
             oStat.Wait(10000);
 
             if (oStat.IsCompleted)

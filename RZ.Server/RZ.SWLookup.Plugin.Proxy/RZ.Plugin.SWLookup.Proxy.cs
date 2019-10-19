@@ -71,7 +71,7 @@ namespace RZ.SWLookup.Plugin
 
         public JArray CheckForUpdates(JArray Softwares, string customerid = "")
         {
-             JArray jRes = RZRestAPIv2.CheckForUpdates(Softwares);
+             JArray jRes = RZRestAPIv2.CheckForUpdates(Softwares, customerid);
             Console.WriteLine("CheckForUpdates:" + jRes.Count.ToString() + " updates detected.");
             return jRes;
         }
