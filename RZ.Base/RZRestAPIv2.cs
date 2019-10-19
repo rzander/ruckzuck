@@ -395,12 +395,12 @@ namespace RuckZuck.Base
                 //Support new V2 REST API
                 if (!string.IsNullOrEmpty(IconHash))
                 {
-                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconhash=" + IconHash;
                 }
 
                 if (SWId > 0)
                 {
-                    return RZRestAPIv2.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    return RZRestAPIv2.sURL + "/rest/GetIcon?size=32&id=" + SWId.ToString();
                 }
 
                 //if (IconId > 0)
