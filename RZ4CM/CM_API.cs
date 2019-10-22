@@ -1015,15 +1015,14 @@ namespace RuckZuck_Tool
                     try
                     {
                         //Fix Icon
-                        oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL));
+                        oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL.Replace("size=32","size=128")));
 
                         //Try to Add in Icon
-                        if (oApp.DisplayInfo.First().Icon == null)
-                        {
-                            var oImg = new System.Windows.Media.Imaging.BitmapImage(new Uri(SW.IconURL));
-
-                            oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL));
-                        }
+                        //if (oApp.DisplayInfo.First().Icon == null)
+                        //{
+                        //    //var oImg = new System.Windows.Media.Imaging.BitmapImage(new Uri(SW.IconURL.Replace("size=32", "size=64")));
+                        //    oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL.Replace("size=32", "size=64")));
+                        //}
                     }
                     catch (Exception ex)
                     {
@@ -1259,7 +1258,7 @@ namespace RuckZuck_Tool
                     try
                     {
                         //Fix Icon
-                        oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL)); //testing only !!!
+                        oApp.DisplayInfo.First().Icon = new Icon(IconDL(SW.IconURL.Replace("size=32", "size=128"))); //testing only !!!
                     }
                     catch (Exception ex)
                     {

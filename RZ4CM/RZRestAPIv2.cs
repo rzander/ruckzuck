@@ -105,39 +105,48 @@ namespace RuckZuck.Base
         {
             using (HttpClient hClient = new HttpClient())
             {
-                Task<string> tReq;
-
-                if (string.IsNullOrEmpty(CustomerID))
+                try
                 {
-                    using (HttpClient qClient = new HttpClient())
+                    Task<string> tReq;
+
+                    if (string.IsNullOrEmpty(CustomerID))
                     {
-                        CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
-                        customerid = CustomerID.ToString();
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            customerid = CustomerID.ToString();
+                        }
+                    }
+
+
+                    if (string.IsNullOrEmpty(customerid))
+                    {
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    }
+                    else
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
+
+                    tReq.Wait(5000); //wait max 5s
+
+                    if (tReq.IsCompleted)
+                    {
+                        _sURL = tReq.Result;
+                        return _sURL;
+                    }
+                    else
+                    {
+                        _sURL = "https://ruckzuck.azurewebsites.net";
+                        return _sURL;
                     }
                 }
-
-
-                if (string.IsNullOrEmpty(customerid))
+                catch (Exception ex)
                 {
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    Debug.WriteLine("ERROR 145: " + ex.Message);
                 }
-                else
-                    tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
 
-
-
-                tReq.Wait(5000); //wait max 5s
-
-                if (tReq.IsCompleted)
-                {
-                    _sURL = tReq.Result;
-                    return _sURL;
-                }
-                else
-                {
-                    _sURL = "https://ruckzuck.azurewebsites.net";
-                    return _sURL;
-                }
+                return "https://ruckzuck.azurewebsites.net";
             }
         }
 
@@ -212,7 +221,7 @@ namespace RuckZuck.Base
             {
                 Task<string> response;
 
-                if (string.IsNullOrEmpty(customerid) || customerid.Contains('.'))
+                if (string.IsNullOrEmpty(customerid))
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer));
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid));
@@ -240,7 +249,7 @@ namespace RuckZuck.Base
         {
             Task<Stream> response;
 
-            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size={size}&iconhash=" + iconhash);
+            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size=" + size + "&iconhash=" + iconhash);
 
             response.Wait(10000);
 
@@ -324,8 +333,8 @@ namespace RuckZuck.Base
                 if (lSoftware.Count > 0)
                 {
                     JavaScriptSerializer ser = new JavaScriptSerializer();
-                    HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
-
+                    string sSoftware = ser.Serialize(lSoftware);
+                    HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
                     var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
                     response.Wait(120000); //2min max
                     if (response.IsCompleted)
@@ -343,7 +352,6 @@ namespace RuckZuck.Base
 
             return new List<AddSoftware>();
         }
-
     }
 
     public class GetSoftware
@@ -387,12 +395,12 @@ namespace RuckZuck.Base
                 //Support new V2 REST API
                 if (!string.IsNullOrEmpty(IconHash))
                 {
-                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?iconhash=" + IconHash;
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&iconhash=" + IconHash;
                 }
 
                 if (SWId > 0)
                 {
-                    return RZRestAPIv2.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                    return RZRestAPIv2.sURL + "/rest/GetIcon?size=32&id=" + SWId.ToString();
                 }
 
                 //if (IconId > 0)
