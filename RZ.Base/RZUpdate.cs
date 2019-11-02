@@ -71,11 +71,26 @@ namespace RZUpdate
                                 if (string.IsNullOrEmpty(SW.PSPreReq))
                                     SW.PSPreReq = "$true; ";
 
-                                //Check PreReq for all Installation-types of the Software
-                                if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                                var pRes = SWUpdate._RunPS(SWCheck.PSPreReq);
+                                if (pRes.Count > 0)
                                 {
-                                    SoftwareUpdate = new SWUpdate(SWCheck);
-                                    return SoftwareUpdate;
+                                    try
+                                    {
+                                        //Check PreReq for all Installation-types of the Software
+                                        if ((bool)pRes[0].BaseObject)
+                                        {
+                                            SoftwareUpdate = new SWUpdate(SWCheck);
+                                            return SoftwareUpdate;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    continue;
                                 }
                             }
                         }

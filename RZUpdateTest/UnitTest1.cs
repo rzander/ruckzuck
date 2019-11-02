@@ -13,7 +13,7 @@ namespace RZUpdateTest
         {
             Console.WriteLine("Check Update for SCCMCliCtr 1.0.3.9...");
             RZUpdater oRZSW = new RZUpdater();
-            var oUpdate = oRZSW.CheckForUpdate("Client Center for Configuration Manager", "1.0.3.9", "Zander Tools");
+            var oUpdate = oRZSW.CheckForUpdate("Adobe Acrobat Reader DC MUI", "19.021.20048", "Adobe Systems Incorporated");
             Console.WriteLine("found Version:" + oRZSW.SoftwareUpdate.SW.ProductVersion);
             Assert.IsNotNull(oUpdate, "Update detected successfully.");
             Assert.IsNotNull(oUpdate.SW.ContentID, "Update conatins ContentID");
