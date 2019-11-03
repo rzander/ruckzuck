@@ -118,9 +118,11 @@ namespace RZ.Bot
                             oRZSW.SoftwareUpdate.SendFeedback = false; //we already process feedback...
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                             {
-                                Console.WriteLine("PreRequisites not valid ...!");
-                                message.Abandon();
-                                return;
+                                oRZSW.SoftwareUpdate.GetInstallType();
+
+                                //Console.WriteLine("PreRequisites not valid ...!");
+                                //message.Abandon();
+                                //return;
                             }
 
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
