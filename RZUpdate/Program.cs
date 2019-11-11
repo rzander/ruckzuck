@@ -97,9 +97,13 @@ namespace RZUpdate
                                 }
                                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                                 {
-                                    Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
-                                    bError = false;
-                                    continue;
+                                    oRZSW.SoftwareUpdate.GetInstallType();
+                                    if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                                    {
+                                        Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                        bError = false;
+                                        continue;
+                                    }
                                 }
 
 
