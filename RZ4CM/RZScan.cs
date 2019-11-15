@@ -258,7 +258,7 @@ namespace RuckZuck.Base
 
         private void TRegCheck_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            SWScan();
+            //SWScan();
         }
 
         private void RZScan_OnSWScanCompleted(object sender, EventArgs e)

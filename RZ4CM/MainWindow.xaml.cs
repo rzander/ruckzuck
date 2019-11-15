@@ -133,7 +133,7 @@ namespace RuckZuck_Tool
 
             oSCAN = new RZScan(false, true);
 
-            oSCAN.StaticInstalledSoftware.Add(new AddSoftware() { ProductName = "RuckZuck", Manufacturer = FI.CompanyName, ProductVersion = FI.ProductVersion.ToString() });
+            //oSCAN.StaticInstalledSoftware.Add(new AddSoftware() { ProductName = "RuckZuck", Manufacturer = FI.CompanyName, ProductVersion = FI.ProductVersion.ToString() });
             oSCAN.OnSWScanCompleted += OSCAN_OnSWScanCompleted;
             oSCAN.OnUpdatesDetected += OSCAN_OnUpdatesDetected;
             oSCAN.OnSWRepoLoaded += OSCAN_OnSWRepoLoaded;
