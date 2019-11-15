@@ -1,0 +1,2391 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Assembly" xml:space="preserve">
+    <value>using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyTitle("RuckZuck Package-Wrapper")]
+[assembly: AssemblyDescription("Install Software from the RuckZuck.tools Repository")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("RuckZuck.tools")]
+[assembly: AssemblyProduct("RZRZRZ")]
+[assembly: AssemblyCopyright("Copyright ©  2019 by Roger Zander")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
+[assembly: Guid("2193048a-dcd5-433e-a2c0-28384b9ebad2")]
+[assembly: AssemblyVersion("1.7.1.0")]
+[assembly: AssemblyFileVersion("1.7.1.0")]</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="RZ" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon096.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RZRestApi" xml:space="preserve">
+    <value>using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Script.Serialization;
+
+namespace RuckZuck.Base
+{
+    class RZRestAPIv2
+    {
+        private static string _sURL = "UDP";
+        public static bool DisableBroadcast = false;
+        public static string CustomerID = "";
+
+        private static HttpClient oClient = new HttpClient(); //thx https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
+
+        public static string sURL
+        {
+            get
+            {
+                if (_sURL != "UDP" &amp;&amp; ! string.IsNullOrEmpty(_sURL))
+                    return _sURL;
+
+                try
+                {
+                    var vBroadcast = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "Broadcast", 1);
+                    if ((int)vBroadcast == 0) //only disable if set to 0
+                        DisableBroadcast = true;
+                }
+                catch { }
+
+
+                if (DisableBroadcast)
+                    _sURL = "";
+
+                try
+                {
+                    string sCustID = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "CustomerID", "") as string;
+                    if (!string.IsNullOrEmpty(sCustID))
+                    {
+                        CustomerID = sCustID; //Override CustomerID
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    string sWebSVC = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\RuckZuck", "WebService", "") as string;
+                    if (!string.IsNullOrEmpty(sWebSVC))
+                    {
+                        if (sWebSVC.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            _sURL = sWebSVC.TrimEnd('/');
+                        }
+                    }
+                }
+                catch { }
+
+                if (_sURL == "UDP" &amp;&amp; !DisableBroadcast)
+                {
+                    try
+                    {
+                        using (var Client = new UdpClient())
+                        {
+                            Client.Client.SendTimeout = 1000;
+                            Client.Client.ReceiveTimeout = 1000;
+                            var RequestData = Encoding.ASCII.GetBytes(Environment.MachineName);
+                            var ServerEp = new IPEndPoint(IPAddress.Any, 0);
+
+                            Client.EnableBroadcast = true;
+                            Client.Send(RequestData, RequestData.Length, new IPEndPoint(IPAddress.Broadcast, 5001));
+
+                            var ServerResponseData = Client.Receive(ref ServerEp);
+                            var ServerResponse = Encoding.ASCII.GetString(ServerResponseData);
+                            Console.WriteLine("Recived {0} from {1}", ServerResponse, ServerEp.Address.ToString());
+                            if (ServerResponse.StartsWith("http"))
+                                _sURL = ServerResponse;
+                            Client.Close();
+                        }
+                    }
+                    catch { _sURL = ""; }
+                }
+
+                if (string.IsNullOrEmpty(_sURL))
+                {
+                    return GetURL(CustomerID);
+                }
+                else
+                    return _sURL;
+            }
+            set
+            {
+                _sURL = value;
+            }
+        }
+
+        public static string GetURL(string customerid)
+        {
+            using (HttpClient hClient = new HttpClient())
+            {
+                try
+                {
+                    Task&lt;string&gt; tReq;
+
+                    if (string.IsNullOrEmpty(CustomerID))
+                    {
+                        using (HttpClient qClient = new HttpClient())
+                        {
+                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
+                            customerid = CustomerID.ToString();
+                        }
+                    }
+
+
+                    if (string.IsNullOrEmpty(customerid))
+                    {
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                    }
+                    else
+                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+
+
+
+                    tReq.Wait(5000); //wait max 5s
+
+                    if (tReq.IsCompleted)
+                    {
+                        _sURL = tReq.Result;
+                        return _sURL;
+                    }
+                    else
+                    {
+                        _sURL = "https://ruckzuck.azurewebsites.net";
+                        return _sURL;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("ERROR 145: " + ex.Message);
+                }
+
+                return "https://ruckzuck.azurewebsites.net";
+            }
+        }
+
+        public static List&lt;GetSoftware&gt; GetCatalog(string customerid = "")
+        {
+            if (string.IsNullOrEmpty(customerid))
+            {
+                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
+                {
+                    try
+                    {
+                        DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                        if ((DateTime.Now - dCreationDate) &lt; new TimeSpan(0, 30, 0)) //Cache for 30min
+                        {
+                            //return cached Content
+                            string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                            JavaScriptSerializer ser = new JavaScriptSerializer();
+                            List&lt;GetSoftware&gt; lRes = ser.Deserialize&lt;List&lt;GetSoftware&gt;&gt;(jRes);
+                            return lRes;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("E1" + ex.Message, "GetCatalog");
+                    }
+                }
+            }
+
+            try
+            {
+                sURL = "UDP"; //reset URL as this part is only called every 30 min
+
+                Task&lt;string&gt; response;
+                if (string.IsNullOrEmpty(customerid))
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
+                else
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid);
+
+                response.Wait(60000); //60s max
+
+                if (response.IsCompleted)
+                {
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    List&lt;GetSoftware&gt; lRes = ser.Deserialize&lt;List&lt;GetSoftware&gt;&gt;(response.Result);
+
+
+                    if (string.IsNullOrEmpty(customerid) &amp;&amp; lRes.Count &gt; 400)
+                    {
+                        try
+                        {
+                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                        }
+                        catch { }
+                    }
+
+                    return lRes;
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("E2" + ex.Message, "GetCatalog");
+                _sURL = ""; //enforce reload endpoint URL
+            }
+
+            return new List&lt;GetSoftware&gt;();
+        }
+
+        public static List&lt;AddSoftware&gt; GetSoftwares(string productName, string productVersion, string manufacturer, string customerid = "")
+        {
+
+            try
+            {
+                Task&lt;string&gt; response;
+
+                if (string.IsNullOrEmpty(customerid))
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer));
+                else
+                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer) + "&amp;customerid=" + WebUtility.UrlEncode(customerid));
+
+                response.Wait(20000);
+                if (response.IsCompleted)
+                {
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    List&lt;AddSoftware&gt; lRes = ser.Deserialize&lt;List&lt;AddSoftware&gt;&gt;(response.Result);
+                    return lRes;
+                }
+
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("E1" + ex.Message, "GetSoftwares");
+                _sURL = ""; //enforce reload endpoint URL
+            }
+
+            return new List&lt;AddSoftware&gt;();
+
+        }
+
+        public static byte[] GetIcon(string iconhash, string customerid = "", int size = 0)
+        {
+            Task&lt;Stream&gt; response;
+
+            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size=" + size + "&amp;iconhash=" + iconhash);
+
+            response.Wait(10000);
+
+            if (response.IsCompleted)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    response.Result.CopyTo(ms);
+                    byte[] bRes = ms.ToArray();
+                    return bRes;
+                }
+            }
+
+            return null;
+        }
+
+        public static async void IncCounter(string shortname = "", string counter = "DL", string customerid = "")
+        {
+            try
+            {
+               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) +"&amp;customerid=" + WebUtility.UrlEncode(CustomerID));
+            }
+            catch { }
+        }
+
+        public static List&lt;string&gt; GetCategories(List&lt;GetSoftware&gt; oSWList)
+        {
+            List&lt;string&gt; lResult = new List&lt;string&gt;();
+
+            foreach (GetSoftware oSW in oSWList)
+            {
+                lResult.AddRange((oSW.Categories ?? new List&lt;string&gt;()).ToArray());
+            }
+
+            return lResult.Distinct().OrderBy(t =&gt; t).ToList();
+        }
+
+        public static async Task&lt;string&gt; Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "")
+        {
+            if (!string.IsNullOrEmpty(feedback))
+            {
+                try
+                {
+                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&amp;ver=" + WebUtility.UrlEncode(productVersion) + "&amp;man=" + WebUtility.UrlEncode(manufacturer) + "&amp;ok=" + working + "&amp;user=" + WebUtility.UrlEncode(userKey) + "&amp;text=" + WebUtility.UrlEncode(feedback) + "&amp;customerid=" + WebUtility.UrlEncode(customerid));
+                    return oRes;
+                }
+                catch { }
+            }
+
+            return "";
+        }
+
+        public static bool UploadSWEntry(AddSoftware lSoftware, string customerid = "")
+        {
+            try
+            {
+                JavaScriptSerializer ser = new JavaScriptSerializer();
+                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                var response = oClient.PostAsync(sURL + "/rest/v2/uploadswentry", oCont);
+                response.Wait(30000); //30s max
+
+                if (response.Result.StatusCode == HttpStatusCode.OK)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        public static List&lt;AddSoftware&gt; CheckForUpdate(List&lt;AddSoftware&gt; lSoftware, string customerid = "")
+        {
+            try
+            {
+                if (lSoftware.Count &gt; 0)
+                {
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    string sSoftware = ser.Serialize(lSoftware);
+                    HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                    response.Wait(120000); //2min max
+                    if (response.IsCompleted)
+                    {
+                        List&lt;AddSoftware&gt; lRes = ser.Deserialize&lt;List&lt;AddSoftware&gt;&gt;(response.Result.Content.ReadAsStringAsync().Result);
+                        return lRes;
+                    }
+                }
+
+            }
+            catch
+            {
+                _sURL = ""; //enforce reload endpoint URL
+            }
+
+            return new List&lt;AddSoftware&gt;();
+        }
+    }
+
+    public class GetSoftware
+    {
+        public string ProductName { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string Description { get; set; }
+
+        public string ShortName { get; set; }
+
+        public string ProductURL { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        //public byte[] Image { get; set; }
+
+        //public Int32? Quality { get; set; }
+
+        public Int32? Downloads { get; set; }
+
+        public List&lt;string&gt; Categories { get; set; }
+
+        //public long IconId { get; set; }
+
+        public long SWId { get; set; }
+
+        public string IconHash { get; set; }
+
+        public bool isInstalled { get; set; }
+
+        //public string XMLFile { get; set; }
+
+        //public string IconFile { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&amp;iconhash=" + IconHash;
+                }
+
+                if (SWId &gt; 0)
+                {
+                    return RZRestAPIv2.sURL + "/rest/GetIcon?size=32&amp;id=" + SWId.ToString();
+                }
+
+                //if (IconId &gt; 0)
+                //{
+                //    SWId = IconId;
+                //    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
+                //}
+
+                return "";
+            }
+        }
+
+    }
+
+    public class AddSoftware
+    {
+        public string ProductName { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string Description { get; set; }
+
+        public string ShortName { get; set; }
+
+        public string ProductURL { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        public byte[] Image { get; set; }
+
+        public string MSIProductID { get; set; }
+
+        public string Architecture { get; set; }
+
+        public string PSUninstall { get; set; }
+
+        public string PSDetection { get; set; }
+
+        public string PSInstall { get; set; }
+
+        public string PSPreReq { get; set; }
+
+        public string PSPreInstall { get; set; }
+
+        public string PSPostInstall { get; set; }
+
+        public string ContentID { get; set; }
+
+        public List&lt;contentFiles&gt; Files { get; set; }
+
+        public string Author { get; set; }
+
+        public string Category { get; set; }
+
+        public string[] PreRequisites { get; set; }
+
+        //vNext 5.9.2017
+        //public long SWId { get { return IconId; } set { IconId = value; } }
+        public long SWId { get; set; }
+
+        //public long IconId { get; set; }
+
+        public string IconHash { get; set; }
+        //remove if SWId is in place 5.9.2017
+        //public long IconId { get; set; }
+
+        public string IconURL
+        {
+            get
+            {
+                //Support new V2 REST API
+                if (!string.IsNullOrEmpty(IconHash))
+                {
+                    return RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&amp;iconhash=" + IconHash;
+                }
+
+                if (SWId &gt; 0)
+                {
+                    //IconId = SWId;
+                    string sURL = RZRestAPIv2.sURL + "/rest/v2/GetIcon?size=32&amp;iconid=" + SWId.ToString();
+                    return sURL;
+                }
+
+                //if (IconId &gt; 0)
+                //{
+                //    SWId = IconId;
+                //    string sURL = RZRestAPI.sURL + "/rest/v2/GetIcon?iconid=" + SWId.ToString();
+                //    return sURL;
+                //}
+                return "";
+            }
+        }
+    }
+
+    public class contentFiles
+    {
+        public string URL { get; set; }
+        public string FileName { get; set; }
+        public string FileHash { get; set; }
+        public string HashType { get; set; }
+    }
+
+    public class DLTask
+    {
+        public string ProductName { get; set; }
+
+        public string ProductVersion { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public string ShortName { get; set; }
+
+        //public byte[] Image { get; set; }
+
+        public string IconURL { get; set; }
+
+        public bool AutoInstall { get; set; }
+
+        public bool Installed { get; set; }
+
+        public bool UnInstalled { get; set; }
+
+        public bool Downloading { get; set; }
+
+        public bool Installing { get; set; }
+
+        public bool Error { get; set; }
+
+        public bool WaitingForDependency { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        internal string _status = "";
+        public string Status
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_status))
+                {
+                    if (Installing &amp;&amp; !Error)
+                        return "Installing";
+                    if (Downloading &amp;&amp; !Error)
+                        return "Downloading";
+                    if (Installed &amp;&amp; !Error)
+                        return "Installed";
+                    if (UnInstalled &amp;&amp; !Error)
+                        return "Uninstalled";
+                    if (WaitingForDependency)
+                        return "Installing dependencies";
+                    if (PercentDownloaded == 100 &amp;&amp; !Error)
+                        return "Downloaded";
+                    if (Error)
+                        return ErrorMessage;
+
+                    return "Waiting";
+                }
+                else
+                    return _status;
+            }
+            set
+            {
+                _status = value;
+            }
+        }
+
+        public long DownloadedBytes { get; set; }
+
+        public long TotalBytes { get; set; }
+
+        public int PercentDownloaded { get; set; }
+
+        public List&lt;contentFiles&gt; Files { get; set; }
+
+        //public Task task { get; set; }
+
+        public RZUpdate.SWUpdate SWUpd { get; set; }
+    }
+
+    public class DLStatus
+    {
+        public string Filename { get; set; }
+
+        public string URL { get; set; }
+
+        public int PercentDownloaded { get; set; }
+
+        public long DownloadedBytes { get; set; }
+
+        public long TotalBytes { get; set; }
+    }
+}</value>
+  </data>
+  <data name="RZUpdate" xml:space="preserve">
+    <value>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.IO;
+using System.Management.Automation;
+using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Web.Script.Serialization;
+using System.Diagnostics;
+using System.Net.Http;
+using RuckZuck.Base;
+
+namespace RZUpdate
+{
+    /// &lt;summary&gt;
+    /// Updater Class
+    /// &lt;/summary&gt;
+    public class RZUpdater
+    {
+        /// &lt;summary&gt;
+        /// Constructor
+        /// &lt;/summary&gt;
+        public RZUpdater()
+        {
+            AddSoftware oSW = new AddSoftware();
+            SoftwareUpdate = new SWUpdate(oSW);
+        }
+
+        public RZUpdater(string sSWFile)
+        {
+            if (sSWFile.EndsWith(".json", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SoftwareUpdate = new SWUpdate(ParseJSON(sSWFile));
+            }
+
+            if (!File.Exists(sSWFile))
+            {
+                SoftwareUpdate = new SWUpdate(Parse(sSWFile));
+            }
+
+        }
+
+        /// &lt;summary&gt;
+        /// Check if there are Updates for a Software
+        /// &lt;/summary&gt;
+        /// &lt;param name="ProductName"&gt;Name of the Software Product (must be in the RuckZuck Repository !)&lt;/param&gt;
+        /// &lt;param name="Version"&gt;&gt;Current Version of the Software&lt;/param&gt;
+        /// &lt;returns&gt;SWUpdate if an Update is available otherwise null&lt;/returns&gt;
+        public SWUpdate CheckForUpdate(string ProductName, string Version, string Manufacturer = "")
+        {
+            try
+            {
+                AddSoftware oSW = new AddSoftware();
+
+                oSW.ProductName = ProductName; // ;
+                oSW.ProductVersion = Version; // ;
+                oSW.Manufacturer = Manufacturer ?? "";
+
+                List&lt;AddSoftware&gt; oResult = RZRestAPIv2.CheckForUpdate(new List&lt;AddSoftware&gt;() { oSW }).ToList();
+                if (oResult.Count &gt; 0)
+                {
+                    foreach (AddSoftware SW in oResult)
+                    {
+                        if (SW.PSPreReq == null)
+                        {
+                            //Load all MetaData for the specific SW
+                            foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                            {
+                                if (string.IsNullOrEmpty(SW.PSPreReq))
+                                    SW.PSPreReq = "$true; ";
+
+                                //Check PreReq for all Installation-types of the Software
+                                if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                                {
+                                    SoftwareUpdate = new SWUpdate(SWCheck);
+                                    return SoftwareUpdate;
+                                }
+                            }
+                        }
+
+                        if ((bool)SWUpdate._RunPS(SW.PSPreReq).Last().BaseObject)
+                        {
+                            SoftwareUpdate = new SWUpdate(SW);
+                            return SoftwareUpdate;
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// Access to the SWUpdate
+        /// &lt;/summary&gt;
+        public SWUpdate SoftwareUpdate;
+
+        internal static string _getTimeToken()
+        {
+            byte[] time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+            byte[] key = Guid.NewGuid().ToByteArray();
+            return Convert.ToBase64String(time.Concat(key).ToArray());
+        }
+
+        internal static AddSoftware ParseJSON(string sFile)
+        {
+            if (File.Exists(sFile))
+            {
+                try
+                {
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    string sJson = File.ReadAllText(sFile);
+                    AddSoftware lRes;
+
+                    //Check if it's an Arrya (new in V2)
+                    if (sJson.TrimStart().StartsWith("["))
+                    {
+                        List&lt;AddSoftware&gt; lItems = ser.Deserialize&lt;List&lt;AddSoftware&gt;&gt;(sJson);
+                        lRes = lItems[0];
+                    }
+                    else
+                    {
+                        lRes = ser.Deserialize&lt;AddSoftware&gt;(sJson);
+                    }
+
+                    if (lRes.PreRequisites != null)
+                    {
+                        lRes.PreRequisites = lRes.PreRequisites.Where(x =&gt; !string.IsNullOrEmpty(x)).ToArray();
+                    }
+                    else
+                        lRes.PreRequisites = new string[0];
+                    return lRes;
+                }
+                catch { }
+            }
+
+            return new AddSoftware();
+        }
+
+        internal static AddSoftware Parse(string sJSON)
+        {
+            try
+            {
+                JavaScriptSerializer ser = new JavaScriptSerializer();
+                AddSoftware lRes = ser.Deserialize&lt;AddSoftware&gt;(sJSON);
+                lRes.PreRequisites = lRes.PreRequisites.Where(x =&gt; !string.IsNullOrEmpty(x)).ToArray();
+                return lRes;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
+
+            return new AddSoftware();
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// SWUpdate Class
+    /// &lt;/summary&gt;
+    public class SWUpdate
+    {
+        public AddSoftware SW;
+        public delegate void ChangedEventHandler(object sender, EventArgs e);
+        public event ChangedEventHandler Downloaded;
+        private static event EventHandler DLProgress = delegate { };
+        public event EventHandler ProgressDetails = delegate { };
+        internal DLTask downloadTask;
+        private ReaderWriterLockSlim UILock = new ReaderWriterLockSlim();
+        public bool SendFeedback = true;
+        public string ContentPath = "";
+
+        //Constructor
+        public SWUpdate(AddSoftware Software)
+        {
+            SW = Software;
+            //downloadTask = new DLTask();
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, Files = SW.Files, UnInstalled = false, Installed = false, Installing = false, IconURL = SW.IconURL };
+            downloadTask.SWUpd = this;
+
+            if (SW.Files == null)
+                SW.Files = new List&lt;contentFiles&gt;();
+            if (SW.PreRequisites == null)
+                SW.PreRequisites = new string[0];
+
+            foreach (contentFiles vFile in SW.Files)
+            {
+                if (string.IsNullOrEmpty(vFile.HashType))
+                    vFile.HashType = "MD5";
+            }
+        }
+
+        //Constructor
+        public SWUpdate(string ProductName, string ProductVersion, string Manufacturer, bool NoPreReqCheck = false)
+        {
+            SW = null;
+            SW = new AddSoftware();
+
+            SW.ProductName = ProductName;
+            SW.ProductVersion = ProductVersion;
+            SW.Manufacturer = Manufacturer;
+
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, UnInstalled = false, Installed = false };
+            downloadTask.SWUpd = this;
+
+
+            //Get Install-type
+            if (!GetInstallType(NoPreReqCheck))
+            {
+                SW = null;
+                return;
+            }
+
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, IconURL = SW.IconURL, Files = SW.Files, UnInstalled = false, Installed = false };
+
+            if (SW == null)
+            {
+                //Load all MetaData for the specific SW
+                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                {
+                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                        SWCheck.PSPreReq = "$true; ";
+
+                    //Check PreReq for all Installation-types of the Software
+                    if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                    {
+                        SW = SWCheck;
+                        break;
+                    }
+                }
+
+                //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+
+                if (SW.Files == null)
+                    SW.Files = new List&lt;contentFiles&gt;();
+
+                if (string.IsNullOrEmpty(SW.PSPreReq))
+                    SW.PSPreReq = "$true; ";
+            }
+
+            if (SW.Files != null)
+            {
+                foreach (contentFiles vFile in SW.Files)
+                {
+                    if (string.IsNullOrEmpty(vFile.HashType))
+                        vFile.HashType = "MD5";
+                }
+            }
+
+            if (SW.PreRequisites == null)
+                SW.PreRequisites = new string[0];
+
+        }
+
+        public SWUpdate(string ShortName)
+        {
+            SW = null;
+            downloadTask = new DLTask();
+            downloadTask.SWUpd = this;
+            downloadTask.ShortName = ShortName;
+
+            try
+            {
+
+                SW = new AddSoftware();
+
+                string sBaseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                //Always use local JSON-File if exists
+                if (File.Exists(Path.Combine(sBaseDir, ShortName + ".json")))
+                {
+                    string sSWFile = Path.Combine(sBaseDir, ShortName + ".json");
+                    SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
+                }
+                else
+                {
+                    //Always use local JSON-File if exists
+                    if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json")))
+                    {
+                        string sSWFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), ShortName + ".json");
+                        SW = new SWUpdate(RZUpdater.ParseJSON(sSWFile)).SW;
+                    }
+                    else
+                    {
+                        var oGetSW = RZRestAPIv2.GetCatalog().Where(t =&gt; t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        if (oGetSW != null)
+                        {
+                            SW.ProductName = oGetSW.ProductName;
+                            SW.ProductVersion = oGetSW.ProductVersion;
+                            SW.Manufacturer = oGetSW.Manufacturer;
+                            SW.ShortName = ShortName;
+
+                            if (SW.Architecture == null)
+                            {
+                                //Load all MetaData for the specific SW
+                                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                                {
+                                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                                        SWCheck.PSPreReq = "$true; ";
+
+                                    //Check PreReq for all Installation-types of the Software
+                                    if ((bool)SWUpdate._RunPS(SWCheck.PSPreReq)[0].BaseObject)
+                                    {
+                                        SW = SWCheck;
+                                        break;
+                                    }
+                                }
+
+                                //SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+                                if (SW == null) { Console.WriteLine("No SW"); }
+                                SW.ShortName = ShortName;
+
+                                if (SW.Files == null)
+                                    SW.Files = new List&lt;contentFiles&gt;();
+                                if (string.IsNullOrEmpty(SW.PSPreReq))
+                                    SW.PSPreReq = "$true; ";
+                            }
+                        }
+
+                        if (string.IsNullOrEmpty(SW.PSInstall))
+                            return;
+
+                        //Get Install-type
+                        GetInstallType();
+                    }
+                }
+
+                downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, IconURL = SW.IconURL, Files = SW.Files };
+                foreach (contentFiles vFile in SW.Files)
+                {
+                    if (string.IsNullOrEmpty(vFile.HashType))
+                        vFile.HashType = "MD5";
+                }
+                if (SW.PreRequisites == null)
+                    SW.PreRequisites = new string[0];
+            }
+            catch { }
+        }
+
+        public bool GetInstallType(bool bGetFirst = false)
+        {
+            //Only get other DeploymentTypes if Architecture is not defined...
+            if (string.IsNullOrEmpty(this.SW.Architecture))
+            {
+                foreach (var DT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
+                {
+                    try
+                    {
+                        //Check PreReqs
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(DT.PSPreReq))
+                            {
+                                if (!bGetFirst)
+                                {
+                                    if (!(bool)_RunPS(DT.PSPreReq).Last().BaseObject)
+                                        continue;
+                                }
+                            }
+                        }
+                        catch { continue; }
+
+                        SW = DT;
+
+                        return true;
+                    }
+                    catch { }
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool _Download(bool Enforce, string DLPath)
+        {
+            bool bError = false;
+            ContentPath = DLPath;
+            if (!Enforce)
+            {
+                //Check if it's still required
+                try
+                {
+                    if (CheckIsInstalled(true))
+                    {
+                        if (Downloaded != null)
+                            Downloaded(downloadTask, EventArgs.Empty);
+                        return true;
+                    }
+                }
+                catch { }
+            }
+            if (SW.Files == null)
+                SW.Files = new List&lt;contentFiles&gt;();
+
+            //only XML File contains Files
+            if (SW.Files.Count() &gt; 0)
+            {
+                bool bDLSuccess = false;
+                foreach (var vFile in SW.Files)
+                {
+                    try
+                    {
+                        if (string.IsNullOrEmpty(vFile.URL))
+                        {
+                            downloadTask.PercentDownloaded = 100;
+                            ProgressDetails(downloadTask, EventArgs.Empty);
+                            continue;
+                        }
+
+                        string sDir = DLPath; // Path.Combine(Environment.ExpandEnvironmentVariables(DLPath), SW.ContentID);
+
+                        string sFile = Path.Combine(sDir, vFile.FileName);
+
+                        if (!Directory.Exists(sDir))
+                            Directory.CreateDirectory(sDir);
+
+                        bool bDownload = true;
+
+                        //Check File-Hash on existing Files...
+                        if (File.Exists(sFile))
+                        {
+                            if (string.IsNullOrEmpty(vFile.FileHash))
+                            {
+                                File.Delete(sFile);
+                            }
+                            else
+                            {
+                                if (string.IsNullOrEmpty(vFile.HashType))
+                                    vFile.HashType = "MD5";
+
+                                if (vFile.HashType.ToUpper() == "MD5")
+                                {
+                                    if (!_checkFileMd5(sFile, vFile.FileHash))
+                                    {
+                                        Console.WriteLine("Hash mismatch on existing File " + vFile.FileName);
+                                        File.Delete(sFile); //Hash mismatch
+                                    }
+                                    else
+                                        bDownload = false; //Do not download, Hash is valid   
+                                }
+                                if (vFile.HashType.ToUpper() == "SHA1")
+                                {
+                                    if (!_checkFileSHA1(sFile, vFile.FileHash))
+                                        File.Delete(sFile); //Hash mismatch
+                                    else
+                                        bDownload = false; //Do not download, Hash is valid  
+                                }
+                                if (vFile.HashType.ToUpper() == "SHA256")
+                                {
+                                    if (!_checkFileSHA256(sFile, vFile.FileHash))
+                                        File.Delete(sFile); //Hash mismatch
+                                    else
+                                        bDownload = false; //Do not download, Hash is valid  
+                                }
+
+                                if (vFile.HashType.ToUpper() == "X509")
+                                {
+                                    if (!_checkFileX509(sFile, vFile.FileHash))
+                                        File.Delete(sFile); //Hash mismatch
+                                    else
+                                        bDownload = false; //Do not download, Hash is valid  
+                                }
+                            }
+                        }
+
+                        if (bDownload)
+                        {
+                            downloadTask.PercentDownloaded = 0;
+                            downloadTask.Downloading = true;
+                            ProgressDetails(downloadTask, EventArgs.Empty);
+
+                            if (!_DownloadFile2(vFile.URL, sFile))
+                            {
+
+                                downloadTask.Error = true;
+                                downloadTask.PercentDownloaded = 0;
+                                downloadTask.ErrorMessage = "ERROR: download failed... " + vFile.FileName;
+                                Console.WriteLine("ERROR: download failed... " + vFile.FileName);
+                                ProgressDetails(downloadTask, EventArgs.Empty);
+                                File.Delete(sFile);
+                                if (SendFeedback)
+                                    RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "download failed", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                return false;
+                            }
+                            else
+                            {
+                                bDLSuccess = true;
+                            }
+
+                            //Sleep 1s to complete
+                            Thread.Sleep(1000);
+                            ProgressDetails(downloadTask, EventArgs.Empty);
+                            //downloadTask.Downloading = false;
+
+                        }
+                        else
+                        {
+                            downloadTask.PercentDownloaded = 100;
+                            downloadTask.Downloading = false;
+                        }
+
+                        //Only Check Hash if downloaded
+                        if (!string.IsNullOrEmpty(vFile.FileHash) &amp;&amp; bDownload)
+                        {
+                            if (string.IsNullOrEmpty(vFile.HashType))
+                                vFile.HashType = "MD5";
+
+                            //Check if there is a File
+                            long iFileSize = 0;
+                            try
+                            {
+                                FileInfo fi = new FileInfo(sFile);
+                                iFileSize = fi.Length;
+                            }
+                            catch { }
+
+                            if (iFileSize == 0)
+                            {
+                                downloadTask.Error = true;
+                                downloadTask.PercentDownloaded = 0;
+                                downloadTask.ErrorMessage = "ERROR: empty File... " + vFile.FileName;
+                                Console.WriteLine("ERROR: empty File... " + vFile.FileName);
+                                ProgressDetails(downloadTask, EventArgs.Empty);
+                                File.Delete(sFile);
+                                return false;
+                            }
+                            else
+                            {
+
+
+                                //Check default MD5 Hash
+                                if (vFile.HashType.ToUpper() == "MD5")
+                                {
+                                    if (!_checkFileMd5(sFile, vFile.FileHash))
+                                    {
+                                        downloadTask.Error = true;
+                                        downloadTask.PercentDownloaded = 0;
+                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                        File.Delete(sFile);
+                                        if (SendFeedback)
+                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
+                                        bError = true;
+                                    }
+                                    else
+                                    {
+                                        downloadTask.PercentDownloaded = 100;
+                                    }
+                                }
+
+                                //Check default SHA1 Hash
+                                if (vFile.HashType.ToUpper() == "SHA1")
+                                {
+                                    if (!_checkFileSHA1(sFile, vFile.FileHash))
+                                    {
+                                        downloadTask.Error = true;
+                                        downloadTask.PercentDownloaded = 0;
+                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                        File.Delete(sFile);
+                                        if (SendFeedback)
+                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                        bError = true;
+                                    }
+                                    else
+                                    {
+                                        downloadTask.PercentDownloaded = 100;
+                                    }
+                                }
+
+                                //Check default SHA256 Hash
+                                if (vFile.HashType.ToUpper() == "SHA256")
+                                {
+                                    if (!_checkFileSHA256(sFile, vFile.FileHash))
+                                    {
+                                        downloadTask.Error = true;
+                                        downloadTask.PercentDownloaded = 0;
+                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                        File.Delete(sFile);
+                                        if (SendFeedback)
+                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                        bError = true;
+                                    }
+                                    else
+                                    {
+                                        downloadTask.PercentDownloaded = 100;
+                                    }
+                                }
+
+                                if (vFile.HashType.ToUpper() == "X509")
+                                {
+                                    if (!_checkFileX509(sFile, vFile.FileHash))
+                                    {
+                                        downloadTask.Error = true;
+                                        downloadTask.PercentDownloaded = 0;
+                                        downloadTask.ErrorMessage = "ERROR: Signature mismatch on File " + vFile.FileName;
+                                        Console.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
+                                        File.Delete(sFile);
+                                        if (SendFeedback)
+                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                        bError = true;
+                                    }
+                                    else
+                                    {
+                                        downloadTask.PercentDownloaded = 100;
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        downloadTask.PercentDownloaded = 0;
+                        downloadTask.ErrorMessage = ex.Message;
+                        Console.WriteLine("ERROR: " + ex.Message);
+                        bError = true;
+                    }
+                }
+
+                if (SendFeedback &amp;&amp; bDLSuccess)
+                {
+                    RZRestAPIv2.IncCounter(SW.ShortName, customerid: RZRestAPIv2.CustomerID);
+                }
+            }
+            else
+            {
+                downloadTask.PercentDownloaded = 100;
+            }
+
+            downloadTask.Downloading = false;
+
+
+            if (bError)
+            {
+                downloadTask.PercentDownloaded = 0;
+                downloadTask.Error = true;
+            }
+            else
+            {
+                downloadTask.Error = false;
+                downloadTask.ErrorMessage = "";
+            }
+
+            ProgressDetails(downloadTask, EventArgs.Empty);
+
+            if (Downloaded != null)
+                Downloaded(downloadTask, EventArgs.Empty);
+
+            return !bError;
+        }
+
+        /// &lt;summary&gt;
+        /// Download all related Files to %TEMP%
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;true = success&lt;/returns&gt;
+        public async Task&lt;bool&gt; Download()
+        {
+            bool bAutoInstall = downloadTask.AutoInstall;
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, IconURL = SW.IconURL, Files = SW.Files };
+            if (SW.PreRequisites != null)
+            {
+                if (SW.PreRequisites.Length &gt; 0)
+                {
+                    downloadTask.WaitingForDependency = true;
+                    downloadTask.AutoInstall = false;
+                }
+                else
+                {
+                    downloadTask.AutoInstall = bAutoInstall;
+                }
+            }
+            else
+            {
+                downloadTask.AutoInstall = bAutoInstall;
+            }
+            downloadTask.Error = false;
+            downloadTask.SWUpd = this;
+            downloadTask.Downloading = true;
+            ProgressDetails += SWUpdate_ProgressDetails;
+            bool bResult = await Task.Run(() =&gt; _Download(false, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID))).ConfigureAwait(false);
+            return bResult;
+        }
+
+        /// &lt;summary&gt;
+        /// Download all related Files to %TEMP%
+        /// &lt;/summary&gt;
+        /// &lt;param name="Enforce"&gt;True = do not check if SW is already installed&lt;/param&gt;
+        /// &lt;returns&gt;true = success&lt;/returns&gt;
+        public async Task&lt;bool&gt; Download(bool Enforce)
+        {
+            return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
+        }
+
+        public async Task&lt;bool&gt; Download(bool Enforce, string DLPath)
+        {
+            bool bAutoInstall = downloadTask.AutoInstall;
+            downloadTask = new DLTask() { ProductName = SW.ProductName, ProductVersion = SW.ProductVersion, Manufacturer = SW.Manufacturer, ShortName = SW.ShortName, IconURL = SW.IconURL, Files = SW.Files };
+
+            if (SW.PreRequisites != null)
+            {
+                if (SW.PreRequisites.Length &gt; 0)
+                {
+                    downloadTask.WaitingForDependency = true;
+                    downloadTask.AutoInstall = false;
+                }
+                else
+                {
+                    downloadTask.AutoInstall = bAutoInstall;
+                }
+            }
+            else
+            {
+                downloadTask.AutoInstall = bAutoInstall;
+            }
+            downloadTask.Error = false;
+            downloadTask.SWUpd = this;
+            downloadTask.Downloading = true;
+            ProgressDetails += SWUpdate_ProgressDetails;
+
+            bool bResult = await Task.Run(() =&gt; _Download(Enforce, DLPath)).ConfigureAwait(false);
+            return bResult;
+        }
+
+        private void SWUpdate_ProgressDetails(object sender, EventArgs e)
+        {
+            if (sender.GetType() == typeof(DLStatus))
+            {
+                try
+                {
+                    DLStatus dlStatus = sender as DLStatus;
+                    downloadTask.Installing = false;
+                    downloadTask.Downloading = true;
+                    downloadTask.DownloadedBytes = dlStatus.DownloadedBytes;
+                    downloadTask.PercentDownloaded = dlStatus.PercentDownloaded;
+                    downloadTask.TotalBytes = dlStatus.TotalBytes;
+                }
+                catch { }
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// Install a SWUpdate
+        /// &lt;/summary&gt;
+        /// &lt;param name="Force"&gt;Do not check if SW is already installed.&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        private bool _Install(bool Force = false)
+        {
+            bool bError = false;
+
+            //Check if Installer is already running
+            if (downloadTask.Installing)
+            {
+                Thread.Sleep(1500);
+                return CheckIsInstalled(true); ;
+            }
+
+            downloadTask.Installing = true;
+            if (!CheckDTPreReq())
+            {
+
+                Console.WriteLine("Requirements not valid. Installation will not start.");
+                downloadTask.Installing = false;
+                downloadTask.Installed = false;
+                downloadTask.Error = true;
+                downloadTask.ErrorMessage = "Requirements not valid. Installation will not start.";
+                ProgressDetails(this.downloadTask, EventArgs.Empty);
+
+                if (SendFeedback)
+                    RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+
+                return false;
+            }
+
+            //Is Product already installed ?
+            try
+            {
+                if (!Force)
+                {
+                    //Already installed ?
+                    if (CheckIsInstalled(true))
+                    {
+                        return true;
+                    }
+                }
+
+                downloadTask.Installing = true;
+
+                //Set CurrentDir and $Folder variable
+                string sFolder = ContentPath;
+                if (string.IsNullOrEmpty(ContentPath))
+                {
+                    string sLocalPath = Environment.ExpandEnvironmentVariables("%TEMP%");
+                    sFolder = Path.Combine(sLocalPath, SW.ContentID.ToString());
+                }
+
+                string psPath = string.Format("Set-Location -Path \"{0}\" -ErrorAction SilentlyContinue; $Folder = \"{0}\";", sFolder);
+                int iExitCode = -1;
+
+                //Run Install Script
+                if (!string.IsNullOrEmpty(SW.PSInstall))
+                {
+                    try
+                    {
+                        downloadTask.Installing = true;
+                        ProgressDetails(this.downloadTask, EventArgs.Empty);
+
+                        var oResult = _RunPS(psPath + SW.PSPreInstall + ";" + SW.PSInstall + ";" + SW.PSPostInstall + ";$ExitCode", "", new TimeSpan(0, 60, 0));
+
+                        try
+                        {
+                            iExitCode = ((int)oResult.Last().BaseObject);
+                        }
+                        catch { }
+
+                        //Wait 1s to let the installer close completely...
+                        System.Threading.Thread.Sleep(1100);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("PS ERROR: " + ex.Message);
+                    }
+
+                    //InstProgress(this, EventArgs.Empty);
+                }
+
+                //is installed ?
+                if (CheckIsInstalled(false))
+                {
+                    ProgressDetails(downloadTask, EventArgs.Empty);
+                    if (SendFeedback)
+                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "true", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Ok...", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("WARNING: Product not detected after installation.");
+                    //if (iExitCode != 0 &amp;&amp; iExitCode != 3010)
+                    //{
+                    //    if (SendFeedback)
+                    //        RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, SW.Architecture, "false", sUserName, "Product not detected after installation.").ConfigureAwait(false); ;
+                    //}
+
+                    if (SendFeedback)
+                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Product not detected after installation.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+
+                    downloadTask.Error = true;
+                    downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
+                    downloadTask.Installed = false;
+                    downloadTask.Installing = false;
+                    ProgressDetails(downloadTask, EventArgs.Empty);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR: " + ex.Message);
+                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                downloadTask.Error = true;
+                downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
+                downloadTask.Installed = false;
+                downloadTask.Installing = false;
+                bError = true;
+            }
+
+            //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, (!bError).ToString(), "RZUpdate", "");
+            ProgressDetails(this.downloadTask, EventArgs.Empty);
+            return !bError;
+        }
+
+        public async Task&lt;bool&gt; Install(bool Force = false, bool Retry = false)
+        {
+            bool msiIsRunning = false;
+            bool RZisRunning = false;
+            do
+            {
+                //Check if MSI is running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    {
+                        msiIsRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    msiIsRunning = false;
+                }
+
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
+            }
+            while (msiIsRunning || RZisRunning);
+
+            bool bMutexCreated = false;
+            bool bResult = false;
+
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() =&gt; _Install(Force)).ConfigureAwait(false);
+
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
+            return bResult;
+
+
+        }
+
+        private bool _UnInstall(bool Force = false)
+        {
+            //Check if Installer is already running
+            if (downloadTask.Installing)
+            {
+                Thread.Sleep(1500);
+                CheckIsInstalled(true);
+                //ProgressDetails(this.downloadTask, EventArgs.Empty);
+                return true;
+
+            }
+
+            downloadTask.Installing = true;
+
+            var tGetSWRepo = Task.Run(() =&gt;
+            {
+                bool bError = false;
+
+                if (!CheckDTPreReq() &amp;&amp; !Force)
+                {
+
+                    Console.WriteLine("Requirements not valid. Installation will not start.");
+                    downloadTask.Installing = false;
+                    downloadTask.Installed = false;
+                    downloadTask.Error = true;
+                    downloadTask.ErrorMessage = "Requirements not valid. Installation will not start.";
+                    ProgressDetails(this.downloadTask, EventArgs.Empty);
+
+                    if (SendFeedback)
+                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+
+                    return false;
+                }
+
+                //Is Product already installed ?
+                try
+                {
+                    if (!Force)
+                    {
+                        //Already installed ?
+                        if (!CheckIsInstalled(false))
+                        {
+                            downloadTask.Installed = false;
+                            downloadTask.Installing = false;
+                            downloadTask.UnInstalled = true;
+                            downloadTask.Error = false;
+                            return true;
+                        }
+                    }
+
+                    //Check if Installer is already running
+                    while (downloadTask.Installing)
+                    {
+                        Thread.Sleep(1500);
+                        if (!CheckIsInstalled(false))
+                        {
+                            downloadTask.Installed = false;
+                            downloadTask.Installing = false;
+                            downloadTask.UnInstalled = true;
+                            downloadTask.Error = false;
+                            return true;
+                        }
+                    }
+
+                    downloadTask.Installing = true;
+
+                    int iExitCode = -1;
+
+                    //Run Install Script
+                    if (!string.IsNullOrEmpty(SW.PSUninstall))
+                    {
+                        try
+                        {
+                            downloadTask.Installing = true;
+                            ProgressDetails(this.downloadTask, EventArgs.Empty);
+
+                            var oResult = _RunPS(SW.PSUninstall + ";$ExitCode", "", new TimeSpan(0, 30, 0));
+
+                            try
+                            {
+                                iExitCode = ((int)oResult.Last().BaseObject);
+                            }
+                            catch { }
+
+                            //Wait 500ms to let the installer close completely...
+                            System.Threading.Thread.Sleep(550);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("PS ERROR: " + ex.Message);
+                        }
+
+                        downloadTask.Installing = false;
+                        //InstProgress(this, EventArgs.Empty);
+                    }
+
+                    //is installed ?
+                    if (!CheckIsInstalled(false))
+                    {
+                        downloadTask.Installed = false;
+                        downloadTask.Installing = false;
+                        downloadTask.UnInstalled = true;
+                        downloadTask.Error = false;
+                        //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, "true", "RZUpdate", "Uninstalled...");
+                        ProgressDetails(downloadTask, EventArgs.Empty);
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("WARNING: Product is still installed.");
+                        downloadTask.Error = true;
+                        downloadTask.ErrorMessage = "WARNING: Product is still installed.";
+                        downloadTask.Installed = false;
+                        downloadTask.Installing = false;
+                        ProgressDetails(downloadTask, EventArgs.Empty);
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("ERROR: " + ex.Message);
+                    downloadTask.Error = true;
+                    downloadTask.ErrorMessage = "WARNING: Product is still installed.";
+                    downloadTask.Installed = false;
+                    downloadTask.Installing = false;
+                    bError = true;
+                }
+
+                //RZRestAPI.Feedback(SW.ProductName, SW.ProductVersion, (!bError).ToString(), "RZUpdate", "");
+                ProgressDetails(this.downloadTask, EventArgs.Empty);
+                return !bError;
+            });
+
+            return true;
+        }
+
+        public async Task&lt;bool&gt; UnInstall(bool Force = false, bool Retry = false)
+        {
+            bool msiIsRunning = false;
+            bool RZisRunning = false;
+            do
+            {
+                //Check if MSI is running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                    {
+                        msiIsRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    msiIsRunning = false;
+                }
+
+
+                //Check if RuckZuckis running...
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                    {
+                        RZisRunning = true;
+                        if (Retry)
+                        {
+                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Thread.Sleep(new TimeSpan(0, 0, 10));
+                        }
+                        else
+                            return false;
+                    }
+                    GC.Collect();
+                }
+                catch
+                {
+                    RZisRunning = false;
+                }
+            }
+            while (msiIsRunning || RZisRunning);
+
+            bool bMutexCreated = false;
+            bool bResult = false;
+
+            using (Mutex mutex = new Mutex(false, "Global\\RuckZuck", out bMutexCreated))
+            {
+                bResult = await Task.Run(() =&gt; _UnInstall(Force)).ConfigureAwait(false);
+
+                if (bMutexCreated)
+                    mutex.Close();
+            }
+            GC.Collect();
+            return bResult;
+        }
+
+        /// &lt;summary&gt;
+        /// Check if Install-Type is installed
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;true = installed ; false = not installed&lt;/returns&gt;
+        public bool CheckIsInstalled(bool sendProgressEvent)
+        {
+            if (SW != null)
+            {
+
+                //Is Product already installed ?
+                try
+                {
+                    //Already installed ?
+                    if ((bool)_RunPS(SW.PSDetection).Last().BaseObject)
+                    {
+                        UILock.EnterReadLock();
+                        try
+                        {
+                            downloadTask.Installed = true;
+                            downloadTask.Installing = false;
+                            downloadTask.Downloading = false;
+                            downloadTask.WaitingForDependency = false;
+                            downloadTask.Error = false;
+                            downloadTask.ErrorMessage = "";
+                            downloadTask.PercentDownloaded = 100;
+
+                            if (sendProgressEvent)
+                                ProgressDetails(downloadTask, EventArgs.Empty);
+
+                        }
+                        finally { UILock.ExitReadLock(); }
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                downloadTask.Installed = false;
+                downloadTask.Installing = false;
+                downloadTask.Downloading = false;
+            }
+            else
+            {
+                downloadTask.Installed = false;
+                downloadTask.Installing = false;
+                downloadTask.Downloading = false;
+                downloadTask.PercentDownloaded = 0;
+            }
+
+            if (sendProgressEvent)
+                ProgressDetails(downloadTask, EventArgs.Empty);
+            return false;
+        }
+
+        /// &lt;summary&gt;
+        /// Check if PreReq from Install-Type are compliant (true).
+        /// &lt;/summary&gt;
+        /// &lt;returns&gt;true = compliant; false = noncompliant&lt;/returns&gt;
+        public bool CheckDTPreReq()
+        {
+            if (SW != null)
+            {
+
+                //Is Product already installed ?
+                try
+                {
+                    if (string.IsNullOrEmpty(SW.PSPreReq))
+                        SW.PSPreReq = "$true; ";
+                    //Already installed ?
+                    if ((bool)_RunPS(SW.PSPreReq).Last().BaseObject)
+                    {
+                        return true;
+                    }
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
+        /// &lt;summary&gt;
+        /// Download a File
+        /// &lt;/summary&gt;
+        /// &lt;param name="URL"&gt;&lt;/param&gt;
+        /// &lt;param name="FileName"&gt;&lt;/param&gt;
+        /// &lt;returns&gt;true = success; false = error&lt;/returns&gt;
+        public bool _DownloadFile2(string URL, string FileName)
+        {
+            //Check if URL is HTTP, otherwise it must be a PowerShell
+            if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
+            {
+                var oResults = _RunPS(URL, FileName, new TimeSpan(2, 0, 0)); //2h timeout
+                if (File.Exists(FileName))
+                {
+                    DLProgress((int)100, EventArgs.Empty);
+                    ProgressDetails(new DLStatus() { Filename = FileName, URL = URL, PercentDownloaded = 100, DownloadedBytes = 100, TotalBytes = 100 }, EventArgs.Empty);
+                    return true;
+                }
+
+                URL = oResults.FirstOrDefault().BaseObject.ToString();
+            }
+
+            try
+            {
+                Stream ResponseStream = null;
+                WebResponse Response = null;
+
+                Int64 ContentLength = 1;
+                Int64 ContentLoaded = 0;
+                Int64 ioldProgress = 0;
+                Int64 iProgress = 0;
+
+                if (URL.StartsWith("http"))
+                {
+                    //_DownloadFile(URL, FileName).Result.ToString();
+                    var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
+                    httpRequest.UserAgent = "chocolatey command line";
+                    httpRequest.AllowAutoRedirect = true;
+                    httpRequest.MaximumAutomaticRedirections = 5;
+                    httpRequest.GetResponse();
+
+
+                    // Get back the HTTP response for web server
+                    Response = (HttpWebResponse)httpRequest.GetResponse();
+                    ResponseStream = Response.GetResponseStream();
+                }
+
+                if (URL.StartsWith("ftp"))
+                {
+                    var ftpRequest = (FtpWebRequest)WebRequest.Create(URL);
+                    ftpRequest.ContentLength.ToString();
+                    ftpRequest.GetResponse();
+
+
+                    // Get back the HTTP response for web server
+                    Response = (FtpWebResponse)ftpRequest.GetResponse();
+                    ResponseStream = Response.GetResponseStream();
+
+                    ContentLength = Response.ContentLength;
+                }
+
+                if (ResponseStream == null)
+                    return false;
+
+                // Define buffer and buffer size
+                int bufferSize = 32768; //4096;
+                byte[] buffer = new byte[bufferSize];
+                int bytesRead = 0;
+
+                // Read from response and write to file
+                FileStream fileStream = File.Create(FileName);
+                while ((bytesRead = ResponseStream.Read(buffer, 0, bufferSize)) != 0)
+                {
+                    if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+
+                    fileStream.Write(buffer, 0, bytesRead);
+                    ContentLoaded = ContentLoaded + bytesRead;
+
+                    try
+                    {
+                        iProgress = (100 * ContentLoaded) / ContentLength;
+                        //only send status on percent change
+                        if (iProgress != ioldProgress)
+                        {
+                            if ((iProgress % 10) == 5 || (iProgress % 10) == 0)
+                            {
+                                try
+                                {
+                                    DLProgress((int)iProgress, EventArgs.Empty);
+                                    ProgressDetails(new DLStatus() { Filename = FileName, URL = URL, PercentDownloaded = Convert.ToInt32(iProgress), DownloadedBytes = ContentLoaded, TotalBytes = ContentLength }, EventArgs.Empty);
+                                    ioldProgress = iProgress;
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                    catch { }
+                } // end while
+
+                try
+                {
+                    if (ioldProgress != 100)
+                    {
+                        iProgress = (100 * ContentLoaded) / ContentLength;
+                        DLProgress((int)iProgress, EventArgs.Empty);
+                        ProgressDetails(new DLStatus() { Filename = FileName, URL = URL, PercentDownloaded = Convert.ToInt32(iProgress), DownloadedBytes = ContentLoaded, TotalBytes = ContentLength }, EventArgs.Empty);
+                        ioldProgress = iProgress;
+                    }
+                }
+                catch { }
+
+                fileStream.Close();
+                ResponseStream.Close();
+                Response.Close();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private static async Task&lt;bool&gt; _DownloadFile(string URL, string FileName)
+        {
+            try
+            {
+                HttpClientHandler handler = new HttpClientHandler();
+                handler.AllowAutoRedirect = true;
+                handler.MaxAutomaticRedirections = 5;
+
+                //DotNetCore2.0
+                //handler.CheckCertificateRevocationList = false;
+                //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =&gt; { return true; }; //To prevent Issue with FW
+
+                using (HttpClient oClient = new HttpClient(handler))
+                {
+                    oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+
+                    using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+                    using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                    {
+                        string fileToWriteTo = FileName; // Path.GetTempFileName();
+
+                        using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
+                        {
+                            await streamToReadFrom.CopyToAsync(streamToWriteTo);
+                        }
+                        Console.WriteLine("Donwloaded: " + URL);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool _checkFileMd5(string FilePath, string MD5)
+        {
+            try
+            {
+                using (var md5 = System.Security.Cryptography.MD5.Create())
+                {
+                    using (var stream = File.OpenRead(FilePath))
+                    {
+                        if (MD5.ToLower() != BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLower())
+                            return false;
+                        else
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool _checkFileSHA1(string FilePath, string SHA1)
+        {
+            try
+            {
+                using (var sha1 = System.Security.Cryptography.SHA1.Create())
+                {
+                    using (var stream = File.OpenRead(FilePath))
+                    {
+                        if (SHA1.ToLower() != BitConverter.ToString(sha1.ComputeHash(stream)).Replace("-", "").ToLower())
+                            return false;
+                        else
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool _checkFileSHA256(string FilePath, string SHA256)
+        {
+            try
+            {
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    using (var stream = File.OpenRead(FilePath))
+                    {
+                        if (SHA256.ToLower() != BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", "").ToLower())
+                            return false;
+                        else
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool _checkFileX509(string FilePath, string X509)
+        {
+            try
+            {
+                var Cert = X509Certificate.CreateFromSignedFile(FilePath);
+                if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
+                    return true;
+                else
+                    return false;
+
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// Run PowerShell
+        /// &lt;/summary&gt;
+        /// &lt;param name="PSScript"&gt;PowerShell Script&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        public static PSDataCollection&lt;PSObject&gt; _RunPS(string PSScript, string WorkingDir = "", TimeSpan? Timeout = null)
+        {
+            TimeSpan timeout = new TimeSpan(0, 15, 0); //default timeout = 15min
+
+            if (Timeout != null)
+                timeout = (TimeSpan)Timeout;
+
+            DateTime dStart = DateTime.Now;
+            TimeSpan dDuration = DateTime.Now - dStart;
+            using (PowerShell PowerShellInstance = PowerShell.Create())
+            {
+                if (!string.IsNullOrEmpty(WorkingDir))
+                {
+                    WorkingDir = Path.GetDirectoryName(WorkingDir);
+                    PSScript = "Set-Location -Path '" + WorkingDir + "';" + PSScript;
+                }
+
+                PowerShellInstance.AddScript(PSScript);
+                PSDataCollection&lt;PSObject&gt; outputCollection = new PSDataCollection&lt;PSObject&gt;();
+
+                outputCollection.DataAdding += ConsoleOutput;
+                PowerShellInstance.Streams.Error.DataAdding += ConsoleError;
+
+                IAsyncResult async = PowerShellInstance.BeginInvoke&lt;PSObject, PSObject&gt;(null, outputCollection);
+                while (async.IsCompleted == false &amp;&amp; dDuration &lt;= timeout)
+                {
+                    Thread.Sleep(200);
+                    dDuration = DateTime.Now - dStart;
+                }
+
+                return outputCollection;
+            }
+
+        }
+
+        private static void ConsoleError(object sender, DataAddingEventArgs e)
+        {
+            if (e.ItemAdded != null)
+                Console.WriteLine("ERROR:" + e.ItemAdded.ToString());
+        }
+
+        private static void ConsoleOutput(object sender, DataAddingEventArgs e)
+        {
+            //if (e.ItemAdded != null)
+            //    Console.WriteLine(e.ItemAdded.ToString());
+        }
+
+        public string GetDLPath()
+        {
+            return Environment.ExpandEnvironmentVariables("%TEMP%\\" + SW.ContentID.ToString());
+        }
+    }
+}</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>using RZUpdate;
+using System;
+using System.Reflection;
+using System.Resources;
+using System.Text;
+using System.Threading;
+using System.Net;
+
+namespace RZWrapper
+{
+    class RZWrapperClass
+    {
+        static int Main(string[] args)
+        {
+            string xmlSW = null;
+
+            try
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+                ServicePointManager.CheckCertificateRevocationList = false;
+                Assembly _assembly = Assembly.GetExecutingAssembly();
+                var stream = _assembly.GetManifestResourceStream("Resources.resx");
+                var resourceData = new byte[] { };
+                using (var rr = new ResourceReader(stream))
+                {
+                    var resourceType = "";
+                    rr.GetResourceData("SW.json", out resourceType, out resourceData);
+                }
+
+                xmlSW = Encoding.Default.GetString(resourceData, 2, resourceData.Length - 2);
+
+            }
+            catch (Exception ex)
+            {
+                //Console.WriteLine("E1:" + ex.Message);
+                //Thread.Sleep(1000);
+            }
+
+            try
+            {
+                RZUpdater oRZSW;
+                if (!string.IsNullOrEmpty(xmlSW))
+                {
+                    string asAscii = xmlSW.Substring(xmlSW.IndexOf('{'));
+                    oRZSW = new RZUpdater(asAscii);
+                    oRZSW.SoftwareUpdate.SendFeedback = false;
+                }
+                else
+                {
+                    oRZSW = new RZUpdater();
+                    oRZSW.SoftwareUpdate = new SWUpdate("RZRZRZ");
+                }
+
+                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                {
+                    Console.WriteLine("'RZRZRZ' is NOT available in RuckZuck...!");
+                    return 1;
+                }
+
+
+                Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
+                Console.Write("Downloading...");
+                if (oRZSW.SoftwareUpdate.SW.PreRequisites != null)
+                {
+                    foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
+                    {
+                        if (!string.IsNullOrEmpty(sPreReq))
+                        {
+                            RZUpdater oRZSWPreReq = new RZUpdater();
+                            oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
+                            Console.WriteLine();
+                            Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
+                            if (oRZSWPreReq.SoftwareUpdate.Download().Result)
+                            {
+                                Console.WriteLine("... done.");
+                                Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
+                                if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
+                                {
+                                    Console.WriteLine("... done.");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("... Error. The installation failed.");
+                                }
+                            }
+                        }
+                    }
+                }
+                if (oRZSW.SoftwareUpdate.Download().Result)
+                {
+                    Console.WriteLine("... done.");
+                    Console.Write("Installing...");
+                    if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                    {
+
+                        Console.WriteLine("... done.");
+                        Thread.Sleep(2000);
+                        return 0;
+                    }
+                    else
+                    {
+                        Console.WriteLine("... Error. The installation failed.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            Thread.Sleep(4000);
+            return 9;
+        }
+    }
+}</value>
+  </data>
+</root>

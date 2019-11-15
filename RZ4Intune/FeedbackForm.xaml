@@ -1,0 +1,18 @@
+﻿<Window x:Class="RuckZuck_Tool.FeedbackForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Provide Feedback..." Height="252" Width="320">
+    <Grid Margin="-22,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="146*"/>
+            <RowDefinition Height="123*"/>
+        </Grid.RowDefinitions>
+        <Label Content="Was the installation successful?" HorizontalAlignment="Left" Margin="31,8,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btYes" Content="Yes" HorizontalAlignment="Left" Margin="31,39,0,0" VerticalAlignment="Top" Width="75" Click="btYes_Click" IsDefault="True"/>
+        <Button x:Name="btNo" Content="No" HorizontalAlignment="Left" Margin="249,39,0,0" VerticalAlignment="Top" Width="75" Click="btNo_Click"/>
+        <Label Content="comments or details:" HorizontalAlignment="Left" Margin="31,69,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbFeedback" HorizontalAlignment="Left" Height="81" Margin="31,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293" Grid.RowSpan="2" AcceptsReturn="True" SpellCheck.IsEnabled="True" ToolTip="Please provide more details..."/>
+        <Button x:Name="btSend" Content="OK" HorizontalAlignment="Left" Margin="233,71,0,0" Grid.Row="1" VerticalAlignment="Top" Width="91" IsEnabled="False" Click="btSend_Click"/>
+
+    </Grid>
+</Window>

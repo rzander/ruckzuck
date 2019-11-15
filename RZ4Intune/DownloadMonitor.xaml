@@ -1,0 +1,63 @@
+﻿<Window x:Class="RuckZuck_Tool.DownloadMonitor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RuckZuck_Tool"
+        mc:Ignorable="d"
+        Title="RuckZuck Installation Queue" Height="350" Width="450" Closing="Window_Closing" Icon="Images/Download.ico" KeyDown="Window_KeyDown">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <ListView Name="lvDL" Grid.Row="1">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <DockPanel DockPanel.Dock="Left">
+                                    <TextBlock>
+                                    <Image Height="32" Width="32" ToolTip="{Binding ProductName}" Source="{Binding IconURL, IsAsync=True}"/>
+                                    </TextBlock>
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding ProductName}" FontWeight="Bold"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                            <Label Content="Status:" FontWeight="Light" VerticalContentAlignment="Bottom"/>
+                                            <Label Content="{Binding Status}" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                            <Label Content="Downloaded:" FontWeight="Light" Margin="15,0,0,0" VerticalContentAlignment="Bottom" />
+                                            <Label Content="{Binding PercentDownloaded}" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                            <Label Content="%" FontWeight="Bold" FontSize="11" Margin="-5,0,0,0" VerticalContentAlignment="Bottom" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DockPanel>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=Installed}" Value="true">
+                                    <Setter Property="Background" Value="#4C5DC92A" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=Error}" Value="true">
+                                    <Setter Property="Background" Value="#4CC9312A" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=Downloading}" Value="true">
+                                    <Setter Property="Background" Value="#4C312AC9" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=Installing}" Value="true">
+                                    <Setter Property="Background" Value="#4CC2C92A" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=UnInstalled}" Value="true">
+                                    <Setter Property="Background" Value="#4C5DC92A" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListView>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
