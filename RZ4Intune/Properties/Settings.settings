@@ -1221,7 +1221,7 @@ $sleep = 30
 if (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name "Nuget" -Force }
 
 #Install AzureAD Module if missing
-if ([version](Get-Module -ListAvailable AzureAD).Version -lt "2.0.2.52") { Install-Module AzureAD -Force -Confirm:$false }
+if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt "2.0.2.61") { Install-Module AzureAD -Force -Confirm:$false }
 
 $ShortName = $args[0]
 $global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Baerer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
@@ -1248,23 +1248,23 @@ $rzSW.Files | ForEach-Object {
     $file = $_.FileName
 }
 if (-NOT (Test-Path $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Directory }
-'cd $PSScriptRoot' &gt; "$($sourceFolder)\install.ps1"
-$rzSW.PSPreInstall &gt;&gt; "$($sourceFolder)\install.ps1"
-$rzSW.PSInstall &gt;&gt; "$($sourceFolder)\install.ps1"
-$rzSW.PSPostInstall &gt;&gt; "$($sourceFolder)\install.ps1"
-'exit($ExitCode)' &gt;&gt; "$($sourceFolder)\install.ps1"
+'cd $PSScriptRoot' | Out-File -FilePath "$($sourceFolder)\install.ps1" -Encoding UTF8
+$rzSW.PSPreInstall | Out-File -FilePath "$($sourceFolder)\install.ps1" -Encoding UTF8 -Append
+$rzSW.PSInstall | Out-File -FilePath "$($sourceFolder)\install.ps1" -Encoding UTF8 -Append
+$rzSW.PSPostInstall | Out-File -FilePath "$($sourceFolder)\install.ps1" -Encoding UTF8 -Append
+'exit($ExitCode)' | Out-File -FilePath "$($sourceFolder)\install.ps1" -Encoding UTF8 -Append
 
-'cd $PSScriptRoot' &gt; "$($sourceFolder)\uninstall.ps1"
-$rzSW.PSUnInstall &gt; "$($sourceFolder)\uninstall.ps1"
-'exit($ExitCode)' &gt;&gt; "$($sourceFolder)\uninstall.ps1"
+'cd $PSScriptRoot' | Out-File -FilePath "$($sourceFolder)\uninstall.ps1" -Encoding UTF8
+$rzSW.PSUnInstall | Out-File -FilePath "$($sourceFolder)\uninstall.ps1" -Encoding UTF8 -Append
+'exit($ExitCode)' | Out-File -FilePath "$($sourceFolder)\uninstall.ps1" -Encoding UTF8 -Append
 
-'$bRes = ' + $rzSW.PSDetection &gt; "$($sourceFolder)\detection.ps1"
-'if($bRes) { $true } else { $null }' &gt;&gt; "$($sourceFolder)\detection.ps1"
-'exit(0)' &gt;&gt; "$($sourceFolder)\detection.ps1"
+'$bRes = ' + $rzSW.PSDetection | Out-File -FilePath  "$($sourceFolder)\detection.ps1" -Encoding UTF8
+'if($bRes) { $true } else { $null }' | Out-File -FilePath  "$($sourceFolder)\detection.ps1" -Encoding UTF8 -Append
+'exit(0)' | Out-File -FilePath  "$($sourceFolder)\detection.ps1" -Encoding UTF8 -Append
 
 #$rzSW.PSPreReq &gt; "$($sourceFolder)\requirements.ps1"
 #'exit(0)' &gt;&gt; "$($sourceFolder)\requirements.ps1"
-[IO.File]::WriteAllLines("$($sourceFolder)\requirements.ps1", $rzSW.PSPreReq)
+$rzSW.PSPreReq | Out-File -FilePath "$($sourceFolder)\requirements.ps1" -Encoding UTF8
 
 Invoke-WebRequest -Uri $rzSW.iconURL -OutFile "$($sourceFolder)\logo.png"
 
