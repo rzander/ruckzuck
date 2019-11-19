@@ -59,6 +59,52 @@ namespace RuckZuck_Tool
                         {
                             oDir = Directory.CreateDirectory(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oIT.ContentID.ToString()));
                         }
+
+                        //generating PowerShell Scripts
+                        downloadTask.Status = "generating PowerShell scripts...";
+
+                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "install.ps1"), false, new UTF8Encoding(false)))
+                        {
+                            outfile.WriteLine("Set-Location $PSScriptRoot;");
+                            if (!string.IsNullOrEmpty(oIT.PSPreInstall))
+                            {
+                                outfile.Write(oIT.PSPreInstall);
+                                outfile.WriteLine();
+                            }
+
+                            outfile.Write(oIT.PSInstall);
+                            outfile.WriteLine();
+
+                            if (!string.IsNullOrEmpty(oIT.PSPostInstall))
+                            {
+                                outfile.Write(oIT.PSPostInstall);
+                                outfile.WriteLine();
+                            }
+                            outfile.WriteLine("Exit($ExitCode)");
+                            outfile.Close();
+                        }
+
+                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "uninstall.ps1"), false, new UTF8Encoding(false)))
+                        {
+                            outfile.WriteLine("Set-Location $PSScriptRoot;");
+                            outfile.Write(oIT.PSUninstall);
+                            outfile.Close();
+                        }
+
+                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "detection.ps1"), false, new UTF8Encoding(false)))
+                        {
+                            outfile.WriteLine("$bRes = " + oUpd.SW.PSDetection);
+                            outfile.WriteLine("if($bRes) { $true } else { $null }");
+                            outfile.WriteLine("exit(0)");
+                            outfile.Close();
+                        }
+
+                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "requirements.ps1"), false, new UTF8Encoding(false)))
+                        {
+                            outfile.WriteLine(oUpd.SW.PSPreReq);
+                            outfile.Close();
+                        }
+
                         downloadTask.Status = "Downloading File(s)...";
                         //Listener.WriteLine(SW.Shortname, "Downloading File(s)...");
                         if (!Bootstrap)
