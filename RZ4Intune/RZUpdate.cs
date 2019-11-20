@@ -714,10 +714,10 @@ namespace RZUpdate
         /// </summary>
         /// <param name="Enforce">True = do not check if SW is already installed</param>
         /// <returns>true = success</returns>
-        //public async Task<bool> Download(bool Enforce)
-        //{
-        //    return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
-        //}
+        public async Task<bool> Download(bool Enforce)
+        {
+            return await Download(Enforce, Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), SW.ContentID));
+        }
 
         public async Task<bool> Download(bool Enforce, string DLPath)
         {

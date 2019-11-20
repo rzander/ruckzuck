@@ -30,118 +30,123 @@ namespace RuckZuck_Tool
             Bootstrap = false;
             downloadTask.Installing = true;
 
-            var lSW = GetRZSoftware(PkgName, PkgVersion, Manufacturer);
+            //RZUpdate.SWUpdate oUpd = new RZUpdate.SWUpdate(PkgName, PkgVersion, Manufacturer);
+            //var lSW = GetRZSoftware(PkgName, PkgVersion, Manufacturer);
+            downloadTask.Installing = true;
 
-            foreach (var SW in lSW)
+            string SWID = "RZID" + oRZ.SWId.ToString();
+            Boolean bDownloadStatus = true;
+            bool bPreReq = false;
+
+            downloadTask.Installing = true;
+
+            try
             {
-                string SWID = "RZID" + SW.SWId.ToString();
-                Boolean bDownloadStatus = true; 
-                bool bPreReq = false;
-
-                foreach (var oIT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "RZ4Intune"))
+                if (oRZ.Architecture.StartsWith("_prereq_"))
                 {
-                    try
-                    {
-                        if (oIT.Architecture.StartsWith("_prereq_"))
-                        {
-                            bPreReq = true;
-                            continue;
-                        }
-
-
-                        RZUpdate.SWUpdate oUpd = new RZUpdate.SWUpdate(oIT);
-
-                        downloadTask.Status = "Downloading File(s)...";
-                        //Listener.WriteLine(SW.Shortname, "Creating DeploymentType: " + oIT.Architecture);
-                        DirectoryInfo oDir = new DirectoryInfo(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oIT.ContentID.ToString()));
-
-                        if (!Directory.Exists(oDir.FullName))
-                        {
-                            oDir = Directory.CreateDirectory(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oIT.ContentID.ToString()));
-                        }
-
-                        //generating PowerShell Scripts
-                        downloadTask.Status = "generating PowerShell scripts...";
-
-                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "install.ps1"), false, new UTF8Encoding(false)))
-                        {
-                            outfile.WriteLine("Set-Location $PSScriptRoot;");
-                            if (!string.IsNullOrEmpty(oIT.PSPreInstall))
-                            {
-                                outfile.Write(oIT.PSPreInstall);
-                                outfile.WriteLine();
-                            }
-
-                            outfile.Write(oIT.PSInstall);
-                            outfile.WriteLine();
-
-                            if (!string.IsNullOrEmpty(oIT.PSPostInstall))
-                            {
-                                outfile.Write(oIT.PSPostInstall);
-                                outfile.WriteLine();
-                            }
-                            outfile.WriteLine("Exit($ExitCode)");
-                            outfile.Close();
-                        }
-
-                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "uninstall.ps1"), false, new UTF8Encoding(false)))
-                        {
-                            outfile.WriteLine("Set-Location $PSScriptRoot;");
-                            outfile.Write(oIT.PSUninstall);
-                            outfile.Close();
-                        }
-
-                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "detection.ps1"), false, new UTF8Encoding(false)))
-                        {
-                            outfile.WriteLine("$bRes = " + oUpd.SW.PSDetection);
-                            outfile.WriteLine("if($bRes) { $true } else { $null }");
-                            outfile.WriteLine("exit(0)");
-                            outfile.Close();
-                        }
-
-                        using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "requirements.ps1"), false, new UTF8Encoding(false)))
-                        {
-                            outfile.WriteLine(oUpd.SW.PSPreReq);
-                            outfile.Close();
-                        }
-
-                        downloadTask.Status = "Downloading File(s)...";
-                        //Listener.WriteLine(SW.Shortname, "Downloading File(s)...");
-                        if (!Bootstrap)
-                        {
-                            bDownloadStatus = oUpd.Download(true, oDir.FullName).Result;
-
-                            //DL Failed!
-                            if (!bDownloadStatus)
-                            {
-                                downloadTask.Error = true;
-                                downloadTask.ErrorMessage = "content download failed.";
-                                Thread.Sleep(3000);
-                            }
-                        }
-                    }
-                    catch {
-
-                        downloadTask.Status = "";
-                        downloadTask.Installing = false;
-                        downloadTask.Installed = true;
-                        downloadTask.Error = true;
-                    }
-
-                    downloadTask.Status = "Creating Application...";
-                    if (!Directory.Exists(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin")))
-                        Directory.CreateDirectory(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin"));
-
-                    File.WriteAllText(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1"), Properties.Settings.Default.RZCreateAppPS);
-
-                    Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oIT.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString() + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
-
-                    downloadTask.Status = "";
-                    downloadTask.Installing = false;
-                    downloadTask.Installed = true;
-                    downloadTask.Error = false;
+                    bPreReq = true;
+                    return;
                 }
+
+
+                //RZUpdate.SWUpdate oUpd = new RZUpdate.SWUpdate(oRZ);
+
+                downloadTask.Status = "Downloading File(s)...";
+                //Listener.WriteLine(SW.Shortname, "Creating DeploymentType: " + oIT.Architecture);
+                DirectoryInfo oDir = new DirectoryInfo(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oRZ.ContentID.ToString()));
+
+                if (!Directory.Exists(oDir.FullName))
+                {
+                    oDir = Directory.CreateDirectory(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oRZ.ContentID.ToString()));
+                }
+
+                //generating PowerShell Scripts
+                downloadTask.Status = "generating PowerShell scripts...";
+
+                using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "install.ps1"), false, new UTF8Encoding(false)))
+                {
+                    outfile.WriteLine("Set-Location $PSScriptRoot;");
+                    if (!string.IsNullOrEmpty(oRZ.PSPreInstall))
+                    {
+                        outfile.Write(oRZ.PSPreInstall);
+                        outfile.WriteLine();
+                    }
+
+                    outfile.Write(oRZ.PSInstall);
+                    outfile.WriteLine();
+
+                    if (!string.IsNullOrEmpty(oRZ.PSPostInstall))
+                    {
+                        outfile.Write(oRZ.PSPostInstall);
+                        outfile.WriteLine();
+                    }
+                    outfile.WriteLine("Exit($ExitCode)");
+                    outfile.Close();
+                }
+
+                using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "uninstall.ps1"), false, new UTF8Encoding(false)))
+                {
+                    outfile.WriteLine("Set-Location $PSScriptRoot;");
+                    outfile.Write(oRZ.PSUninstall);
+                    outfile.Close();
+                }
+
+                using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "detection.ps1"), false, new UTF8Encoding(false)))
+                {
+                    outfile.WriteLine("$bRes = " + oRZ.PSDetection + ";");
+                    outfile.WriteLine("if($bRes) { $true } else { $null };");
+                    outfile.WriteLine("exit(0);");
+                    outfile.Close();
+                }
+
+                using (StreamWriter outfile = new StreamWriter(Path.Combine(oDir.FullName, "requirements.ps1"), false, new UTF8Encoding(false)))
+                {
+                    outfile.WriteLine(oRZ.PSPreReq + ";");
+                    outfile.Close();
+                }
+
+                downloadTask.Status = "Downloading File(s)...";
+                //Listener.WriteLine(SW.Shortname, "Downloading File(s)...");
+                //if (!Bootstrap)
+                //{
+                //    bDownloadStatus = oRZ.Download(true, oDir.FullName).Result;
+
+                //    //DL Failed!
+                //    if (!bDownloadStatus)
+                //    {
+                //        downloadTask.Error = true;
+                //        downloadTask.ErrorMessage = "content download failed.";
+                //        Thread.Sleep(3000);
+                //    }
+                //}
             }
+            catch(Exception ex)
+            {
+
+                downloadTask.Status = "";
+                downloadTask.Installing = false;
+                downloadTask.Installed = true;
+                downloadTask.Error = true;
+                downloadTask.ErrorMessage = ex.Message;
+            }
+
+            downloadTask.Status = "Creating Application...";
+            if (!Directory.Exists(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin")))
+                Directory.CreateDirectory(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin"));
+
+            File.WriteAllText(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1"), Properties.Settings.Default.RZCreateAppPS);
+
+            Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString() + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
+
+            downloadTask.Status = "";
+            downloadTask.Installing = false;
+            downloadTask.Installed = true;
+            downloadTask.Error = false;
+
+            //foreach (var oIT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "RZ4Intune"))
+            //{
+            //}
+
         }
 
         private List<GetSoftware> GetRZSoftware(string ProdName, string ProdVersion, string Manufacturer)
@@ -271,7 +276,7 @@ namespace RZUpdate
                     }
 
                     oAPI.RuckZuckSync(SW, this.downloadTask, bBootStrap);
-                    downloadTask.Installed = true;
+                    //downloadTask.Installed = true;
                     downloadTask.Installing = false;
                     ProgressDetails(downloadTask, EventArgs.Empty);
 
@@ -354,19 +359,19 @@ namespace RZUpdate
         //    return true;
         //}
 
-        public async Task<bool> Download(bool Enforce)
-        {
-            downloadTask.AutoInstall = true;
-            downloadTask.SWUpd = this;
-            downloadTask.PercentDownloaded = 100;
-            downloadTask.Downloading = false;
-            downloadTask.Installing = false;
-            downloadTask.Status = "Connecting...";
-            //Downloaded(downloadTask, EventArgs.Empty);
-            ProgressDetails(downloadTask, EventArgs.Empty);
-            //OnSWUpdated(this, new EventArgs());
-            return true;
-        }
+        //public async Task<bool> Download(bool Enforce)
+        //{
+        //    downloadTask.AutoInstall = true;
+        //    downloadTask.SWUpd = this;
+        //    downloadTask.PercentDownloaded = 100;
+        //    downloadTask.Downloading = false;
+        //    downloadTask.Installing = false;
+        //    downloadTask.Status = "Connecting...";
+        //    //Downloaded(downloadTask, EventArgs.Empty);
+        //    ProgressDetails(downloadTask, EventArgs.Empty);
+        //    //OnSWUpdated(this, new EventArgs());
+        //    return true;
+        //}
     }
 
 

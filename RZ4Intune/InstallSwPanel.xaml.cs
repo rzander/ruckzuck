@@ -217,7 +217,7 @@ namespace RuckZuck_Tool
                                 GetSoftware dgr = oItem as GetSoftware;
 
                                 if (oSW == null)
-                                    oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer, true);
+                                    oSW = new SWUpdate(dgr.ProductName, dgr.ProductVersion, dgr.Manufacturer, false); //PreReqCheck enforced to only get the required InstallationType
 
                                 if (oSW.SW == null)
                                 {
@@ -273,7 +273,7 @@ namespace RuckZuck_Tool
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = true;
 
-                                oSW.Download(false).ConfigureAwait(false); ;
+                                oSW.Download(true).ConfigureAwait(false); //Enforce download
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
                                 foreach (string sPreReq in oSW.SW.PreRequisites)
