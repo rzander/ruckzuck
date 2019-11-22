@@ -111,7 +111,36 @@ namespace RZ.Server
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                OnPrepareResponse = s =>
+                {
+                    if (s.Context.Request.Path.StartsWithSegments(new PathString("/plugins")) &&
+                       !s.Context.User.Identity.IsAuthenticated)
+                    {
+                        s.Context.Response.StatusCode = 401;
+                        s.Context.Response.Body = Stream.Null;
+                        s.Context.Response.ContentLength = 0;
+                    }
+
+                    if (s.Context.Request.Path.StartsWithSegments(new PathString("/content")) &&
+                        !s.Context.User.Identity.IsAuthenticated)
+                    {
+                        s.Context.Response.StatusCode = 401;
+                        s.Context.Response.Body = Stream.Null;
+                        s.Context.Response.ContentLength = 0;
+                    }
+
+                    if (s.Context.Request.Path.StartsWithSegments(new PathString("/repository")) &&
+                        !s.Context.User.Identity.IsAuthenticated)
+                    {
+                        s.Context.Response.StatusCode = 401;
+                        s.Context.Response.Body = Stream.Null;
+                        s.Context.Response.ContentLength = 0;
+                    }
+                }
+            });
             app.UseAuthentication();
             app.UseCookiePolicy();
 
@@ -119,6 +148,8 @@ namespace RZ.Server
             {
                 routes.MapHub<Default>("/msg");
             });
+
+
 
             app.UseMvc(routes =>
             {
