@@ -1221,10 +1221,13 @@ $sleep = 30
 if (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name "Nuget" -Force }
 
 #Install AzureAD Module if missing
-if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt "2.0.2.61") { Install-Module AzureAD -Force -Confirm:$false }
+try {
+    if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt "2.0.2.61") { Install-Module AzureAD -Force -Confirm:$false }
+} catch { Install-Module AzureAD -Force -Confirm:$false }
+
 
 $ShortName = $args[0]
-$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Baerer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
+#$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
 $Global:User = $args[3]
 $global:authToken = Get-AuthToken -User $User
 $outFolder = "$env:temp\intunewin"
@@ -1305,6 +1308,9 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
     <Setting Name="UpdExlusion" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Value>
+    </Setting>
+    <Setting Name="NoExit" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>
