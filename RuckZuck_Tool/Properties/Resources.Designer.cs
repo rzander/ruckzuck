@@ -119,12 +119,12 @@ namespace RuckZuck_Tool.Properties {
         ///using System.IO;
         ///using System.Management.Automation;
         ///using System.Threading.Tasks;
-        ///using System.Security.Cryptography.X509Certificates;
         ///using System.Threading;
         ///using System.Web.Script.Serialization;
         ///using System.Diagnostics;
         ///using System.Net.Http;
         ///using RuckZuck.Base;
+        ///using System.Runtime.InteropServices;
         ///
         ///namespace RZUpdate
         ///{
@@ -134,7 +134,7 @@ namespace RuckZuck_Tool.Properties {
         ///    public class RZUpdater
         ///    {
         ///        /// &lt;summary&gt;
-        /// [rest of string was truncated]&quot;;.
+        ///        /// Con [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {

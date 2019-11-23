@@ -32,7 +32,7 @@
     <SolutionRootDir>$(SolutionDir)</SolutionRootDir>
     <!-- Defaults to .Net 4.0 -->
     <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <OutputPath>$(SolutionRootDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputPath>
     <BaseIntermediateOutputPath>$(SolutionRootDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
