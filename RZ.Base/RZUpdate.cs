@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using RuckZuck.Base;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RZUpdate
 {
@@ -1476,12 +1477,13 @@ namespace RZUpdate
         {
             try
             {
-                return AuthenticodeTools.IsTrusted(FilePath);
-                //var Cert = X509Certificate.CreateFromSignedFile(FilePath);
-                //if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
-                //    return true;
-                //else
-                //    return false;
+                var Cert = X509Certificate.CreateFromSignedFile(FilePath);
+                if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
+                {
+                    return AuthenticodeTools.IsTrusted(FilePath);
+                }
+                else
+                    return false;
 
             }
             catch
