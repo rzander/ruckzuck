@@ -212,7 +212,7 @@ namespace RuckZuck_Tool
                 List<contentFiles> lResult = new List<contentFiles>();
                 foreach (contentFiles oFile in dgSourceFiles.ItemsSource)
                 {
-                    lResult.Add(new contentFiles() { FileHash = oFile.FileHash, FileName = oFile.FileName, HashType = oFile.HashType, URL = oFile.URL });
+                    lResult.Add(new contentFiles() { FileHash = oFile.FileHash, FileName = oFile.FileName, HashType = oFile.HashType, URL = oFile.URL, FileSize = oFile.FileSize });
                 }
                 oSoftware.Files = lResult;
             }
