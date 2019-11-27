@@ -403,12 +403,6 @@ namespace RuckZuck.Base
                     return RZRestAPIv2.sURL + "/rest/GetIcon?size=32&id=" + SWId.ToString();
                 }
 
-                //if (IconId > 0)
-                //{
-                //    SWId = IconId;
-                //    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
-                //}
-
                 return "";
             }
         }
@@ -501,6 +495,7 @@ namespace RuckZuck.Base
         public string FileName { get; set; }
         public string FileHash { get; set; }
         public string HashType { get; set; }
+        public long FileSize { get; set; }
     }
 
     public class DLTask

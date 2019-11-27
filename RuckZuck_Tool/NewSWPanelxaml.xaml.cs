@@ -339,20 +339,30 @@ namespace RuckZuck_Tool
                                 ((contentFiles)e.Row.Item).URL = ((TextBox)e.EditingElement).Text;
                                 ((contentFiles)e.Row.Item).FileName = dlg.SafeFileName;
 
+                                FileInfo iFile = new FileInfo(dlg.FileName);
+                                ((contentFiles)e.Row.Item).FileSize = iFile.Length;
+
+
                                 //Try to get File Signature...
                                 try
                                 {
                                     var Cert = X509Certificate.CreateFromSignedFile(dlg.FileName);
-
-                                    ((contentFiles)e.Row.Item).FileHash = Cert.GetCertHashString().ToLower().Replace(" ", "");
-                                    ((contentFiles)e.Row.Item).HashType = "X509";
+                                    if (RZUpdate.AuthenticodeTools.IsTrusted(dlg.FileName))
+                                    {
+                                        ((contentFiles)e.Row.Item).FileHash = Cert.GetCertHashString().ToLower().Replace(" ", "");
+                                        ((contentFiles)e.Row.Item).HashType = "X509";
+                                    }
+                                    else
+                                    {
+                                        ((contentFiles)e.Row.Item).FileHash = GetMD5Hash(dlg.FileName);
+                                        ((contentFiles)e.Row.Item).HashType = "MD5";
+                                    }
                                 }
                                 catch
                                 {
                                     ((contentFiles)e.Row.Item).FileHash = GetMD5Hash(dlg.FileName);
                                     ((contentFiles)e.Row.Item).HashType = "MD5";
                                 }
-
 
                                 if (sOldFileName != ((contentFiles)e.Row.Item).FileName)
                                 {

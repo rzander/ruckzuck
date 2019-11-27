@@ -541,12 +541,6 @@ namespace RuckZuck.Base
                     return RZRestAPIv2.sURL + "/rest/GetIcon?size=32&amp;id=" + SWId.ToString();
                 }
 
-                //if (IconId &gt; 0)
-                //{
-                //    SWId = IconId;
-                //    return RZRestAPI.sURL + "/rest/GetIcon?id=" + SWId.ToString();
-                //}
-
                 return "";
             }
         }
@@ -639,6 +633,7 @@ namespace RuckZuck.Base
         public string FileName { get; set; }
         public string FileHash { get; set; }
         public string HashType { get; set; }
+        public long FileSize { get; set; }
     }
 
     public class DLTask
@@ -745,6 +740,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using RuckZuck.Base;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RZUpdate
 {
@@ -2210,12 +2206,13 @@ namespace RZUpdate
         {
             try
             {
-                return AuthenticodeTools.IsTrusted(FilePath);
-                //var Cert = X509Certificate.CreateFromSignedFile(FilePath);
-                //if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
-                //    return true;
-                //else
-                //    return false;
+                var Cert = X509Certificate.CreateFromSignedFile(FilePath);
+                if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
+                {
+                    return AuthenticodeTools.IsTrusted(FilePath);
+                }
+                else
+                    return false;
 
             }
             catch
