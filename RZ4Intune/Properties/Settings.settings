@@ -18,7 +18,7 @@
       <Value Profile="(Default)">https://graph.microsoft.com/beta/deviceAppManagement/mobileApps?$select=id,DisplayName,notes&amp;$filter=startswith(notes,'RZID:')</Value>
     </Setting>
     <Setting Name="RZSecurityScope" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">DeviceManagementConfiguration.ReadWrite.All</Value>
+      <Value Profile="(Default)">DeviceManagementConfiguration.ReadWrite.All;DeviceManagementApps.ReadWrite.All</Value>
     </Setting>
     <Setting Name="RZCreateAppPS" Type="System.String" Scope="Application">
       <Value Profile="(Default)">&lt;#

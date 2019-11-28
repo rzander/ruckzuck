@@ -42,7 +42,7 @@ namespace RuckZuck_Tool
 
         //Set the scope for API call to user.read
         //string[] scopes = new string[] { "user.read" };
-        string[] scopes = new string[] { Properties.Settings.Default.RZSecurityScope };
+        string[] scopes = Properties.Settings.Default.RZSecurityScope.Split(';');
         internal string AADToken;
 
 

@@ -83,7 +83,7 @@ namespace RuckZuck_Tool.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DeviceManagementConfiguration.ReadWrite.All")]
+        [global::System.Configuration.DefaultSettingValueAttribute("DeviceManagementConfiguration.ReadWrite.All;DeviceManagementApps.ReadWrite.All")]
         public string RZSecurityScope {
             get {
                 return ((string)(this["RZSecurityScope"]));
