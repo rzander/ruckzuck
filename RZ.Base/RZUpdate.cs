@@ -496,7 +496,7 @@ namespace RZUpdate
                             downloadTask.Downloading = true;
                             ProgressDetails(downloadTask, EventArgs.Empty);
 
-                            if (!_DownloadFile2(vFile.URL, sFile))
+                            if (!_DownloadFile2(vFile.URL, sFile, vFile.FileSize))
                             {
 
                                 downloadTask.Error = true;
@@ -1252,7 +1252,7 @@ namespace RZUpdate
         /// <param name="URL"></param>
         /// <param name="FileName"></param>
         /// <returns>true = success; false = error</returns>
-        public bool _DownloadFile2(string URL, string FileName)
+        public bool _DownloadFile2(string URL, string FileName, long FileSize = 0)
         {
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
@@ -1319,7 +1319,14 @@ namespace RZUpdate
                 FileStream fileStream = File.Create(FileName);
                 while ((bytesRead = ResponseStream.Read(buffer, 0, bufferSize)) != 0)
                 {
-                    if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+                    if (FileSize > 0)
+                    {
+                        ContentLength = FileSize;
+                    }
+                    else
+                    {
+                        if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+                    }
 
                     fileStream.Write(buffer, 0, bytesRead);
                     ContentLoaded = ContentLoaded + bytesRead;
@@ -1371,44 +1378,44 @@ namespace RZUpdate
             return true;
         }
 
-        private static async Task<bool> _DownloadFile(string URL, string FileName)
-        {
-            try
-            {
-                HttpClientHandler handler = new HttpClientHandler();
-                handler.AllowAutoRedirect = true;
-                handler.MaxAutomaticRedirections = 5;
+        //private static async Task<bool> _DownloadFile(string URL, string FileName)
+        //{
+        //    try
+        //    {
+        //        HttpClientHandler handler = new HttpClientHandler();
+        //        handler.AllowAutoRedirect = true;
+        //        handler.MaxAutomaticRedirections = 5;
 
-                //DotNetCore2.0
-                //handler.CheckCertificateRevocationList = false;
-                //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+        //        //DotNetCore2.0
+        //        //handler.CheckCertificateRevocationList = false;
+        //        //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
 
-                using (HttpClient oClient = new HttpClient(handler))
-                {
-                    oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+        //        using (HttpClient oClient = new HttpClient(handler))
+        //        {
+        //            oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
 
-                    using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
-                    using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                    {
-                        string fileToWriteTo = FileName; // Path.GetTempFileName();
+        //            using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+        //            using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+        //            {
+        //                string fileToWriteTo = FileName; // Path.GetTempFileName();
 
-                        using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                        {
-                            await streamToReadFrom.CopyToAsync(streamToWriteTo);
-                        }
-                        Console.WriteLine("Donwloaded: " + URL);
-                    }
-                }
+        //                using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
+        //                {
+        //                    await streamToReadFrom.CopyToAsync(streamToWriteTo);
+        //                }
+        //                Console.WriteLine("Donwloaded: " + URL);
+        //            }
+        //        }
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return false;
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //        return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         private bool _checkFileMd5(string FilePath, string MD5)
         {
