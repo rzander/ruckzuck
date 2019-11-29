@@ -1223,20 +1223,20 @@ if (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Inst
 #Install AzureAD Module if missing
 try {
     if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt "2.0.2.61") { Install-Module AzureAD -Force -Confirm:$false }
-} catch { Install-Module AzureAD -Force -Confirm:$false }
-
+}
+catch { Install-Module AzureAD -Force -Confirm:$false }
 
 $ShortName = $args[0]
-#$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
+$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
 $Global:User = $args[3]
-$global:authToken = Get-AuthToken -User $User
+#$global:authToken = Get-AuthToken -User $User
 $outFolder = "$env:temp\intunewin"
 if (-NOT (Test-Path $outFolder)) { New-Item -Path $outFolder -ItemType Directory }
 #Remove-Item $sourceFolder -Recurse -Force -ea SilentlyContinue
 #New-Item $sourceFolder -ItemType Directory -Force
 
 $url = Invoke-RestMethod -Uri "https://ruckzuck.tools/rest/v2/geturl"
- $rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))" 
+$rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))" 
 
 #rzSW can have multiple InstallTypes
 if ($rzSW.count -gt 1) {

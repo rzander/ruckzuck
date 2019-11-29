@@ -137,9 +137,9 @@ namespace RuckZuck_Tool
             File.WriteAllText(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1"), Properties.Settings.Default.RZCreateAppPS);
 
             if(Properties.Settings.Default.NoExit)
-                Process.Start("powershell.exe", "-executionpolicy bypass -noexit -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString() + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
+                Process.Start("powershell.exe", "-executionpolicy bypass -noexit -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
             else
-                Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString() + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
+                Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
 
             downloadTask.Status = "";
             downloadTask.Installing = false;

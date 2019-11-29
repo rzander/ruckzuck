@@ -5,12 +5,13 @@ using System.Net;
 using System.IO;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
 using System.Net.Http;
 using RuckZuck.Base;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RZUpdate
 {
@@ -495,7 +496,7 @@ namespace RZUpdate
                             downloadTask.Downloading = true;
                             ProgressDetails(downloadTask, EventArgs.Empty);
 
-                            if (!_DownloadFile2(vFile.URL, sFile))
+                            if (!_DownloadFile2(vFile.URL, sFile, vFile.FileSize))
                             {
 
                                 downloadTask.Error = true;
@@ -1251,7 +1252,7 @@ namespace RZUpdate
         /// <param name="URL"></param>
         /// <param name="FileName"></param>
         /// <returns>true = success; false = error</returns>
-        public bool _DownloadFile2(string URL, string FileName)
+        public bool _DownloadFile2(string URL, string FileName, long FileSize = 0)
         {
             //Check if URL is HTTP, otherwise it must be a PowerShell
             if (!URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
@@ -1318,7 +1319,14 @@ namespace RZUpdate
                 FileStream fileStream = File.Create(FileName);
                 while ((bytesRead = ResponseStream.Read(buffer, 0, bufferSize)) != 0)
                 {
-                    if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+                    if (FileSize > 0)
+                    {
+                        ContentLength = FileSize;
+                    }
+                    else
+                    {
+                        if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+                    }
 
                     fileStream.Write(buffer, 0, bytesRead);
                     ContentLoaded = ContentLoaded + bytesRead;
@@ -1370,44 +1378,44 @@ namespace RZUpdate
             return true;
         }
 
-        private static async Task<bool> _DownloadFile(string URL, string FileName)
-        {
-            try
-            {
-                HttpClientHandler handler = new HttpClientHandler();
-                handler.AllowAutoRedirect = true;
-                handler.MaxAutomaticRedirections = 5;
+        //private static async Task<bool> _DownloadFile(string URL, string FileName)
+        //{
+        //    try
+        //    {
+        //        HttpClientHandler handler = new HttpClientHandler();
+        //        handler.AllowAutoRedirect = true;
+        //        handler.MaxAutomaticRedirections = 5;
 
-                //DotNetCore2.0
-                //handler.CheckCertificateRevocationList = false;
-                //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
+        //        //DotNetCore2.0
+        //        //handler.CheckCertificateRevocationList = false;
+        //        //handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }; //To prevent Issue with FW
 
-                using (HttpClient oClient = new HttpClient(handler))
-                {
-                    oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
+        //        using (HttpClient oClient = new HttpClient(handler))
+        //        {
+        //            oClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "chocolatey command line");
 
-                    using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
-                    using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                    {
-                        string fileToWriteTo = FileName; // Path.GetTempFileName();
+        //            using (HttpResponseMessage response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
+        //            using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+        //            {
+        //                string fileToWriteTo = FileName; // Path.GetTempFileName();
 
-                        using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                        {
-                            await streamToReadFrom.CopyToAsync(streamToWriteTo);
-                        }
-                        Console.WriteLine("Donwloaded: " + URL);
-                    }
-                }
+        //                using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
+        //                {
+        //                    await streamToReadFrom.CopyToAsync(streamToWriteTo);
+        //                }
+        //                Console.WriteLine("Donwloaded: " + URL);
+        //            }
+        //        }
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return false;
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //        return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         private bool _checkFileMd5(string FilePath, string MD5)
         {
@@ -1478,7 +1486,9 @@ namespace RZUpdate
             {
                 var Cert = X509Certificate.CreateFromSignedFile(FilePath);
                 if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
-                    return true;
+                {
+                    return AuthenticodeTools.IsTrusted(FilePath);
+                }
                 else
                     return false;
 
@@ -1544,6 +1554,258 @@ namespace RZUpdate
         public string GetDLPath()
         {
             return Environment.ExpandEnvironmentVariables("%TEMP%\\" + SW.ContentID.ToString());
+        }
+    }
+
+
+    public static class AuthenticodeTools
+    {
+        //Source: https://stackoverflow.com/questions/6596327/how-to-check-if-a-file-is-signed-in-c
+
+        [DllImport("Wintrust.dll", PreserveSig = true, SetLastError = false)]
+        private static extern uint WinVerifyTrust(IntPtr hWnd, IntPtr pgActionID, IntPtr pWinTrustData);
+        private static uint WinVerifyTrust(string fileName)
+        {
+            Guid wintrust_action_generic_verify_v2 = new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}");
+            uint result = 0;
+            using (WINTRUST_FILE_INFO fileInfo = new WINTRUST_FILE_INFO(fileName, Guid.Empty))
+            using (WINTRUST_DATA.UnmanagedPointer guidPtr = new WINTRUST_DATA.UnmanagedPointer(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Guid))), AllocMethod.HGlobal))
+            using (WINTRUST_DATA.UnmanagedPointer wvtDataPtr = new WINTRUST_DATA.UnmanagedPointer(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(WINTRUST_DATA))), AllocMethod.HGlobal))
+            {
+                WINTRUST_DATA data = new WINTRUST_DATA(fileInfo);
+                IntPtr pGuid = guidPtr;
+                IntPtr pData = wvtDataPtr;
+                Marshal.StructureToPtr(wintrust_action_generic_verify_v2, pGuid, true);
+                Marshal.StructureToPtr(data, pData, true);
+                result = WinVerifyTrust(IntPtr.Zero, pGuid, pData);
+            }
+            return result;
+
+        }
+        public static bool IsTrusted(string fileName)
+        {
+            return WinVerifyTrust(fileName) == 0;
+        }
+
+        public struct WINTRUST_FILE_INFO : IDisposable
+        {
+            public WINTRUST_FILE_INFO(string fileName, Guid subject)
+            {
+                cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_FILE_INFO));
+                pcwszFilePath = fileName;
+
+                if (subject != Guid.Empty)
+                {
+                    pgKnownSubject = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Guid)));
+                    Marshal.StructureToPtr(subject, pgKnownSubject, true);
+                }
+
+                else
+                {
+                    pgKnownSubject = IntPtr.Zero;
+                }
+
+                hFile = IntPtr.Zero;
+            }
+
+            public uint cbStruct;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string pcwszFilePath;
+            public IntPtr hFile;
+            public IntPtr pgKnownSubject;
+
+            #region IDisposable Members
+
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (pgKnownSubject != IntPtr.Zero)
+                {
+                    Marshal.DestroyStructure(this.pgKnownSubject, typeof(Guid));
+                    Marshal.FreeHGlobal(this.pgKnownSubject);
+                }
+            }
+
+            #endregion
+        }
+
+        public enum AllocMethod
+        {
+            HGlobal,
+            CoTaskMem
+        };
+        public enum UnionChoice
+        {
+            File = 1,
+            Catalog,
+            Blob,
+            Signer,
+            Cert
+        };
+        public enum UiChoice
+        {
+            All = 1,
+            NoUI,
+            NoBad,
+            NoGood
+        };
+        public enum RevocationCheckFlags
+        {
+            None = 0,
+            WholeChain
+        };
+        public enum StateAction
+        {
+            Ignore = 0,
+            Verify,
+            Close,
+            AutoCache,
+            AutoCacheFlush
+        };
+        public enum TrustProviderFlags
+        {
+            UseIE4Trust = 1,
+            NoIE4Chain = 2,
+            NoPolicyUsage = 4,
+            RevocationCheckNone = 16,
+            RevocationCheckEndCert = 32,
+            RevocationCheckChain = 64,
+            RecovationCheckChainExcludeRoot = 128,
+            Safer = 256,
+            HashOnly = 512,
+            UseDefaultOSVerCheck = 1024,
+            LifetimeSigning = 2048
+        };
+        public enum UIContext
+        {
+            Execute = 0,
+            Install
+        };
+
+        [StructLayout(LayoutKind.Sequential)]
+
+        public struct WINTRUST_DATA : IDisposable
+        {
+            public WINTRUST_DATA(WINTRUST_FILE_INFO fileInfo)
+            {
+                this.cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_DATA));
+                pInfoStruct = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(WINTRUST_FILE_INFO)));
+                Marshal.StructureToPtr(fileInfo, pInfoStruct, false);
+                this.dwUnionChoice = UnionChoice.File;
+
+                pPolicyCallbackData = IntPtr.Zero;
+                pSIPCallbackData = IntPtr.Zero;
+                dwUIChoice = UiChoice.NoUI;
+                fdwRevocationChecks = RevocationCheckFlags.None;
+                dwStateAction = StateAction.Ignore;
+                hWVTStateData = IntPtr.Zero;
+                pwszURLReference = IntPtr.Zero;
+                dwProvFlags = TrustProviderFlags.Safer;
+                dwUIContext = UIContext.Execute;
+            }
+
+            public uint cbStruct;
+
+            public IntPtr pPolicyCallbackData;
+
+            public IntPtr pSIPCallbackData;
+
+            public UiChoice dwUIChoice;
+
+            public RevocationCheckFlags fdwRevocationChecks;
+
+            public UnionChoice dwUnionChoice;
+
+            public IntPtr pInfoStruct;
+
+            public StateAction dwStateAction;
+
+            public IntPtr hWVTStateData;
+
+            private IntPtr pwszURLReference;
+
+            public TrustProviderFlags dwProvFlags;
+
+            public UIContext dwUIContext;
+
+            #region IDisposable Members
+
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (dwUnionChoice == UnionChoice.File)
+                {
+                    WINTRUST_FILE_INFO info = new WINTRUST_FILE_INFO();
+                    Marshal.PtrToStructure(pInfoStruct, info);
+                    info.Dispose();
+                    Marshal.DestroyStructure(pInfoStruct, typeof(WINTRUST_FILE_INFO));
+                }
+
+                Marshal.FreeHGlobal(pInfoStruct);
+            }
+            #endregion
+
+            internal sealed class UnmanagedPointer : IDisposable
+            {
+                private IntPtr m_ptr;
+                private AllocMethod m_meth;
+
+                internal UnmanagedPointer(IntPtr ptr, AllocMethod method)
+                {
+                    m_meth = method;
+                    m_ptr = ptr;
+                }
+
+                ~UnmanagedPointer()
+                {
+                    Dispose(false);
+                }
+
+                #region IDisposable Members
+
+                private void Dispose(bool disposing)
+                {
+                    if (m_ptr != IntPtr.Zero)
+                    {
+                        if (m_meth == AllocMethod.HGlobal)
+                        {
+                            Marshal.FreeHGlobal(m_ptr);
+                        }
+
+                        else if (m_meth == AllocMethod.CoTaskMem)
+                        {
+                            Marshal.FreeCoTaskMem(m_ptr);
+                        }
+
+                        m_ptr = IntPtr.Zero;
+                    }
+
+                    if (disposing)
+                    {
+                        GC.SuppressFinalize(this);
+                    }
+                }
+
+                public void Dispose()
+                {
+                    Dispose(true);
+                }
+
+                #endregion
+
+                public static implicit operator IntPtr(UnmanagedPointer ptr)
+                {
+                    return ptr.m_ptr;
+                }
+            }
         }
     }
 }
