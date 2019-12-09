@@ -524,7 +524,7 @@ namespace RuckZuck.Base
 
             oResult.ProductName = oRegkey.GetValue("DisplayName", "").ToString();
             oResult.ProductVersion = oRegkey.GetValue("DisplayVersion", "").ToString();
-            oResult.Manufacturer = oRegkey.GetValue("Publisher", "").ToString();
+            oResult.Manufacturer = oRegkey.GetValue("Publisher", "").ToString().TrimEnd('.');
 
             //If not an MSI try to get Uninstall command from Registry
             if (string.IsNullOrEmpty(oResult.MSIProductID))
