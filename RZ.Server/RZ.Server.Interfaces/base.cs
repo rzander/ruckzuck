@@ -613,7 +613,7 @@ namespace RZ.Server
 
                             try
                             {
-                                if (TrimVersion(Version.Parse(productversion)) > TrimVersion(Version.Parse(sRZVersion))) //version is newer
+                                if (TrimVersion(Version.Parse(productversion.Replace('-', '.').Trim())) > TrimVersion(Version.Parse(sRZVersion.Replace('-', '.').Trim()))) //version is newer
                                 {
                                     Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
                                     Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "Version", true);
@@ -621,7 +621,7 @@ namespace RZ.Server
                                     _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                     continue;
                                 }
-                                if (TrimVersion(Version.Parse(productversion)) == TrimVersion(Version.Parse(sRZVersion))) //version is  same
+                                if (TrimVersion(Version.Parse(productversion.Replace('-','.').Trim())) == TrimVersion(Version.Parse(sRZVersion.Replace('-', '.').Trim()))) //version is  same
                                 {
                                     var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
                                     _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);

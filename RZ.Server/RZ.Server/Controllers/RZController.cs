@@ -418,13 +418,14 @@ namespace RZ.Server.Controllers
             JArray jItems = JArray.Parse(oGet.Result);
             if (jItems.Count > 0)
             {
-                if(!string.IsNullOrEmpty(updateshash))
+                if(!string.IsNullOrEmpty(updateshash)) //still in use?
                 {
                     if (updateshash != Hash.CalculateMD5HashString(oGet.Result))
                         return Content((new JArray()).ToString());
                     else
                         Console.WriteLine("CheckForUpdates Hash Error !");
                 }
+
                 string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
                 TimeSpan tDuration = DateTime.Now - dStart;
                 _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) </li>");
