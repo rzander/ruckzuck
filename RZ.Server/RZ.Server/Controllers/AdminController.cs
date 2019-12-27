@@ -278,7 +278,7 @@ namespace RZ.Server.Controllers
         [Authorize]
         public ActionResult Refresh()
         {
-            Plugins.loadPlugins(Path.Combine(Env.ContentRootPath, "plugins"));
+            Plugins.loadPlugins(Path.Combine(Path.Combine(Env.ContentRootPath, "wwwroot"), "plugins"));
             Base.GetCatalog("", true);
 
             _hubContext.Clients.All.SendAsync("Reload");
