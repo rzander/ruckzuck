@@ -918,24 +918,31 @@ namespace RZ.Server
                 ICollection<Type> pluginTypes = new List<Type>();
                 foreach (Assembly assembly in assemblies)
                 {
-                    if (assembly != null)
+                    try
                     {
-                        Type[] types = assembly.GetTypes();
-
-                        foreach (Type type in types)
+                        if (assembly != null)
                         {
-                            if (type.IsInterface || type.IsAbstract)
+                            Type[] types = assembly.GetTypes();
+
+                            foreach (Type type in types)
                             {
-                                continue;
-                            }
-                            else
-                            {
-                                if (type.GetInterface(pluginType.FullName) != null)
+                                if (type.IsInterface || type.IsAbstract)
                                 {
-                                    pluginTypes.Add(type);
+                                    continue;
+                                }
+                                else
+                                {
+                                    if (type.GetInterface(pluginType.FullName) != null)
+                                    {
+                                        pluginTypes.Add(type);
+                                    }
                                 }
                             }
                         }
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
                     }
                 }
 

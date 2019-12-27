@@ -19,6 +19,7 @@ using static RZ.Server.Controllers.HomeController;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
+using Microsoft.Extensions.Hosting;
 
 namespace RZ.Server.Controllers
 {
@@ -26,11 +27,11 @@ namespace RZ.Server.Controllers
     public class AdminController : Controller
     {
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment Env { get; }
+        public IHostEnvironment Env { get; }
         private readonly IHubContext<Default> _hubContext;
         private IMemoryCache _cache;
 
-        public AdminController(IHostingEnvironment env, IConfiguration configuration, IHubContext<Default> hubContext, IMemoryCache memoryCache)
+        public AdminController(IHostEnvironment env, IConfiguration configuration, IHubContext<Default> hubContext, IMemoryCache memoryCache)
         {
             Configuration = configuration;
             Env = env;
@@ -277,7 +278,7 @@ namespace RZ.Server.Controllers
         [Authorize]
         public ActionResult Refresh()
         {
-            Plugins.loadPlugins(Path.Combine(Env.WebRootPath, "plugins"));
+            Plugins.loadPlugins(Path.Combine(Env.ContentRootPath, "plugins"));
             Base.GetCatalog("", true);
 
             _hubContext.Clients.All.SendAsync("Reload");

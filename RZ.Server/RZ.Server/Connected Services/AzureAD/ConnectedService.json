@@ -1,6 +1,6 @@
 ﻿{
   "ProviderId": "Microsoft.Azure.AD",
-  "Version": "15.9",
+  "Version": "16.4",
   "GettingStartedDocument": {
     "Uri": "https://go.microsoft.com/fwlink/?linkid=870469"
   },

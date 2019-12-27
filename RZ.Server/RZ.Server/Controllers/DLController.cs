@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace RZ.Server.Controllers
 {
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class DLController : Controller
     {
         //public IActionResult Index()

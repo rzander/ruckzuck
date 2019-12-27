@@ -46,9 +46,9 @@ namespace RZ.Plugin.Customer.Azure
 
             if (string.IsNullOrEmpty(AzureLog.WorkspaceId))
             {
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("Log-WorkspaceID")) && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("Log-SharedKey")))
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LogWorkspaceID")) && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LogSharedKey")))
                 {
-                    AzureLog = new AzureLogAnalytics(Environment.GetEnvironmentVariable("Log-WorkspaceID"), Environment.GetEnvironmentVariable("Log-SharedKey"), "RuckZuck");
+                    AzureLog = new AzureLogAnalytics(Environment.GetEnvironmentVariable("LogWorkspaceID"), Environment.GetEnvironmentVariable("LogSharedKey"), "RuckZuck");
                 }
             }
 

@@ -15,12 +15,13 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace RZ.Server
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostEnvironment env, IConfiguration configuration)
         {
 
             Configuration = configuration;
@@ -42,7 +43,7 @@ namespace RZ.Server
         }
 
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment Env { get; }
+        public IHostEnvironment Env { get; }
         public IDistributedCache Cache { get; }
 
 
@@ -71,14 +72,16 @@ namespace RZ.Server
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddHealthChecks();
             services.AddSignalR();
-
+            services.AddAuthenticationCore();
             services.AddDistributedMemoryCache();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
             });
+
 
             if (Env.IsDevelopment())
             {
@@ -90,12 +93,14 @@ namespace RZ.Server
             else
             {
                 //services.AddMvc();
-                services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             }
+
+            services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
             applicationLifetime.ApplicationStopping.Register(OnShutdown);
             applicationLifetime.ApplicationStarted.Register(OnStartup);
@@ -108,6 +113,7 @@ namespace RZ.Server
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
+
             }
 
             app.UseHttpsRedirection();
@@ -141,22 +147,31 @@ namespace RZ.Server
                     }
                 }
             });
+            app.UseRouting();
             app.UseAuthentication();
+            app.UseAuthorization();
+            
             app.UseCookiePolicy();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<Default>("/msg");
-            });
-
-
-
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<Default>("/msg");
             });
+
+            //app.UseSignalR(routes =>
+            //{
+            //    routes.MapHub<Default>("/msg");
+            //});
+
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller=Home}/{action=Index}/{id?}");
+            //});
         }
 
         private void OnShutdown()
@@ -166,7 +181,7 @@ namespace RZ.Server
         private void OnStartup()
         {
             Console.WriteLine("loading RZ.Software-Providers:");
-            Plugins.loadPlugins(Path.Combine(Env.WebRootPath, "plugins"));
+            Plugins.loadPlugins(Path.Combine(Path.Combine(Env.ContentRootPath, "wwwroot"), "plugins"));
 
             Console.Write("loading SW-Catalog...");
             Base.GetCatalog("", true);

@@ -34,14 +34,13 @@ namespace RZ.Server.Controllers
         [HttpGet]
         public IActionResult SignedOut()
         {
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-            //if (User.Identity.IsAuthenticated)
-            //{
-            //    // Redirect to home page if the user is authenticated.
-            //    return RedirectToAction(nameof(HomeController.Index), "Home");
-            //}
+            if (User.Identity.IsAuthenticated)
+            {
+                // Redirect to home page if the user is authenticated.
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
 
-            //return View();
+            return View();
         }
 
         [HttpGet]

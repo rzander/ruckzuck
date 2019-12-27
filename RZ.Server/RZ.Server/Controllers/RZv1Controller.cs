@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 namespace RZ.Server.Controllers
 {
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class RZv1Controller : Controller
     {
         private IMemoryCache _cache;

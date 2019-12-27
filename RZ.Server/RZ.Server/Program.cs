@@ -75,6 +75,10 @@ namespace RZ.Server
                 {
                     config.AddJsonFile("appsettings.json", optional: false);
                 })
+                //.ConfigureKestrel((context, options) =>
+                //{
+                //    // Set properties and call methods on options
+                //})
                 .UseUrls("http://*:" + (Environment.GetEnvironmentVariable("WebPort") ?? "5000"))
                 .Build();
 
