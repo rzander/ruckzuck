@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!DOCTYPE html>
 <style>
     html {
         position: relative;
@@ -35,6 +36,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </environment>
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -92,7 +94,7 @@
             <a href="https://www.basevision.ch" target="_blank"><img alt="baseVision" src="~/images/baseVISION_small.png" height="24" style="display:inline-block;padding-right:30px" /></a>
         </div>
         <div class="col-sm-5" style="text-align:right">
-            <p>&copy; 2019 by Roger Zander - RuckZuck Server @ViewBag.appVersion</p>
+            <p>&copy; 2020 by Roger Zander - RuckZuck Server @ViewBag.appVersion</p>
         </div>
 
     </div>
