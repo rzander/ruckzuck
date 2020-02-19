@@ -93,12 +93,12 @@ namespace RZ.Plugin.Feedback.Azure
                             var jLoc = JObject.Parse(Loc);
                             string sLocation = jLoc["Location"].ToString();
 
-                            AzureLog.Post(new { Computer = clientip, EventID = EventId, CustomerID = customerid, Description = Text, Country = jLoc["Country"].ToString(), State = jLoc["State"].ToString(), Location = jLoc["Location"].ToString(), Long = jLoc["Long"].ToString(), Lat = jLoc["Lat"].ToString() });
+                            AzureLog.PostAsync(new { Computer = clientip, EventID = EventId, CustomerID = customerid, Description = Text, Country = jLoc["Country"].ToString(), State = jLoc["State"].ToString(), Location = jLoc["Location"].ToString(), Long = jLoc["Long"].ToString(), Lat = jLoc["Lat"].ToString() });
 
                         }
                         else
                         {
-                            AzureLog.Post(new { Computer = clientip, EventID = EventId, CustomerID = customerid, Description = Text });
+                            AzureLog.PostAsync(new { Computer = clientip, EventID = EventId, CustomerID = customerid, Description = Text });
                         }
                     }
                     catch { }

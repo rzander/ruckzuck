@@ -28,6 +28,7 @@ namespace Plugin_Software
     {
         private IMemoryCache _cache;
         private long SlidingExpiration = 300; //5min cache for Softwares
+        private HttpClient oClient = new HttpClient();
 
         public string Name
         {
@@ -81,7 +82,8 @@ namespace Plugin_Software
             }
 
 
-
+            var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
+            _cache.Set("sn-" + shortname.ToLower(), new JArray(), cacheEntryOptions2);
             return new JArray();
         }
 
@@ -573,12 +575,14 @@ namespace Plugin_Software
             {
                 string shortname = jObj["ShortName"].ToString();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
                 _cache.Set("lookup-" + sID, shortname, cacheEntryOptions);
 
                 return shortname;
             }
 
+            var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
+            _cache.Set("lookup-" + sID, "", cacheEntryOptions2);
             return "";
         }
 
@@ -793,64 +797,67 @@ namespace Plugin_Software
         {
             try
             {
-                //if (Monitor.TryEnter(syncObject, new TimeSpan(0, 0, 90)))
-                mut.WaitOne(10000);
-                try
+                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey," + AttributeName + "&" + sasToken);
+
+                request.Method = "GET";
+                request.Headers.Add("x-ms-version", "2017-04-17");
+                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                request.Accept = "application/json";
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                var content = string.Empty;
+                string ETag = "";
+                using (var response = (HttpWebResponse)request.GetResponse())
                 {
-                    var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey," + AttributeName + "&" + sasToken);
-
-                    request.Method = "GET";
-                    request.Headers.Add("x-ms-version", "2017-04-17");
-                    request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                    request.Accept = "application/json";
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                    var content = string.Empty;
-                    string ETag = "";
-                    using (var response = (HttpWebResponse)request.GetResponse())
+                    using (var stream = response.GetResponseStream())
                     {
-                        using (var stream = response.GetResponseStream())
+                        using (var sr = new StreamReader(stream))
                         {
-                            using (var sr = new StreamReader(stream))
-                            {
-                                content = sr.ReadToEnd();
-                            }
+                            content = sr.ReadToEnd();
                         }
                     }
-
-                    var jres = JObject.Parse(content);
-
-                    JArray jResult = jres["value"] as JArray;
-                    ETag = jResult[0]["odata.etag"].ToString();
-                    string PartitionKey = jResult[0]["PartitionKey"].ToString();
-                    string RowKey = jResult[0]["RowKey"].ToString();
-                    int iCount = jResult[0][AttributeName].Value<int>();
-                    iCount++;
-                    JObject jUpd = new JObject();
-                    jUpd.Add(AttributeName, iCount);
-
-                    MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
                 }
-                catch { }
+
+                var jres = JObject.Parse(content);
+
+                JArray jResult = jres["value"] as JArray;
+                ETag = jResult[0]["odata.etag"].ToString();
+                string PartitionKey = jResult[0]["PartitionKey"].ToString();
+                string RowKey = jResult[0]["RowKey"].ToString();
+                int iCount = jResult[0][AttributeName].Value<int>();
+                iCount++;
+                JObject jUpd = new JObject();
+                jUpd.Add(AttributeName, iCount);
+
+                MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
             }
-            finally
-            {
-                // Release the Mutex.
-                mut.ReleaseMutex();
-            }
+            catch { }
         }
 
-        private void incQueue(string ShortName, string sasToken, string sURL)
+        private  void incQueue(string ShortName, string sasToken, string sURL)
         {
-            using (HttpClient oClient = new HttpClient())
+            Task.Run(() =>
             {
-                string url = $"{sURL}?timeout=10&{sasToken}";
-                string body = $"<QueueMessage><MessageText>{ShortName}</MessageText></QueueMessage>";
-                HttpContent oCont = new StringContent(body);
-                var oRes = oClient.PostAsync(url, oCont);
-                oRes.Wait(5000);
-                oRes.Result.ToString();
-            }
+                try
+                {
+                    string url = $"{sURL}?timeout=10&{sasToken}";
+                    string body = $"<QueueMessage><MessageText>{ShortName}</MessageText></QueueMessage>";
+                    HttpContent oCont = new StringContent(body);
+                    var oRes = oClient.PostAsync(url, oCont);
+                    oRes.Wait(5000);
+                }
+                catch { }
+
+                //using (HttpClient oClient = new HttpClient())
+                //{
+                //    string url = $"{sURL}?timeout=10&{sasToken}";
+                //    string body = $"<QueueMessage><MessageText>{ShortName}</MessageText></QueueMessage>";
+                //    HttpContent oCont = new StringContent(body);
+                //    var oRes = oClient.PostAsync(url, oCont);
+                //    oRes.Wait(5000);
+                //    oRes.Result.ToString();
+                //}
+            });
         }
 
         public bool IncCounter(string ShortName = "", string counter = "DL", string Customer = "known")

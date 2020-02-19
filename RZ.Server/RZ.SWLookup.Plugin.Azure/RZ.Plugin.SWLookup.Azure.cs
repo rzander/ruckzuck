@@ -63,7 +63,10 @@ namespace RZ.SWLookup.Plugin
             //Try to get value from Memory
             if (_cache.TryGetValue("lookup-" + sID, out sResult))
             {
-                return sResult;
+                if (sResult == "-1")
+                    return null;
+                else
+                    return sResult;
             }
 
             JArray jRes = getlatestSoftwareHash(Settings["lookURL"] + "?" + Settings["lookSAS"], sRowKey, "lookup");
@@ -80,9 +83,16 @@ namespace RZ.SWLookup.Plugin
 
                     return shortname;
                 }
-                else return "";
+                else
+                {
+                    var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
+                    _cache.Set("lookup-" + sID, "", cacheEntryOptions2);
+                    return "";
+                }
             }
 
+            var cacheEntryOptions3 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
+            _cache.Set("lookup-" + sID, "-1", cacheEntryOptions3);
             return null;
         }
 
