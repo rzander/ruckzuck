@@ -34,7 +34,7 @@ namespace RuckZuck_Tool
 
         public List<DLTask> lDLTasks = new List<DLTask>();
 
-        internal DownloadMonitor dm = new DownloadMonitor();
+        public DownloadMonitor dm = new DownloadMonitor();
 
 
         public delegate void ChangedEventHandler(object sender, EventArgs e);

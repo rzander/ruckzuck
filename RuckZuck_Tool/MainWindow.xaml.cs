@@ -659,7 +659,16 @@ namespace RuckZuck_Tool
 
         private void btFinishMain_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            if(oInstPanel.dm.lDLTasks.Count(t=>t.Downloading || t.Installing) > 0)
+            {
+                if(MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?","Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    this.Close();
+            }
+            else
+            {
+                this.Close();
+            }
+
         }
 
         private void btBackInstall_Click(object sender, RoutedEventArgs e)
@@ -677,16 +686,6 @@ namespace RuckZuck_Tool
         private void btBackNewSWARP_Click(object sender, RoutedEventArgs e)
         {
             tabWizard.SelectedItem = tabMain;
-        }
-
-        private void btFinishNewSWARP_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void btFinishNewSWSMI_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
         }
 
         private void btUpdateSoftware_Click(object sender, RoutedEventArgs e)
@@ -709,11 +708,6 @@ namespace RuckZuck_Tool
             }
 
             tabWizard.SelectedItem = tabUpdateSW;
-        }
-
-        private void btFinishInstall_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
         }
 
         private void btBackSettings_Click(object sender, RoutedEventArgs e)

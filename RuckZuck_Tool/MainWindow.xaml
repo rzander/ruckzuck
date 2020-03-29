@@ -365,7 +365,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
                             <Button x:Name="btBackInstall" Content="&lt; Back" Width="80" Margin="10" Click="btBackInstall_Click" />
                             <Button x:Name="btNextInstall" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
-                            <Button x:Name="btFinishInstall" Content="Finish" Width="80"  Margin="10" Click="btFinishInstall_Click" />
+                            <Button x:Name="btFinishInstall" Content="Finish" Width="80"  Margin="10" Click="btFinishMain_Click" />
                         </StackPanel>
                     </DockPanel>
                     <DockPanel x:Name="dpMainInstall" DockPanel.Dock="Top" >
@@ -418,7 +418,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
                             <Button x:Name="btBackUpdate" Content="&lt; Back" Width="80" Margin="10" Click="btBackInstall_Click" />
                             <Button x:Name="btNextUpdate" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
-                            <Button x:Name="btFinishUpdate" Content="Finish" Width="80"  Margin="10" Click="btFinishInstall_Click" />
+                            <Button x:Name="btFinishUpdate" Content="Finish" Width="80"  Margin="10" Click="btFinishMain_Click" />
                         </StackPanel>
                     </DockPanel>
                     <DockPanel x:Name="dpMainUpdate" DockPanel.Dock="Top" >
@@ -471,7 +471,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
                             <Button x:Name="btBackNewSWSMI" Content="&lt; Back" Width="80" Margin="10" Click="btBackNewSWSMI_Click" />
                             <Button x:Name="btNextNewSWSMI" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
-                            <Button x:Name="btFinishNewSWSMI" Content="Finish" Width="80"  Margin="10" Click="btFinishNewSWSMI_Click" />
+                            <Button x:Name="btFinishNewSWSMI" Content="Finish" Width="80"  Margin="10" Click="btFinishMain_Click" />
                         </StackPanel>
                     </DockPanel>
                     <DockPanel x:Name="dpMainNewSWSMI" DockPanel.Dock="Top" >
@@ -524,7 +524,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,30,0">
                             <Button x:Name="btBackNewSWARP" Content="&lt; Back" Width="80" Margin="10" Click="btBackNewSWARP_Click" />
                             <Button x:Name="btNextNewSWARP" Content="Next &gt;" Width="80"  Margin="10" IsEnabled="False" />
-                            <Button x:Name="btFinishNewSWARP" Content="Finish" Width="80"  Margin="10" Click="btFinishNewSWARP_Click" />
+                            <Button x:Name="btFinishNewSWARP" Content="Finish" Width="80"  Margin="10" Click="btFinishMain_Click" />
                         </StackPanel>
                     </DockPanel>
                     <DockPanel x:Name="dpMainNewSWARP" DockPanel.Dock="Top" >
