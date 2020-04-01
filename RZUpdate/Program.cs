@@ -33,11 +33,11 @@ namespace RZUpdate
             List<string> lArgs = args.ToList();
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck Update Tool (c) 2019 by Roger Zander");
+                Console.WriteLine("RuckZuck Update Tool (c) 2020 by Roger Zander");
                 Console.WriteLine("Usage:");
                 Console.WriteLine("Check and Update an existing Software : RZUpdate.exe \"<ProductName>\" \"<ProductVersion>\" \"Manufacturer\"");
                 Console.WriteLine("Install a Software from Shortname : RZUpdate.exe \"<Shortname>\"[;\"<Shortname2>\"]");
-                Console.WriteLine("Install a Software from XML-File: RZUpdate.exe \"<File.json>\"");
+                Console.WriteLine("Install a Software from JSON-File: RZUpdate.exe \"<File.json>\"");
                 Console.WriteLine("Update all installed Software-Versions: RZUpdate.exe /Update");
                 Console.WriteLine("");
                 return 0;
