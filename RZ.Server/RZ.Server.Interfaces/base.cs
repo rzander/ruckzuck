@@ -458,7 +458,8 @@ namespace RZ.Server
                     JArray oCat = GetCatalog("", false);
 
                     var jobj = oCat.SelectTokens("[*]").Where(t => t["ProductName"].ToString().ToLower() == name.ToLower() && t["Manufacturer"].ToString().ToLower() == man.ToLower() && t["ProductVersion"].ToString().ToLower() == ver.ToLower());
-                    return jobj.FirstOrDefault()["ShortName"].ToString();
+                    if(jobj.FirstOrDefault() != null)
+                        return jobj.FirstOrDefault()["ShortName"].ToString();
                 }
                 catch { }
 
