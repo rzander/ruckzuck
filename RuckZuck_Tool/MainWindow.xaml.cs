@@ -34,6 +34,7 @@ namespace RuckZuck_Tool
         delegate void AnonymousDelegate();
         List<string> CommandArgs = new List<string>();
         internal RZScan oSCAN;
+        bool allowclose = true;
 
         public MainWindow()
         {
@@ -67,7 +68,6 @@ namespace RuckZuck_Tool
             s.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
             tabWizard.ItemContainerStyle = s;
 
-            tbSVC.Text = RZRestAPIv2.sURL;
             if (RZRestAPIv2.DisableBroadcast)
             {
                 cbRZCache.IsChecked = false;
@@ -78,6 +78,8 @@ namespace RuckZuck_Tool
                 RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
                 cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
             }
+
+            tbSVC.Text = RZRestAPIv2.sURL;
 
             if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
             {
@@ -659,16 +661,7 @@ namespace RuckZuck_Tool
 
         private void btFinishMain_Click(object sender, RoutedEventArgs e)
         {
-            if(oInstPanel.dm.lDLTasks.Count(t=>t.Downloading || t.Installing) > 0)
-            {
-                if(MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?","Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                    this.Close();
-            }
-            else
-            {
-                this.Close();
-            }
-
+            this.Close();
         }
 
         private void btBackInstall_Click(object sender, RoutedEventArgs e)
@@ -733,7 +726,25 @@ namespace RuckZuck_Tool
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Application.Current.Shutdown();
+            if (oUpdPanel.dm.lDLTasks.Count(t => t.Downloading || t.Installing) > 0)
+            {
+                if (MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                    allowclose = false;
+            }
+            if (oInstPanel.dm.lDLTasks.Count(t => t.Downloading || t.Installing) > 0)
+            {
+                if (MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                    allowclose = false;
+            }
+
+            if (allowclose)
+            {
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                e.Cancel = true;
+            }
         }
 
         private void btUpdExclusion_Click(object sender, RoutedEventArgs e)
