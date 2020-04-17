@@ -34,8 +34,7 @@ namespace RuckZuck_Tool
         delegate void AnonymousDelegate();
         List<string> CommandArgs = new List<string>();
         internal RZScan oSCAN;
-        bool allowclose = true;
-
+ 
         public MainWindow()
         {
             DateTime dstart = DateTime.Now;
@@ -726,6 +725,7 @@ namespace RuckZuck_Tool
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            bool allowclose = true;
             if (oUpdPanel.dm.lDLTasks.Count(t => t.Downloading || t.Installing) > 0)
             {
                 if (MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
