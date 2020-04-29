@@ -551,7 +551,20 @@ namespace RZ.Server
                 catch {}
             }
 
+            //check if softwares do not et updates..
             JArray jResult = new JArray();
+            JArray SWsorted = new JArray(Softwares.OrderBy(obj => (string)obj["ProductName"]));
+            string lID = Hash.CalculateMD5HashString(SWsorted.ToString());
+            string sOut = "";
+            if (_cache.TryGetValue("noupd-" + lID, out sOut))
+            {
+                return jResult;
+            }
+            if (_cache.TryGetValue("upd-" + lID, out sOut))
+            {
+                return JArray.Parse(sOut);
+            }
+
             JArray oCat = GetCatalog("", false);
 
             foreach (JObject jObj in Softwares)
@@ -723,6 +736,18 @@ namespace RZ.Server
                     Console.WriteLine(ex.Message);
                 }
             }
+
+            if(jResult.Count == 0)
+            {
+                var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
+                _cache.Set("noupd-" + lID, "no", cacheEntryOptions2);
+            }
+            else
+            {
+                var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(120)); //cache result for 3min
+                _cache.Set("upd-" + lID, jResult.ToString(Newtonsoft.Json.Formatting.None), cacheEntryOptions2);
+            }
+
 
             return jResult;
         }
