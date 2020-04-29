@@ -332,10 +332,13 @@ namespace RuckZuck.Base
             {
                 if (lSoftware.Count > 0)
                 {
+                    if(string.IsNullOrEmpty(customerid))
+                        customerid = CustomerID;
+
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     string sSoftware = ser.Serialize(lSoftware);
                     HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
-                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate", oCont);
+                    var response = oClient.PostAsync(sURL + "/rest/v2/checkforupdate?customerid=" + customerid, oCont);
                     response.Wait(120000); //2min max
                     if (response.IsCompleted)
                     {

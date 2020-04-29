@@ -86,7 +86,7 @@
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Bottom">
                                 <TextBlock Name="tbVersion">
-                                    Version:{0}  Copyright (c) 2019 by Roger Zander
+                                    Version:{0}  Copyright (c) 2020 by Roger Zander
                                 </TextBlock>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top" VerticalAlignment="Top">
