@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using RZ.Server.Interfaces;
 using System;
@@ -423,7 +424,7 @@ namespace RZ.Server
             return null;
         }
 
-        public static async Task<Stream> GetFile(string FilePath, string customerid = "")
+        public static async Task<IActionResult> GetFile(string FilePath, string customerid = "")
         {
             try
             {

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
@@ -435,19 +437,19 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<Stream> GetFile(string FilePath, string customerid = "")
+        public async Task<IActionResult> GetFile(string FilePath, string customerid = "")
         {
             string sFullPath = Path.Combine(Settings["content"], FilePath);
             if(File.Exists(sFullPath))
             {
-                var memory = new MemoryStream();
-                using (var stream = new FileStream(sFullPath, FileMode.Open,FileAccess.Read, FileShare.Read))
-                {
-                    await stream.CopyToAsync(memory);
-                }
-                memory.Position = 0;
+                //var memory = new MemoryStream();
+                //using (var stream = new FileStream(sFullPath, FileMode.Open,FileAccess.Read, FileShare.Read))
+                //{
+                //    await stream.CopyToAsync(memory);
+                //}
+                //memory.Position = 0;
 
-                return memory;
+                return new FileStreamResult(new FileStream(sFullPath, FileMode.Open, FileAccess.Read, FileShare.Read), new MediaTypeHeaderValue("application/octet-stream"));
             }
 
             return null;

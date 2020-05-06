@@ -383,7 +383,7 @@ namespace RZ.Server.Controllers
             if (!Base.ValidateIP(ClientIP))
             {
                 if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return Content("");
+                    return null;
             }
             else
             {
@@ -395,7 +395,7 @@ namespace RZ.Server.Controllers
 
             Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
 
-            return File(await Base.GetFile(sPath, customerid), "application/octet-stream");
+            return await Base.GetFile(sPath, customerid);
         }
 
         [HttpPost]
@@ -498,7 +498,9 @@ namespace RZ.Server.Controllers
             }
             else
             {
-                if (customerid.StartsWith("212.25.2.73"))
+                //if (customerid.StartsWith("212.25.2.73"))
+                //    return;
+                if (customerid.StartsWith("81.246.0.34"))
                     return;
             }
 

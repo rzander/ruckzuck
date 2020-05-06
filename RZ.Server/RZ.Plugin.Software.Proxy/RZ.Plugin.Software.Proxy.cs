@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
@@ -9,6 +14,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,6 +25,7 @@ namespace Plugin_Software
     {
         private IMemoryCache _cache;
         private long SlidingExpiration = 1800; //30min cache for Softwares
+        private static HttpClient Client { get; } = new HttpClient();
 
         public string Name
         {
@@ -347,12 +354,12 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<Stream> GetFile(string FilePath, string customerid = "")
+        public async Task<IActionResult> GetFile(string FilePath, string customerid = "")
         {
             string sPath = Path.Combine(Settings["content"], FilePath);
             if (File.Exists(sPath))
             {
-                return File.OpenRead(sPath);
+                return new FileStreamResult(File.OpenRead(sPath), new MediaTypeHeaderValue("application/octet-stream"));
             }
 
             if (FilePath.StartsWith("proxy"))
@@ -361,6 +368,12 @@ namespace Plugin_Software
                 string sShortName = FilePath.Split('/')[1];
                 string sContentID = FilePath.Split('/')[2];
                 string sFile = FilePath.Split('/')[3];
+
+                sPath = Path.Combine(Settings["content"], sContentID, sFile);
+                if (File.Exists(sPath))
+                {
+                    return new FileStreamResult(File.OpenRead(sPath), new MediaTypeHeaderValue("application/octet-stream"));
+                }
 
                 JArray aSW = GetSoftwares(sShortName, customerid);
 
@@ -384,34 +397,101 @@ namespace Plugin_Software
 
                                 try
                                 {
-                                    _cache = new MemoryCache(new MemoryCacheOptions()); //clear cache...
-                                    using (HttpClient oClient = new HttpClient())
-                                    {
-                                        using (var response = await oClient.GetAsync(URL, HttpCompletionOption.ResponseHeadersRead))
-                                        {
+                                    Stream ResponseStream = null;
+                                    WebResponse Response = null;
 
-                                            using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                                    Int64 ContentLength = 1;
+                                    Int64 ContentLoaded = 0;
+                                    Int64 ioldProgress = 0;
+                                    Int64 iProgress = 0;
+                                    long FileSize = 0;
+
+                                    if (URL.StartsWith("http"))
+                                    {
+                                        //_DownloadFile(URL, FileName).Result.ToString();
+                                        var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
+                                        httpRequest.UserAgent = "chocolatey command line";
+                                        httpRequest.AllowAutoRedirect = true;
+                                        httpRequest.MaximumAutomaticRedirections = 5;
+                                        Response = httpRequest.GetResponse();
+                                    }
+
+
+                                    if (URL.StartsWith("ftp"))
+                                    {
+                                        var ftpRequest = (FtpWebRequest)WebRequest.Create(URL);
+                                        ftpRequest.ContentLength.ToString();
+                                        ftpRequest.GetResponse();
+
+
+                                        // Get back the HTTP response for web server
+                                        Response = (FtpWebResponse)ftpRequest.GetResponse();
+                                        ResponseStream = Response.GetResponseStream();
+
+                                        ContentLength = Response.ContentLength;
+                                    }
+
+                                    // Get back the HTTP response for web server
+                                    //Response = (HttpWebResponse)httpRequest.GetResponse();
+                                    ResponseStream = Response.GetResponseStream();
+
+                                    //Thanks to: https://blog.stephencleary.com/2016/11/streaming-zip-on-aspnet-core.html
+                                    return new FileCallbackResult(new MediaTypeHeaderValue("application/octet-stream"), async (outputStream, _) =>
+                                    {
+                                        ResponseStream = Response.GetResponseStream();
+
+                                        // Define buffer and buffer size
+                                        int bufferSize = 32768; //4096;
+                                        byte[] buffer = new byte[bufferSize];
+                                        int bytesRead = 0;
+
+                                        FileStream fileStream = System.IO.File.Create(Path.Combine(Settings["content"], sContentID, sFileName));
+
+                                        while ((bytesRead = ResponseStream.Read(buffer, 0, bufferSize)) != 0)
+                                        {
+                                            try
                                             {
-                                                string fileToWriteTo = Path.Combine(Settings["content"], sContentID, sFileName);
-                                                using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                                                {
-                                                    await streamToReadFrom.CopyToAsync(streamToWriteTo);
-                                                }
-                                            }
-                                        }
-                                    }
 
-                                    if (File.Exists(Path.Combine(Settings["content"], sContentID, sFileName)))
-                                    {
-                                        if (new FileInfo(Path.Combine(Settings["content"], sContentID, sFileName)).Length > 1024)
+                                                if (FileSize > 0)
+                                                {
+                                                    ContentLength = FileSize;
+                                                }
+                                                else
+                                                {
+                                                    if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
+                                                }
+
+                                                fileStream.Write(buffer, 0, bytesRead);
+                                                await outputStream.WriteAsync(buffer, 0, bytesRead);
+                                                ContentLoaded = ContentLoaded + bytesRead;
+
+                                                try
+                                                {
+                                                    iProgress = (100 * ContentLoaded) / ContentLength;
+                                                    //only send status on percent change
+                                                    if (iProgress != ioldProgress)
+                                                    {
+                                                        if ((iProgress % 10) == 5 || (iProgress % 10) == 0)
+                                                        {
+                                                            Console.WriteLine(sFileName + ": " + iProgress.ToString() + "%");
+                                                            ioldProgress = iProgress;
+                                                        }
+                                                    }
+                                                }
+                                                catch { }
+                                            }
+                                            catch { }
+
+                                        } // end while
+
+                                        try
                                         {
-                                            return File.OpenRead(Path.Combine(Settings["content"], sContentID, sFileName));
+                                            fileStream.Close();
+                                            ResponseStream.Close();
+                                            outputStream.Close();
                                         }
-                                        else
-                                        {
-                                            File.Delete(Path.Combine(Settings["content"], sContentID, sFileName));
-                                        }
-                                    }
+                                        catch { }
+                                    });
                                 }
                                 catch
                                 {
@@ -517,6 +597,41 @@ namespace Plugin_Software
         public string GetPending(string Software, string customerid = "")
         {
             return "";
+        }
+    }
+
+    public class FileCallbackResult : FileResult
+    {
+        private Func<Stream, ActionContext, Task> _callback;
+
+        public FileCallbackResult(MediaTypeHeaderValue contentType, Func<Stream, ActionContext, Task> callback)
+            : base(contentType?.ToString())
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+            _callback = callback;
+        }
+
+        public override Task ExecuteResultAsync(ActionContext context)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            var executor = new FileCallbackResultExecutor(context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>());
+            return executor.ExecuteAsync(context, this);
+        }
+
+        private sealed class FileCallbackResultExecutor : FileResultExecutorBase
+        {
+            public FileCallbackResultExecutor(ILoggerFactory loggerFactory)
+                : base(CreateLogger<FileCallbackResultExecutor>(loggerFactory))
+            {
+            }
+
+            public Task ExecuteAsync(ActionContext context, FileCallbackResult result)
+            {
+                //SetHeadersAndLog(context, result);
+                return result._callback(context.HttpContext.Response.Body, context);
+            }
         }
     }
 }

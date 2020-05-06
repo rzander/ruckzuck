@@ -21,6 +21,7 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Plugin_Software
 {
@@ -548,13 +549,13 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<Stream> GetFile(string FilePath, string customerid = "")
+        public async Task<IActionResult> GetFile(string FilePath, string customerid = "")
         {
             string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
 
             WebRequest myWebRequest = WebRequest.Create(sURL);
             WebResponse myWebResponse = myWebRequest.GetResponse();
-            return myWebResponse.GetResponseStream();
+            return new FileStreamResult(myWebResponse.GetResponseStream(), "application/octet-stream");
         }
 
         public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
