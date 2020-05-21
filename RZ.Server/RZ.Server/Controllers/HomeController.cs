@@ -30,15 +30,19 @@ namespace RZ.Server.Controllers
             JArray jTop = JArray.FromObject(jsorted.Take(5));
             foreach (JObject jSW in jTop)
             {
-                LatestItem oSW = new LatestItem();
-                oSW.Shortname = jSW["ShortName"].ToString();
-                oSW.Version = jSW["ProductVersion"].ToString();
-                if (jSW["IconHash"] != null)
-                    oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&iconhash=" + jSW["IconHash"].ToString();
-                else
-                    oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&id=" + jSW["SWId"].ToString();
-                oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
-                lSW.Add(oSW);
+                try
+                {
+                    LatestItem oSW = new LatestItem();
+                    oSW.Shortname = jSW["ShortName"].ToString();
+                    oSW.Version = jSW["ProductVersion"].ToString();
+                    if (jSW["IconHash"] != null)
+                        oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&iconhash=" + jSW["IconHash"].ToString();
+                    else
+                        oSW.IconURL = sURL + "/rest/v2/GetIcon?size=32&id=" + jSW["SWId"].ToString();
+                    oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
+                    lSW.Add(oSW);
+                }
+                catch { }
             }
 
             ViewData["LatestItems"] = lSW;

@@ -70,13 +70,22 @@ namespace Plugin_Software
 
             string sRepository = Settings["repository"];
 
-            if (!File.Exists(Path.Combine(sRepository, Base.clean(shortname) + ".json")))
+            if (!File.Exists(Path.Combine(sRepository, Base.clean(shortname.ToLower()) + ".json")))
                 return new JArray();
 
-            string sJson = File.ReadAllText(Path.Combine(sRepository, Base.clean(shortname) + ".json"));
+            string sJson = File.ReadAllText(Path.Combine(sRepository, Base.clean(shortname.ToLower()) + ".json"));
             try
             {
-                jResult = JArray.Parse(sJson);
+                if(sJson.TrimStart().StartsWith("["))
+                    jResult = JArray.Parse(sJson);
+                else
+                {
+                    JObject jObj = JObject.Parse(sJson);
+
+                    jResult = new JArray();
+                    jResult.Add(jObj);
+                }
+
 
                 //fix PreRequisite issue on client when parsing json with null value prerequisite
                 foreach (JObject jObj in jResult)
@@ -142,7 +151,7 @@ namespace Plugin_Software
 
             string sRepository = Settings["repository"];
 
-            string lookupPath = Path.Combine(sRepository, Base.clean(man), Base.clean(name), Base.clean(ver));
+            string lookupPath = Path.Combine(sRepository, Base.clean(man.ToLower()), Base.clean(name.ToLower()), Base.clean(ver.ToLower()));
 
             if (Directory.Exists(lookupPath))
             {

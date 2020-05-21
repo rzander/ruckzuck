@@ -99,10 +99,10 @@
         @foreach (var SW in ViewBag.LatestItems)
         {
             <div class="form-group row">
-                <div class="col-lg-1 " style="margin-right:10px">
+                <div class="col-lg-1 col-md-1 col-sm-1 " style="margin-right:10px">
                     <img src=@SW.IconURL width="32" height="32" alt="icon" title="@SW.Shortname" />
                 </div>
-                <div class="col-lg-10">
+                <div class="col-lg-10 col-md-10">
                     <div class="form-group" style="vertical-align:top; height:16px;">
                         <label>@SW.Shortname</label>
                         <label>@SW.Version</label>

@@ -62,8 +62,9 @@ namespace RZ.Plugin.Customer.Azure
             //var oLoc = GetLocAsync(ip);
             //var jLoc = JObject.Parse(oLoc.Result);
             //string sLocation = jLoc["Location"].ToString();
-            //if(customerid == "81.246.0.34") //blocked 10.4.2020 (7000 Adobe Reader DC MUI failures/day)
-            //    return "https://block.ruckzuck.tools"; 
+
+            if (customerid == "81.246.0.34") //blocked 10.4.2020 (7000 Adobe Reader DC MUI failures/day)
+                return "https://rzproxy.azurewebsites.net";
 
             if (customerid == "swtesting")
                 return "https://ruckzuck.azurewebsites.net";

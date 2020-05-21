@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -85,17 +86,12 @@ namespace RZ.Server
 
             if (Env.IsDevelopment())
             {
-                services.AddMvc(opts =>
-                {
-                    opts.Filters.Add(new AllowAnonymousFilter());
-                });
-            }
-            else
-            {
-                //services.AddMvc();
-                services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+                //Disable AUthentication in Develpment mode
+                services.AddSingleton<IAuthorizationHandler, AllowAnonymous>();
             }
 
+            //services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddControllersWithViews();
             services.AddApplicationInsightsTelemetry();
         }
@@ -187,6 +183,20 @@ namespace RZ.Server
             Console.Write("loading SW-Catalog...");
             Base.GetCatalog("", true);
             Console.WriteLine(" done.");
+        }
+
+        /// <summary>
+        /// This authorisation handler will bypass all requirements
+        /// </summary>
+        public class AllowAnonymous : IAuthorizationHandler
+        {
+            public Task HandleAsync(AuthorizationHandlerContext context)
+            {
+                foreach (IAuthorizationRequirement requirement in context.PendingRequirements.ToList())
+                    context.Succeed(requirement); //Simply pass all requirements
+
+                return Task.CompletedTask;
+            }
         }
     }
 }
