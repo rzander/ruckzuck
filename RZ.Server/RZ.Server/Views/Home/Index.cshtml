@@ -85,8 +85,8 @@
         </div>
         <div class="col-md-2 form-group">
             <a href="https://github.com/rzander/ruckzuck/wiki/RuckZuck-for-Intune">RZ for Intune :</a>
-            <a href="https://github.com/rzander/ruckzuck/releases/download/1.7.1.3/RZ4Intune.exe" role="button" data-toggle="tooltip" title="Import Applications from RuckZuck to Microsoft Intune." class="btn btn-block btn-default">RZ4Intune.exe</a>
-            <p class="text-muted"><sup>latest version: 1.7.1.3</sup></p>
+            <a href="https://github.com/rzander/ruckzuck/releases/download/1.7.1.4/RZ4Intune.exe" role="button" data-toggle="tooltip" title="Import Applications from RuckZuck to Microsoft Intune." class="btn btn-block btn-default">RZ4Intune.exe</a>
+            <p class="text-muted"><sup>latest version: 1.7.1.4</sup></p>
         </div>
     </div>
 </div>
@@ -99,10 +99,10 @@
         @foreach (var SW in ViewBag.LatestItems)
         {
             <div class="form-group row">
-                <div class="col-lg-1 " style="margin-right:10px">
+                <div class="col-lg-1 col-md-1 col-sm-1 " style="margin-right:10px">
                     <img src=@SW.IconURL width="32" height="32" alt="icon" title="@SW.Shortname" />
                 </div>
-                <div class="col-lg-10">
+                <div class="col-lg-10 col-md-10">
                     <div class="form-group" style="vertical-align:top; height:16px;">
                         <label>@SW.Shortname</label>
                         <label>@SW.Version</label>

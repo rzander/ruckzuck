@@ -1285,11 +1285,10 @@ namespace RZUpdate
                     httpRequest.UserAgent = "chocolatey command line";
                     httpRequest.AllowAutoRedirect = true;
                     httpRequest.MaximumAutomaticRedirections = 5;
-                    httpRequest.GetResponse();
-
+                    Response = httpRequest.GetResponse();
 
                     // Get back the HTTP response for web server
-                    Response = (HttpWebResponse)httpRequest.GetResponse();
+                    //Response = (HttpWebResponse)httpRequest.GetResponse();
                     ResponseStream = Response.GetResponseStream();
                 }
 
@@ -1366,7 +1365,7 @@ namespace RZUpdate
 
                 fileStream.Close();
                 ResponseStream.Close();
-                Response.Close();
+                //Response.Close();
             }
             catch (Exception ex)
             {

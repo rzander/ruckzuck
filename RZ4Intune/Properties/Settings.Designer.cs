@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.3.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.5.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -592,39 +592,38 @@ namespace RuckZuck_Tool.Properties {
             "  $file = $_.FileName\r\n}\r\nif (-NOT (Test-Path $sourceFolder)) { New-Item -Path $" +
             "sourceFolder -ItemType Directory }\r\nInvoke-WebRequest -Uri $rzSW.iconURL -OutFil" +
             "e \"$($sourceFolder)\\logo.png\"\r\n\r\n#Download IntuneWinAppUtil\r\nif (-NOT (Test-Path" +
-            " \"$($env:temp)\\IntuneWinAppUtil.exe\")) {\r\n    Invoke-WebRequest -Uri \"https://ra" +
-            "w.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/Intun" +
-            "eWinAppUtil.exe\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\"\r\n}\r\n&\"$($env:temp)" +
-            "\\IntuneWinAppUtil.exe\" -c $sourceFolder -s $file -o $outFolder -q\r\n\r\n$file = [io" +
-            ".path]::GetFileNameWithoutExtension($file)\r\n$SourceFile = \"$($outFolder)\\$($file" +
-            ").intunewin\"\r\n\r\n$img = [Convert]::ToBase64String((Invoke-WebRequest \"$($rzSW.ico" +
-            "nURL)&size=128\").Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)\r\n\r\n# D" +
-            "efining Intunewin32 detectionRules\r\n#$DetectionXML = Get-IntuneWinXML \"$SourceFi" +
-            "le\" -fileName \"detection.xml\"\r\n$PowerShellScript = \"$($sourceFolder)\\detection.p" +
-            "s1\"\r\n$PowerShellRule = New-DetectionRule -PowerShell -ScriptFile \"$PowerShellScr" +
-            "ipt\" -enforceSignatureCheck $false -runAs32Bit $false\r\n#$RegistryRule = New-Dete" +
-            "ctionRule -Registry -RegistryKeyPath \"HKEY_LOCAL_MACHINE\\SOFTWARE\\App\" -Registry" +
-            "DetectionType exists -check32BitRegOn64System True\r\n# Creating Array for detecti" +
-            "on Rule\r\n$DetectionRule = @($PowerShellRule)\r\n$ReturnCodes = Get-DefaultReturnCo" +
-            "des\r\n\r\n$type = \'system\'\r\nif ($rzSW.PSDetection.contains(\'HKCU:\')) { $type = \'use" +
-            "r\' }\r\n\r\n#requirements\r\n$bReq = [System.Text.Encoding]::UTF8.GetBytes((Get-Conten" +
-            "t -Path \"$($sourceFolder)\\requirements.ps1\"))\r\n$reqScript = [System.Convert]::To" +
-            "Base64String($bReq)\r\n$reqRule = @(@{\"@odata.type\"    = \"#microsoft.graph.win32Lo" +
-            "bAppPowerShellScriptRequirement\";\r\n        \"operator\"              = \"equal\";\r\n " +
-            "       \"detectionValue\"        = \"true\";\r\n        \"displayName\"           = \"req" +
-            "uirements\";\r\n        \"enforceSignatureCheck\" = $false;\r\n        \"runAs32Bit\"    " +
-            "        = $false;\r\n        \"runAsAccount\"          = $type;\r\n        \"scriptCont" +
-            "ent\"         = $reqScript;\r\n        \"detectionType\"         = \"boolean\"\r\n    })\r" +
-            "\n\r\n# Win32 Application Upload\r\nUpload-Win32Lob -SourceFile $SourceFile -displayN" +
-            "ame ($rzSW.ShortName + \" \" + $rzSW.ProductVersion) -publisher $rzSW.Manufacturer" +
-            " `\r\n    -description $rzSW.Description -detectionRules $DetectionRule -returnCod" +
-            "es $ReturnCodes `\r\n    -installCmdLine \"powershell.exe -ExecutionPolicy Bypass ." +
-            "\\install.ps1\" `\r\n    -uninstallCmdLine \"powershell.exe -ExecutionPolicy Bypass ." +
-            "\\uninstall.ps1\" `\r\n    -installExperience $type `\r\n    -imageValue $img `\r\n    -" +
-            "requirementRules $reqRule `\r\n    -informationURL $rzSW.ProductURL `\r\n    -develo" +
-            "per \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`n" +
-            "Version:$($rzSW.ProductVersion)\"\r\n\r\n############################################" +
-            "########")]
+            " \"$($env:temp)\\IntuneWinAppUtil.exe\")) {\r\n    Invoke-WebRequest -Uri \"https://gi" +
+            "thub.com/microsoft/Microsoft-Win32-Content-Prep-Tool/blob/master/IntuneWinAppUti" +
+            "l.exe\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\"\r\n}\r\n&\"$($env:temp)\\IntuneWin" +
+            "AppUtil.exe\" -c $sourceFolder -s $file -o $outFolder -q\r\n\r\n$file = [io.path]::Ge" +
+            "tFileNameWithoutExtension($file)\r\n$SourceFile = \"$($outFolder)\\$($file).intunewi" +
+            "n\"\r\n\r\n$img = [Convert]::ToBase64String((Invoke-WebRequest \"$($rzSW.iconURL)&size" +
+            "=128\").Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)\r\n\r\n# Defining In" +
+            "tunewin32 detectionRules\r\n#$DetectionXML = Get-IntuneWinXML \"$SourceFile\" -fileN" +
+            "ame \"detection.xml\"\r\n$PowerShellScript = \"$($sourceFolder)\\detection.ps1\"\r\n$Powe" +
+            "rShellRule = New-DetectionRule -PowerShell -ScriptFile \"$PowerShellScript\" -enfo" +
+            "rceSignatureCheck $false -runAs32Bit $false\r\n#$RegistryRule = New-DetectionRule " +
+            "-Registry -RegistryKeyPath \"HKEY_LOCAL_MACHINE\\SOFTWARE\\App\" -RegistryDetectionT" +
+            "ype exists -check32BitRegOn64System True\r\n# Creating Array for detection Rule\r\n$" +
+            "DetectionRule = @($PowerShellRule)\r\n$ReturnCodes = Get-DefaultReturnCodes\r\n\r\n$ty" +
+            "pe = \'system\'\r\nif ($rzSW.PSDetection.contains(\'HKCU:\')) { $type = \'user\' }\r\n\r\n#r" +
+            "equirements\r\n$bReq = [System.Text.Encoding]::UTF8.GetBytes((Get-Content -Path \"$" +
+            "($sourceFolder)\\requirements.ps1\"))\r\n$reqScript = [System.Convert]::ToBase64Stri" +
+            "ng($bReq)\r\n$reqRule = @(@{\"@odata.type\"    = \"#microsoft.graph.win32LobAppPowerS" +
+            "hellScriptRequirement\";\r\n        \"operator\"              = \"equal\";\r\n        \"de" +
+            "tectionValue\"        = \"true\";\r\n        \"displayName\"           = \"requirements\"" +
+            ";\r\n        \"enforceSignatureCheck\" = $false;\r\n        \"runAs32Bit\"            = " +
+            "$false;\r\n        \"runAsAccount\"          = $type;\r\n        \"scriptContent\"      " +
+            "   = $reqScript;\r\n        \"detectionType\"         = \"boolean\"\r\n    })\r\n\r\n# Win32" +
+            " Application Upload\r\nUpload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW" +
+            ".ShortName + \" \" + $rzSW.ProductVersion) -publisher $rzSW.Manufacturer `\r\n    -d" +
+            "escription $rzSW.Description -detectionRules $DetectionRule -returnCodes $Return" +
+            "Codes `\r\n    -installCmdLine \"powershell.exe -ExecutionPolicy Bypass .\\install.p" +
+            "s1\" `\r\n    -uninstallCmdLine \"powershell.exe -ExecutionPolicy Bypass .\\uninstall" +
+            ".ps1\" `\r\n    -installExperience $type `\r\n    -imageValue $img `\r\n    -requiremen" +
+            "tRules $reqRule `\r\n    -informationURL $rzSW.ProductURL `\r\n    -developer \"RuckZ" +
+            "uck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`nVersion:$(" +
+            "$rzSW.ProductVersion)\"\r\n\r\n####################################################")]
         public string RZCreateAppPS {
             get {
                 return ((string)(this["RZCreateAppPS"]));
@@ -646,7 +645,7 @@ namespace RuckZuck_Tool.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool NoExit {
             get {
                 return ((bool)(this["NoExit"]));

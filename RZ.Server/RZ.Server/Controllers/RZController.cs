@@ -185,72 +185,91 @@ namespace RZ.Server.Controllers
             //Cleanup
             foreach (JObject jObj in jSW)
             {
-                //remove Image if not requested to reduce size
-                if (!image)
-                {
-                    try
-                    {
-                        if (jObj["Image"] != null)
-                            jObj.Remove("Image");
-                    }
-                    catch { }
-                }
-
-                //generate IconURL if missing
-                if (jObj["IconURL"] == null)
+                try
                 {
                     if (jObj["IconHash"] != null)
-                        jObj.Add("IconURL", Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString());
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(jObj["IconURL"].ToString()) && jObj["IconHash"] != null)
                     {
-                        //switch to cdn for icons
-                        string sBase = Base.localURL;
-                        if (sBase.ToLower().StartsWith("https://ruckzuck.tools"))
-                            sBase = "https://cdn.ruckzuck.tools";
-
-                        jObj["IconURL"] = Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString();
+                        //Get SWId from Catalog if missing
+                        if (string.IsNullOrEmpty(jObj["IconHash"].ToString()))
+                        {
+                            try
+                            {
+                                jObj["IconHash"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["IconHash"];
+                            }
+                            catch { }
+                        }
                     }
-                }
 
-                if(jObj["IconId"] != null)
-                {
-                    jObj.Remove("IconId"); //No IconID on V2!! only SWId
-                }
-
-                //rename Shortname to ShortName on V2
-                if (jObj["Shortname"] != null)
-                {
-                    string sShortName = jObj["Shortname"].ToString();
-
-                    jObj.Remove("Shortname");
-
-                    if(jObj["ShortName"] == null)
+                    //generate IconURL if missing
+                    if (jObj["IconURL"] == null)
                     {
-                        jObj.Add("ShortName", sShortName);
+                        if (jObj["IconHash"] != null)
+                            jObj.Add("IconURL", Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString());
                     }
-                }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(jObj["IconURL"].ToString()) && jObj["IconHash"] != null)
+                        {
+                            //switch to cdn for icons
+                            string sBase = Base.localURL;
+                            if (sBase.ToLower().StartsWith("https://ruckzuck.tools"))
+                                sBase = "https://cdn.ruckzuck.tools";
 
-                if (jObj["SWId"] != null)
-                {
-                    //Get SWId from Catalog if missing
-                    if(jObj["SWId"].ToString() == "0")
+                            jObj["IconURL"] = Base.localURL + "/rest/v2/geticon?iconhash=" + jObj["IconHash"].ToString();
+                        }
+                    }
+
+                    if (jObj["IconId"] != null)
+                    {
+                        jObj.Remove("IconId"); //No IconID on V2!! only SWId
+                    }
+
+                    //rename Shortname to ShortName on V2
+                    if (jObj["Shortname"] != null)
+                    {
+                        string sShortName = jObj["Shortname"].ToString();
+
+                        jObj.Remove("Shortname");
+
+                        if (jObj["ShortName"] == null)
+                        {
+                            jObj.Add("ShortName", sShortName);
+                        }
+                    }
+
+                    if (jObj["SWId"] != null)
+                    {
+                        //Get SWId from Catalog if missing
+                        if (jObj["SWId"].ToString() == "0")
+                        {
+                            try
+                            {
+                                jObj["SWId"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["SWId"];
+                            }
+                            catch { }
+                        }
+                    }
+
+
+
+                    //remove Image if not requested to reduce size
+                    if (!image)
                     {
                         try
                         {
-                            jObj["SWId"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["SWId"];
+                            if (jObj["Image"] != null)
+                                jObj.Remove("Image");
                         }
                         catch { }
                     }
-                }
 
-                //remove Author as there are no RuckZuck users anymore
-                if(jObj["Author"] != null)
-                {
-                    jObj.Remove("Author");
+                    //remove Author as there are no RuckZuck users anymore
+                    if (jObj["Author"] != null)
+                    {
+                        jObj.Remove("Author");
+                    }
                 }
+                catch { }
             }
 
             if (jSW != null)

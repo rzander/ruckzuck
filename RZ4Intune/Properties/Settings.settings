@@ -1255,7 +1255,7 @@ Invoke-WebRequest -Uri $rzSW.iconURL -OutFile "$($sourceFolder)\logo.png"
 
 #Download IntuneWinAppUtil
 if (-NOT (Test-Path "$($env:temp)\IntuneWinAppUtil.exe")) {
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe" -OutFile "$($env:temp)\IntuneWinAppUtil.exe"
+    Invoke-WebRequest -Uri "https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool/blob/master/IntuneWinAppUtil.exe" -OutFile "$($env:temp)\IntuneWinAppUtil.exe"
 }
 &amp;"$($env:temp)\IntuneWinAppUtil.exe" -c $sourceFolder -s $file -o $outFolder -q
 
@@ -1310,7 +1310,7 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
 &lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Value>
     </Setting>
     <Setting Name="NoExit" Type="System.Boolean" Scope="Application">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

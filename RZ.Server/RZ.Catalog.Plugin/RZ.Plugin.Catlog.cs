@@ -104,8 +104,11 @@ namespace RZ.Plugin.Catlog.Azure
                             JArray jCategories = JArray.FromObject(new string[] { "Other" });
                             try
                             {
-                                if (!string.IsNullOrEmpty(jSW["Category"].ToString()))
-                                    jCategories = JArray.FromObject(jSW["Category"].Value<string>().Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries));
+                                if (jSW["Category"] != null)
+                                {
+                                    if (!string.IsNullOrEmpty(jSW["Category"].ToString()))
+                                        jCategories = JArray.FromObject(jSW["Category"].Value<string>().Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries));
+                                }
                             }
                             catch { }
                             oCatItem.Add("Categories", jCategories);
@@ -121,47 +124,41 @@ namespace RZ.Plugin.Catlog.Azure
                                 }
 
                             }
-                            //else //not needed after ruckzuck.exe 1.6.2.11
-                            //{
-                            //    if (jSW["IconId"] != null)
-                            //    {
-                            //        if (!string.IsNullOrEmpty(jSW["IconId"].ToString()))
-                            //        {
-                            //            oCatItem.Add("SWId", jSW["IconId"].Value<Int32>());
-                            //            oCatItem.Add("IconId", jSW["IconId"].Value<Int32>()); //for old Apps
-                            //        }
-
-                            //    }
-                            //}
 
                             try
                             {
                                 if (jSW["IconHash"] == null || string.IsNullOrEmpty(jSW["IconHash"].Value<string>()))
                                 {
-                                    string sIconHash = RZ.Server.Hash.CalculateMD5HashString(jSW["Image"].ToString());
-                                    //string IconsPath = Settings["icons"];
-                                    byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
-                                    if (!File.Exists(Path.Combine(Settings["icons"], sIconHash + ".jpg")))
+                                    if (jSW["Image"] != null)
                                     {
-                                        File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
-                                    }
-
-                                    jSW["IconHash"] = sIconHash;
-                                }
-
-                                if (!File.Exists(Path.Combine(Settings["icons"], jSW["IconHash"].ToString() + ".jpg")))
-                                {
-                                    try
-                                    {
-                                        string sIconHash = jSW["IconHash"].ToString();
+                                        string sIconHash = RZ.Server.Hash.CalculateMD5HashString(jSW["Image"].ToString());
+                                        //string IconsPath = Settings["icons"];
                                         byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
-                                        File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                        if (!File.Exists(Path.Combine(Settings["icons"], sIconHash + ".jpg")))
+                                        {
+                                            File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                        }
+
+                                        jSW["IconHash"] = sIconHash;
                                     }
-                                    catch { }
                                 }
 
-                                if (!string.IsNullOrEmpty(jSW["IconHash"].ToString()))
-                                    oCatItem.Add("IconHash", jSW["IconHash"].ToString());
+                                if (jSW["IconHash"] != null)
+                                {
+                                    if (!File.Exists(Path.Combine(Settings["icons"], jSW["IconHash"].ToString() + ".jpg")))
+                                    {
+                                        try
+                                        {
+                                            string sIconHash = jSW["IconHash"].ToString();
+                                            byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
+                                            File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                        }
+                                        catch { }
+                                    }
+
+                                    if (!string.IsNullOrEmpty(jSW["IconHash"].ToString()))
+                                        oCatItem.Add("IconHash", jSW["IconHash"].ToString());
+                                }
                             }
                             catch { }
 
