@@ -1217,6 +1217,7 @@ $sleep = 30
 # args2 = ExpireTime string
 # args3 = Username
 
+Add-Type -AssemblyName System.Web
 #Check if nuget provider is installed...
 if (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name "Nuget" -Force }
 
@@ -1255,7 +1256,7 @@ Invoke-WebRequest -Uri $rzSW.iconURL -OutFile "$($sourceFolder)\logo.png"
 
 #Download IntuneWinAppUtil
 if (-NOT (Test-Path "$($env:temp)\IntuneWinAppUtil.exe")) {
-    Invoke-WebRequest -Uri "https://github.com/microsoft/Microsoft-Win32-Content-Prep-Tool/blob/master/IntuneWinAppUtil.exe" -OutFile "$($env:temp)\IntuneWinAppUtil.exe"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe" -OutFile "$($env:temp)\IntuneWinAppUtil.exe"
 }
 &amp;"$($env:temp)\IntuneWinAppUtil.exe" -c $sourceFolder -s $file -o $outFolder -q
 
