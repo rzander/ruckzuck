@@ -262,8 +262,9 @@
                                 Sponsored by:
                                 </TextBlock>
                                 <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left">
-                                    <Image RenderOptions.BitmapScalingMode="HighQuality" Source="https://cdn.ruckzuck.tools/images/baseVISION_small.png" Height="24" Margin="20,0" />
-                                    <Image RenderOptions.BitmapScalingMode="HighQuality" Source="https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png" Height="24" Margin="20,0" />
+                                    <Image RenderOptions.BitmapScalingMode="HighQuality" Source="https://cdn.ruckzuck.tools/images/baseVISION_small.png" Height="24" Margin="20,0" ToolTip="baseVision" />
+                                    <Image RenderOptions.BitmapScalingMode="HighQuality" Source="https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png" Height="24" Margin="20,0" ToolTip="itnetX" />
+                                    <Image RenderOptions.BitmapScalingMode="HighQuality" Source="https://cdn.ruckzuck.tools/images/ROMAWO_Header_oo_small24.png" Height="24" Margin="20,0" ToolTip="ROMAWO managed workplace" />
                                 </DockPanel>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Left">
