@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Zander Tools")]
 [assembly: AssemblyProduct("RuckZuck")]
-[assembly: AssemblyCopyright("Copyright © 2019 by Roger Zander")]
+[assembly: AssemblyCopyright("Copyright © 2020 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -52,4 +52,4 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.7.1.*")]
-[assembly: AssemblyFileVersion("1.7.1.4")]
+[assembly: AssemblyFileVersion("1.7.1.5")]

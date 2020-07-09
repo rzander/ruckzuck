@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="580" d:DesignWidth="600" SizeChanged="UserControl_SizeChanged">
+             d:DesignHeight="610" d:DesignWidth="680" SizeChanged="UserControl_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
