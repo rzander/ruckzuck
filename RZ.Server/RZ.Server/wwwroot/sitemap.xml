@@ -3,7 +3,7 @@
   <!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
   <url>
     <loc>https://ruckzuck.tools/</loc>
-    <lastmod>2019-10-06T16:35:29+00:00</lastmod>
+    <lastmod>2020-07-18T16:35:29+00:00</lastmod>
     <priority>1.00</priority>
   </url>
   <url>
@@ -17,9 +17,14 @@
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://ruckzuck.tools/Home/Repository</loc>
+    <loc>https://ruckzuck.tools/Home/Sponsors</loc>
     <lastmod>2019-10-16T16:35:29+00:00</lastmod>
     <priority>0.40</priority>
+  </url>
+  <url>
+    <loc>https://ruckzuck.tools/Home/Repository</loc>
+    <lastmod>2020-07-18T16:35:29+00:00</lastmod>
+    <priority>0.50</priority>
   </url>
   <url>
     <loc>https://ruckzuck.tools/rss.aspx</loc>
