@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("RZBase")]
 [assembly: AssemblyDescription("RuckZuck Base Library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Zander Tools")]
+[assembly: AssemblyCompany("Zander - Tools")]
 [assembly: AssemblyProduct("RZBase")]
 [assembly: AssemblyCopyright("Copyright ©  2020 by Roger Zander")]
 [assembly: AssemblyTrademark("")]

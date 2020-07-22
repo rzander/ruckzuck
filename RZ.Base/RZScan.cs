@@ -15,24 +15,14 @@ namespace RuckZuck.Base
     /// </summary>
     public partial class RZScan
     {
-        internal bool bCheckUpdates = false;
-        internal bool bRunScan = false;
-        internal bool bInitialScan = true;
-        delegate void AnonymousDelegate();
-
-        public event EventHandler OnInstalledSWAdded = delegate { };
-        public event EventHandler OnSWScanCompleted = delegate { };
-        public event EventHandler OnUpdatesDetected = delegate { };
-        public event EventHandler OnUpdScanCompleted = delegate { };
-        public event EventHandler OnSWRepoLoaded = delegate { };
-
         public List<AddSoftware> InstalledSoftware;
         public List<AddSoftware> NewSoftwareVersions;
         public List<GetSoftware> SoftwareRepository;
         public List<AddSoftware> StaticInstalledSoftware;
-
         public System.Timers.Timer tRegCheck = new System.Timers.Timer();
-
+        internal bool bCheckUpdates = false;
+        internal bool bInitialScan = true;
+        internal bool bRunScan = false;
         /// <summary>
         /// Constructor
         /// </summary>
@@ -75,25 +65,93 @@ namespace RuckZuck.Base
 
         }
 
-        private void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
+        delegate void AnonymousDelegate();
+
+        public event EventHandler OnInstalledSWAdded = delegate { };
+        public event EventHandler OnSWRepoLoaded = delegate { };
+
+        public event EventHandler OnSWScanCompleted = delegate { };
+        public event EventHandler OnUpdatesDetected = delegate { };
+        public event EventHandler OnUpdScanCompleted = delegate { };
+        public static Bitmap GetImageFromExe(string Filename, string empty = "")
         {
-            if (bRunScan)
+            try
             {
-                SWScan();
+                Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
+
+                //try
+                //{
+                //    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
+                //    if (iE.FileName != null)
+                //    {
+                //        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
+                //        //Max Size 128px...
+                //        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
+                //        if (ico != null)
+                //            return ico.ToBitmap();
+                //        else
+                //            return bResult;
+                //    }
+                //}
+                //catch { }
+
+                return bResult;
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public Task SWScan()
+        public async Task<bool> GetSWRepository()
+        {
+            //var tGetSWRepo =
+            bool bResult = await Task.Run(() =>
+            {
+                try
+                {
+                    var oDB = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    lock (SoftwareRepository)
+                    {
+                        SoftwareRepository = oDB.Select(item => new GetSoftware()
+                        {
+                            Categories = item.Categories ?? new List<string>(),
+                            Description = item.Description,
+                            Downloads = item.Downloads,
+                            SWId = item.SWId,
+                            Manufacturer = item.Manufacturer,
+                            ProductName = item.ProductName,
+                            ProductURL = item.ProductURL,
+                            ProductVersion = item.ProductVersion,
+                            ShortName = item.ShortName,
+                            IconHash = item.IconHash
+                        }).ToList();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message.ToString());
+                }
+
+                OnSWRepoLoaded(this, new EventArgs());
+
+                return true;
+            });
+
+            return bResult;
+        }
+
+        public async Task SWScanAsync()
         {
             var tSWScan = Task.Run(() =>
             {
                 List<AddSoftware> TempInstalledSoftware = new List<AddSoftware>();
                 try
                 {
-                    var CUX64 = RegScan(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware);
+                    var CUX64 = RegScanAsync(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware);
                     //var CUX86 = RegScan(RegistryHive.CurrentUser, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX86 = RegScan(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX64 = RegScan(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware);
+                    var LMX86 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware);
+                    var LMX64 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware);
 
                     CUX64.Wait();
                     //CUX86.Wait();
@@ -147,140 +205,10 @@ namespace RuckZuck.Base
                 OnSWScanCompleted(this, new EventArgs());
             });
 
-            return tSWScan;
+            await tSWScan;
         }
 
-        public async Task<bool> GetSWRepository()
-        {
-            //var tGetSWRepo =
-            bool bResult = await Task.Run(() =>
-            {
-                try
-                {
-                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
-                    var oDB = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
-                    lock (SoftwareRepository)
-                    {
-                        SoftwareRepository = oDB.Select(item => new GetSoftware()
-                        {
-                            Categories = item.Categories ?? new List<string>(),
-                            Description = item.Description,
-                            Downloads = item.Downloads,
-                            //IconId = item.IconId,
-                            SWId = item.SWId,
-                            //Image = item.Image,
-                            Manufacturer = item.Manufacturer,
-                            ProductName = item.ProductName,
-                            ProductURL = item.ProductURL,
-                            ProductVersion = item.ProductVersion,
-                            ShortName = item.ShortName,
-                            IconHash = item.IconHash
-                        }).ToList();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message.ToString());
-                }
-
-                OnSWRepoLoaded(this, new EventArgs());
-
-                return true;
-            });
-
-            return bResult;
-        }
-
-        /*       public async Task<bool> GetSWRepository(string RepositoryPath)
-        {
-            //var tGetSWRepo =
-            bool bResult = await Task.Run(() =>
-            {
-                try
-                {
-
-                    //var oDB = RZRestAPI.SWResults("").Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
-                    DirectoryInfo dInfo = new DirectoryInfo(RepositoryPath);
-
-                    foreach (FileInfo dFile in dInfo.GetFiles("*.xml", SearchOption.AllDirectories))
-                    {
-                        try
-                        {
-                            var oAddRemSW = RZUpdater.ParseXML(dFile.FullName);
-                            string sFile = dFile.DirectoryName + "\\" + oAddRemSW.ContentID + ".png";
-
-                            if (!File.Exists(sFile))
-                            {
-                                byte[] image = oAddRemSW.Image;
-                                MemoryStream ms = new MemoryStream(image);
-                                Image img = Image.FromStream(ms);
-
-                                img.Save(dFile.DirectoryName + "\\" + oAddRemSW.ContentID + ".png", System.Drawing.Imaging.ImageFormat.Png);
-                            }
-
-                            SoftwareRepository.Add(new GetSoftware() { ProductName = oAddRemSW.ProductName, Description = oAddRemSW.Description, Categories = (oAddRemSW.Category ?? "Local Repository").Split(';').ToList(), isInstalled = false, Manufacturer = oAddRemSW.Manufacturer, ProductURL = oAddRemSW.ProductURL, ProductVersion = oAddRemSW.ProductVersion, ShortName = oAddRemSW.ProductName + " (" + oAddRemSW.Architecture + ")", Downloads = 0, IconId = 0, IconFile = sFile, XMLFile = dFile.FullName, Quality = 100 });
-                        }
-                        catch { }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message.ToString());
-                }
-
-                OnSWRepoLoaded(this, new EventArgs());
-
-                return true;
-            });
-
-            return bResult;
-        }
-*/
-
-        /*public bool CheckForUpdates
-        {
-            get { return bCheckUpdates; }
-            set
-            {
-                bCheckUpdates = value;
-                bInitialScan = value;
-            }
-        }*/
-
-        private void RZScan_OnUpdScanCompleted(object sender, EventArgs e)
-        {
-            if (bInitialScan)
-            {
-                bInitialScan = false;
-                bCheckUpdates = false;
-            }
-        }
-
-        private void TRegCheck_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            SWScan();
-        }
-
-        private void RZScan_OnSWScanCompleted(object sender, EventArgs e)
-        {
-            if (bCheckUpdates)
-            {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                CheckUpdates(null);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            }
-        }
-
-        /// <summary>
-        /// Check for updated Version in the RuckZuck Repository
-        /// </summary>
-        /// <param name="aSWCheck">null = all Installed SW</param>
-        internal async Task CheckUpdates(List<AddSoftware> aSWCheck)
-        {
-            await Task.Run(() => _CheckUpdates(aSWCheck));
-        }
-
-        internal void _CheckUpdates(List<AddSoftware> aSWCheck)
+        internal async void _CheckUpdates(List<AddSoftware> aSWCheck)
         {
             try
             {
@@ -290,20 +218,18 @@ namespace RuckZuck.Base
                 var vSWCheck = aSWCheck.Select(t => new AddSoftware() { ProductName = t.ProductName, ProductVersion = t.ProductVersion, Manufacturer = t.Manufacturer }).ToList();
 
                 //we do not have to check for updates if it's in the Catalog
-                //List<AddSoftware> tRes = vSWCheck.Where(t => SoftwareRepository.Count(r => r.ProductName.ToLower().Trim() == t.ProductName.ToLower().Trim() && r.ProductVersion.ToLower().Trim() == t.ProductVersion.ToLower().Trim() && r.Manufacturer.ToLower().Trim() == t.Manufacturer.ToLower().Trim()) == 0).ToList();
                 foreach (var oSW in SoftwareRepository)
                 {
                     vSWCheck.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
                 }
 
-                List<AddSoftware> lCheckResult = RZRestAPIv2.CheckForUpdate(vSWCheck).ToList();
+                List<AddSoftware> lCheckResult = (await RZRestAPIv2.CheckForUpdateAsync(vSWCheck)).ToList();
 
                 var lResult = lCheckResult.Select(item => new AddSoftware()
                 {
                     Architecture = item.Architecture,
                     Category = item.Category,
                     Description = item.Description,
-                    //Image = item.Image,
                     Manufacturer = item.Manufacturer,
                     ProductName = item.ProductName,
                     ProductURL = item.ProductURL,
@@ -311,7 +237,6 @@ namespace RuckZuck.Base
                     MSIProductID = item.MSIProductID,
                     ShortName = item.ShortName,
                     SWId = item.SWId,
-                    //IconId = item.IconId,
                     IconHash = item.IconHash
                 }).ToList();
 
@@ -341,11 +266,6 @@ namespace RuckZuck.Base
             }
 
             OnUpdScanCompleted(this, new EventArgs());
-        }
-
-        internal async Task RegScan(RegistryHive RegHive, RegistryView RegView, List<AddSoftware> lScanList)
-        {
-            await Task.Run(() => _RegScan(RegHive, RegView, lScanList));
         }
 
         internal void _RegScan(RegistryHive RegHive, RegistryView RegView, List<AddSoftware> lScanList)
@@ -378,7 +298,7 @@ namespace RuckZuck.Base
                         if (!string.IsNullOrEmpty(sRelease))
                             continue;
 
-                        AddSoftware oItem = GetSWProperties(oUKey.OpenSubKey(sProdID));
+                        AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
                         if (!string.IsNullOrEmpty(oItem.ProductName))
                         {
                             try
@@ -405,8 +325,32 @@ namespace RuckZuck.Base
             }
         }
 
-        internal AddSoftware GetSWProperties(RegistryKey oRegkey)
+        /// <summary>
+        /// Check for updated Version in the RuckZuck Repository
+        /// </summary>
+        /// <param name="aSWCheck">null = all Installed SW</param>
+        internal async Task CheckUpdatesAsync(List<AddSoftware> aSWCheck)
         {
+            await Task.Run(() => _CheckUpdates(aSWCheck));
+        }
+
+        internal string descramble(string sKey)
+        {
+            int[] code = new int[] { 8, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2 };
+            int ipos = 0;
+            string sResult = "";
+            for (int i = 0; i < code.Length; i++)
+            {
+                sResult = sResult + new string(sKey.Substring(ipos, code[i]).Reverse().ToArray());
+                ipos = ipos + code[i];
+            }
+
+            return sResult;
+        }
+
+        internal async Task<AddSoftware> GetSWPropertiesAsync(RegistryKey oRegkey)
+        {
+            return await Task.Run(() => {
             AddSoftware oResult = new AddSoftware();
             Version oVer = null;
             bool bVersion = false;
@@ -629,20 +573,7 @@ namespace RuckZuck.Base
             oResult.Architecture = "X64";
 
             return oResult;
-        }
-
-        internal string descramble(string sKey)
-        {
-            int[] code = new int[] { 8, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2 };
-            int ipos = 0;
-            string sResult = "";
-            for (int i = 0; i < code.Length; i++)
-            {
-                sResult = sResult + new string(sKey.Substring(ipos, code[i]).Reverse().ToArray());
-                ipos = ipos + code[i];
-            }
-
-            return sResult;
+            });
         }
 
         internal byte[] imageToByteArray(System.Drawing.Image imageIn)
@@ -657,35 +588,39 @@ namespace RuckZuck.Base
             return null;
         }
 
-        public static Bitmap GetImageFromExe(string Filename, string empty = "")
+        internal async Task RegScanAsync(RegistryHive RegHive, RegistryView RegView, List<AddSoftware> lScanList)
         {
-            try
-            {
-                Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
+            await Task.Run(() => _RegScan(RegHive, RegView, lScanList));
+        }
 
-                //try
-                //{
-                //    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
-                //    if (iE.FileName != null)
-                //    {
-                //        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
-                //        //Max Size 128px...
-                //        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
-                //        if (ico != null)
-                //            return ico.ToBitmap();
-                //        else
-                //            return bResult;
-                //    }
-                //}
-                //catch { }
-
-                return bResult;
-            }
-            catch
+        private async void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
+        {
+            if (bRunScan)
             {
-                return null;
+                await SWScanAsync();
             }
         }
 
+        private async void RZScan_OnSWScanCompleted(object sender, EventArgs e)
+        {
+            if (bCheckUpdates)
+            {
+                await CheckUpdatesAsync(null);
+            }
+        }
+
+        private void RZScan_OnUpdScanCompleted(object sender, EventArgs e)
+        {
+            if (bInitialScan)
+            {
+                bInitialScan = false;
+                bCheckUpdates = false;
+            }
+        }
+
+        private async void TRegCheck_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            await SWScanAsync();
+        }
     }
 }
