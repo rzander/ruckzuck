@@ -41,6 +41,12 @@ namespace RZGet
                 Console.WriteLine("Install a Software from JSON File : RZGet.exe install \"<JSON full path>\"[;\"<JSON full path>\"]");
                 Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
                 Console.WriteLine("");
+                Console.WriteLine("Update:");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all");
+                Console.WriteLine("Show all missing updates : RZGet.exe update --list --all");
+                Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\"");
+                Console.WriteLine("Updatea Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"]");
+                Console.WriteLine("");
                 Console.WriteLine("Show:");
                 Console.WriteLine("Show Metadata : RZGet.exe show \"<Shortname>\"");
                 Console.WriteLine("Show Metadata for a specific Version : RZGet.exe show --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
@@ -157,6 +163,113 @@ namespace RZGet
                     }
                 }
 
+                if (bError)
+                    return 1;
+                else
+                    return 0;
+            }
+
+            if (lArgs[0].ToLower() == "update")
+            {
+                bool bUpdateAll = false;
+                bool bList = false; 
+
+                if (lArgs.Contains("--all", StringComparer.CurrentCultureIgnoreCase))
+                    bUpdateAll = true;
+                if (lArgs.Contains("--list", StringComparer.CurrentCultureIgnoreCase))
+                {
+                    bList = true;
+                }
+
+                RZScan oScan = new RZScan(false);
+                oScan.GetSWRepository().Wait(10000);
+                oScan.SWScanAsync().Wait(10000);
+                oScan._CheckUpdates(null);
+
+                List<string> lUpdate = new List<string>();
+                if (!bUpdateAll)
+                {
+                    foreach (string sArg in args.Skip(1))
+                    {
+                        if (oScan.NewSoftwareVersions.Count(t => t.ShortName.ToLower() == sArg.ToLower()) > 0)
+                        {
+                            lUpdate.Add(sArg);
+                        }
+                    }
+                } else
+                {
+                    lUpdate = oScan.NewSoftwareVersions.Select(t => t.ShortName).ToList();
+                }
+
+                foreach (string sArg in lUpdate)
+                {
+                    if (bList)
+                    {
+                        Console.WriteLine(sArg);
+                        continue;
+                    }
+                    if (File.Exists(sArg))
+                    {
+                        RZUpdater oRZSW = new RZUpdater(sArg);
+
+                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                        {
+                            Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                            bError = true;
+                            continue;
+                        }
+
+                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                        {
+                            oRZSW.SoftwareUpdate.GetInstallType();
+                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                            {
+                                Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                bError = false;
+                                continue;
+                            }
+                        }
+
+                        if (Install(oRZSW))
+                            continue;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            RZUpdater oRZSW = new RZUpdater();
+                            oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
+
+                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                            {
+                                Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                bError = true;
+                                continue;
+                            }
+
+                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                            {
+                                oRZSW.SoftwareUpdate.GetInstallType();
+                                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                                {
+                                    Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                    bError = false;
+                                    continue;
+                                }
+                            }
+
+                            if (Install(oRZSW))
+                                continue;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error: " + ex.Message);
+                            bError = true;
+                        }
+
+                    }
+                }
+                
                 if (bError)
                     return 1;
                 else
