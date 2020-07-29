@@ -58,9 +58,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RZUpdate\RZUpdate.csproj">
+    <ProjectReference Include="..\RZGet\RZGet.csproj">
       <Project>{55349D55-7307-4E34-B544-91A49EB1BCAB}</Project>
-      <Name>RZUpdate</Name>
+      <Name>RZGet</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -81,7 +81,6 @@ namespace RZUpdate
                     }
                     else
                     {
-                        
                         foreach (string sArg in lArgs[0].Split(';'))
                         {
                             try
@@ -95,6 +94,7 @@ namespace RZUpdate
                                     bError = true;
                                     continue;
                                 }
+                                Console.WriteLine("PS:" + oRZSW.SoftwareUpdate.SW.PSInstall);
                                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                                 {
                                     oRZSW.SoftwareUpdate.GetInstallType();
@@ -138,7 +138,7 @@ namespace RZUpdate
                                 {
                                     Console.WriteLine("... done.");
                                     Console.Write("Installing...");
-                                    if (oRZSW.SoftwareUpdate.Install(false,true).Result)
+                                    if (oRZSW.SoftwareUpdate.Install(false, true).Result)
                                     {
                                         Console.WriteLine("... done.");
                                     }
@@ -149,12 +149,13 @@ namespace RZUpdate
                                     }
                                 }
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 Console.WriteLine("Error: " + ex.Message);
                                 bError = true;
                             }
                         }
+
 
                     }
                 }
