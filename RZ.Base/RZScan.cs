@@ -15,10 +15,10 @@ namespace RuckZuck.Base
     /// </summary>
     public partial class RZScan
     {
-        public List<AddSoftware> InstalledSoftware;
-        public List<AddSoftware> NewSoftwareVersions;
-        public List<GetSoftware> SoftwareRepository;
-        public List<AddSoftware> StaticInstalledSoftware;
+        public List<AddSoftware> InstalledSoftware = new List<AddSoftware>();
+        public List<AddSoftware> NewSoftwareVersions = new List<AddSoftware>();
+        public List<GetSoftware> SoftwareRepository = new List<GetSoftware>();
+        public List<AddSoftware> StaticInstalledSoftware = new List<AddSoftware>();
         public System.Timers.Timer tRegCheck = new System.Timers.Timer();
         internal bool bCheckUpdates = false;
         internal bool bInitialScan = true;
@@ -223,7 +223,7 @@ namespace RuckZuck.Base
                     vSWCheck.RemoveAll(t => t.ProductName.ToLower().Trim() == oSW.ProductName.ToLower().Trim() && t.Manufacturer.ToLower().Trim() == oSW.Manufacturer.ToLower().Trim() && t.ProductVersion.ToLower().Trim() == oSW.ProductVersion.ToLower().Trim());
                 }
 
-                List<AddSoftware> lCheckResult = (await RZRestAPIv2.CheckForUpdateAsync(vSWCheck)).ToList();
+                List<AddSoftware> lCheckResult = (RZRestAPIv2.CheckForUpdateAsync(vSWCheck).Result).ToList();
 
                 var lResult = lCheckResult.Select(item => new AddSoftware()
                 {
