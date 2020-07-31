@@ -56,6 +56,28 @@ The RuckZuck.exe is a portable tool with a UI to install or update applications 
 ### RZUpdate (RZUpdate.exe)
 RZUpdate.exe is a portable command-line tool to install or update applications from the RZ repository.
 
+### (BETA) RZGet (RZGet.exe)
+Successor of `RZUpdate.exe`.
+```
+Install:
+Install a Software from Shortname : RZGet.exe install "<Shortname>"[;"<Shortname2>"]
+Install a Software from JSON File : RZGet.exe install "<JSON full path>"[;"<JSON full path>"]
+Install a Sepcific Version : RZGet.exe install --name "<ProductName>" --vendor "<Manufacturer>" --version "<ProductVersion>"
+
+Update:
+Update all missing updates : RZGet.exe update --all
+Show all missing updates : RZGet.exe update --list --all
+check if a Software requires an update : RZGet.exe update --list "<Shortname>"
+Update a Software from Shortname : RZGet.exe update "<Shortname>"[;"<Shortname2>"]
+
+Show:
+Show Metadata : RZGet.exe show "<Shortname>"
+Show Metadata for a specific Version : RZGet.exe show --name "<ProductName>" --vendor "<Manufacturer>" --version "<ProductVersion>"
+
+Search:
+Show Catalog JSON: RZGet.exe search
+```
+
 ### OneGet Provider
 A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to update or install applications from the RZ repository with powerShell.
 
