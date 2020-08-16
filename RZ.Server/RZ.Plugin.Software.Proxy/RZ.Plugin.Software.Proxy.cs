@@ -158,7 +158,7 @@ namespace Plugin_Software
                         {
                             using (Image image = Image.Load(bCache))
                             {
-                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(size, size) }));
                                 using (var imgs = new MemoryStream())
                                 {
                                     var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
@@ -186,7 +186,7 @@ namespace Plugin_Software
                             {
                                 using (Image image = Image.Load(bCache))
                                 {
-                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(size, size) }));
                                     using (var imgs = new MemoryStream())
                                     {
                                         var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
@@ -252,7 +252,7 @@ namespace Plugin_Software
                     {
                         using (Image image = Image.Load(bCache))
                         {
-                            image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                            image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(size, size) }));
                             using (var imgs = new MemoryStream())
                             {
                                 var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);

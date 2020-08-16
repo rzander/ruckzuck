@@ -864,8 +864,12 @@ namespace RZ.Server
                 ICollection<T> plugins = new List<T>(pluginTypes.Count);
                 foreach (Type type in pluginTypes)
                 {
-                    T plugin = (T)Activator.CreateInstance(type);
-                    plugins.Add(plugin);
+                    try
+                    {
+                        T plugin = (T)Activator.CreateInstance(type);
+                        plugins.Add(plugin);
+                    }
+                    catch { }
                 }
 
                 return plugins;

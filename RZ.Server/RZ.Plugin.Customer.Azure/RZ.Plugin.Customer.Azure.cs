@@ -66,6 +66,9 @@ namespace RZ.Plugin.Customer.Azure
             if (customerid == "81.246.0.34") //blocked 10.4.2020 (7000 Adobe Reader DC MUI failures/day)
                 return "https://rzproxy.azurewebsites.net";
 
+            //if (customerid == "88.157.220.241") //not using CDN, only get
+            //    return "https://rzproxy.azurewebsites.net";
+
             if (customerid == "swtesting")
                 return "https://ruckzuck.azurewebsites.net";
 

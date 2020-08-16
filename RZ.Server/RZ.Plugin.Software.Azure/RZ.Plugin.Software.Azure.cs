@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -14,14 +12,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Storage.Blob;
 
 namespace Plugin_Software
 {
@@ -61,6 +57,9 @@ namespace Plugin_Software
                 Directory.CreateDirectory(icons);
 
             Settings.Add("icons", icons);
+
+            string content = Path.Combine(wwwpath, "content");
+            Settings.Add("content", content);
         }
 
         public JArray GetSoftwares(string shortname, string customerid = "")
@@ -358,7 +357,7 @@ namespace Plugin_Software
                         {
                             using (Image image = Image.Load(bCache))
                             {
-                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                                 using (var imgs = new MemoryStream())
                                 {
                                     var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
@@ -386,7 +385,7 @@ namespace Plugin_Software
                             {
                                 using (Image image = Image.Load(bCache))
                                 {
-                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                                    image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                                     using (var imgs = new MemoryStream())
                                     {
                                         var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
@@ -459,7 +458,7 @@ namespace Plugin_Software
                 {
                     using (Image image = Image.Load(bCache))
                     {
-                        image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.Primitives.Size(size, size) }));
+                        image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                         using (var imgs = new MemoryStream())
                         {
                             var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
@@ -495,21 +494,21 @@ namespace Plugin_Software
                     JToken oContentID;
 
                     //Empty PreRequisites should be handled by the Client; Fix after 1.6.2.14!
-                    try
-                    {
-                        if (jObj["PreRequisites"] == null)
-                        {
-                            string[] oReq = new string[0];
-                            jObj.Add("PreRequisites", JToken.FromObject(oReq));
-                        }
+                    //try
+                    //{
+                    //    if (jObj["PreRequisites"] == null)
+                    //    {
+                    //        string[] oReq = new string[0];
+                    //        jObj.Add("PreRequisites", JToken.FromObject(oReq));
+                    //    }
 
-                        if (!jObj["PreRequisites"].HasValues)
-                        {
-                            string[] oReq = new string[0];
-                            jObj["PreRequisites"] = JToken.FromObject(oReq);
-                        }
-                    }
-                    catch { }
+                    //    if (!jObj["PreRequisites"].HasValues)
+                    //    {
+                    //        string[] oReq = new string[0];
+                    //        jObj["PreRequisites"] = JToken.FromObject(oReq);
+                    //    }
+                    //}
+                    //catch { }
 
                     try
                     {
@@ -523,23 +522,49 @@ namespace Plugin_Software
                     {
                         string sContentID = oContentID.Value<string>();
 
-                        CloudBlobContainer oRepoContainer = new CloudBlobContainer(new Uri(Settings["contURL"] + "?" + Settings["contSAS"]));
-                        var oDir = oRepoContainer.GetDirectoryReference(sContentID);
-
                         List<string> FileNames = new List<string>();
-                        foreach (CloudBlockBlob oItem in oDir.ListBlobsSegmentedAsync(new BlobContinuationToken()).Result.Results)
+                        if (_cache.TryGetValue("files-" + sContentID, out FileNames))
+                        { }
+                        else
                         {
-                            FileNames.Add(Path.GetFileName(oItem.Name.ToLower()));
+                            FileNames = new List<string>();
+                            //No need to load blob if local content exists...
+                            if (!Directory.Exists(Path.Combine(Settings["content"], sContentID)))
+                            {
+                                CloudBlobContainer oRepoContainer = new CloudBlobContainer(new Uri(Settings["contURL"] + "?" + Settings["contSAS"]));
+                                var oDir = oRepoContainer.GetDirectoryReference(sContentID);
+
+                                foreach (CloudBlockBlob oItem in oDir.ListBlobsSegmentedAsync(new BlobContinuationToken()).Result.Results)
+                                {
+                                    FileNames.Add(Path.GetFileName(oItem.Name.ToLower()));
+                                }
+
+                                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                                _cache.Set("files-" + sContentID, FileNames, cacheEntryOptions);
+                            }
                         }
 
                         foreach (JObject oFiles in jObj["Files"])
                         {
+                            //Skip blob if local content folder exists
+                            string sContentPath = Path.Combine(Settings["content"], sContentID);
+                            if (File.Exists(Path.Combine(sContentPath, oFiles["FileName"].Value<string>())))
+                            {
+                                string sBase = Base.localURL;
+                                if (Environment.GetEnvironmentVariable("localURL") != null)
+                                    sBase = Environment.GetEnvironmentVariable("localURL"); //If hosted in a container, the localURL represensts the server URL
+
+                                oFiles["URL"] = sBase + "/rest/v2/GetFile/" + oContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
+                                continue;
+                            }
+
                             if (FileNames.Contains(oFiles["FileName"].Value<string>().ToLower()))
                             {
                                 //oFiles["URL"] = Base.localURL + "/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
                                 oFiles["URL"] = "https://cdn.ruckzuck.tools/rest/v2/GetFile/" + sContentID + "/" + oFiles["FileName"].ToString().Replace("\\", "/");
-
                             }
+
+
                         }
                     }
                     else
@@ -835,7 +860,7 @@ namespace Plugin_Software
             catch { }
         }
 
-        private  void incQueue(string ShortName, string sasToken, string sURL)
+        private void incQueue(string ShortName, string sasToken, string sURL)
         {
             Task.Run(() =>
             {

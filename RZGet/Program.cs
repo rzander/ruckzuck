@@ -45,7 +45,7 @@ namespace RZGet
                 Console.WriteLine("Update all missing updates : RZGet.exe update --all");
                 Console.WriteLine("Show all missing updates : RZGet.exe update --list --all");
                 Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\"");
-                Console.WriteLine("Updatea Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"]");
+                Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"]");
                 Console.WriteLine("");
                 Console.WriteLine("Show:");
                 Console.WriteLine("Show Metadata : RZGet.exe show \"<Shortname>\"");
