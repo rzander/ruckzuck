@@ -355,3 +355,9 @@ RZ4CM/setup/setup.iss
 RZ4Intune/System.Management.Automation.dll
 logo.ico
 logo.png
+*.dll
+RZ.FN/wwwroot/repository/devcdragent.json
+RZ.FN/wwwroot/plugins/config.json
+RZ.FN/wwwroot/repository/zander tools/devcdragentcore/2.0.1.44/devcdragent.json
+RZ.FN/wwwroot/repository/readme.txt
+RZ.FN/Properties/ServiceDependencies/fnrzemea - Web Deploy/profile.arm.json
