@@ -555,5 +555,66 @@ namespace RZ.Server
             return await Base.GetFile(sPath, customerid);
         }
 
+        [FunctionName("UploadSoftware")]
+        public static async Task<IActionResult> UploadSoftware([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            string customerid = req.Query["customerid"];
+            customerid = customerid ?? "";
+
+            try
+            {
+                var oGet = new StreamReader(req.Body).ReadToEndAsync();
+                string sJson = oGet.Result;
+                if (sJson.TrimStart().StartsWith('['))
+                    return new OkObjectResult(Base.UploadSoftwareWaiting(JArray.Parse(oGet.Result), customerid));
+                else
+                {
+                    JArray jResult = new JArray();
+                    jResult.Add(JObject.Parse(oGet.Result));
+                    return new OkObjectResult(Base.UploadSoftwareWaiting(jResult, customerid));
+                }
+            }
+            catch { }
+            return new OkObjectResult(false);
+
+        }
+
+        [FunctionName("uploadswentry")]
+        public static async Task<IActionResult> uploadswentry([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            if (!Base.ValidateIP(ClientIP))
+            {
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+                    return new OkObjectResult(false);
+            }
+
+            string customerid = req.Query["customerid"];
+            customerid = customerid ?? "";
+
+            var oGet = new StreamReader(req.Body).ReadToEndAsync();
+            string sJSON = oGet.Result;
+
+            Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1050, customerid);
+
+            if (sJSON.TrimStart().StartsWith('['))
+            {
+                bool bRes = Base.UploadSoftwareWaiting(JArray.Parse(sJSON), customerid);
+                return new OkObjectResult(bRes);
+            }
+            else
+            {
+                JArray jSW = new JArray();
+                jSW.Add(JObject.Parse(sJSON));
+                bool bRes = Base.UploadSoftwareWaiting(jSW, customerid);
+
+                return new OkObjectResult(bRes); ;
+            }
+            return new OkObjectResult(false);
+
+        }
     }
 }
