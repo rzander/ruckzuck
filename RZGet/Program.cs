@@ -52,7 +52,12 @@ namespace RZGet
                 Console.WriteLine("Show Metadata for a specific Version : RZGet.exe show --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
                 Console.WriteLine("");
                 Console.WriteLine("Search:");
-                Console.WriteLine("Show Catalog JSON: RZGet.exe search");
+                Console.WriteLine("Show full Catalog JSON: RZGet.exe search");
+                Console.WriteLine("Search for a Keyword: RZGet.exe search zip");
+                Console.WriteLine("Search SW in a Category: RZGet.exe search --categories compression");
+                Console.WriteLine("Search for installed SW: RZGet.exe search --isinstalled true");
+                Console.WriteLine("Search for a manufacturer: RZGet.exe search --manufacturer zander");
+                Console.WriteLine("Search for a shortname and return PowerShell Object: RZGet.exe search --shortname ruckzuck | convertfrom-json");
                 return 0;
             }
 
@@ -285,8 +290,60 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "search")
             {
-                
-                Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog(), Formatting.Indented).ToString());
+                if (lArgs[1] != null)
+                {
+                    if (lArgs[1].StartsWith("--")) 
+                    {
+                        string sProp = lArgs[1].ToLower().TrimStart('-');
+                        string sSearch = lArgs[2].ToLower();
+
+                        if(sProp == "shortname")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "manufacturer")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.Manufacturer.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "productname" || sProp == "name")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "description")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.Description.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "categories" || sProp == "category")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => string.Join(";", t.Categories.ToArray()).ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "producturl" || sProp == "url")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductURL.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "productversion" || sProp == "version")
+                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductVersion.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+
+                        if (sProp == "isinstalled")
+                        {
+                            oScan = new RZScan(false, false);
+                            oScan.SWScanAsync().Wait();
+                            oScan.GetSWRepository().Wait();
+                            foreach(var osw in oScan.InstalledSoftware)
+                            {
+                                var oItem = oScan.SoftwareRepository.FirstOrDefault(t => t.ProductName == osw.ProductName && t.Manufacturer == osw.Manufacturer && t.ProductVersion == osw.ProductVersion);
+                                if (oItem != null)
+                                    oItem.isInstalled = true;
+                            }
+
+                            Console.WriteLine(JsonConvert.SerializeObject(oScan.SoftwareRepository.Where(t => t.isInstalled.ToString().ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                        }
+
+                    }
+                    else
+                    {
+                        string sSearch = lArgs[1].ToLower();
+                        Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductName.ToLower().Contains(sSearch) || t.Manufacturer.ToLower().Contains(sSearch) || t.ShortName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog(), Formatting.Indented).ToString());
+                }
                 return 0;
             }
 
