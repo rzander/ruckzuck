@@ -75,7 +75,12 @@ Show Metadata : RZGet.exe show "<Shortname>"
 Show Metadata for a specific Version : RZGet.exe show --name "<ProductName>" --vendor "<Manufacturer>" --version "<ProductVersion>"
 
 Search:
-Show Catalog JSON: RZGet.exe search
+Show full Catalog JSON: RZGet.exe search
+Search for a Keyword: RZGet.exe search zip
+Search SW in a Category: RZGet.exe search --categories compression
+Search for installed SW: RZGet.exe search --isinstalled true
+Search for a manufacturer: RZGet.exe search --manufacturer zander
+Search for a shortname and return PowerShell Object: RZGet.exe search --shortname ruckzuck | convertfrom-json
 ```
 
 ### OneGet Provider
