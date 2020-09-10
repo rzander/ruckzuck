@@ -5,7 +5,7 @@
     <Company>Zander - Tools</Company>
     <Copyright>(c) 2020 by Roger Zander</Copyright>
     <Description>RuckZuck Server running as Azure Function</Description>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <AssemblyVersion>1.0.0.2</AssemblyVersion>
     <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>

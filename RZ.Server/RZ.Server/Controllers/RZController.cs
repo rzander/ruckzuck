@@ -148,8 +148,16 @@ namespace RZ.Server.Controllers
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
+            //if (ClientIP == "88.157.220.241" && string.IsNullOrEmpty(customerid))
+            //    return Content("[]");
+
             if (string.IsNullOrEmpty(Base.localURL))
+            {
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
+                Base.WriteLog($"Set localURL: {Base.localURL}", ClientIP, 1000, customerid);
+            }
+
+
 
             JArray jSW;
             if (!string.IsNullOrEmpty(shortname))
@@ -283,6 +291,10 @@ namespace RZ.Server.Controllers
         public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            //if (ClientIP == "88.157.220.241" && string.IsNullOrEmpty(customerid))
+            //    return Content("[]");
+
             if (!Base.ValidateIP(ClientIP))
             {
                 if(Environment.GetEnvironmentVariable("EnforceGetURL") == "true")

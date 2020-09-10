@@ -563,7 +563,7 @@ namespace RZ.Server
                             try
                             {
                                 if (!string.IsNullOrEmpty(sRZVersion))
-                                    if (productversion == sRZVersion.ToLower()) //same version...
+                                    if (productversion.ToLower() == sRZVersion.ToLower()) //same version...
                                     {
                                         var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
                                         _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
@@ -574,7 +574,15 @@ namespace RZ.Server
 
                             try
                             {
-                                if (TrimVersion(Version.Parse(productversion.Replace('-', '.').Trim())) > TrimVersion(Version.Parse(sRZVersion.Replace('-', '.').Trim()))) //version is newer
+                                productversion = productversion.Replace("_", ".");
+                                productversion = productversion.Replace("-", ".");
+                                productversion = productversion.TrimStart('v');
+                                productversion = productversion.Replace(" ", "");
+                                sRZVersion = sRZVersion.Replace("_", ".");
+                                sRZVersion = sRZVersion.Replace("-", ".");
+                                sRZVersion = sRZVersion.TrimStart('v');
+                                sRZVersion = sRZVersion.Replace(" ", "");
+                                if (TrimVersion(Version.Parse(productversion)) > TrimVersion(Version.Parse(sRZVersion))) //version is newer
                                 {
                                     Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
                                     Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "Version", true);
@@ -582,7 +590,7 @@ namespace RZ.Server
                                     _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                     continue;
                                 }
-                                if (TrimVersion(Version.Parse(productversion.Replace('-', '.').Trim())) == TrimVersion(Version.Parse(sRZVersion.Replace('-', '.').Trim()))) //version is  same
+                                if (TrimVersion(Version.Parse(productversion)) == TrimVersion(Version.Parse(sRZVersion))) //version is  same
                                 {
                                     var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
                                     _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
@@ -593,13 +601,17 @@ namespace RZ.Server
                             {
                                 try
                                 {
-                                    if (string.Compare(productversion, sRZVersion, true) >= 1)
+                                    //If version is string detect all differences as update
+                                    if (string.Compare(productversion, sRZVersion, true) == 0)
                                     {
-                                        Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
-                                        Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "String", true);
                                         var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(900)); //cache result for 15min
                                         _cache.Set("noupd-" + sID, "no", cacheEntryOptions2);
                                         continue;
+                                    } 
+                                    else
+                                    {
+                                        Base.SetShortname(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>());
+                                        Base.StoreFeedback(jSW["ProductName"].Value<string>(), productversion, jSW["Manufacturer"].Value<string>(), jSW["ShortName"].Value<string>(), "NEW Version ?!", "String", true);
                                     }
                                 }
                                 catch { }

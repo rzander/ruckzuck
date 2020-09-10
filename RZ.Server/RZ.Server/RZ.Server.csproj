@@ -9,8 +9,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>Copyright (c) 2020 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.2.0.5</AssemblyVersion>
-    <FileVersion>2.2.0.5</FileVersion>
+    <AssemblyVersion>2.2.0.6</AssemblyVersion>
+    <FileVersion>2.2.0.6</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>
@@ -57,7 +57,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.14.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.3" />
