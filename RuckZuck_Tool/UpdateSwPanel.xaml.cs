@@ -84,23 +84,26 @@ namespace RuckZuck_Tool
                         oSW.Download(false).ConfigureAwait(false);
                         dm.lDLTasks.Add(oSW.downloadTask);
 
-                        foreach (string sPreReq in oSW.SW.PreRequisites)
+                        if (oSW.SW.PreRequisites != null)
                         {
-                            try
+                            foreach (string sPreReq in oSW.SW.PreRequisites)
                             {
-                                SWUpdate oPreReq = new SWUpdate(sPreReq);
-                                oPreReq.GetInstallType();
-                                if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
+                                try
                                 {
-                                    oPreReq.ProgressDetails += OSW_ProgressDetails;
-                                    oPreReq.downloadTask.AutoInstall = true;
-                                    oPreReq.Download(false).ConfigureAwait(false);
-                                    dm.lDLTasks.Add(oPreReq.downloadTask);
+                                    SWUpdate oPreReq = new SWUpdate(sPreReq);
+                                    oPreReq.GetInstallType();
+                                    if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oPreReq.SW.ProductName) == null)
+                                    {
+                                        oPreReq.ProgressDetails += OSW_ProgressDetails;
+                                        oPreReq.downloadTask.AutoInstall = true;
+                                        oPreReq.Download(false).ConfigureAwait(false);
+                                        dm.lDLTasks.Add(oPreReq.downloadTask);
+                                    }
+
                                 }
+                                catch { }
 
                             }
-                            catch { }
-
                         }
                     }
                     dm.Show();
