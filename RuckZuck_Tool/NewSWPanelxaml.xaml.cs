@@ -971,20 +971,24 @@ namespace RuckZuck_Tool
             //Replace the Version in the PSDetctionScript
             if (tbVersion.Text != sOldVersion)
             {
-                //tbPSDetection.Text = tbPSDetection.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
-                //tbPSUnInstall.Text = tbPSUnInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
-                tbPSPostInstall.Text = tbPSPostInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
-                tbPSPrereq.Text = tbPSPrereq.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
-                tbPSPreInstall.Text = tbPSPreInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
+                try
+                {
+                    //tbPSDetection.Text = tbPSDetection.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
+                    //tbPSUnInstall.Text = tbPSUnInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
+                    tbPSPostInstall.Text = tbPSPostInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
+                    tbPSPrereq.Text = tbPSPrereq.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
+                    tbPSPreInstall.Text = tbPSPreInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
 
-                //tbPSDetection.Text = tbPSDetection.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
-                //tbPSUnInstall.Text = tbPSUnInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
-                tbPSPostInstall.Text = tbPSPostInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
-                tbPSPrereq.Text = tbPSPrereq.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
-                tbPSPreInstall.Text = tbPSPreInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
+                    //tbPSDetection.Text = tbPSDetection.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
+                    //tbPSUnInstall.Text = tbPSUnInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
+                    tbPSPostInstall.Text = tbPSPostInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
+                    tbPSPrereq.Text = tbPSPrereq.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
+                    tbPSPreInstall.Text = tbPSPreInstall.Text.Replace("\"" + sOldVersion + "\"", "\"" + tbVersion.Text + "\"");
 
-                tbPSDetection.Text = tbPSDetection.Text.Replace(sOldVersion, tbVersion.Text);
-                tbPSUnInstall.Text = tbPSUnInstall.Text.Replace(sOldVersion, tbVersion.Text);
+                    tbPSDetection.Text = tbPSDetection.Text.Replace(sOldVersion, tbVersion.Text);
+                    tbPSUnInstall.Text = tbPSUnInstall.Text.Replace(sOldVersion, tbVersion.Text);
+                }
+                catch { }
             }
         }
 
