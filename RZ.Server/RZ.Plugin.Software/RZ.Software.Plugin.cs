@@ -151,7 +151,69 @@ namespace Plugin_Software
 
             string sRepository = Settings["repository"];
 
-            string lookupPath = Path.Combine(sRepository, Base.clean(man.ToLower()), Base.clean(name.ToLower()), Base.clean(ver.ToLower()));
+            string lookupPath = Path.Combine(sRepository, "customers", customerid, Base.clean(man.ToLower()), Base.clean(name.ToLower()), Base.clean(ver.ToLower()));
+
+            if (Directory.Exists(lookupPath))
+            {
+                foreach (string sFile in Directory.GetFiles(lookupPath, "*.json"))
+                {
+                    string sJson = File.ReadAllText(sFile);
+
+                    try
+                    {
+                        jResult = JArray.Parse(sJson);
+
+                        //fix PreRequisite issue on client when parsing json with null value prerequisite
+                        foreach (JObject jObj in jResult)
+                        {
+                            JToken jPreReq;
+                            if (jObj.TryGetValue("PreRequisites", out jPreReq))
+                            {
+                                if (string.IsNullOrEmpty(jPreReq.ToString()))
+                                {
+                                    jObj["PreRequisites"] = new JArray();
+                                }
+                            }
+                        }
+
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                        _cache.Set("mnv-" + man + name + ver, jResult, cacheEntryOptions);
+
+                        UpdateURLs(ref jResult);
+
+                        return jResult;
+                    }
+                    catch { }
+
+                    try
+                    {
+                        jResult = new JArray();
+                        JObject oObj = JObject.Parse(sJson);
+
+                        //fix PreRequisite issue on client when parsing json with null value prerequisite
+                        JToken jPreReq;
+                        if (oObj.TryGetValue("PreRequisites", out jPreReq))
+                        {
+                            if (string.IsNullOrEmpty(jPreReq.ToString()))
+                            {
+                                oObj["PreRequisites"] = new JArray();
+                            }
+                        }
+
+                        jResult.Add(oObj);
+
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                        _cache.Set("mnv-" + man + name + ver, jResult, cacheEntryOptions);
+
+                        UpdateURLs(ref jResult);
+
+                        return jResult;
+                    }
+                    catch { }
+                }
+            }
+
+            lookupPath = Path.Combine(sRepository, Base.clean(man.ToLower()), Base.clean(name.ToLower()), Base.clean(ver.ToLower()));
 
             if (Directory.Exists(lookupPath))
             {

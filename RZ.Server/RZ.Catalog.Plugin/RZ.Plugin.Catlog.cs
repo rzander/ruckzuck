@@ -64,7 +64,7 @@ namespace RZ.Plugin.Catlog.Azure
             if (!nocache) //skip cache ?!
             {
                 //Try to get value from Memory
-                if (_cache.TryGetValue("swcat", out jResult))
+                if (_cache.TryGetValue("swcat" + customerid, out jResult))
                 {
                     return jResult;
                 }
@@ -178,8 +178,116 @@ namespace RZ.Plugin.Catlog.Azure
 
             }
 
+            if (!string.IsNullOrEmpty(customerid))
+            {
+                foreach (string sFile in Directory.GetFiles(Path.Combine(sRepository, "customers", customerid), "*.json"))
+                {
+                    try
+                    {
+                        string shortname = Base.clean(new FileInfo(sFile).Name.Split(".json")[0]);
+
+                        JArray jFull = new JArray();
+                        string sJson = File.ReadAllText(Path.Combine(sRepository, "customers", customerid, Base.clean(shortname) + ".json"));
+                        if (sJson.TrimStart().StartsWith('['))
+                            jFull = JArray.Parse(sJson);
+                        else
+                        {
+                            jFull.Add(JObject.Parse(sJson));
+                        }
+
+                        foreach (JObject jSW in jFull)
+                        {
+                            try
+                            {
+                                JObject oCatItem = new JObject();
+                                //oCatItem.Add("Shortname", jSW["Shortname"]);
+                                oCatItem.Add("ShortName", jSW["ShortName"]);
+                                oCatItem.Add("Description", jSW["Description"]);
+                                oCatItem.Add("Manufacturer", jSW["Manufacturer"]);
+                                oCatItem.Add("ProductName", jSW["ProductName"]);
+                                oCatItem.Add("ProductVersion", jSW["ProductVersion"]);
+                                oCatItem.Add("ProductURL", jSW["ProductURL"]);
+
+                                JArray jCategories = JArray.FromObject(new string[] { "Other" });
+                                try
+                                {
+                                    if (jSW["Category"] != null)
+                                    {
+                                        if (!string.IsNullOrEmpty(jSW["Category"].ToString()))
+                                            jCategories = JArray.FromObject(jSW["Category"].Value<string>().Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries));
+                                    }
+                                }
+                                catch { }
+                                oCatItem.Add("Categories", jCategories);
+
+                                oCatItem.Add("Downloads", 0);
+
+                                if (jSW["SWId"] != null)
+                                {
+                                    if (!string.IsNullOrEmpty(jSW["SWId"].ToString()))
+                                    {
+                                        oCatItem.Add("SWId", jSW["SWId"].Value<Int32>());
+                                        //oCatItem.Add("IconId", jSW["SWId"].Value<Int32>()); //for old Apps
+                                    }
+
+                                }
+
+                                try
+                                {
+                                    if (jSW["IconHash"] == null || string.IsNullOrEmpty(jSW["IconHash"].Value<string>()))
+                                    {
+                                        if (jSW["Image"] != null)
+                                        {
+                                            string sIconHash = RZ.Server.Hash.CalculateMD5HashString(jSW["Image"].ToString());
+                                            //string IconsPath = Settings["icons"];
+                                            byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
+                                            if (!File.Exists(Path.Combine(Settings["icons"], sIconHash + ".jpg")))
+                                            {
+                                                File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                            }
+
+                                            jSW["IconHash"] = sIconHash;
+                                        }
+                                    }
+
+                                    if (jSW["IconHash"] != null)
+                                    {
+                                        if (!File.Exists(Path.Combine(Settings["icons"], jSW["IconHash"].ToString() + ".jpg")))
+                                        {
+                                            try
+                                            {
+                                                string sIconHash = jSW["IconHash"].ToString();
+                                                byte[] bIcon = jSW["Image"].ToObject(typeof(byte[])) as byte[];
+                                                File.WriteAllBytes(Path.Combine(Settings["icons"], sIconHash + ".jpg"), bIcon);
+                                            }
+                                            catch { }
+                                        }
+
+                                        if (!string.IsNullOrEmpty(jSW["IconHash"].ToString()))
+                                            oCatItem.Add("IconHash", jSW["IconHash"].ToString());
+                                    }
+                                }
+                                catch { }
+
+                                jResult.Add(oCatItem);
+                                break; //skip other architectures or languages
+                            }
+                            catch (Exception ex)
+                            {
+                                ex.Message.ToString();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.Message.ToString();
+                    }
+
+                }
+            }
+
             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
-            _cache.Set("swcat", jResult, cacheEntryOptions);
+            _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
 
             return jResult;
         }

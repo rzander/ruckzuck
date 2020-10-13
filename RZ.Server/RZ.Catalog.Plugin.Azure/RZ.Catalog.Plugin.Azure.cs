@@ -50,7 +50,7 @@ namespace Plugin_Software
             if (!nocache) //skip cache ?!
             {
                 //Try to get value from Memory
-                if (_cache.TryGetValue("swcat", out jResult))
+                if (_cache.TryGetValue("swcat" + customerid, out jResult))
                 {
                     return jResult;
                 }
@@ -61,7 +61,7 @@ namespace Plugin_Software
             jResult = getCatalog(Settings["catURL"] + "?" + Settings["catSAS"], customerid);
 
             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
-            _cache.Set("swcat", jResult, cacheEntryOptions);
+            _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
 
             return jResult;
         }
@@ -70,8 +70,10 @@ namespace Plugin_Software
         {
             try
             {
-                if (string.IsNullOrEmpty(Customer))
-                    Customer = "known";
+                //if (string.IsNullOrEmpty(Customer))
+                //    Customer = "known";
+
+                Customer = "known";
 
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));

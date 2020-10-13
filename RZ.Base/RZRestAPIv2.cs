@@ -320,6 +320,7 @@ namespace RuckZuck.Base
         {
             if (string.IsNullOrEmpty(customerid))
             {
+                customerid = CustomerID;
                 if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
                 {
                     try
@@ -358,8 +359,7 @@ namespace RuckZuck.Base
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
 
-
-                    if (string.IsNullOrEmpty(customerid) && lRes.Count > 400)
+                    if (lRes.Count > 400)
                     {
                         try
                         {

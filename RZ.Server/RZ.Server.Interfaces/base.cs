@@ -116,7 +116,7 @@ namespace RZ.Server
             if (!nocache) //skip cache ?!
             {
                 //Try to get value from Memory
-                if (_cache.TryGetValue("swcat", out jResult))
+                if (_cache.TryGetValue("swcat" + customerid, out jResult))
                 {
                     return jResult;
                 }
@@ -154,7 +154,7 @@ namespace RZ.Server
                 }
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
-                _cache.Set("swcat", jResult, cacheEntryOptions);
+                _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
 
                 return jResult;
             }

@@ -522,10 +522,12 @@ namespace RuckZuck_Tool
                         SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
 
                         //get Icon
-                        oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                        if (oSW.SW != null)
+                        {
+                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
 
-                        oNewPanel.OpenXML(oSW.SW);
-
+                            oNewPanel.OpenXML(oSW.SW);
+                        }
                         tabWizard.SelectedItem = tabNewSWSMI;
                     }
 

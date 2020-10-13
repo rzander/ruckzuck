@@ -82,7 +82,7 @@ namespace RZ.Server
 
             if (customerid.ToLower() == "--new--")
             {
-                JArray oRes = Base.GetCatalog("", true);
+                JArray oRes = Base.GetCatalog(customerid, true);
                 JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
@@ -91,7 +91,7 @@ namespace RZ.Server
             if (customerid.ToLower() == "--old--")
             {
                 Base.ResetMemoryCache();
-                JArray oRes = Base.GetCatalog("");
+                JArray oRes = Base.GetCatalog(customerid);
                 JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
@@ -234,7 +234,7 @@ namespace RZ.Server
                         {
                             try
                             {
-                                jObj["IconHash"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["IconHash"];
+                                jObj["IconHash"] = Base.GetCatalog(customerid).SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["IconHash"];
                             }
                             catch { }
                         }
@@ -284,7 +284,7 @@ namespace RZ.Server
                         {
                             try
                             {
-                                jObj["SWId"] = Base.GetCatalog().SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["SWId"];
+                                jObj["SWId"] = Base.GetCatalog(customerid).SelectToken("$..[?(@.ShortName =='" + jObj["ShortName"] + "')]")["SWId"];
                             }
                             catch { }
                         }
