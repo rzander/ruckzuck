@@ -43,6 +43,7 @@ namespace RZGet
                 Console.WriteLine("");
                 Console.WriteLine("Update:");
                 Console.WriteLine("Update all missing updates : RZGet.exe update --all");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"]");
                 Console.WriteLine("Show all missing updates : RZGet.exe update --list --all");
                 Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\"");
                 Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"]");
@@ -177,13 +178,19 @@ namespace RZGet
             if (lArgs[0].ToLower() == "update")
             {
                 bool bUpdateAll = false;
-                bool bList = false; 
+                bool bList = false;
+                bool bExclude = false;
+                List<string> lExclude = new List<string>();
 
                 if (lArgs.Contains("--all", StringComparer.CurrentCultureIgnoreCase))
                     bUpdateAll = true;
                 if (lArgs.Contains("--list", StringComparer.CurrentCultureIgnoreCase))
                 {
                     bList = true;
+                }
+                if (lArgs.Contains("--exclude", StringComparer.CurrentCultureIgnoreCase))
+                {
+                    bExclude = true;
                 }
 
                 RZScan oScan = new RZScan(false);
@@ -201,9 +208,20 @@ namespace RZGet
                             lUpdate.Add(sArg);
                         }
                     }
-                } else
+                } 
+                else
                 {
-                    lUpdate = oScan.NewSoftwareVersions.Select(t => t.ShortName).ToList();
+                    if (!bExclude)
+                    {
+                        lUpdate = oScan.NewSoftwareVersions.Select(t => t.ShortName).ToList();
+                    }
+                    else
+                    {
+                        int iex = lArgs.IndexOf("--exclude", 0);
+                        string scl = lArgs[iex + 1];
+                        lExclude = scl.ToLower().Split(';').ToList();
+                        lUpdate = oScan.NewSoftwareVersions.Where(r=> !lExclude.Contains(r.ShortName.ToLower())).Select(t => t.ShortName.ToLower()).ToList();
+                    }
                 }
 
                 foreach (string sArg in lUpdate)
