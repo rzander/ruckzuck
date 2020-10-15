@@ -60,9 +60,11 @@ namespace Plugin_Software
 
             jResult = getCatalog(Settings["catURL"] + "?" + Settings["catSAS"], customerid);
 
-            var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
-            _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
-
+            if (jResult.Count() > 0)
+            {
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
+                _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
+            }
             return jResult;
         }
 
@@ -105,39 +107,43 @@ namespace Plugin_Software
 
                 foreach (JObject jItem in jResult)
                 {
-                    if (!string.IsNullOrEmpty(jItem["Category"].Value<string>()))
+                    try
                     {
-                        jItem.Add("Categories", JArray.FromObject(jItem["Category"].Value<string>().Split(new char[] { ';', ',' }).ToList()));
+                        if (!string.IsNullOrEmpty(jItem["Category"].Value<string>()))
+                        {
+                            jItem.Add("Categories", JArray.FromObject(jItem["Category"].Value<string>().Split(new char[] { ';', ',' }).ToList()));
+                        }
+                        else
+                        {
+                            jItem.Add("Categories", JArray.FromObject(new string[] { "Other" }));
+                        }
+
+                        jItem.Remove("Category");
+
+                        if (jItem["SWId"] == null)
+                        {
+                            jItem.Add("SWId", jItem["IconId"]);
+                        }
+
+                        if (jItem["Downloads"] == null)
+                        {
+                            jItem.Add("Downloads", 0);
+                        }
+
+                        if (jItem["IconHash"] == null)
+                            jItem.Add("IconHash", "");
+
+                        jItem.Add("Image", null);
+                        jItem.Add("Quality", 100);
+
+                        //Backward compatibility; remove after 1.6.2.13
+                        //try
+                        //{
+                        //    jItem.Add("Shortname", jItem["ShortName"]);
+                        //}
+                        //catch { }
                     }
-                    else
-                    {
-                        jItem.Add("Categories", JArray.FromObject(new string[] { "Other" }));
-                    }
-
-                    jItem.Remove("Category");
-
-                    if (jItem["SWId"] == null)
-                    {
-                        jItem.Add("SWId", jItem["IconId"]);
-                    }
-
-                    if (jItem["Downloads"] == null)
-                    {
-                        jItem.Add("Downloads", 0);
-                    }
-
-                    if (jItem["IconHash"] == null)
-                        jItem.Add("IconHash", "");
-
-                    jItem.Add("Image", null);
-                    jItem.Add("Quality", 100);
-
-                    //Backward compatibility; remove after 1.6.2.13
-                    //try
-                    //{
-                    //    jItem.Add("Shortname", jItem["ShortName"]);
-                    //}
-                    //catch { }
+                    catch { }
                 }
 
                 return jResult;

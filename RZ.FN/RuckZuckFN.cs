@@ -63,7 +63,7 @@ namespace RZ.Server
         {
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
-            string snocache = req.Query["cnocache"];
+            string snocache = req.Query["nocache"];
             bool nocache = false;
             if ((snocache ?? "").ToLower() == "true")
                 nocache = true;
@@ -82,7 +82,7 @@ namespace RZ.Server
 
             if (customerid.ToLower() == "--new--")
             {
-                JArray oRes = Base.GetCatalog(customerid, true);
+                JArray oRes = Base.GetCatalog("", true);
                 JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
@@ -105,23 +105,27 @@ namespace RZ.Server
             //Cleanup
             foreach (JObject jObj in aRes)
             {
-                //remove quality
-                if (jObj["Quality"] != null)
+                try
                 {
-                    jObj.Remove("Quality");
-                }
+                    //remove quality
+                    if (jObj["Quality"] != null)
+                    {
+                        jObj.Remove("Quality");
+                    }
 
-                //remove Image
-                if (jObj["IconId"] != null)
-                {
-                    jObj.Remove("IconId");
-                }
+                    //remove Image
+                    if (jObj["IconId"] != null)
+                    {
+                        jObj.Remove("IconId");
+                    }
 
-                //remove Image
-                if (jObj["Image"] != null)
-                {
-                    jObj.Remove("Image");
+                    //remove Image
+                    if (jObj["Image"] != null)
+                    {
+                        jObj.Remove("Image");
+                    }
                 }
+                catch { }
             }
 
             return new OkObjectResult(aRes);
