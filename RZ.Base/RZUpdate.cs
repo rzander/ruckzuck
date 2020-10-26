@@ -283,6 +283,7 @@ namespace RZUpdate
         {
             AddSoftware oSW = new AddSoftware();
             SoftwareUpdate = new SWUpdate(oSW);
+            RZRestAPIv2.sURL.ToString();
         }
 
         public RZUpdater(string sSWFile)
@@ -561,7 +562,7 @@ namespace RZUpdate
                     }
                     else
                     {
-                        var oGetSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        var oGetSW = RZRestAPIv2.GetCatalog(RZRestAPIv2.CustomerID).Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                         if (oGetSW != null)
                         {
                             SW.ProductName = oGetSW.ProductName;
