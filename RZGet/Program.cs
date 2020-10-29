@@ -308,7 +308,7 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "search")
             {
-                if (lArgs[1] != null)
+                if (lArgs.Count > 1)
                 {
                     if (lArgs[1].StartsWith("--")) 
                     {
