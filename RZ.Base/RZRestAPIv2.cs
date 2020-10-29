@@ -318,29 +318,32 @@ namespace RuckZuck.Base
 
         public static List<GetSoftware> GetCatalog(string customerid = "")
         {
-            //if (string.IsNullOrEmpty(customerid))
-            //{
-
-            //}
-
-            customerid = CustomerID;
-            if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
+            if (string.IsNullOrEmpty(customerid))
             {
-                try
+                RZRestAPIv2.sURL.ToString();
+                customerid = CustomerID;
+            }
+
+            if (!customerid.StartsWith("--"))
+            {
+                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
                 {
-                    DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                    if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
+                    try
                     {
-                        //return cached Content
-                        string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                        JavaScriptSerializer ser = new JavaScriptSerializer();
-                        List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(jRes);
-                        return lRes;
+                        DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                        if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
+                        {
+                            //return cached Content
+                            string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
+                            JavaScriptSerializer ser = new JavaScriptSerializer();
+                            List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(jRes);
+                            return lRes;
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("E1" + ex.Message, "GetCatalog");
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("E1" + ex.Message, "GetCatalog");
+                    }
                 }
             }
 
@@ -361,7 +364,7 @@ namespace RuckZuck.Base
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
 
-                    if (lRes.Count > 500)
+                    if (lRes.Count > 500 && !customerid.StartsWith("--"))
                     {
                         try
                         {

@@ -70,7 +70,7 @@ namespace RuckZuck_Tool.Properties {
         ///[assembly: AssemblyConfiguration(&quot;&quot;)]
         ///[assembly: AssemblyCompany(&quot;RuckZuck.tools&quot;)]
         ///[assembly: AssemblyProduct(&quot;RZRZRZ&quot;)]
-        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2019 by Roger Zander&quot;)]
+        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2020 by Roger Zander&quot;)]
         ///[assembly: AssemblyTrademark(&quot;&quot;)]
         ///[assembly: AssemblyCulture(&quot;&quot;)]
         ///[ [rest of string was truncated]&quot;;.
@@ -97,13 +97,12 @@ namespace RuckZuck_Tool.Properties {
         ///
         ///namespace RuckZuck.Base
         ///{
-        ///    class RZRestAPIv2
+        ///    public class AddSoftware
         ///    {
-        ///        private static string _sURL = &quot;UDP&quot;;
-        ///        public static bool DisableBroadcast = false;
-        ///        public static string CustomerID = &quot;&quot;;
-        ///
-        ///    [rest of string was truncated]&quot;;.
+        ///        public string Architecture { get; set; }
+        ///        public string Author { get; set; }
+        ///        public string Category { get; set; }
+        ///      [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
@@ -129,10 +128,9 @@ namespace RuckZuck_Tool.Properties {
         ///
         ///namespace RZUpdate
         ///{
-        ///    /// &lt;summary&gt;
-        ///    /// Updater Class
-        ///    /// &lt;/summary&gt;
-        ///    public class RZ [rest of string was truncated]&quot;;.
+        ///    public static class AuthenticodeTools
+        ///    {
+        ///        //Source: https://stack [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {
