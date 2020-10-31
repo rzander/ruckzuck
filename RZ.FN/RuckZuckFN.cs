@@ -100,7 +100,17 @@ namespace RZ.Server
             Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
             log.LogInformation("GetCatalog from ClientIP: " + ClientIP + " CustomerID: " + customerid);
 
-            JArray aRes = Base.GetCatalog(customerid, nocache);
+            JArray aRes = new JArray();
+
+            //only forward customerid if it's not an ipv4 address...
+            if (customerid.Count(t => (t == '.')) != 3)
+            {
+                aRes = Base.GetCatalog(customerid, nocache);
+            }
+            else
+            {
+                aRes = Base.GetCatalog("", nocache);
+            }
 
             //Cleanup
             foreach (JObject jObj in aRes)

@@ -153,7 +153,7 @@ namespace RZ.Server
                         oItem.Remove();
                 }
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)); //cache catalog for 10 Minutes
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
                 _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
 
                 return jResult;

@@ -59,9 +59,6 @@ namespace RZ.Server.Controllers
                 if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
                     return Content("[]");
             }
-            else
-            {
-            }
 
             if (string.IsNullOrEmpty(Base.localURL))
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
@@ -76,6 +73,7 @@ namespace RZ.Server.Controllers
 
             if (customerid.ToLower() == "--old--")
             {
+                Base.ResetMemoryCache();
                 JArray oRes = Base.GetCatalog("", true);
                 JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
@@ -85,7 +83,17 @@ namespace RZ.Server.Controllers
             _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-light\">%tt% - Get Catalog</li>");
             Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
 
-            JArray aRes = Base.GetCatalog(customerid, nocache);
+            JArray aRes = new JArray();
+
+            //only forward customerid if it's not an ipv4 address...
+            if (customerid.Count(t=>(t == '.')) != 3)
+            {
+                aRes = Base.GetCatalog(customerid, nocache);
+            }
+            else
+            {
+                aRes = Base.GetCatalog("", nocache);
+            }
             
             //Cleanup
             foreach(JObject jObj in aRes)
@@ -156,8 +164,6 @@ namespace RZ.Server.Controllers
                 Base.localURL = Request.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
                 Base.WriteLog($"Set localURL: {Base.localURL}", ClientIP, 1000, customerid);
             }
-
-
 
             JArray jSW;
             if (!string.IsNullOrEmpty(shortname))

@@ -46,11 +46,11 @@ namespace Plugin_Software
         public JArray GetCatalog(string customerid = "", bool nocache = false)
         {
             JArray jResult = new JArray();
-
+            customerid = "known";
             if (!nocache) //skip cache ?!
             {
                 //Try to get value from Memory
-                if (_cache.TryGetValue("swcat" + customerid, out jResult))
+                if (_cache.TryGetValue("swcataz" + customerid, out jResult))
                 {
                     return jResult;
                 }
@@ -62,8 +62,8 @@ namespace Plugin_Software
 
             if (jResult.Count() > 0)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
-                _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5)); //cache catalog for 5 Minutes
+                _cache.Set("swcataz" + customerid, jResult, cacheEntryOptions);
             }
             return jResult;
         }

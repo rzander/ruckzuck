@@ -290,7 +290,7 @@ namespace RZ.Plugin.Catlog.Azure
 
             if (jResult.Count > 0)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5)); //cache catalog for 5 Minutes
                 _cache.Set("swcatloc" + customerid, jResult, cacheEntryOptions);
             }
 

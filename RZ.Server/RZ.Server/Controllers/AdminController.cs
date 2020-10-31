@@ -73,6 +73,7 @@ namespace RZ.Server.Controllers
                     {
                         _hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-warning\">%tt% - SW Approved: " + sApp + "</li>");
                         _hubContext.Clients.All.SendAsync("Reload");
+                        Base.ResetMemoryCache();
                         Base.SendNotification("Software Approved:" + sApp, "");
                         Base.GetCatalog("", true);
                         _hubContext.Clients.All.SendAsync("Reload");
