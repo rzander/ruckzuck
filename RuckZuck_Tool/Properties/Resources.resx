@@ -490,7 +490,7 @@ namespace RuckZuck.Base
                 sURL = "UDP"; //reset URL as this part is only called every 30 min
 
                 Task&lt;string&gt; response;
-                if (string.IsNullOrEmpty(customerid))
+                if (string.IsNullOrEmpty(customerid) || customerid.Count(t=&gt;t == '.') == 3)
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid);
