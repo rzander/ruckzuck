@@ -330,8 +330,8 @@ namespace PackageManagement
                 {
                     oScan.GetSWRepository().Wait(6000);
                     oScan.bCheckUpdates = false;
-                    oScan.SWScan().Wait();
-                    oScan.CheckUpdates(null).Wait();
+                    oScan.SWScanAsync().Wait();
+                    oScan.CheckUpdatesAsync(null).Wait();
                     lSoftware = oScan.InstalledSoftware;
 
                     List<AddSoftware> RequiredUpdates = oScan.NewSoftwareVersions; // RZApi.CheckForUpdate(lSoftware.ToArray()).ToList().Where(t => t.Architecture != "new").ToList();
@@ -724,7 +724,7 @@ namespace PackageManagement
             if (oScan.bInitialScan)
             {
                 oScan = new RZScan(false, false);
-                oScan.SWScan().Wait();
+                oScan.SWScanAsync().Wait();
             }
 
             return oScan.InstalledSoftware;
