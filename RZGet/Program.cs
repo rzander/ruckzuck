@@ -107,9 +107,16 @@ namespace RZGet
                 
                 foreach(string sArg in args.Skip(1))
                 {
-                    if (File.Exists(sArg))
+                    if (File.Exists(sArg) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg)) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json")))
                     {
-                        RZUpdater oRZSW = new RZUpdater(sArg);
+                        string sJFile = sArg;
+                        if (!File.Exists(sJFile))
+                            sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg);
+
+                        if (!File.Exists(sJFile))
+                            sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json");
+
+                        RZUpdater oRZSW = new RZUpdater(sJFile);
 
                         if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
