@@ -720,7 +720,7 @@ namespace RZ.Server
                 //1st check Catalog
                 try
                 {
-                    JArray oCat = GetCatalog("", false);
+                    JArray oCat = GetCatalog(customerid, false);
 
                     var jobj = oCat.SelectTokens("[*]").Where(t => t["ProductName"].ToString().ToLower() == name.ToLower() && t["Manufacturer"].ToString().ToLower() == man.ToLower() && t["ProductVersion"].ToString().ToLower() == ver.ToLower());
                     if (jobj.FirstOrDefault() != null)

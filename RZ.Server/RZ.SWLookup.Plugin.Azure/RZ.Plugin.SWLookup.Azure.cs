@@ -20,6 +20,7 @@ namespace RZ.SWLookup.Plugin
     {
         private IMemoryCache _cache;
         private long SlidingExpiration = 300; //5min cache for Softwares
+        private HttpClient oClient = new HttpClient();
 
         public string Name
         {
@@ -100,9 +101,9 @@ namespace RZ.SWLookup.Plugin
         {
             try
             {
-                string manufacturer = Server.Base.clean(man).Trim();
-                string productname = Server.Base.clean(name).Trim();
-                string productversion = Server.Base.clean(ver).Trim();
+                string manufacturer = Server.Base.clean(man).Trim().ToLower();
+                string productname = Server.Base.clean(name).Trim().ToLower();
+                string productversion = Server.Base.clean(ver).Trim().ToLower();
 
                 string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
 
@@ -183,8 +184,8 @@ namespace RZ.SWLookup.Plugin
 
                 InsertEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString());
 
-                if (!string.IsNullOrEmpty(shortname))
-                    UpdateEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString()); //only update if there is a shortname
+                //if (!string.IsNullOrEmpty(shortname))
+                //    UpdateEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString()); //only update if there is a shortname
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1)); //cache hash for 1 hour
                 _cache.Set("setshort-" + sID, "exist", cacheEntryOptions);
@@ -198,29 +199,33 @@ namespace RZ.SWLookup.Plugin
 
         public void InsertEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
         {
-            Task.Run(() =>
-            {
-                try
-                {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    var jObj = JObject.Parse(JSON);
-                    jObj.Add("PartitionKey", PartitionKey);
-                    jObj.Add("RowKey", RowKey);
-                    using (HttpClient oClient = new HttpClient())
-                    {
-                        oClient.DefaultRequestHeaders.Accept.Clear();
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                        oCont.Headers.Add("x-ms-version", "2017-04-17");
-                        oCont.Headers.Add("Prefer", "return-no-content");
-                        oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                        var oRes = oClient.PostAsync(url, oCont);
-                        oRes.Wait();
-                    }
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            //        var jObj = JObject.Parse(JSON);
+            //        jObj.Add("PartitionKey", PartitionKey);
+            //        jObj.Add("RowKey", RowKey);
+            //        using (HttpClient oClient = new HttpClient())
+            //        {
+            //            oClient.DefaultRequestHeaders.Accept.Clear();
+            //            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //            HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+            //            oCont.Headers.Add("x-ms-version", "2017-04-17");
+            //            oCont.Headers.Add("Prefer", "return-no-content");
+            //            oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+            //            var oRes = oClient.PostAsync(url, oCont);
+            //            oRes.Wait();
+            //        }
 
-                }
-                catch { }
-            });
+            //    }
+            //    catch { }
+
+
+            //});
+
+            QueueInsertAsync(JSON, Settings["swqSAS"], Settings["swqURL"]);
         }
 
         public void UpdateEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
@@ -258,6 +263,18 @@ namespace RZ.SWLookup.Plugin
                     ex.Message.ToString();
                 }
             });
+        }
+
+        private async void QueueInsertAsync(string JSON, string sasToken, string sURL)
+        {
+            try
+            {
+                string url = $"{sURL}?timeout=10&{sasToken}";
+                string body = $"<QueueMessage><MessageText>{JSON}</MessageText></QueueMessage>";
+                HttpContent oCont = new StringContent(body);
+                var oRes = await oClient.PostAsync(url, oCont);
+            }
+            catch { }
         }
 
         public IEnumerable<string> SWLookupItems(string filter, string customerid = "")

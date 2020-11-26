@@ -102,7 +102,6 @@ namespace Plugin_Software
                     return jResult;
                 }
 
-
                 CloudBlobContainer oRepoContainer = new CloudBlobContainer(new Uri(Settings["repoURL"] + "?" + Settings["repoSAS"]));
                 string sID = Base.clean(man).ToLower() + "/" + Base.clean(name).ToLower() + "/" + Base.clean(ver).ToLower();
                 var oDir = oRepoContainer.GetDirectoryReference(sID);
