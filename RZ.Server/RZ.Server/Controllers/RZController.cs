@@ -570,6 +570,9 @@ namespace RZ.Server.Controllers
                         case 3:
                             _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-success\">%tt% - { statustext }</li>");
                             break;
+                        case 4:
+                            _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-info\">%tt% - { statustext }</li>");
+                            break;
                     }
                 }
             }
