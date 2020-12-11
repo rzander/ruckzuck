@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using static RZ.Server.RuckZuckFN;
 using System.Reflection;
 using Microsoft.Azure.ServiceBus;
+using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace RZ.Server
@@ -24,6 +25,9 @@ namespace RZ.Server
     {
         public static string sbconnection = "";
         public static TopicClient tcRuckZuck = null;
+        public static DateTime tLoadTime = new DateTime();
+        public static bool bOverload = false;
+        public static long lCount = 0;
 
         public class Startup : FunctionsStartup
         {
@@ -70,6 +74,21 @@ namespace RZ.Server
 
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
+            if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
+            {
+                if (lCount > 20)
+                    bOverload = true;
+                else
+                    bOverload = false;
+
+                lCount = 0;
+                tLoadTime = DateTime.Now;
+            }
+            else
+            {
+                lCount++;
+            }
+
 
             //if (!Base.ValidateIP(ClientIP))
             //{
@@ -82,7 +101,7 @@ namespace RZ.Server
 
             if (customerid.ToLower() == "--new--")
             {
-                JArray oRes = Base.GetCatalog("", true);
+                JArray oRes = Base.GetCatalog("", false);
                 JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
@@ -91,13 +110,16 @@ namespace RZ.Server
             if (customerid.ToLower() == "--old--")
             {
                 Base.ResetMemoryCache();
-                JArray oRes = Base.GetCatalog(customerid);
+                JArray oRes = Base.GetCatalog(customerid, true);
                 JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
             }
 
-            Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
+            if (!bOverload)
+                SendStatus("", 0, "Get Catalog");
+
+            //Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
             log.LogInformation("GetCatalog from ClientIP: " + ClientIP + " CustomerID: " + customerid);
 
             JArray aRes = new JArray();
@@ -341,13 +363,28 @@ namespace RZ.Server
 
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
-            if (!Base.ValidateIP(ClientIP))
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return new OkObjectResult(new JArray().ToString());
+            //}
+            //else
+            //{
+            //}
+
+            if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return new OkObjectResult(new JArray().ToString());
+                if (lCount > 20)
+                    bOverload = true;
+                else
+                    bOverload = false;
+
+                lCount = 0;
+                tLoadTime = DateTime.Now;
             }
             else
             {
+                lCount++;
             }
 
             DateTime dStart = DateTime.Now;
@@ -366,7 +403,11 @@ namespace RZ.Server
                 string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
                 TimeSpan tDuration = DateTime.Now - dStart;
                 Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
-                Base.WriteLog("V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
+
+                if (!bOverload)
+                    SendStatus("", 0, "CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) ");
+
+                //Base.WriteLog("V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
                 return new OkObjectResult(sResult);
             }
             else
@@ -485,13 +526,28 @@ namespace RZ.Server
             string counter = req.Query["counter"];
             counter = counter ?? "DL";
 
-            if (!Base.ValidateIP(ClientIP))
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return new OkObjectResult(false);
+            //}
+            //else
+            //{
+            //}
+
+            if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return new OkObjectResult(false);
+                if (lCount > 20)
+                    bOverload = true;
+                else
+                    bOverload = false;
+
+                lCount = 0;
+                tLoadTime = DateTime.Now;
             }
             else
             {
+                lCount++;
             }
 
             if (string.IsNullOrEmpty(customerid))
@@ -528,7 +584,10 @@ namespace RZ.Server
                     if (tcRuckZuck != null)
                         await tcRuckZuck.SendAsync(bMSG);
 
-                    Base.WriteLog($"Content donwloaded: {shortname}", ClientIP, 1300, customerid);
+                    if (!bOverload)
+                        SendStatus("", 4, "content downloaded (" + shortname + ")");
+
+                    //Base.WriteLog($"Content donwloaded: {shortname}", ClientIP, 1300, customerid);
                 }
                 catch { }
 
@@ -629,6 +688,24 @@ namespace RZ.Server
             }
             return new OkObjectResult(false);
 
+        }
+
+        private static async void SendStatus(string code= "", int mType = 0, string statustext = "")
+        {
+            if (string.IsNullOrEmpty(code))
+                code = Environment.GetEnvironmentVariable("StatusCode");
+
+            string sURL = Environment.GetEnvironmentVariable("RZMainPageURL");
+            if (string.IsNullOrEmpty(sURL))
+                sURL = "https://ruckzuck.tools";
+
+            using (HttpClient oClient = new HttpClient())
+            {
+                string url = $"{sURL}/rest/v2/showstatus?code={ code }&mtype={ mType }&statustext={ statustext }";
+                StringContent oCon = new StringContent("");
+                var oRes = await oClient.PostAsync(url, oCon);
+                oRes.StatusCode.ToString();
+            }
         }
     }
 }
