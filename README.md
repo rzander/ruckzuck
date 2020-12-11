@@ -53,10 +53,7 @@ Affected (known) Products:
 ### RuckZuck_Tool (RuckZuck.exe)
 The RuckZuck.exe is a portable tool with a UI to install or update applications from the RZ repository.
 
-### RZUpdate (RZUpdate.exe)
-RZUpdate.exe is a portable command-line tool to install or update applications from the RZ repository.
-
-### (BETA) RZGet (RZGet.exe)
+### RZGet (RZGet.exe)
 Successor of `RZUpdate.exe`.
 ```
 Install:
