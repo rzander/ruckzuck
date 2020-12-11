@@ -321,7 +321,7 @@ namespace RZ.Server
             }
             catch { }
 
-            return "https://ruckzuck.azurewebsites.net";
+            return "https://cdn.ruckzuck.tools";
         }
 
         public static bool IncCounter(string ShortName = "", string counter = "DL", string customerid = "known")

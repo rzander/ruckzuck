@@ -530,7 +530,52 @@ namespace RZ.Server.Controllers
             else
                 return Content((new JArray()).ToString());
         }
-        
+
+        [HttpPost]
+        [Route("rest/v2/showstatus")]
+        public ActionResult ShowStatus(string code= "", int mType = 0, string statustext = "")
+        {
+            if (code == Environment.GetEnvironmentVariable("StatusCode"))
+            {
+                string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+                if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
+                {
+                    if (lCount > 20)
+                        bOverload = true;
+                    else
+                        bOverload = false;
+
+                    lCount = 0;
+                    tLoadTime = DateTime.Now;
+                }
+                else
+                {
+                    lCount++;
+                }
+
+                if (!bOverload)
+                {
+                    switch (mType)
+                    {
+                        case 0:
+                            _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-light\">%tt% - { statustext }</li>");
+                            break;
+                        case 1:
+                            _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-warning\">%tt% - { statustext }</li>");
+                            break;
+                        case 2:
+                            _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-danger\">%tt% - { statustext }</li>");
+                            break;
+                        case 3:
+                            _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-success\">%tt% - { statustext }</li>");
+                            break;
+                    }
+                }
+            }
+            return new OkResult();
+        }
+
         [HttpGet]
         [Route("rest/v2/GetPendingApproval")]
         public ActionResult GetPendingApproval(string customerid = "")
