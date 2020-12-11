@@ -461,11 +461,26 @@ namespace RZ.Server
             string text = req.Query["text"];
             text = text ?? "";
 
-            if (!Base.ValidateIP(ClientIP))
+            if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return null;
+                if (lCount > 20)
+                    bOverload = true;
+                else
+                    bOverload = false;
+
+                lCount = 0;
+                tLoadTime = DateTime.Now;
             }
+            else
+            {
+                lCount++;
+            }
+
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return null;
+            //}
 
             string Shortname = Base.GetShortname(name, ver, man, customerid);
 
@@ -486,10 +501,12 @@ namespace RZ.Server
                             if (bWorking)
                             {
                                 Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
+                                SendStatus("", 3, "success (" + name + ")");
                             }
                             else
                             {
                                 Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
+                                SendStatus("", 2, "failed (" + name + "");
                             }
                         }
 
