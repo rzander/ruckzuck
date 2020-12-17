@@ -62,9 +62,11 @@ namespace RZ.Plugin.Customer.Azure
             //var oLoc = GetLocAsync(ip);
             //var jLoc = JObject.Parse(oLoc.Result);
             //string sLocation = jLoc["Location"].ToString();
+            if (customerid.ToLower().StartsWith("9qz"))
+                return "https://cdnromawo.azureedge.net";
 
-            if (customerid == "81.246.0.34") //blocked 10.4.2020 (7000 Adobe Reader DC MUI failures/day)
-                return "https://rzproxy.azurewebsites.net";
+            //if (customerid == "81.246.0.34") //blocked 10.4.2020 (7000 Adobe Reader DC MUI failures/day)
+            //    return "https://rzproxy.azurewebsites.net";
 
             //if (customerid == "88.157.220.241") //not using CDN, only get
             //    return "https://rzproxy.azurewebsites.net";
@@ -72,26 +74,24 @@ namespace RZ.Plugin.Customer.Azure
             if (customerid == "swtesting")
                 return "https://ruckzuck.azurewebsites.net";
 
-            if (customerid == "itnetx")
-                return "https://ruckzuck-itnetx.azurewebsites.net";
+            if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
+                return "https://cdn.ruckzuck.tools";
 
-            if (customerid == "vsb")
-                return "https://ruckzuck-itnetx.azurewebsites.net";
+            if (customerid == "itnetx")
+                return "https://cdnitnetx.azureedge.net";
 
             if (customerid == "lms")
-                return "https://ruckzuck-itnetx.azurewebsites.net";
+                return "https://cdnitnetx.azureedge.net";
 
             if (customerid == "sws")
-                return "https://ruckzuck-itnetx.azurewebsites.net";
+                return "https://cdnitnetx.azureedge.net";
 
-            if (customerid == "ewb")
-                return "https://ruckzuck-itnetx.azurewebsites.net";
+            if (customerid == "poe")
+                return "https://cdnitnetx.azureedge.net";
 
             if (customerid == "proxy")
                 return "https://rzproxy.azurewebsites.net";
 
-            if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
-                return "https://cdn.ruckzuck.tools";
 
 
             return "https://cdn.ruckzuck.tools";

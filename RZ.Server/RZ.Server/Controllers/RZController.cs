@@ -59,7 +59,7 @@ namespace RZ.Server.Controllers
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -357,7 +357,7 @@ namespace RZ.Server.Controllers
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -484,7 +484,7 @@ namespace RZ.Server.Controllers
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -541,7 +541,7 @@ namespace RZ.Server.Controllers
 
                 if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
                 {
-                    if (lCount > 20)
+                    if (lCount > 60)
                         bOverload = true;
                     else
                         bOverload = false;
@@ -592,6 +592,12 @@ namespace RZ.Server.Controllers
         {
             try
             {
+                //if (bOverload)
+                //    return Content("https://cdnromawo.azureedge.net", "text/html");
+
+                //if(lCount > 120)
+                //    return Content("https://cdnromawo.azureedge.net", "text/html");
+
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.SetValidIP(ClientIP);
                 Base.WriteLog("Get URL", ClientIP, 1000, customerid);
@@ -626,7 +632,7 @@ namespace RZ.Server.Controllers
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -656,8 +662,8 @@ namespace RZ.Server.Controllers
             {
                 //if (customerid.StartsWith("212.25.2.73"))
                 //    return;
-                if (customerid.StartsWith("81.246.0.34"))
-                    return;
+                //if (customerid.StartsWith("81.246.0.34"))
+                //    return;
             }
 
             string Shortname = Base.GetShortname(name, ver, man, customerid);
