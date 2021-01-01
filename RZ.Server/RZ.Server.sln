@@ -41,8 +41,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UpdateCounters", "..\Update
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.ServerFN", "..\RZ.FN\RZ.ServerFN.csproj", "{948B7A21-7184-4DFF-9734-4953CE3D6E3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "..\ConsoleApp1\ConsoleApp1.csproj", "{841CC532-EB8B-4787-8D23-08693528B484}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,10 +123,6 @@ Global
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{841CC532-EB8B-4787-8D23-08693528B484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{841CC532-EB8B-4787-8D23-08693528B484}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{841CC532-EB8B-4787-8D23-08693528B484}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{841CC532-EB8B-4787-8D23-08693528B484}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,7 +7,7 @@
     <StartupObject>RZ.Server.Program</StartupObject>
     <Version>2.2.0</Version>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
-    <Copyright>Copyright (c) 2020 by Roger Zander</Copyright>
+    <Copyright>Copyright (c) 2021 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
     <AssemblyVersion>2.2.0.11</AssemblyVersion>
     <FileVersion>2.2.0.11</FileVersion>
