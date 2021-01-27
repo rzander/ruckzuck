@@ -446,6 +446,10 @@ function GetWin32AppBody() {
         [ValidateNotNullOrEmpty()]
         [string]$description,
 
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$displayVersion = "",
+
         [parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$filename,
@@ -535,6 +539,7 @@ function GetWin32AppBody() {
         $body.runAs32bit = $false;
         $body.setupFilePath = $SetupFileName;
         $body.uninstallCommandLine = "msiexec /x `"$MsiProductCode`""
+        $body.displayVersion = "$($displayVersion)"
 
     }
 
@@ -561,7 +566,7 @@ function GetWin32AppBody() {
         if ($imageValue) {
             $body.largeIcon = @{"type" = "image/png"; "value" = $imageValue };
         }
-
+        $body.displayVersion = "$($displayVersion)"
     }
 
     $body;
@@ -941,7 +946,11 @@ NAME: Upload-Win32LOB
 
         [parameter(Mandatory = $true, Position = 13)]
         [ValidateNotNullOrEmpty()]
-        $notes
+        $notes,
+
+        [parameter(Mandatory = $false, Position = 14)]
+        [ValidateNotNullOrEmpty()]
+        $displayVersion = ""
     )
 
     try	{
@@ -1000,8 +1009,8 @@ NAME: Upload-Win32LOB
                 -MsiProductVersion $MsiProductVersion `
                 -MsiPublisher $MsiPublisher `
                 -MsiRequiresReboot $MsiRequiresReboot `
-                -MsiUpgradeCode $MsiUpgradeCode
-
+                -MsiUpgradeCode $MsiUpgradeCode `
+                -displayVersion $displayVersion
         }
 
         else {
@@ -1010,7 +1019,8 @@ NAME: Upload-Win32LOB
                 -description $description -filename $FileName -SetupFileName "$SetupFileName" `
                 -installExperience $installExperience -installCommandLine $installCmdLine `
                 -uninstallCommandLine $uninstallcmdline -imageValue $imageValue `
-                -informationURL $informationURL -developer $developer
+                -informationURL $informationURL -developer $developer `
+                -displayVersion $displayVersion
             if ($notes) { $mobileAppBody.notes = $notes }
         }
 
@@ -1302,7 +1312,8 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
     -requirementRules $reqRule `
     -informationURL $rzSW.ProductURL `
     -developer "RuckZuck" `
-    -notes "RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)"
+    -notes "RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)" `
+    -displayVersion "$($rzSW.ProductVersion)"
 
 ####################################################</Value>
     </Setting>
