@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -249,382 +249,388 @@ namespace RuckZuck_Tool.Properties {
             "\n\r\n        [parameter(Mandatory = $true)]\r\n        [ValidateNotNullOrEmpty()]\r\n " +
             "       [string]$publisher,\r\n\r\n        [parameter(Mandatory = $true)]\r\n        [V" +
             "alidateNotNullOrEmpty()]\r\n        [string]$description,\r\n\r\n        [parameter(Ma" +
-            "ndatory = $true)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$filename" +
-            ",\r\n\r\n        [parameter(Mandatory = $true)]\r\n        [ValidateNotNullOrEmpty()]\r" +
-            "\n        [string]$SetupFileName,\r\n\r\n        [parameter(Mandatory = $true)]\r\n    " +
-            "    [ValidateSet(\'system\', \'user\')]\r\n        $installExperience = \"system\",\r\n\r\n " +
-            "       [parameter(Mandatory = $false)]\r\n        [ValidateNotNullOrEmpty()]\r\n    " +
-            "    [string]$imageValue,\r\n\r\n        [parameter(Mandatory = $false)]\r\n        [Va" +
-            "lidateNotNullOrEmpty()]\r\n        $informationURL,\r\n\r\n        [parameter(Mandator" +
-            "y = $false)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $developer,\r\n\r\n       " +
-            " [parameter(Mandatory = $true, ParameterSetName = \"EXE\")]\r\n        [ValidateNotN" +
-            "ullOrEmpty()]\r\n        $installCommandLine,\r\n\r\n        [parameter(Mandatory = $t" +
-            "rue, ParameterSetName = \"EXE\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $un" +
-            "installCommandLine,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = " +
-            "\"MSI\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $MsiPackageType,\r\n\r\n       " +
-            " [parameter(Mandatory = $true, ParameterSetName = \"MSI\")]\r\n        [ValidateNotN" +
-            "ullOrEmpty()]\r\n        $MsiProductCode,\r\n\r\n        [parameter(Mandatory = $false" +
-            ", ParameterSetName = \"MSI\")]\r\n        $MsiProductName,\r\n\r\n        [parameter(Man" +
-            "datory = $true, ParameterSetName = \"MSI\")]\r\n        [ValidateNotNullOrEmpty()]\r\n" +
-            "        $MsiProductVersion,\r\n\r\n        [parameter(Mandatory = $false, ParameterS" +
-            "etName = \"MSI\")]\r\n        $MsiPublisher,\r\n\r\n        [parameter(Mandatory = $true" +
-            ", ParameterSetName = \"MSI\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $MsiRe" +
-            "quiresReboot,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"MSI\")" +
-            "]\r\n        [ValidateNotNullOrEmpty()]\r\n        $MsiUpgradeCode\r\n\r\n    )\r\n\r\n    i" +
-            "f ($MSI) {\r\n\r\n        $body = @{ \"@odata.type\" = \"#microsoft.graph.win32LobApp\" " +
-            "};\r\n        $body.applicableArchitectures = \"x64,x86\";\r\n        $body.descriptio" +
-            "n = $description;\r\n        $body.developer = \"\";\r\n        $body.displayName = $d" +
-            "isplayName;\r\n        $body.fileName = $filename;\r\n        $body.installCommandLi" +
-            "ne = \"msiexec /i `\"$SetupFileName`\"\"\r\n        $body.installExperience = @{\"runAs" +
-            "Account\" = \"$installExperience\" };\r\n        $body.informationUrl = $null;\r\n     " +
-            "   $body.isFeatured = $false;\r\n        $body.minimumSupportedOperatingSystem = @" +
-            "{\"v10_1607\" = $true };\r\n        $body.msiInformation = @{\r\n            \"packageT" +
-            "ype\"    = \"$MsiPackageType\";\r\n            \"productCode\"    = \"$MsiProductCode\";\r" +
-            "\n            \"productName\"    = \"$MsiProductName\";\r\n            \"productVersion\"" +
-            " = \"$MsiProductVersion\";\r\n            \"publisher\"      = \"$MsiPublisher\";\r\n     " +
-            "       \"requiresReboot\" = \"$MsiRequiresReboot\";\r\n            \"upgradeCode\"    = " +
-            "\"$MsiUpgradeCode\"\r\n        };\r\n        $body.notes = \"\";\r\n        $body.owner = " +
-            "\"\";\r\n        $body.privacyInformationUrl = $null;\r\n        $body.publisher = $pu" +
-            "blisher;\r\n        $body.runAs32bit = $false;\r\n        $body.setupFilePath = $Set" +
-            "upFileName;\r\n        $body.uninstallCommandLine = \"msiexec /x `\"$MsiProductCode`" +
-            "\"\"\r\n\r\n    }\r\n\r\n    elseif ($EXE) {\r\n\r\n        $body = @{ \"@odata.type\" = \"#micro" +
-            "soft.graph.win32LobApp\" };\r\n        $body.description = $description;\r\n        $" +
-            "body.developer = $developer;\r\n        $body.displayName = $displayName;\r\n       " +
-            " $body.fileName = $filename;\r\n        $body.informationUrl = $informationUrl;\r\n " +
-            "       $body.installCommandLine = \"$installCommandLine\"\r\n        $body.installEx" +
-            "perience = @{\"runAsAccount\" = \"$installExperience\" };\r\n        $body.isFeatured " +
-            "= $false;\r\n        $body.minimumSupportedOperatingSystem = @{\"v10_1607\" = $true " +
-            "};\r\n        $body.msiInformation = $null;\r\n        $body.notes = \"\";\r\n        $b" +
-            "ody.owner = \"\";\r\n        $body.privacyInformationUrl = $null;\r\n        $body.pub" +
-            "lisher = $publisher;\r\n        $body.runAs32bit = $false;\r\n        $body.setupFil" +
-            "ePath = $SetupFileName;\r\n        $body.uninstallCommandLine = \"$uninstallCommand" +
-            "Line\"\r\n        if ($imageValue) {\r\n            $body.largeIcon = @{\"type\" = \"ima" +
-            "ge/png\"; \"value\" = $imageValue };\r\n        }\r\n\r\n    }\r\n\r\n    $body;\r\n}\r\n\r\n######" +
-            "##############################################\r\n\r\nfunction GetAppFileBody($name," +
-            " $size, $sizeEncrypted, $manifest) {\r\n\r\n    $body = @{ \"@odata.type\" = \"#microso" +
-            "ft.graph.mobileAppContentFile\" };\r\n    $body.name = $name;\r\n    $body.size = $si" +
-            "ze;\r\n    $body.sizeEncrypted = $sizeEncrypted;\r\n    $body.manifest = $manifest;\r" +
-            "\n    $body.isDependency = $false;\r\n\r\n    $body;\r\n}\r\n\r\n##########################" +
-            "##########################\r\n\r\nfunction GetAppCommitBody($contentVersionId, $LobT" +
-            "ype) {\r\n\r\n    $body = @{ \"@odata.type\" = \"#$LobType\" };\r\n    $body.committedCont" +
-            "entVersion = $contentVersionId;\r\n\r\n    $body;\r\n\r\n}\r\n\r\n##########################" +
-            "##########################\r\n\r\nFunction Test-SourceFile() {\r\n\r\n    param\r\n    (\r\n" +
-            "        [parameter(Mandatory = $true)]\r\n        [ValidateNotNullOrEmpty()]\r\n    " +
-            "    $SourceFile\r\n    )\r\n\r\n    try {\r\n\r\n        if (!(test-path \"$SourceFile\")) {" +
-            "\r\n\r\n            Write-Host\r\n            Write-Host \"Source File \'$sourceFile\' do" +
-            "esn\'t exist...\" -ForegroundColor Red\r\n            throw\r\n\r\n        }\r\n\r\n    }\r\n\r" +
-            "\n    catch {\r\n\r\n        Write-Host -ForegroundColor Red $_.Exception.Message;\r\n " +
-            "       Write-Host\r\n        break\r\n\r\n    }\r\n\r\n}\r\n\r\n##############################" +
-            "######################\r\n\r\nFunction New-DetectionRule() {\r\n\r\n    [cmdletbinding()" +
-            "]\r\n\r\n    param\r\n    (\r\n        [parameter(Mandatory = $true, ParameterSetName = " +
-            "\"PowerShell\", Position = 1)]\r\n        [Switch]$PowerShell,\r\n\r\n        [parameter" +
-            "(Mandatory = $true, ParameterSetName = \"MSI\", Position = 1)]\r\n        [Switch]$M" +
-            "SI,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"File\", Position" +
-            " = 1)]\r\n        [Switch]$File,\r\n\r\n        [parameter(Mandatory = $true, Paramete" +
-            "rSetName = \"Registry\", Position = 1)]\r\n        [Switch]$Registry,\r\n\r\n        [pa" +
-            "rameter(Mandatory = $true, ParameterSetName = \"PowerShell\")]\r\n        [ValidateN" +
-            "otNullOrEmpty()]\r\n        [String]$ScriptFile,\r\n\r\n        [parameter(Mandatory =" +
-            " $true, ParameterSetName = \"PowerShell\")]\r\n        [ValidateNotNullOrEmpty()]\r\n " +
-            "       $enforceSignatureCheck,\r\n\r\n        [parameter(Mandatory = $true, Paramete" +
-            "rSetName = \"PowerShell\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $runAs32B" +
-            "it,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"MSI\")]\r\n       " +
-            " [ValidateNotNullOrEmpty()]\r\n        [String]$MSIproductCode,\r\n   \r\n        [par" +
-            "ameter(Mandatory = $true, ParameterSetName = \"File\")]\r\n        [ValidateNotNullO" +
-            "rEmpty()]\r\n        [String]$Path,\r\n \r\n        [parameter(Mandatory = $true, Para" +
-            "meterSetName = \"File\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$Fi" +
-            "leOrFolderName,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"Fil" +
-            "e\")]\r\n        [ValidateSet(\"notConfigured\", \"exists\", \"modifiedDate\", \"createdDa" +
-            "te\", \"version\", \"sizeInMB\")]\r\n        [string]$FileDetectionType,\r\n\r\n        [pa" +
-            "rameter(Mandatory = $false, ParameterSetName = \"File\")]\r\n        $FileDetectionV" +
-            "alue = $null,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"File\"" +
-            ")]\r\n        [ValidateSet(\"True\", \"False\")]\r\n        [string]$check32BitOn64Syste" +
-            "m = \"False\",\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"Regist" +
-            "ry\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        [String]$RegistryKeyPath,\r\n\r\n" +
-            "        [parameter(Mandatory = $true, ParameterSetName = \"Registry\")]\r\n        [" +
-            "ValidateSet(\"notConfigured\", \"exists\", \"doesNotExist\", \"string\", \"integer\", \"ver" +
-            "sion\")]\r\n        [string]$RegistryDetectionType,\r\n\r\n        [parameter(Mandatory" +
-            " = $false, ParameterSetName = \"Registry\")]\r\n        [ValidateNotNullOrEmpty()]\r\n" +
-            "        [String]$RegistryValue,\r\n\r\n        [parameter(Mandatory = $true, Paramet" +
-            "erSetName = \"Registry\")]\r\n        [ValidateSet(\"True\", \"False\")]\r\n        [strin" +
-            "g]$check32BitRegOn64System = \"False\"\r\n\r\n    )\r\n\r\n    if ($PowerShell) {\r\n\r\n     " +
-            "   if (!(Test-Path \"$ScriptFile\")) {\r\n            \r\n            Write-Host\r\n    " +
-            "        Write-Host \"Could not find file \'$ScriptFile\'...\" -ForegroundColor Red\r\n" +
-            "            Write-Host \"Script can\'t continue...\" -ForegroundColor Red\r\n        " +
-            "    Write-Host\r\n            break\r\n\r\n        }\r\n        \r\n        $bReq = [Syste" +
-            "m.Text.Encoding]::UTF8.GetBytes((Get-Content -Path $ScriptFile))\r\n        $Scrip" +
-            "tContent = [System.Convert]::ToBase64String($bReq)\r\n        \r\n        $DR = @{ \"" +
-            "@odata.type\" = \"#microsoft.graph.win32LobAppPowerShellScriptDetection\" }\r\n      " +
-            "  $DR.enforceSignatureCheck = $false;\r\n        $DR.runAs32Bit = $false;\r\n       " +
-            " $DR.scriptContent = \"$ScriptContent\";\r\n\r\n    }\r\n    \r\n    elseif ($MSI) {\r\n    " +
-            "\r\n        $DR = @{ \"@odata.type\" = \"#microsoft.graph.win32LobAppProductCodeDetec" +
-            "tion\" }\r\n        $DR.productVersionOperator = \"notConfigured\";\r\n        $DR.prod" +
-            "uctCode = \"$MsiProductCode\";\r\n        $DR.productVersion = $null;\r\n\r\n    }\r\n\r\n  " +
-            "  elseif ($File) {\r\n    \r\n        $DR = @{ \"@odata.type\" = \"#microsoft.graph.win" +
-            "32LobAppFileSystemDetection\" }\r\n        $DR.check32BitOn64System = \"$check32BitO" +
-            "n64System\";\r\n        $DR.detectionType = \"$FileDetectionType\";\r\n        $DR.dete" +
-            "ctionValue = $FileDetectionValue;\r\n        $DR.fileOrFolderName = \"$FileOrFolder" +
-            "Name\";\r\n        $DR.operator = \"notConfigured\";\r\n        $DR.path = \"$Path\"\r\n\r\n " +
-            "   }\r\n\r\n    elseif ($Registry) {\r\n    \r\n        $DR = @{ \"@odata.type\" = \"#micro" +
-            "soft.graph.win32LobAppRegistryDetection\" }\r\n        $DR.check32BitOn64System = \"" +
-            "$check32BitRegOn64System\";\r\n        $DR.detectionType = \"$RegistryDetectionType\"" +
-            ";\r\n        $DR.detectionValue = \"\";\r\n        $DR.keyPath = \"$RegistryKeyPath\";\r\n" +
-            "        $DR.operator = \"notConfigured\";\r\n        $DR.valueName = \"$RegistryValue" +
-            "\"\r\n\r\n    }\r\n\r\n    return $DR\r\n\r\n}\r\n\r\n###########################################" +
-            "#########\r\n\r\nfunction Get-DefaultReturnCodes() {\r\n\r\n    @{\"returnCode\" = 0; \"typ" +
-            "e\" = \"success\" }, `\r\n    @{\"returnCode\" = 1707; \"type\" = \"success\" }, `\r\n    @{\"" +
-            "returnCode\" = 3010; \"type\" = \"softReboot\" }, `\r\n    @{\"returnCode\" = 1641; \"type" +
-            "\" = \"hardReboot\" }, `\r\n    @{\"returnCode\" = 1618; \"type\" = \"retry\" }\r\n\r\n}\r\n\r\n###" +
-            "#################################################\r\n\r\nfunction New-ReturnCode() {" +
-            "\r\n\r\n    param\r\n    (\r\n        [parameter(Mandatory = $true)]\r\n        [int]$retu" +
-            "rnCode,\r\n        [parameter(Mandatory = $true)]\r\n        [ValidateSet(\'success\'," +
-            " \'softReboot\', \'hardReboot\', \'retry\')]\r\n        $type\r\n    )\r\n\r\n    @{\"returnCod" +
-            "e\" = $returnCode; \"type\" = \"$type\" }\r\n\r\n}\r\n\r\n###################################" +
-            "#################\r\n\r\nFunction Get-IntuneWinXML() {\r\n\r\n    param\r\n    (\r\n        " +
-            "[Parameter(Mandatory = $true)]\r\n        $SourceFile,\r\n\r\n        [Parameter(Manda" +
-            "tory = $true)]\r\n        $fileName,\r\n\r\n        [Parameter(Mandatory = $false)]\r\n " +
-            "       [ValidateSet(\"false\", \"true\")]\r\n        [string]$removeitem = \"true\"\r\n   " +
-            " )\r\n\r\n    Test-SourceFile \"$SourceFile\"\r\n\r\n    $Directory = [System.IO.Path]::Ge" +
-            "tDirectoryName(\"$SourceFile\")\r\n\r\n    Add-Type -Assembly System.IO.Compression.Fi" +
-            "leSystem\r\n    $zip = [IO.Compression.ZipFile]::OpenRead(\"$SourceFile\")\r\n\r\n    $z" +
-            "ip.Entries | where { $_.Name -like \"$filename\" } | foreach {\r\n\r\n        [System." +
-            "IO.Compression.ZipFileExtensions]::ExtractToFile($_, \"$Directory\\$filename\", $tr" +
-            "ue)\r\n\r\n    }\r\n\r\n    $zip.Dispose()\r\n\r\n    [xml]$IntuneWinXML = gc \"$Directory\\$f" +
-            "ilename\"\r\n\r\n    return $IntuneWinXML\r\n\r\n    if ($removeitem -eq \"true\") { remove" +
-            "-item \"$Directory\\$filename\" }\r\n\r\n}\r\n\r\n#########################################" +
-            "###########\r\n\r\nFunction Get-IntuneWinFile() {\r\n\r\n    param\r\n    (\r\n        [Para" +
-            "meter(Mandatory = $true)]\r\n        $SourceFile,\r\n\r\n        [Parameter(Mandatory " +
-            "= $true)]\r\n        $fileName,\r\n\r\n        [Parameter(Mandatory = $false)]\r\n      " +
-            "  [string]$Folder = \"win32\"\r\n    )\r\n\r\n    $Directory = [System.IO.Path]::GetDire" +
-            "ctoryName(\"$SourceFile\")\r\n\r\n    if (!(Test-Path \"$Directory\\$folder\")) {\r\n\r\n    " +
-            "    New-Item -ItemType Directory -Path \"$Directory\" -Name \"$folder\" | Out-Null\r\n" +
-            "\r\n    }\r\n\r\n    Add-Type -Assembly System.IO.Compression.FileSystem\r\n    $zip = [" +
-            "IO.Compression.ZipFile]::OpenRead(\"$SourceFile\")\r\n\r\n    $zip.Entries | where { $" +
-            "_.Name -like \"$filename\" } | foreach {\r\n\r\n        [System.IO.Compression.ZipFile" +
-            "Extensions]::ExtractToFile($_, \"$Directory\\$folder\\$filename\", $true)\r\n\r\n    }\r\n" +
-            "\r\n    $zip.Dispose()\r\n\r\n    return \"$Directory\\$folder\\$filename\"\r\n\r\n    if ($re" +
-            "moveitem -eq \"true\") { remove-item \"$Directory\\$filename\" }\r\n\r\n}\r\n\r\n############" +
-            "########################################\r\n\r\nfunction Upload-Win32Lob() {\r\n\r\n    " +
-            "<#\r\n.SYNOPSIS\r\nThis function is used to upload a Win32 Application to the Intune" +
-            " Service\r\n.DESCRIPTION\r\nThis function is used to upload a Win32 Application to t" +
-            "he Intune Service\r\n.EXAMPLE\r\nUpload-Win32Lob \"C:\\Packages\\package.intunewin\" -pu" +
-            "blisher \"Microsoft\" -description \"Package\"\r\nThis example uses all parameters req" +
-            "uired to add an intunewin File into the Intune Service\r\n.NOTES\r\nNAME: Upload-Win" +
-            "32LOB\r\n#>\r\n\r\n    [cmdletbinding()]\r\n\r\n    param\r\n    (\r\n        [parameter(Manda" +
-            "tory = $true, Position = 1)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [strin" +
-            "g]$SourceFile,\r\n\r\n        [parameter(Mandatory = $false)]\r\n        [ValidateNotN" +
-            "ullOrEmpty()]\r\n        [string]$displayName,\r\n\r\n        [parameter(Mandatory = $" +
-            "true, Position = 2)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$publi" +
-            "sher,\r\n\r\n        [parameter(Mandatory = $true, Position = 3)]\r\n        [Validate" +
-            "NotNullOrEmpty()]\r\n        [string]$description,\r\n\r\n        [parameter(Mandatory" +
-            " = $true, Position = 4)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $detection" +
-            "Rules,\r\n\r\n        [parameter(Mandatory = $true, Position = 5)]\r\n        [Validat" +
-            "eNotNullOrEmpty()]\r\n        $returnCodes,\r\n\r\n        [parameter(Mandatory = $fal" +
-            "se, Position = 6)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$install" +
-            "CmdLine,\r\n\r\n        [parameter(Mandatory = $false, Position = 7)]\r\n        [Vali" +
-            "dateNotNullOrEmpty()]\r\n        [string]$uninstallCmdLine,\r\n\r\n        [parameter(" +
-            "Mandatory = $false, Position = 8)]\r\n        [ValidateSet(\'system\', \'user\')]\r\n   " +
-            "     $installExperience = \"system\",\r\n\r\n        [parameter(Mandatory = $false, Po" +
-            "sition = 9)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $imageValue,\r\n\r\n      " +
-            "  [parameter(Mandatory = $false, Position = 10)]\r\n        [ValidateNotNullOrEmpt" +
-            "y()]\r\n        $informationURL,\r\n\r\n        [parameter(Mandatory = $false, Positio" +
-            "n = 11)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $developer,\r\n\r\n        [pa" +
-            "rameter(Mandatory = $true, Position = 12)]\r\n        [ValidateNotNullOrEmpty()]\r\n" +
-            "        $requirementRules,\r\n\r\n        [parameter(Mandatory = $true, Position = 1" +
-            "3)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $notes\r\n    )\r\n\r\n    try\t{\r\n\r\n " +
-            "       $LOBType = \"microsoft.graph.win32LobApp\"\r\n\r\n        Write-Host \"Testing i" +
-            "f SourceFile \'$SourceFile\' Path is valid...\" -ForegroundColor Yellow\r\n        Te" +
-            "st-SourceFile \"$SourceFile\"\r\n\r\n        $Win32Path = \"$SourceFile\"\r\n\r\n        Wri" +
-            "te-Host\r\n        Write-Host \"Creating JSON data to pass to the service...\" -Fore" +
-            "groundColor Yellow\r\n\r\n        # Funciton to read Win32LOB file\r\n        $Detecti" +
-            "onXML = Get-IntuneWinXML \"$SourceFile\" -fileName \"detection.xml\"\r\n\r\n        # If" +
-            " displayName input don\'t use Name from detection.xml file\r\n        if ($displayN" +
-            "ame) { $DisplayName = $displayName }\r\n        else { $DisplayName = $DetectionXM" +
-            "L.ApplicationInfo.Name }\r\n        \r\n        $FileName = $DetectionXML.Applicatio" +
-            "nInfo.FileName\r\n\r\n        $SetupFileName = $DetectionXML.ApplicationInfo.SetupFi" +
-            "le\r\n\r\n        $Ext = [System.IO.Path]::GetExtension($SetupFileName)\r\n\r\n        i" +
-            "f ((($Ext).contains(\"msi\") -or ($Ext).contains(\"Msi\")) -and (!$installCmdLine -o" +
-            "r !$uninstallCmdLine)) {\r\n\r\n            # MSI\r\n            $MsiExecutionContext " +
-            "= $DetectionXML.ApplicationInfo.MsiInfo.MsiExecutionContext\r\n            $MsiPac" +
-            "kageType = \"DualPurpose\";\r\n            if ($MsiExecutionContext -eq \"System\") { " +
-            "$MsiPackageType = \"PerMachine\" }\r\n            elseif ($MsiExecutionContext -eq \"" +
-            "User\") { $MsiPackageType = \"PerUser\" }\r\n\r\n            $MsiProductCode = $Detecti" +
-            "onXML.ApplicationInfo.MsiInfo.MsiProductCode\r\n            $MsiProductVersion = $" +
-            "DetectionXML.ApplicationInfo.MsiInfo.MsiProductVersion\r\n            $MsiPublishe" +
-            "r = $DetectionXML.ApplicationInfo.MsiInfo.MsiPublisher\r\n            $MsiRequires" +
-            "Reboot = $DetectionXML.ApplicationInfo.MsiInfo.MsiRequiresReboot\r\n            $M" +
-            "siUpgradeCode = $DetectionXML.ApplicationInfo.MsiInfo.MsiUpgradeCode\r\n          " +
-            "  \r\n            if ($MsiRequiresReboot -eq \"false\") { $MsiRequiresReboot = $fals" +
-            "e }\r\n            elseif ($MsiRequiresReboot -eq \"true\") { $MsiRequiresReboot = $" +
-            "true }\r\n\r\n            $mobileAppBody = GetWin32AppBody `\r\n                -MSI `" +
-            "\r\n                -displayName \"$DisplayName\" `\r\n                -publisher \"$pu" +
-            "blisher\" `\r\n                -description $description `\r\n                -filena" +
-            "me $FileName `\r\n                -SetupFileName \"$SetupFileName\" `\r\n             " +
-            "   -installExperience $installExperience `\r\n                -MsiPackageType $Msi" +
-            "PackageType `\r\n                -MsiProductCode $MsiProductCode `\r\n              " +
-            "  -MsiProductName $displayName `\r\n                -MsiProductVersion $MsiProduct" +
-            "Version `\r\n                -MsiPublisher $MsiPublisher `\r\n                -MsiRe" +
-            "quiresReboot $MsiRequiresReboot `\r\n                -MsiUpgradeCode $MsiUpgradeCo" +
-            "de\r\n\r\n        }\r\n\r\n        else {\r\n\r\n            $mobileAppBody = GetWin32AppBod" +
-            "y -EXE -displayName \"$DisplayName\" -publisher \"$publisher\" `\r\n                -d" +
-            "escription $description -filename $FileName -SetupFileName \"$SetupFileName\" `\r\n " +
-            "               -installExperience $installExperience -installCommandLine $instal" +
-            "lCmdLine `\r\n                -uninstallCommandLine $uninstallcmdline -imageValue " +
-            "$imageValue `\r\n                -informationURL $informationURL -developer $devel" +
-            "oper\r\n            if ($notes) { $mobileAppBody.notes = $notes }\r\n        }\r\n\r\n  " +
-            "      if ($DetectionRules.\'@odata.type\' -contains \"#microsoft.graph.win32LobAppP" +
-            "owerShellScriptDetection\" -and @($DetectionRules).\'@odata.type\'.Count -gt 1) {\r\n" +
-            "            Write-Host\r\n            Write-Warning \"A Detection Rule can either b" +
-            "e \'Manually configure detection rules\' or \'Use a custom detection script\'\"\r\n    " +
-            "        Write-Warning \"It can\'t include both...\"\r\n            Write-Host\r\n      " +
-            "      break\r\n        }\r\n        else {\r\n            $mobileAppBody | Add-Member " +
-            "-MemberType NoteProperty -Name \'detectionRules\' -Value $detectionRules\r\n        " +
-            "}\r\n\r\n        if ($requirementRules.\'@odata.type\' -contains \"#microsoft.graph.win" +
-            "32LobAppPowerShellScriptRequirement\" -and @($requirementRules).\'@odata.type\'.Cou" +
-            "nt -gt 1) {\r\n            Write-Host\r\n            Write-Warning \"A Detection Rule" +
-            " can either be \'Manually configure requirement rules\' or \'Use a custom requireme" +
-            "nt script\'\"\r\n            Write-Warning \"It can\'t include both...\"\r\n            W" +
-            "rite-Host\r\n            break\r\n        }\r\n        else {\r\n            $mobileAppB" +
-            "ody | Add-Member -MemberType NoteProperty -Name \'requirementRules\' -Value $requi" +
-            "rementRules\r\n        }\r\n\r\n        #ReturnCodes\r\n\r\n        if ($returnCodes) {\r\n " +
-            "       \r\n            $mobileAppBody | Add-Member -MemberType NoteProperty -Name " +
-            "\'returnCodes\' -Value @($returnCodes)\r\n\r\n        }\r\n\r\n        else {\r\n\r\n         " +
-            "   Write-Host\r\n            Write-Warning \"Intunewin file requires ReturnCodes to" +
-            " be specified\"\r\n            Write-Warning \"If you want to use the default Return" +
-            "Code run \'Get-DefaultReturnCodes\'\"\r\n            Write-Host\r\n            break\r\n\r" +
-            "\n        }\r\n\r\n        Write-Host\r\n        Write-Host \"Creating application in In" +
-            "tune...\" -ForegroundColor Yellow\r\n        $mobileApp = MakePostRequest \"mobileAp" +
-            "ps\" ($mobileAppBody | ConvertTo-Json);\r\n\r\n        # Get the content version for " +
-            "the new app (this will always be 1 until the new app is committed).\r\n        Wri" +
-            "te-Host\r\n        Write-Host \"Creating Content Version in the service for the app" +
-            "lication...\" -ForegroundColor Yellow\r\n        $appId = $mobileApp.id;\r\n        $" +
-            "contentVersionUri = \"mobileApps/$appId/$LOBType/contentVersions\";\r\n        $cont" +
-            "entVersion = MakePostRequest $contentVersionUri \"{}\";\r\n\r\n        # Encrypt file " +
-            "and Get File Information\r\n        Write-Host\r\n        Write-Host \"Getting Encryp" +
-            "tion Information for \'$SourceFile\'...\" -ForegroundColor Yellow\r\n\r\n        $encry" +
-            "ptionInfo = @{ };\r\n        $encryptionInfo.encryptionKey = $DetectionXML.Applica" +
-            "tionInfo.EncryptionInfo.EncryptionKey\r\n        $encryptionInfo.macKey = $Detecti" +
-            "onXML.ApplicationInfo.EncryptionInfo.macKey\r\n        $encryptionInfo.initializat" +
-            "ionVector = $DetectionXML.ApplicationInfo.EncryptionInfo.initializationVector\r\n " +
-            "       $encryptionInfo.mac = $DetectionXML.ApplicationInfo.EncryptionInfo.mac\r\n " +
-            "       $encryptionInfo.profileIdentifier = \"ProfileVersion1\";\r\n        $encrypti" +
-            "onInfo.fileDigest = $DetectionXML.ApplicationInfo.EncryptionInfo.fileDigest\r\n   " +
-            "     $encryptionInfo.fileDigestAlgorithm = $DetectionXML.ApplicationInfo.Encrypt" +
-            "ionInfo.fileDigestAlgorithm\r\n\r\n        $fileEncryptionInfo = @{ };\r\n        $fil" +
-            "eEncryptionInfo.fileEncryptionInfo = $encryptionInfo;\r\n\r\n        # Extracting en" +
-            "crypted file\r\n        $IntuneWinFile = Get-IntuneWinFile \"$SourceFile\" -fileName" +
-            " \"$filename\"\r\n\r\n        [int64]$Size = $DetectionXML.ApplicationInfo.Unencrypted" +
-            "ContentSize\r\n        $EncrySize = (Get-Item \"$IntuneWinFile\").Length\r\n\r\n        " +
-            "# Create a new file for the app.\r\n        Write-Host\r\n        Write-Host \"Creati" +
-            "ng a new file entry in Azure for the upload...\" -ForegroundColor Yellow\r\n       " +
-            " $contentVersionId = $contentVersion.id;\r\n        $fileBody = GetAppFileBody \"$F" +
-            "ileName\" $Size $EncrySize $null;\r\n        $filesUri = \"mobileApps/$appId/$LOBTyp" +
-            "e/contentVersions/$contentVersionId/files\";\r\n        $file = MakePostRequest $fi" +
-            "lesUri ($fileBody | ConvertTo-Json);\r\n\t\r\n        # Wait for the service to proce" +
-            "ss the new file request.\r\n        Write-Host\r\n        Write-Host \"Waiting for th" +
-            "e file entry URI to be created...\" -ForegroundColor Yellow\r\n        $fileId = $f" +
-            "ile.id;\r\n        $fileUri = \"mobileApps/$appId/$LOBType/contentVersions/$content" +
-            "VersionId/files/$fileId\";\r\n        $file = WaitForFileProcessing $fileUri \"Azure" +
-            "StorageUriRequest\";\r\n\r\n        # Upload the content to Azure Storage.\r\n        W" +
-            "rite-Host\r\n        Write-Host \"Uploading file to Azure Storage...\" -f Yellow\r\n\r\n" +
-            "        $sasUri = $file.azureStorageUri;\r\n        UploadFileToAzureStorage $file" +
-            ".azureStorageUri \"$IntuneWinFile\" $fileUri;\r\n\r\n        # Need to Add removal of " +
-            "IntuneWin file\r\n        $IntuneWinFolder = [System.IO.Path]::GetDirectoryName(\"$" +
-            "IntuneWinFile\")\r\n        Remove-Item \"$IntuneWinFile\" -Force\r\n\r\n        # Commit" +
-            " the file.\r\n        Write-Host\r\n        Write-Host \"Committing the file into Azu" +
-            "re Storage...\" -ForegroundColor Yellow\r\n        $commitFileUri = \"mobileApps/$ap" +
-            "pId/$LOBType/contentVersions/$contentVersionId/files/$fileId/commit\";\r\n        M" +
-            "akePostRequest $commitFileUri ($fileEncryptionInfo | ConvertTo-Json);\r\n\r\n       " +
-            " # Wait for the service to process the commit file request.\r\n        Write-Host\r" +
-            "\n        Write-Host \"Waiting for the service to process the commit file request." +
-            "..\" -ForegroundColor Yellow\r\n        $file = WaitForFileProcessing $fileUri \"Com" +
-            "mitFile\";\r\n\r\n        # Commit the app.\r\n        Write-Host\r\n        Write-Host \"" +
-            "Committing the file into Azure Storage...\" -ForegroundColor Yellow\r\n        $com" +
-            "mitAppUri = \"mobileApps/$appId\";\r\n        $commitAppBody = GetAppCommitBody $con" +
-            "tentVersionId $LOBType;\r\n        MakePatchRequest $commitAppUri ($commitAppBody " +
-            "| ConvertTo-Json);\r\n\r\n        Write-Host \"Sleeping for $sleep seconds to allow p" +
-            "atch completion...\" -f Magenta\r\n        Start-Sleep $sleep\r\n        Write-Host\r\n" +
-            "    \r\n    }\r\n\t\r\n    catch {\r\n\r\n        Write-Host \"\";\r\n        Write-Host -Foreg" +
-            "roundColor Red \"Aborting with exception: $($_.Exception.ToString())\";\r\n\t\r\n    }\r" +
-            "\n}\r\n\r\n####################################################\r\n\r\nFunction Test-Auth" +
-            "Token() {\r\n\r\n    # Checking if authToken exists before running authentication\r\n " +
-            "   if ($global:authToken) {\r\n\r\n        # Setting DateTime to Universal time to w" +
-            "ork in all timezones\r\n        $DateTime = (Get-Date).ToUniversalTime()\r\n\r\n      " +
-            "  # If the authToken exists checking when it expires\r\n        $TokenExpires = ($" +
-            "authToken.ExpiresOn.datetime - $DateTime).Minutes\r\n\r\n        if ($TokenExpires -" +
-            "le 0) {\r\n\r\n            write-host \"Authentication Token expired\" $TokenExpires \"" +
-            "minutes ago\" -ForegroundColor Yellow\r\n            write-host\r\n\r\n            # De" +
-            "fining Azure AD tenant name, this is the name of your Azure Active Directory (do" +
-            " not use the verified domain name)\r\n\r\n            if ($User -eq $null -or $User " +
-            "-eq \"\") {\r\n\r\n                $Global:User = Read-Host -Prompt \"Please specify yo" +
-            "ur user principal name for Azure Authentication\"\r\n                Write-Host\r\n\r\n" +
-            "            }\r\n\r\n            $global:authToken = Get-AuthToken -User $User\r\n\r\n  " +
-            "      }\r\n    }\r\n\r\n    # Authentication doesn\'t exist, calling Get-AuthToken func" +
-            "tion\r\n\r\n    else {\r\n\r\n        if ($User -eq $null -or $User -eq \"\") {\r\n\r\n       " +
-            "     $Global:User = Read-Host -Prompt \"Please specify your user principal name f" +
-            "or Azure Authentication\"\r\n            Write-Host\r\n\r\n        }\r\n\r\n        # Getti" +
-            "ng the authorization token\r\n        $global:authToken = Get-AuthToken -User $Use" +
-            "r\r\n\r\n    }\r\n}\r\n\r\n####################################################\r\n\r\n\r\n#####" +
-            "###############################################\r\n\r\n$baseUrl = \"https://graph.mic" +
-            "rosoft.com/beta/deviceAppManagement/\"\r\n\r\n$logRequestUris = $true;\r\n$logHeaders =" +
-            " $false;\r\n$logContent = $true;\r\n\r\n$azureStorageUploadChunkSizeInMb = 6l;\r\n\r\n$sle" +
-            "ep = 30\r\n\r\n####################################################\r\n# Sample Win32 " +
-            "Application\r\n####################################################\r\n# args0 = Sho" +
-            "rtName string\r\n# args1 = Token string\r\n# args2 = ExpireTime string\r\n# args3 = Us" +
-            "ername\r\n\r\nAdd-Type -AssemblyName System.Web\r\n#Check if nuget provider is install" +
-            "ed...\r\nif (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue))" +
-            " { Install-PackageProvider -Name \"Nuget\" -Force }\r\n\r\n#Install AzureAD Module if " +
-            "missing\r\ntry {\r\n    if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Ob" +
-            "ject version)[-1]).Version -lt \"2.0.2.61\") { Install-Module AzureAD -Force -Conf" +
-            "irm:$false }\r\n}\r\ncatch { Install-Module AzureAD -Force -Confirm:$false }\r\n\r\n$Sho" +
-            "rtName = $args[0]\r\n$global:authToken = @{ \"Content-Type\" = \"application/json\"; \"" +
-            "Authorization\" = \"Bearer $($args[1])\" ; \"ExpiresOn\" = [DateTimeOffset]::Parse($a" +
-            "rgs[2]) }\r\n$Global:User = $args[3]\r\n#$global:authToken = Get-AuthToken -User $Us" +
-            "er\r\n$outFolder = \"$env:temp\\intunewin\"\r\nif (-NOT (Test-Path $outFolder)) { New-I" +
-            "tem -Path $outFolder -ItemType Directory }\r\n#Remove-Item $sourceFolder -Recurse " +
-            "-Force -ea SilentlyContinue\r\n#New-Item $sourceFolder -ItemType Directory -Force\r" +
-            "\n\r\n$url = Invoke-RestMethod -Uri \"https://ruckzuck.tools/rest/v2/geturl\"\r\n$rzSW " +
-            "= Invoke-RestMethod -Uri \"$($url)/rest/v2/getsoftwares?shortname=$([System.Web.H" +
-            "ttpUtility]::UrlEncode($ShortName))\" \r\n\r\n#rzSW can have multiple InstallTypes\r\ni" +
-            "f ($rzSW.count -gt 1) {\r\n    #take InstallType that matches the PreRequisites\r\n " +
-            "   $rzsw = $rzsw | ForEach-Object { if ($_.PSPreReq | Invoke-Expression) { $_ } " +
-            "}\r\n}\r\n\r\n$sourceFolder = \"$env:temp\\$($rzSW.ContentID)\"\r\n$file = $rzSW.ShortName\r" +
-            "\n$rzSW.Files | ForEach-Object { \r\n    #Invoke-WebRequest -Uri $_.URL -OutFile \"$" +
-            "($sourceFolder)\\$($_.FileName)\"\r\n    $file = $_.FileName\r\n}\r\nif (-NOT (Test-Path" +
-            " $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Directory }\r\nInvoke-We" +
-            "bRequest -Uri $rzSW.iconURL -OutFile \"$($sourceFolder)\\logo.png\"\r\n\r\n#Download In" +
-            "tuneWinAppUtil\r\nif (-NOT (Test-Path \"$($env:temp)\\IntuneWinAppUtil.exe\")) {\r\n   " +
-            " Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/microsoft/Microsoft-W" +
-            "in32-Content-Prep-Tool/master/IntuneWinAppUtil.exe\" -OutFile \"$($env:temp)\\Intun" +
-            "eWinAppUtil.exe\"\r\n}\r\n&\"$($env:temp)\\IntuneWinAppUtil.exe\" -c $sourceFolder -s $f" +
-            "ile -o $outFolder -q\r\n\r\n$file = [io.path]::GetFileNameWithoutExtension($file)\r\n$" +
-            "SourceFile = \"$($outFolder)\\$($file).intunewin\"\r\n\r\n$img = [Convert]::ToBase64Str" +
-            "ing((Invoke-WebRequest \"$($rzSW.iconURL)&size=128\").Content)\r\n#$img = [Convert]:" +
-            ":ToBase64String($rzSW.Image)\r\n\r\n# Defining Intunewin32 detectionRules\r\n#$Detecti" +
-            "onXML = Get-IntuneWinXML \"$SourceFile\" -fileName \"detection.xml\"\r\n$PowerShellScr" +
-            "ipt = \"$($sourceFolder)\\detection.ps1\"\r\n$PowerShellRule = New-DetectionRule -Pow" +
-            "erShell -ScriptFile \"$PowerShellScript\" -enforceSignatureCheck $false -runAs32Bi" +
-            "t $false\r\n#$RegistryRule = New-DetectionRule -Registry -RegistryKeyPath \"HKEY_LO" +
-            "CAL_MACHINE\\SOFTWARE\\App\" -RegistryDetectionType exists -check32BitRegOn64System" +
-            " True\r\n# Creating Array for detection Rule\r\n$DetectionRule = @($PowerShellRule)\r" +
-            "\n$ReturnCodes = Get-DefaultReturnCodes\r\n\r\n$type = \'system\'\r\nif ($rzSW.PSDetectio" +
-            "n.contains(\'HKCU:\')) { $type = \'user\' }\r\n\r\n#requirements\r\n$bReq = [System.Text.E" +
-            "ncoding]::UTF8.GetBytes((Get-Content -Path \"$($sourceFolder)\\requirements.ps1\"))" +
-            "\r\n$reqScript = [System.Convert]::ToBase64String($bReq)\r\n$reqRule = @(@{\"@odata.t" +
-            "ype\"    = \"#microsoft.graph.win32LobAppPowerShellScriptRequirement\";\r\n        \"o" +
-            "perator\"              = \"equal\";\r\n        \"detectionValue\"        = \"true\";\r\n   " +
-            "     \"displayName\"           = \"requirements\";\r\n        \"enforceSignatureCheck\" " +
-            "= $false;\r\n        \"runAs32Bit\"            = $false;\r\n        \"runAsAccount\"    " +
-            "      = $type;\r\n        \"scriptContent\"         = $reqScript;\r\n        \"detectio" +
-            "nType\"         = \"boolean\"\r\n    })\r\n\r\n# Win32 Application Upload\r\nUpload-Win32Lo" +
-            "b -SourceFile $SourceFile -displayName ($rzSW.ShortName + \" \" + $rzSW.ProductVer" +
-            "sion) -publisher $rzSW.Manufacturer `\r\n    -description $rzSW.Description -detec" +
-            "tionRules $DetectionRule -returnCodes $ReturnCodes `\r\n    -installCmdLine \"power" +
-            "shell.exe -ExecutionPolicy Bypass .\\install.ps1\" `\r\n    -uninstallCmdLine \"power" +
-            "shell.exe -ExecutionPolicy Bypass .\\uninstall.ps1\" `\r\n    -installExperience $ty" +
-            "pe `\r\n    -imageValue $img `\r\n    -requirementRules $reqRule `\r\n    -information" +
-            "URL $rzSW.ProductURL `\r\n    -developer \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SW" +
-            "Id)`nShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)\"\r\n\r\n#########" +
-            "###########################################")]
+            "ndatory = $false)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$display" +
+            "Version = \"\",\r\n\r\n        [parameter(Mandatory = $true)]\r\n        [ValidateNotNul" +
+            "lOrEmpty()]\r\n        [string]$filename,\r\n\r\n        [parameter(Mandatory = $true)" +
+            "]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$SetupFileName,\r\n\r\n      " +
+            "  [parameter(Mandatory = $true)]\r\n        [ValidateSet(\'system\', \'user\')]\r\n     " +
+            "   $installExperience = \"system\",\r\n\r\n        [parameter(Mandatory = $false)]\r\n  " +
+            "      [ValidateNotNullOrEmpty()]\r\n        [string]$imageValue,\r\n\r\n        [param" +
+            "eter(Mandatory = $false)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $informat" +
+            "ionURL,\r\n\r\n        [parameter(Mandatory = $false)]\r\n        [ValidateNotNullOrEm" +
+            "pty()]\r\n        $developer,\r\n\r\n        [parameter(Mandatory = $true, ParameterSe" +
+            "tName = \"EXE\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $installCommandLine" +
+            ",\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"EXE\")]\r\n        [" +
+            "ValidateNotNullOrEmpty()]\r\n        $uninstallCommandLine,\r\n\r\n        [parameter(" +
+            "Mandatory = $true, ParameterSetName = \"MSI\")]\r\n        [ValidateNotNullOrEmpty()" +
+            "]\r\n        $MsiPackageType,\r\n\r\n        [parameter(Mandatory = $true, ParameterSe" +
+            "tName = \"MSI\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $MsiProductCode,\r\n\r" +
+            "\n        [parameter(Mandatory = $false, ParameterSetName = \"MSI\")]\r\n        $Msi" +
+            "ProductName,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"MSI\")]" +
+            "\r\n        [ValidateNotNullOrEmpty()]\r\n        $MsiProductVersion,\r\n\r\n        [pa" +
+            "rameter(Mandatory = $false, ParameterSetName = \"MSI\")]\r\n        $MsiPublisher,\r\n" +
+            "\r\n        [parameter(Mandatory = $true, ParameterSetName = \"MSI\")]\r\n        [Val" +
+            "idateNotNullOrEmpty()]\r\n        $MsiRequiresReboot,\r\n\r\n        [parameter(Mandat" +
+            "ory = $true, ParameterSetName = \"MSI\")]\r\n        [ValidateNotNullOrEmpty()]\r\n   " +
+            "     $MsiUpgradeCode\r\n\r\n    )\r\n\r\n    if ($MSI) {\r\n\r\n        $body = @{ \"@odata.t" +
+            "ype\" = \"#microsoft.graph.win32LobApp\" };\r\n        $body.applicableArchitectures " +
+            "= \"x64,x86\";\r\n        $body.description = $description;\r\n        $body.developer" +
+            " = \"\";\r\n        $body.displayName = $displayName;\r\n        $body.fileName = $fil" +
+            "ename;\r\n        $body.installCommandLine = \"msiexec /i `\"$SetupFileName`\"\"\r\n    " +
+            "    $body.installExperience = @{\"runAsAccount\" = \"$installExperience\" };\r\n      " +
+            "  $body.informationUrl = $null;\r\n        $body.isFeatured = $false;\r\n        $bo" +
+            "dy.minimumSupportedOperatingSystem = @{\"v10_1607\" = $true };\r\n        $body.msiI" +
+            "nformation = @{\r\n            \"packageType\"    = \"$MsiPackageType\";\r\n            " +
+            "\"productCode\"    = \"$MsiProductCode\";\r\n            \"productName\"    = \"$MsiProdu" +
+            "ctName\";\r\n            \"productVersion\" = \"$MsiProductVersion\";\r\n            \"pub" +
+            "lisher\"      = \"$MsiPublisher\";\r\n            \"requiresReboot\" = \"$MsiRequiresReb" +
+            "oot\";\r\n            \"upgradeCode\"    = \"$MsiUpgradeCode\"\r\n        };\r\n        $bo" +
+            "dy.notes = \"\";\r\n        $body.owner = \"\";\r\n        $body.privacyInformationUrl =" +
+            " $null;\r\n        $body.publisher = $publisher;\r\n        $body.runAs32bit = $fals" +
+            "e;\r\n        $body.setupFilePath = $SetupFileName;\r\n        $body.uninstallComman" +
+            "dLine = \"msiexec /x `\"$MsiProductCode`\"\"\r\n        $body.displayVersion = \"$($dis" +
+            "playVersion)\"\r\n\r\n    }\r\n\r\n    elseif ($EXE) {\r\n\r\n        $body = @{ \"@odata.type" +
+            "\" = \"#microsoft.graph.win32LobApp\" };\r\n        $body.description = $description;" +
+            "\r\n        $body.developer = $developer;\r\n        $body.displayName = $displayNam" +
+            "e;\r\n        $body.fileName = $filename;\r\n        $body.informationUrl = $informa" +
+            "tionUrl;\r\n        $body.installCommandLine = \"$installCommandLine\"\r\n        $bod" +
+            "y.installExperience = @{\"runAsAccount\" = \"$installExperience\" };\r\n        $body." +
+            "isFeatured = $false;\r\n        $body.minimumSupportedOperatingSystem = @{\"v10_160" +
+            "7\" = $true };\r\n        $body.msiInformation = $null;\r\n        $body.notes = \"\";\r" +
+            "\n        $body.owner = \"\";\r\n        $body.privacyInformationUrl = $null;\r\n      " +
+            "  $body.publisher = $publisher;\r\n        $body.runAs32bit = $false;\r\n        $bo" +
+            "dy.setupFilePath = $SetupFileName;\r\n        $body.uninstallCommandLine = \"$unins" +
+            "tallCommandLine\"\r\n        if ($imageValue) {\r\n            $body.largeIcon = @{\"t" +
+            "ype\" = \"image/png\"; \"value\" = $imageValue };\r\n        }\r\n        $body.displayVe" +
+            "rsion = \"$($displayVersion)\"\r\n    }\r\n\r\n    $body;\r\n}\r\n\r\n########################" +
+            "############################\r\n\r\nfunction GetAppFileBody($name, $size, $sizeEncry" +
+            "pted, $manifest) {\r\n\r\n    $body = @{ \"@odata.type\" = \"#microsoft.graph.mobileApp" +
+            "ContentFile\" };\r\n    $body.name = $name;\r\n    $body.size = $size;\r\n    $body.siz" +
+            "eEncrypted = $sizeEncrypted;\r\n    $body.manifest = $manifest;\r\n    $body.isDepen" +
+            "dency = $false;\r\n\r\n    $body;\r\n}\r\n\r\n############################################" +
+            "########\r\n\r\nfunction GetAppCommitBody($contentVersionId, $LobType) {\r\n\r\n    $bod" +
+            "y = @{ \"@odata.type\" = \"#$LobType\" };\r\n    $body.committedContentVersion = $cont" +
+            "entVersionId;\r\n\r\n    $body;\r\n\r\n}\r\n\r\n############################################" +
+            "########\r\n\r\nFunction Test-SourceFile() {\r\n\r\n    param\r\n    (\r\n        [parameter" +
+            "(Mandatory = $true)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $SourceFile\r\n " +
+            "   )\r\n\r\n    try {\r\n\r\n        if (!(test-path \"$SourceFile\")) {\r\n\r\n            Wr" +
+            "ite-Host\r\n            Write-Host \"Source File \'$sourceFile\' doesn\'t exist...\" -F" +
+            "oregroundColor Red\r\n            throw\r\n\r\n        }\r\n\r\n    }\r\n\r\n    catch {\r\n\r\n  " +
+            "      Write-Host -ForegroundColor Red $_.Exception.Message;\r\n        Write-Host\r" +
+            "\n        break\r\n\r\n    }\r\n\r\n}\r\n\r\n################################################" +
+            "####\r\n\r\nFunction New-DetectionRule() {\r\n\r\n    [cmdletbinding()]\r\n\r\n    param\r\n  " +
+            "  (\r\n        [parameter(Mandatory = $true, ParameterSetName = \"PowerShell\", Posi" +
+            "tion = 1)]\r\n        [Switch]$PowerShell,\r\n\r\n        [parameter(Mandatory = $true" +
+            ", ParameterSetName = \"MSI\", Position = 1)]\r\n        [Switch]$MSI,\r\n\r\n        [pa" +
+            "rameter(Mandatory = $true, ParameterSetName = \"File\", Position = 1)]\r\n        [S" +
+            "witch]$File,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"Regist" +
+            "ry\", Position = 1)]\r\n        [Switch]$Registry,\r\n\r\n        [parameter(Mandatory " +
+            "= $true, ParameterSetName = \"PowerShell\")]\r\n        [ValidateNotNullOrEmpty()]\r\n" +
+            "        [String]$ScriptFile,\r\n\r\n        [parameter(Mandatory = $true, ParameterS" +
+            "etName = \"PowerShell\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $enforceSig" +
+            "natureCheck,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"PowerS" +
+            "hell\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        $runAs32Bit,\r\n\r\n        [pa" +
+            "rameter(Mandatory = $true, ParameterSetName = \"MSI\")]\r\n        [ValidateNotNullO" +
+            "rEmpty()]\r\n        [String]$MSIproductCode,\r\n   \r\n        [parameter(Mandatory =" +
+            " $true, ParameterSetName = \"File\")]\r\n        [ValidateNotNullOrEmpty()]\r\n       " +
+            " [String]$Path,\r\n \r\n        [parameter(Mandatory = $true, ParameterSetName = \"Fi" +
+            "le\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$FileOrFolderName,\r\n\r" +
+            "\n        [parameter(Mandatory = $true, ParameterSetName = \"File\")]\r\n        [Val" +
+            "idateSet(\"notConfigured\", \"exists\", \"modifiedDate\", \"createdDate\", \"version\", \"s" +
+            "izeInMB\")]\r\n        [string]$FileDetectionType,\r\n\r\n        [parameter(Mandatory " +
+            "= $false, ParameterSetName = \"File\")]\r\n        $FileDetectionValue = $null,\r\n\r\n " +
+            "       [parameter(Mandatory = $true, ParameterSetName = \"File\")]\r\n        [Valid" +
+            "ateSet(\"True\", \"False\")]\r\n        [string]$check32BitOn64System = \"False\",\r\n\r\n  " +
+            "      [parameter(Mandatory = $true, ParameterSetName = \"Registry\")]\r\n        [Va" +
+            "lidateNotNullOrEmpty()]\r\n        [String]$RegistryKeyPath,\r\n\r\n        [parameter" +
+            "(Mandatory = $true, ParameterSetName = \"Registry\")]\r\n        [ValidateSet(\"notCo" +
+            "nfigured\", \"exists\", \"doesNotExist\", \"string\", \"integer\", \"version\")]\r\n        [" +
+            "string]$RegistryDetectionType,\r\n\r\n        [parameter(Mandatory = $false, Paramet" +
+            "erSetName = \"Registry\")]\r\n        [ValidateNotNullOrEmpty()]\r\n        [String]$R" +
+            "egistryValue,\r\n\r\n        [parameter(Mandatory = $true, ParameterSetName = \"Regis" +
+            "try\")]\r\n        [ValidateSet(\"True\", \"False\")]\r\n        [string]$check32BitRegOn" +
+            "64System = \"False\"\r\n\r\n    )\r\n\r\n    if ($PowerShell) {\r\n\r\n        if (!(Test-Path" +
+            " \"$ScriptFile\")) {\r\n            \r\n            Write-Host\r\n            Write-Host" +
+            " \"Could not find file \'$ScriptFile\'...\" -ForegroundColor Red\r\n            Write-" +
+            "Host \"Script can\'t continue...\" -ForegroundColor Red\r\n            Write-Host\r\n  " +
+            "          break\r\n\r\n        }\r\n        \r\n        $bReq = [System.Text.Encoding]::" +
+            "UTF8.GetBytes((Get-Content -Path $ScriptFile))\r\n        $ScriptContent = [System" +
+            ".Convert]::ToBase64String($bReq)\r\n        \r\n        $DR = @{ \"@odata.type\" = \"#m" +
+            "icrosoft.graph.win32LobAppPowerShellScriptDetection\" }\r\n        $DR.enforceSigna" +
+            "tureCheck = $false;\r\n        $DR.runAs32Bit = $false;\r\n        $DR.scriptContent" +
+            " = \"$ScriptContent\";\r\n\r\n    }\r\n    \r\n    elseif ($MSI) {\r\n    \r\n        $DR = @{" +
+            " \"@odata.type\" = \"#microsoft.graph.win32LobAppProductCodeDetection\" }\r\n        $" +
+            "DR.productVersionOperator = \"notConfigured\";\r\n        $DR.productCode = \"$MsiPro" +
+            "ductCode\";\r\n        $DR.productVersion = $null;\r\n\r\n    }\r\n\r\n    elseif ($File) {" +
+            "\r\n    \r\n        $DR = @{ \"@odata.type\" = \"#microsoft.graph.win32LobAppFileSystem" +
+            "Detection\" }\r\n        $DR.check32BitOn64System = \"$check32BitOn64System\";\r\n     " +
+            "   $DR.detectionType = \"$FileDetectionType\";\r\n        $DR.detectionValue = $File" +
+            "DetectionValue;\r\n        $DR.fileOrFolderName = \"$FileOrFolderName\";\r\n        $D" +
+            "R.operator = \"notConfigured\";\r\n        $DR.path = \"$Path\"\r\n\r\n    }\r\n\r\n    elseif" +
+            " ($Registry) {\r\n    \r\n        $DR = @{ \"@odata.type\" = \"#microsoft.graph.win32Lo" +
+            "bAppRegistryDetection\" }\r\n        $DR.check32BitOn64System = \"$check32BitRegOn64" +
+            "System\";\r\n        $DR.detectionType = \"$RegistryDetectionType\";\r\n        $DR.det" +
+            "ectionValue = \"\";\r\n        $DR.keyPath = \"$RegistryKeyPath\";\r\n        $DR.operat" +
+            "or = \"notConfigured\";\r\n        $DR.valueName = \"$RegistryValue\"\r\n\r\n    }\r\n\r\n    " +
+            "return $DR\r\n\r\n}\r\n\r\n####################################################\r\n\r\nfunct" +
+            "ion Get-DefaultReturnCodes() {\r\n\r\n    @{\"returnCode\" = 0; \"type\" = \"success\" }, " +
+            "`\r\n    @{\"returnCode\" = 1707; \"type\" = \"success\" }, `\r\n    @{\"returnCode\" = 3010" +
+            "; \"type\" = \"softReboot\" }, `\r\n    @{\"returnCode\" = 1641; \"type\" = \"hardReboot\" }" +
+            ", `\r\n    @{\"returnCode\" = 1618; \"type\" = \"retry\" }\r\n\r\n}\r\n\r\n#####################" +
+            "###############################\r\n\r\nfunction New-ReturnCode() {\r\n\r\n    param\r\n   " +
+            " (\r\n        [parameter(Mandatory = $true)]\r\n        [int]$returnCode,\r\n        [" +
+            "parameter(Mandatory = $true)]\r\n        [ValidateSet(\'success\', \'softReboot\', \'ha" +
+            "rdReboot\', \'retry\')]\r\n        $type\r\n    )\r\n\r\n    @{\"returnCode\" = $returnCode; " +
+            "\"type\" = \"$type\" }\r\n\r\n}\r\n\r\n####################################################\r" +
+            "\n\r\nFunction Get-IntuneWinXML() {\r\n\r\n    param\r\n    (\r\n        [Parameter(Mandato" +
+            "ry = $true)]\r\n        $SourceFile,\r\n\r\n        [Parameter(Mandatory = $true)]\r\n  " +
+            "      $fileName,\r\n\r\n        [Parameter(Mandatory = $false)]\r\n        [ValidateSe" +
+            "t(\"false\", \"true\")]\r\n        [string]$removeitem = \"true\"\r\n    )\r\n\r\n    Test-Sou" +
+            "rceFile \"$SourceFile\"\r\n\r\n    $Directory = [System.IO.Path]::GetDirectoryName(\"$S" +
+            "ourceFile\")\r\n\r\n    Add-Type -Assembly System.IO.Compression.FileSystem\r\n    $zip" +
+            " = [IO.Compression.ZipFile]::OpenRead(\"$SourceFile\")\r\n\r\n    $zip.Entries | where" +
+            " { $_.Name -like \"$filename\" } | foreach {\r\n\r\n        [System.IO.Compression.Zip" +
+            "FileExtensions]::ExtractToFile($_, \"$Directory\\$filename\", $true)\r\n\r\n    }\r\n\r\n  " +
+            "  $zip.Dispose()\r\n\r\n    [xml]$IntuneWinXML = gc \"$Directory\\$filename\"\r\n\r\n    re" +
+            "turn $IntuneWinXML\r\n\r\n    if ($removeitem -eq \"true\") { remove-item \"$Directory\\" +
+            "$filename\" }\r\n\r\n}\r\n\r\n####################################################\r\n\r\nFun" +
+            "ction Get-IntuneWinFile() {\r\n\r\n    param\r\n    (\r\n        [Parameter(Mandatory = " +
+            "$true)]\r\n        $SourceFile,\r\n\r\n        [Parameter(Mandatory = $true)]\r\n       " +
+            " $fileName,\r\n\r\n        [Parameter(Mandatory = $false)]\r\n        [string]$Folder " +
+            "= \"win32\"\r\n    )\r\n\r\n    $Directory = [System.IO.Path]::GetDirectoryName(\"$Source" +
+            "File\")\r\n\r\n    if (!(Test-Path \"$Directory\\$folder\")) {\r\n\r\n        New-Item -Item" +
+            "Type Directory -Path \"$Directory\" -Name \"$folder\" | Out-Null\r\n\r\n    }\r\n\r\n    Add" +
+            "-Type -Assembly System.IO.Compression.FileSystem\r\n    $zip = [IO.Compression.Zip" +
+            "File]::OpenRead(\"$SourceFile\")\r\n\r\n    $zip.Entries | where { $_.Name -like \"$fil" +
+            "ename\" } | foreach {\r\n\r\n        [System.IO.Compression.ZipFileExtensions]::Extra" +
+            "ctToFile($_, \"$Directory\\$folder\\$filename\", $true)\r\n\r\n    }\r\n\r\n    $zip.Dispose" +
+            "()\r\n\r\n    return \"$Directory\\$folder\\$filename\"\r\n\r\n    if ($removeitem -eq \"true" +
+            "\") { remove-item \"$Directory\\$filename\" }\r\n\r\n}\r\n\r\n##############################" +
+            "######################\r\n\r\nfunction Upload-Win32Lob() {\r\n\r\n    <#\r\n.SYNOPSIS\r\nThi" +
+            "s function is used to upload a Win32 Application to the Intune Service\r\n.DESCRIP" +
+            "TION\r\nThis function is used to upload a Win32 Application to the Intune Service\r" +
+            "\n.EXAMPLE\r\nUpload-Win32Lob \"C:\\Packages\\package.intunewin\" -publisher \"Microsoft" +
+            "\" -description \"Package\"\r\nThis example uses all parameters required to add an in" +
+            "tunewin File into the Intune Service\r\n.NOTES\r\nNAME: Upload-Win32LOB\r\n#>\r\n\r\n    [" +
+            "cmdletbinding()]\r\n\r\n    param\r\n    (\r\n        [parameter(Mandatory = $true, Posi" +
+            "tion = 1)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$SourceFile,\r\n\r\n" +
+            "        [parameter(Mandatory = $false)]\r\n        [ValidateNotNullOrEmpty()]\r\n   " +
+            "     [string]$displayName,\r\n\r\n        [parameter(Mandatory = $true, Position = 2" +
+            ")]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$publisher,\r\n\r\n        [" +
+            "parameter(Mandatory = $true, Position = 3)]\r\n        [ValidateNotNullOrEmpty()]\r" +
+            "\n        [string]$description,\r\n\r\n        [parameter(Mandatory = $true, Position" +
+            " = 4)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $detectionRules,\r\n\r\n        " +
+            "[parameter(Mandatory = $true, Position = 5)]\r\n        [ValidateNotNullOrEmpty()]" +
+            "\r\n        $returnCodes,\r\n\r\n        [parameter(Mandatory = $false, Position = 6)]" +
+            "\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$installCmdLine,\r\n\r\n      " +
+            "  [parameter(Mandatory = $false, Position = 7)]\r\n        [ValidateNotNullOrEmpty" +
+            "()]\r\n        [string]$uninstallCmdLine,\r\n\r\n        [parameter(Mandatory = $false" +
+            ", Position = 8)]\r\n        [ValidateSet(\'system\', \'user\')]\r\n        $installExper" +
+            "ience = \"system\",\r\n\r\n        [parameter(Mandatory = $false, Position = 9)]\r\n    " +
+            "    [ValidateNotNullOrEmpty()]\r\n        $imageValue,\r\n\r\n        [parameter(Manda" +
+            "tory = $false, Position = 10)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $inf" +
+            "ormationURL,\r\n\r\n        [parameter(Mandatory = $false, Position = 11)]\r\n        " +
+            "[ValidateNotNullOrEmpty()]\r\n        $developer,\r\n\r\n        [parameter(Mandatory " +
+            "= $true, Position = 12)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $requireme" +
+            "ntRules,\r\n\r\n        [parameter(Mandatory = $true, Position = 13)]\r\n        [Vali" +
+            "dateNotNullOrEmpty()]\r\n        $notes,\r\n\r\n        [parameter(Mandatory = $false," +
+            " Position = 14)]\r\n        [ValidateNotNullOrEmpty()]\r\n        $displayVersion = " +
+            "\"\"\r\n    )\r\n\r\n    try\t{\r\n\r\n        $LOBType = \"microsoft.graph.win32LobApp\"\r\n\r\n  " +
+            "      Write-Host \"Testing if SourceFile \'$SourceFile\' Path is valid...\" -Foregro" +
+            "undColor Yellow\r\n        Test-SourceFile \"$SourceFile\"\r\n\r\n        $Win32Path = \"" +
+            "$SourceFile\"\r\n\r\n        Write-Host\r\n        Write-Host \"Creating JSON data to pa" +
+            "ss to the service...\" -ForegroundColor Yellow\r\n\r\n        # Funciton to read Win3" +
+            "2LOB file\r\n        $DetectionXML = Get-IntuneWinXML \"$SourceFile\" -fileName \"det" +
+            "ection.xml\"\r\n\r\n        # If displayName input don\'t use Name from detection.xml " +
+            "file\r\n        if ($displayName) { $DisplayName = $displayName }\r\n        else { " +
+            "$DisplayName = $DetectionXML.ApplicationInfo.Name }\r\n        \r\n        $FileName" +
+            " = $DetectionXML.ApplicationInfo.FileName\r\n\r\n        $SetupFileName = $Detection" +
+            "XML.ApplicationInfo.SetupFile\r\n\r\n        $Ext = [System.IO.Path]::GetExtension($" +
+            "SetupFileName)\r\n\r\n        if ((($Ext).contains(\"msi\") -or ($Ext).contains(\"Msi\")" +
+            ") -and (!$installCmdLine -or !$uninstallCmdLine)) {\r\n\r\n            # MSI\r\n      " +
+            "      $MsiExecutionContext = $DetectionXML.ApplicationInfo.MsiInfo.MsiExecutionC" +
+            "ontext\r\n            $MsiPackageType = \"DualPurpose\";\r\n            if ($MsiExecut" +
+            "ionContext -eq \"System\") { $MsiPackageType = \"PerMachine\" }\r\n            elseif " +
+            "($MsiExecutionContext -eq \"User\") { $MsiPackageType = \"PerUser\" }\r\n\r\n           " +
+            " $MsiProductCode = $DetectionXML.ApplicationInfo.MsiInfo.MsiProductCode\r\n       " +
+            "     $MsiProductVersion = $DetectionXML.ApplicationInfo.MsiInfo.MsiProductVersio" +
+            "n\r\n            $MsiPublisher = $DetectionXML.ApplicationInfo.MsiInfo.MsiPublishe" +
+            "r\r\n            $MsiRequiresReboot = $DetectionXML.ApplicationInfo.MsiInfo.MsiReq" +
+            "uiresReboot\r\n            $MsiUpgradeCode = $DetectionXML.ApplicationInfo.MsiInfo" +
+            ".MsiUpgradeCode\r\n            \r\n            if ($MsiRequiresReboot -eq \"false\") {" +
+            " $MsiRequiresReboot = $false }\r\n            elseif ($MsiRequiresReboot -eq \"true" +
+            "\") { $MsiRequiresReboot = $true }\r\n\r\n            $mobileAppBody = GetWin32AppBod" +
+            "y `\r\n                -MSI `\r\n                -displayName \"$DisplayName\" `\r\n    " +
+            "            -publisher \"$publisher\" `\r\n                -description $description" +
+            " `\r\n                -filename $FileName `\r\n                -SetupFileName \"$Setu" +
+            "pFileName\" `\r\n                -installExperience $installExperience `\r\n         " +
+            "       -MsiPackageType $MsiPackageType `\r\n                -MsiProductCode $MsiPr" +
+            "oductCode `\r\n                -MsiProductName $displayName `\r\n                -Ms" +
+            "iProductVersion $MsiProductVersion `\r\n                -MsiPublisher $MsiPublishe" +
+            "r `\r\n                -MsiRequiresReboot $MsiRequiresReboot `\r\n                -M" +
+            "siUpgradeCode $MsiUpgradeCode `\r\n                -displayVersion $displayVersion" +
+            "\r\n        }\r\n\r\n        else {\r\n\r\n            $mobileAppBody = GetWin32AppBody -E" +
+            "XE -displayName \"$DisplayName\" -publisher \"$publisher\" `\r\n                -descr" +
+            "iption $description -filename $FileName -SetupFileName \"$SetupFileName\" `\r\n     " +
+            "           -installExperience $installExperience -installCommandLine $installCmd" +
+            "Line `\r\n                -uninstallCommandLine $uninstallcmdline -imageValue $ima" +
+            "geValue `\r\n                -informationURL $informationURL -developer $developer" +
+            " `\r\n                -displayVersion $displayVersion\r\n            if ($notes) { $" +
+            "mobileAppBody.notes = $notes }\r\n        }\r\n\r\n        if ($DetectionRules.\'@odata" +
+            ".type\' -contains \"#microsoft.graph.win32LobAppPowerShellScriptDetection\" -and @(" +
+            "$DetectionRules).\'@odata.type\'.Count -gt 1) {\r\n            Write-Host\r\n         " +
+            "   Write-Warning \"A Detection Rule can either be \'Manually configure detection r" +
+            "ules\' or \'Use a custom detection script\'\"\r\n            Write-Warning \"It can\'t i" +
+            "nclude both...\"\r\n            Write-Host\r\n            break\r\n        }\r\n        e" +
+            "lse {\r\n            $mobileAppBody | Add-Member -MemberType NoteProperty -Name \'d" +
+            "etectionRules\' -Value $detectionRules\r\n        }\r\n\r\n        if ($requirementRule" +
+            "s.\'@odata.type\' -contains \"#microsoft.graph.win32LobAppPowerShellScriptRequireme" +
+            "nt\" -and @($requirementRules).\'@odata.type\'.Count -gt 1) {\r\n            Write-Ho" +
+            "st\r\n            Write-Warning \"A Detection Rule can either be \'Manually configur" +
+            "e requirement rules\' or \'Use a custom requirement script\'\"\r\n            Write-Wa" +
+            "rning \"It can\'t include both...\"\r\n            Write-Host\r\n            break\r\n   " +
+            "     }\r\n        else {\r\n            $mobileAppBody | Add-Member -MemberType Note" +
+            "Property -Name \'requirementRules\' -Value $requirementRules\r\n        }\r\n\r\n       " +
+            " #ReturnCodes\r\n\r\n        if ($returnCodes) {\r\n        \r\n            $mobileAppBo" +
+            "dy | Add-Member -MemberType NoteProperty -Name \'returnCodes\' -Value @($returnCod" +
+            "es)\r\n\r\n        }\r\n\r\n        else {\r\n\r\n            Write-Host\r\n            Write-" +
+            "Warning \"Intunewin file requires ReturnCodes to be specified\"\r\n            Write" +
+            "-Warning \"If you want to use the default ReturnCode run \'Get-DefaultReturnCodes\'" +
+            "\"\r\n            Write-Host\r\n            break\r\n\r\n        }\r\n\r\n        Write-Host\r" +
+            "\n        Write-Host \"Creating application in Intune...\" -ForegroundColor Yellow\r" +
+            "\n        $mobileApp = MakePostRequest \"mobileApps\" ($mobileAppBody | ConvertTo-J" +
+            "son);\r\n\r\n        # Get the content version for the new app (this will always be " +
+            "1 until the new app is committed).\r\n        Write-Host\r\n        Write-Host \"Crea" +
+            "ting Content Version in the service for the application...\" -ForegroundColor Yel" +
+            "low\r\n        $appId = $mobileApp.id;\r\n        $contentVersionUri = \"mobileApps/$" +
+            "appId/$LOBType/contentVersions\";\r\n        $contentVersion = MakePostRequest $con" +
+            "tentVersionUri \"{}\";\r\n\r\n        # Encrypt file and Get File Information\r\n       " +
+            " Write-Host\r\n        Write-Host \"Getting Encryption Information for \'$SourceFile" +
+            "\'...\" -ForegroundColor Yellow\r\n\r\n        $encryptionInfo = @{ };\r\n        $encry" +
+            "ptionInfo.encryptionKey = $DetectionXML.ApplicationInfo.EncryptionInfo.Encryptio" +
+            "nKey\r\n        $encryptionInfo.macKey = $DetectionXML.ApplicationInfo.EncryptionI" +
+            "nfo.macKey\r\n        $encryptionInfo.initializationVector = $DetectionXML.Applica" +
+            "tionInfo.EncryptionInfo.initializationVector\r\n        $encryptionInfo.mac = $Det" +
+            "ectionXML.ApplicationInfo.EncryptionInfo.mac\r\n        $encryptionInfo.profileIde" +
+            "ntifier = \"ProfileVersion1\";\r\n        $encryptionInfo.fileDigest = $DetectionXML" +
+            ".ApplicationInfo.EncryptionInfo.fileDigest\r\n        $encryptionInfo.fileDigestAl" +
+            "gorithm = $DetectionXML.ApplicationInfo.EncryptionInfo.fileDigestAlgorithm\r\n\r\n  " +
+            "      $fileEncryptionInfo = @{ };\r\n        $fileEncryptionInfo.fileEncryptionInf" +
+            "o = $encryptionInfo;\r\n\r\n        # Extracting encrypted file\r\n        $IntuneWinF" +
+            "ile = Get-IntuneWinFile \"$SourceFile\" -fileName \"$filename\"\r\n\r\n        [int64]$S" +
+            "ize = $DetectionXML.ApplicationInfo.UnencryptedContentSize\r\n        $EncrySize =" +
+            " (Get-Item \"$IntuneWinFile\").Length\r\n\r\n        # Create a new file for the app.\r" +
+            "\n        Write-Host\r\n        Write-Host \"Creating a new file entry in Azure for " +
+            "the upload...\" -ForegroundColor Yellow\r\n        $contentVersionId = $contentVers" +
+            "ion.id;\r\n        $fileBody = GetAppFileBody \"$FileName\" $Size $EncrySize $null;\r" +
+            "\n        $filesUri = \"mobileApps/$appId/$LOBType/contentVersions/$contentVersion" +
+            "Id/files\";\r\n        $file = MakePostRequest $filesUri ($fileBody | ConvertTo-Jso" +
+            "n);\r\n\t\r\n        # Wait for the service to process the new file request.\r\n       " +
+            " Write-Host\r\n        Write-Host \"Waiting for the file entry URI to be created..." +
+            "\" -ForegroundColor Yellow\r\n        $fileId = $file.id;\r\n        $fileUri = \"mobi" +
+            "leApps/$appId/$LOBType/contentVersions/$contentVersionId/files/$fileId\";\r\n      " +
+            "  $file = WaitForFileProcessing $fileUri \"AzureStorageUriRequest\";\r\n\r\n        # " +
+            "Upload the content to Azure Storage.\r\n        Write-Host\r\n        Write-Host \"Up" +
+            "loading file to Azure Storage...\" -f Yellow\r\n\r\n        $sasUri = $file.azureStor" +
+            "ageUri;\r\n        UploadFileToAzureStorage $file.azureStorageUri \"$IntuneWinFile\"" +
+            " $fileUri;\r\n\r\n        # Need to Add removal of IntuneWin file\r\n        $IntuneWi" +
+            "nFolder = [System.IO.Path]::GetDirectoryName(\"$IntuneWinFile\")\r\n        Remove-I" +
+            "tem \"$IntuneWinFile\" -Force\r\n\r\n        # Commit the file.\r\n        Write-Host\r\n " +
+            "       Write-Host \"Committing the file into Azure Storage...\" -ForegroundColor Y" +
+            "ellow\r\n        $commitFileUri = \"mobileApps/$appId/$LOBType/contentVersions/$con" +
+            "tentVersionId/files/$fileId/commit\";\r\n        MakePostRequest $commitFileUri ($f" +
+            "ileEncryptionInfo | ConvertTo-Json);\r\n\r\n        # Wait for the service to proces" +
+            "s the commit file request.\r\n        Write-Host\r\n        Write-Host \"Waiting for " +
+            "the service to process the commit file request...\" -ForegroundColor Yellow\r\n    " +
+            "    $file = WaitForFileProcessing $fileUri \"CommitFile\";\r\n\r\n        # Commit the" +
+            " app.\r\n        Write-Host\r\n        Write-Host \"Committing the file into Azure St" +
+            "orage...\" -ForegroundColor Yellow\r\n        $commitAppUri = \"mobileApps/$appId\";\r" +
+            "\n        $commitAppBody = GetAppCommitBody $contentVersionId $LOBType;\r\n        " +
+            "MakePatchRequest $commitAppUri ($commitAppBody | ConvertTo-Json);\r\n\r\n        Wri" +
+            "te-Host \"Sleeping for $sleep seconds to allow patch completion...\" -f Magenta\r\n " +
+            "       Start-Sleep $sleep\r\n        Write-Host\r\n    \r\n    }\r\n\t\r\n    catch {\r\n\r\n  " +
+            "      Write-Host \"\";\r\n        Write-Host -ForegroundColor Red \"Aborting with exc" +
+            "eption: $($_.Exception.ToString())\";\r\n\t\r\n    }\r\n}\r\n\r\n###########################" +
+            "#########################\r\n\r\nFunction Test-AuthToken() {\r\n\r\n    # Checking if au" +
+            "thToken exists before running authentication\r\n    if ($global:authToken) {\r\n\r\n  " +
+            "      # Setting DateTime to Universal time to work in all timezones\r\n        $Da" +
+            "teTime = (Get-Date).ToUniversalTime()\r\n\r\n        # If the authToken exists check" +
+            "ing when it expires\r\n        $TokenExpires = ($authToken.ExpiresOn.datetime - $D" +
+            "ateTime).Minutes\r\n\r\n        if ($TokenExpires -le 0) {\r\n\r\n            write-host" +
+            " \"Authentication Token expired\" $TokenExpires \"minutes ago\" -ForegroundColor Yel" +
+            "low\r\n            write-host\r\n\r\n            # Defining Azure AD tenant name, this" +
+            " is the name of your Azure Active Directory (do not use the verified domain name" +
+            ")\r\n\r\n            if ($User -eq $null -or $User -eq \"\") {\r\n\r\n                $Glo" +
+            "bal:User = Read-Host -Prompt \"Please specify your user principal name for Azure " +
+            "Authentication\"\r\n                Write-Host\r\n\r\n            }\r\n\r\n            $glo" +
+            "bal:authToken = Get-AuthToken -User $User\r\n\r\n        }\r\n    }\r\n\r\n    # Authentic" +
+            "ation doesn\'t exist, calling Get-AuthToken function\r\n\r\n    else {\r\n\r\n        if " +
+            "($User -eq $null -or $User -eq \"\") {\r\n\r\n            $Global:User = Read-Host -Pr" +
+            "ompt \"Please specify your user principal name for Azure Authentication\"\r\n       " +
+            "     Write-Host\r\n\r\n        }\r\n\r\n        # Getting the authorization token\r\n     " +
+            "   $global:authToken = Get-AuthToken -User $User\r\n\r\n    }\r\n}\r\n\r\n################" +
+            "####################################\r\n\r\n\r\n######################################" +
+            "##############\r\n\r\n$baseUrl = \"https://graph.microsoft.com/beta/deviceAppManageme" +
+            "nt/\"\r\n\r\n$logRequestUris = $true;\r\n$logHeaders = $false;\r\n$logContent = $true;\r\n\r" +
+            "\n$azureStorageUploadChunkSizeInMb = 6l;\r\n\r\n$sleep = 30\r\n\r\n######################" +
+            "##############################\r\n# Sample Win32 Application\r\n####################" +
+            "################################\r\n# args0 = ShortName string\r\n# args1 = Token st" +
+            "ring\r\n# args2 = ExpireTime string\r\n# args3 = Username\r\n\r\nAdd-Type -AssemblyName " +
+            "System.Web\r\n#Check if nuget provider is installed...\r\nif (-NOT (Get-PackageProvi" +
+            "der nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name " +
+            "\"Nuget\" -Force }\r\n\r\n#Install AzureAD Module if missing\r\ntry {\r\n    if ([version]" +
+            "(((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt \"2" +
+            ".0.2.61\") { Install-Module AzureAD -Force -Confirm:$false }\r\n}\r\ncatch { Install-" +
+            "Module AzureAD -Force -Confirm:$false }\r\n\r\n$ShortName = $args[0]\r\n$global:authTo" +
+            "ken = @{ \"Content-Type\" = \"application/json\"; \"Authorization\" = \"Bearer $($args[" +
+            "1])\" ; \"ExpiresOn\" = [DateTimeOffset]::Parse($args[2]) }\r\n$Global:User = $args[3" +
+            "]\r\n#$global:authToken = Get-AuthToken -User $User\r\n$outFolder = \"$env:temp\\intun" +
+            "ewin\"\r\nif (-NOT (Test-Path $outFolder)) { New-Item -Path $outFolder -ItemType Di" +
+            "rectory }\r\n#Remove-Item $sourceFolder -Recurse -Force -ea SilentlyContinue\r\n#New" +
+            "-Item $sourceFolder -ItemType Directory -Force\r\n\r\n$url = Invoke-RestMethod -Uri " +
+            "\"https://ruckzuck.tools/rest/v2/geturl\"\r\n$rzSW = Invoke-RestMethod -Uri \"$($url)" +
+            "/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName" +
+            "))\" \r\n\r\n#rzSW can have multiple InstallTypes\r\nif ($rzSW.count -gt 1) {\r\n    #tak" +
+            "e InstallType that matches the PreRequisites\r\n    $rzsw = $rzsw | ForEach-Object" +
+            " { if ($_.PSPreReq | Invoke-Expression) { $_ } }\r\n}\r\n\r\n$sourceFolder = \"$env:tem" +
+            "p\\$($rzSW.ContentID)\"\r\n$file = $rzSW.ShortName\r\n$rzSW.Files | ForEach-Object { \r" +
+            "\n    #Invoke-WebRequest -Uri $_.URL -OutFile \"$($sourceFolder)\\$($_.FileName)\"\r\n" +
+            "    $file = $_.FileName\r\n}\r\nif (-NOT (Test-Path $sourceFolder)) { New-Item -Path" +
+            " $sourceFolder -ItemType Directory }\r\nInvoke-WebRequest -Uri $rzSW.iconURL -OutF" +
+            "ile \"$($sourceFolder)\\logo.png\"\r\n\r\n#Download IntuneWinAppUtil\r\nif (-NOT (Test-Pa" +
+            "th \"$($env:temp)\\IntuneWinAppUtil.exe\")) {\r\n    Invoke-WebRequest -Uri \"https://" +
+            "raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/Int" +
+            "uneWinAppUtil.exe\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\"\r\n}\r\n&\"$($env:tem" +
+            "p)\\IntuneWinAppUtil.exe\" -c $sourceFolder -s $file -o $outFolder -q\r\n\r\n$file = [" +
+            "io.path]::GetFileNameWithoutExtension($file)\r\n$SourceFile = \"$($outFolder)\\$($fi" +
+            "le).intunewin\"\r\n\r\n$img = [Convert]::ToBase64String((Invoke-WebRequest \"$($rzSW.i" +
+            "conURL)&size=128\").Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)\r\n\r\n#" +
+            " Defining Intunewin32 detectionRules\r\n#$DetectionXML = Get-IntuneWinXML \"$Source" +
+            "File\" -fileName \"detection.xml\"\r\n$PowerShellScript = \"$($sourceFolder)\\detection" +
+            ".ps1\"\r\n$PowerShellRule = New-DetectionRule -PowerShell -ScriptFile \"$PowerShellS" +
+            "cript\" -enforceSignatureCheck $false -runAs32Bit $false\r\n#$RegistryRule = New-De" +
+            "tectionRule -Registry -RegistryKeyPath \"HKEY_LOCAL_MACHINE\\SOFTWARE\\App\" -Regist" +
+            "ryDetectionType exists -check32BitRegOn64System True\r\n# Creating Array for detec" +
+            "tion Rule\r\n$DetectionRule = @($PowerShellRule)\r\n$ReturnCodes = Get-DefaultReturn" +
+            "Codes\r\n\r\n$type = \'system\'\r\nif ($rzSW.PSDetection.contains(\'HKCU:\')) { $type = \'u" +
+            "ser\' }\r\n\r\n#requirements\r\n$bReq = [System.Text.Encoding]::UTF8.GetBytes((Get-Cont" +
+            "ent -Path \"$($sourceFolder)\\requirements.ps1\"))\r\n$reqScript = [System.Convert]::" +
+            "ToBase64String($bReq)\r\n$reqRule = @(@{\"@odata.type\"    = \"#microsoft.graph.win32" +
+            "LobAppPowerShellScriptRequirement\";\r\n        \"operator\"              = \"equal\";\r" +
+            "\n        \"detectionValue\"        = \"true\";\r\n        \"displayName\"           = \"r" +
+            "equirements\";\r\n        \"enforceSignatureCheck\" = $false;\r\n        \"runAs32Bit\"  " +
+            "          = $false;\r\n        \"runAsAccount\"          = $type;\r\n        \"scriptCo" +
+            "ntent\"         = $reqScript;\r\n        \"detectionType\"         = \"boolean\"\r\n    }" +
+            ")\r\n\r\n# Win32 Application Upload\r\nUpload-Win32Lob -SourceFile $SourceFile -displa" +
+            "yName ($rzSW.ShortName + \" \" + $rzSW.ProductVersion) -publisher $rzSW.Manufactur" +
+            "er `\r\n    -description $rzSW.Description -detectionRules $DetectionRule -returnC" +
+            "odes $ReturnCodes `\r\n    -installCmdLine \"powershell.exe -ExecutionPolicy Bypass" +
+            " .\\install.ps1\" `\r\n    -uninstallCmdLine \"powershell.exe -ExecutionPolicy Bypass" +
+            " .\\uninstall.ps1\" `\r\n    -installExperience $type `\r\n    -imageValue $img `\r\n   " +
+            " -requirementRules $reqRule `\r\n    -informationURL $rzSW.ProductURL `\r\n    -deve" +
+            "loper \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)" +
+            "`nVersion:$($rzSW.ProductVersion)\" `\r\n    -displayVersion \"$($rzSW.ProductVersio" +
+            "n)\"\r\n\r\n####################################################")]
         public string RZCreateAppPS {
             get {
                 return ((string)(this["RZCreateAppPS"]));
