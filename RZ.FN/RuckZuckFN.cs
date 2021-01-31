@@ -17,6 +17,9 @@ using static RZ.Server.RuckZuckFN;
 using System.Reflection;
 using Microsoft.Azure.ServiceBus;
 using System.Net.Http;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace RZ.Server
@@ -32,23 +35,69 @@ namespace RZ.Server
         public class Startup : FunctionsStartup
         {
             private ILoggerFactory _loggerFactory;
+            private IKeyVaultClient _keyVaultClient;
+
             public override void Configure(IFunctionsHostBuilder builder)
             {
                 var config = new ConfigurationBuilder().AddJsonFile("local.settings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 builder.Services.AddLogging();
-                ConfigureServices(builder);
+                ConfigureServices(builder, config);
             }
 
-            public void ConfigureServices(IFunctionsHostBuilder builder)
+            public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+            {
+                var azureServiceTokenProvider = new AzureServiceTokenProvider();
+                var keyVaultClient = new KeyVaultClient(
+                    new KeyVaultClient.AuthenticationCallback(
+                        azureServiceTokenProvider.KeyVaultTokenCallback));
+
+                _keyVaultClient = keyVaultClient;
+
+                //Add KeyVault by using the VaultUri variable
+                //builder.ConfigurationBuilder.AddAzureKeyVault(Environment.GetEnvironmentVariable("VaultUri"), keyVaultClient, new DefaultKeyVaultSecretManager());
+                
+                base.ConfigureAppConfiguration(builder);
+            }
+
+            public void ConfigureServices(IFunctionsHostBuilder builder, IConfiguration config)
             {
                 _loggerFactory = new LoggerFactory();
                 var logger = _loggerFactory.CreateLogger("Startup");
-                //logger.LogInformation("Got Here in Startup");
 
                 if (Base._cache == null)
                 {
                     Base._cache = new MemoryCache(new MemoryCacheOptions());
                 }
+
+                //Get Settings from KeyVault
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cat")))
+                    Environment.SetEnvironmentVariable("SAS:Cat", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cat").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cont")))
+                    Environment.SetEnvironmentVariable("SAS:Cont", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cont").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Icon")))
+                    Environment.SetEnvironmentVariable("SAS:Icon", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "icon").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Repo")))
+                    Environment.SetEnvironmentVariable("SAS:Repo", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "repo").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Wait")))
+                    Environment.SetEnvironmentVariable("SAS:Wait", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "wait").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Look")))
+                    Environment.SetEnvironmentVariable("SAS:Look", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "look").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Map")))
+                    Environment.SetEnvironmentVariable("SAS:Map", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "map").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Feedback")))
+                    Environment.SetEnvironmentVariable("SAS:Feedback", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "feedback").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Dlq")))
+                    Environment.SetEnvironmentVariable("SAS:Dlq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "dlq").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Suq")))
+                    Environment.SetEnvironmentVariable("SAS:Suq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "suq").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Faq")))
+                    Environment.SetEnvironmentVariable("SAS:Faq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "faq").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Swq")))
+                    Environment.SetEnvironmentVariable("SAS:Swq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "swq").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Ip")))
+                    Environment.SetEnvironmentVariable("SAS:Ip", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "ip").Result.Value);
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbConnection")))
+                    Environment.SetEnvironmentVariable("sbConnection", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "sbConnection").Result.Value);
 
                 var binDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string ResourcePath = Path.GetFullPath(Path.Combine(binDirectory, ".."));
@@ -59,6 +108,10 @@ namespace RZ.Server
                 Console.Write("loading SW-Catalog...");
                 Base.GetCatalog("", true);
                 Console.WriteLine(" done.");
+
+                RZ.ServerFN.IP2Location.Settings = Plugins.dSettings;
+                RZ.ServerFN.UpdateCounters.Settings = Plugins.dSettings;
+                sbconnection = Environment.GetEnvironmentVariable("sbConnection");
             }
         }
 
@@ -76,7 +129,7 @@ namespace RZ.Server
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -128,10 +181,14 @@ namespace RZ.Server
             if (customerid.Count(t => (t == '.')) != 3)
             {
                 aRes = Base.GetCatalog(customerid, nocache);
+                if(aRes.Count < 500)
+                    aRes = Base.GetCatalog(customerid, true);
             }
             else
             {
                 aRes = Base.GetCatalog("", nocache);
+                if (aRes.Count < 500)
+                    aRes = Base.GetCatalog("", true);
             }
 
             //Cleanup
@@ -374,7 +431,7 @@ namespace RZ.Server
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -463,7 +520,7 @@ namespace RZ.Server
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
@@ -554,7 +611,7 @@ namespace RZ.Server
 
             if ((DateTime.Now - tLoadTime).TotalSeconds >= 60)
             {
-                if (lCount > 20)
+                if (lCount > 60)
                     bOverload = true;
                 else
                     bOverload = false;
