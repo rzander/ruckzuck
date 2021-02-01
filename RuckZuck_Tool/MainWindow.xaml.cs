@@ -253,7 +253,10 @@ namespace RuckZuck_Tool
 
         private void btBackNewSWSMI_Click(object sender, RoutedEventArgs e)
         {
-            tabWizard.SelectedItem = tabMain;
+            if (tabNewSWSMI.Tag != null)
+                tabWizard.SelectedItem = tabNewSWSMI.Tag;
+            else
+                tabWizard.SelectedItem = tabNewSWARP;
         }
 
         private void btBackScanResult_Click(object sender, RoutedEventArgs e)
@@ -330,6 +333,7 @@ namespace RuckZuck_Tool
 
                 }
 
+                tabNewSWSMI.Tag = tabNewSWARP;
                 tabWizard.SelectedItem = tabNewSWSMI;
             }
             finally
@@ -528,6 +532,7 @@ namespace RuckZuck_Tool
 
                             oNewPanel.OpenXML(oSW.SW);
                         }
+                        tabNewSWSMI.Tag = tabWizard.SelectedItem;
                         tabWizard.SelectedItem = tabNewSWSMI;
                     }
 
