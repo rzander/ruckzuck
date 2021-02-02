@@ -489,12 +489,12 @@ namespace RuckZuck_Tool
         private void tbSearch_GotFocus(object sender, RoutedEventArgs e)
         {
             tSearch.Stop();
-            tbSearch.Foreground = new SolidColorBrush(Colors.Black);
-            if (tbSearch.Tag != null)
-                tbSearch.Text = "";
+            //tbSearch.Foreground = new SolidColorBrush(Colors.Black);
+            //if (tbSearch.Tag != null)
+            //    tbSearch.Text = "";
         }
 
-        private void tbSearch_KeyDown(object sender, KeyEventArgs e)
+        private void tbSearch_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return)
             {
@@ -516,13 +516,13 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             if (string.IsNullOrEmpty(tbSearch.Text))
             {
-                tbSearch.Foreground = new SolidColorBrush(Colors.LightGray);
-                tbSearch.Tag = "Search";
-                tbSearch.Text = "Search...";
+                //tbSearch.Foreground = new SolidColorBrush(Colors.LightGray);
+                //tbSearch.Tag = "Search";
+                //tbSearch.Text = "Search...";
             }
             else
             {
-                tbSearch.Foreground = new SolidColorBrush(Colors.Black);
+                //tbSearch.Foreground = new SolidColorBrush(Colors.Black);
                 tbSearch.Tag = null;
 
                 try
@@ -548,9 +548,9 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             if (string.IsNullOrEmpty(tbSearch.Text))
             {
-                tbSearch.Foreground = new SolidColorBrush(Colors.LightGray);
-                tbSearch.Tag = "Search";
-                tbSearch.Text = "Search...";
+                //tbSearch.Foreground = new SolidColorBrush(Colors.LightGray);
+                //tbSearch.Tag = "Search";
+                //tbSearch.Text = "Search...";
 
 
                 ListCollectionView lcv = new ListCollectionView(lAllSoftware.Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList());
@@ -571,8 +571,8 @@ namespace RuckZuck_Tool
             }
             else
             {
-                tbSearch.Foreground = new SolidColorBrush(Colors.Black);
-                tbSearch.Tag = null;
+                //tbSearch.Foreground = new SolidColorBrush(Colors.Black);
+                //tbSearch.Tag = null;
 
                 try
                 {
@@ -624,6 +624,8 @@ namespace RuckZuck_Tool
                 throw new NotImplementedException();
             }
         }
+
+
     }
 
 

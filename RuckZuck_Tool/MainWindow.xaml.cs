@@ -551,7 +551,7 @@ namespace RuckZuck_Tool
 
                         oNewPanel.OpenXML(oSW.SW);
 
-
+                        tabNewSWSMI.Tag = tabWizard.SelectedItem;
                         tabWizard.SelectedItem = tabNewSWSMI;
                     }
                 }
