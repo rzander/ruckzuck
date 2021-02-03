@@ -638,6 +638,8 @@ namespace RuckZuck_Tool
                 catch { }
             }
 
+            lNewVersion = lNewVersion.OrderBy(t=>t.ShortName).ToList();
+
             AnonymousDelegate update = delegate ()
             {
                 Mouse.OverrideCursor = null;
