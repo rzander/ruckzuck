@@ -33,10 +33,9 @@
     <Setting Name="OSRequirementsX64" Type="System.Collections.Specialized.StringCollection" Scope="Application">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;string&gt;Windows/All_x64_Windows_7_Client&lt;/string&gt;
-  &lt;string&gt;Windows/All_x64_Windows_8.1_Client&lt;/string&gt;
   &lt;string&gt;Windows/All_x64_Windows_10_and_higher_Clients&lt;/string&gt;
   &lt;string&gt;Windows/All_x64_Windows_Server_2016&lt;/string&gt;
+  &lt;string&gt;Windows/All_x64_Windows_Server_2019_and_higher&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
     <Setting Name="OSRequirementsX86" Type="System.Collections.Specialized.StringCollection" Scope="Application">
