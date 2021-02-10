@@ -19,6 +19,7 @@ namespace RZGet
         public static RZScan oScan;
         public static RZUpdater oUpdate;
         public static bool bRunning = true;
+        public static bool bRetry = false;
 
         static int Main(string[] args)
         {
@@ -104,47 +105,28 @@ namespace RZGet
                         return 1;
                     }
                 }
-                
-                foreach(string sArg in args.Skip(1))
+
+                if (lArgs.Contains("--retry"))
+                    bRetry = true;
+
+                if (lArgs.Contains("--noretry"))
+                    bRetry = false;
+
+
+                foreach (string sArg in args.Skip(1))
                 {
-                    if (File.Exists(sArg) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg)) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json")))
+                    if (!sArg.StartsWith("--"))
                     {
-                        string sJFile = sArg;
-                        if (!File.Exists(sJFile))
-                            sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg);
-
-                        if (!File.Exists(sJFile))
-                            sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json");
-
-                        RZUpdater oRZSW = new RZUpdater(sJFile);
-
-                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                        if (File.Exists(sArg) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg)) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json")))
                         {
-                            Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
-                            bError = true;
-                            continue;
-                        }
+                            string sJFile = sArg;
+                            if (!File.Exists(sJFile))
+                                sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg);
 
-                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
-                        {
-                            oRZSW.SoftwareUpdate.GetInstallType();
-                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
-                            {
-                                Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
-                                bError = false;
-                                continue;
-                            }
-                        }
+                            if (!File.Exists(sJFile))
+                                sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json");
 
-                        if (Install(oRZSW))
-                            continue;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            RZUpdater oRZSW = new RZUpdater();
-                            oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
+                            RZUpdater oRZSW = new RZUpdater(sJFile);
 
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                             {
@@ -167,12 +149,41 @@ namespace RZGet
                             if (Install(oRZSW))
                                 continue;
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.WriteLine("Error: " + ex.Message);
-                            bError = true;
-                        }
+                            try
+                            {
+                                RZUpdater oRZSW = new RZUpdater();
+                                oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
 
+                                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                                {
+                                    Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                    bError = true;
+                                    continue;
+                                }
+
+                                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                                {
+                                    oRZSW.SoftwareUpdate.GetInstallType();
+                                    if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
+                                    {
+                                        Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                        bError = false;
+                                        continue;
+                                    }
+                                }
+
+                                if (Install(oRZSW))
+                                    continue;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Error: " + ex.Message);
+                                bError = true;
+                            }
+
+                        }
                     }
                 }
 
@@ -184,6 +195,12 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "update")
             {
+                if (lArgs.Contains("--retry"))
+                    bRetry = true;
+
+                if (lArgs.Contains("--noretry"))
+                    bRetry = false;
+
                 bool bUpdateAll = false;
                 bool bList = false;
                 bool bExclude = false;
@@ -444,176 +461,6 @@ namespace RZGet
                 return 0;
             }
 
-            //if (lArgs[0].ToLower() == "source")
-            //{
-            //    Console.WriteLine("source");
-            //    Console.WriteLine(string.Join(";", args.Skip(1)));
-            //    return 0;
-            //}
-
-            //if (lArgs[0].ToLower() == "validate")
-            //{
-            //    Console.WriteLine("validate");
-            //    Console.WriteLine(string.Join(";", args.Skip(1)));
-            //    return 0;
-            //}
-
-            //if (lArgs.Count == 1)
-            //{
-            //    if (File.Exists(lArgs[0]))
-            //    {
-            //        RZUpdater oRZSW = new RZUpdater(lArgs[0]);
-
-            //        Console.WriteLine(oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion + " :");
-            //        Console.Write("Downloading...");
-            //        if (oRZSW.SoftwareUpdate.Download().Result)
-            //        {
-            //            Console.WriteLine("... done.");
-            //            Console.Write("Installing...");
-            //            if (oRZSW.SoftwareUpdate.Install(false,true).Result)
-            //            {
-            //                Console.WriteLine("... done.");
-            //            }
-            //            else
-            //            {
-            //                Console.WriteLine("... Error. The installation failed.");
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (lArgs[0].ToLower() == "/update" | lArgs[0].ToLower() == "-update")
-            //        {
-            //            oUpdate = new RZUpdater();
-            //            oScan = new RZScan(true, true);
-            //            Console.Write("Detecting updates...");
-            //            oScan.OnUpdScanCompleted += OScan_OnUpdScanCompleted;
-
-            //            while (bRunning)
-            //            {
-            //                System.Threading.Thread.Sleep(100);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            foreach (string sArg in lArgs[0].Split(';'))
-            //            {
-            //                try
-            //                {
-            //                    RZUpdater oRZSW = new RZUpdater();
-            //                    oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
-
-            //                    if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
-            //                    {
-            //                        Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
-            //                        bError = true;
-            //                        continue;
-            //                    }
-            //                    Console.WriteLine("PS:" + oRZSW.SoftwareUpdate.SW.PSInstall);
-            //                    if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
-            //                    {
-            //                        oRZSW.SoftwareUpdate.GetInstallType();
-            //                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
-            //                        {
-            //                            Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
-            //                            bError = false;
-            //                            continue;
-            //                        }
-            //                    }
-
-
-            //                    Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
-            //                    Console.Write("Downloading...");
-            //                    foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
-            //                    {
-            //                        if (!string.IsNullOrEmpty(sPreReq))
-            //                        {
-            //                            RZUpdater oRZSWPreReq = new RZUpdater();
-            //                            oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
-            //                            Console.WriteLine();
-            //                            Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-            //                            if (oRZSWPreReq.SoftwareUpdate.Download().Result)
-            //                            {
-            //                                Console.WriteLine("... done.");
-            //                                Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-            //                                if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
-            //                                {
-            //                                    Console.WriteLine("... done.");
-            //                                }
-            //                                else
-            //                                {
-            //                                    Console.WriteLine("... Error. The installation failed.");
-            //                                    bError = true;
-            //                                }
-            //                            }
-            //                        }
-
-            //                    }
-            //                    if (oRZSW.SoftwareUpdate.Download().Result)
-            //                    {
-            //                        Console.WriteLine("... done.");
-            //                        Console.Write("Installing...");
-            //                        if (oRZSW.SoftwareUpdate.Install(false, true).Result)
-            //                        {
-            //                            Console.WriteLine("... done.");
-            //                        }
-            //                        else
-            //                        {
-            //                            Console.WriteLine("... Error. The installation failed.");
-            //                            bError = true;
-            //                        }
-            //                    }
-            //                }
-            //                catch (Exception ex)
-            //                {
-            //                    Console.WriteLine("Error: " + ex.Message);
-            //                    bError = true;
-            //                }
-            //            }
-
-
-            //        }
-            //    }
-            //}
-
-            //if (lArgs.Count == 3)
-            //{
-            //    RZUpdater oRZUpdate = new RZUpdater();
-            //    oRZUpdate.SoftwareUpdate = new SWUpdate(lArgs[0], lArgs[1], lArgs[2]);
-            //    if (oRZUpdate.SoftwareUpdate != null)
-            //    {
-            //        Console.WriteLine("New Version: " + oRZUpdate.SoftwareUpdate.SW.ProductVersion);
-            //        Console.Write("Downloading...");
-
-            //        if (oRZUpdate.SoftwareUpdate.Download().Result)
-            //        {
-            //            Console.WriteLine("... done.");
-            //            Console.Write("Installing...");
-            //            if (oRZUpdate.SoftwareUpdate.Install(false, true).Result)
-            //            {
-            //                Console.WriteLine("... done.");
-            //                return 0;
-            //            }
-            //            else
-            //            {
-            //                Console.WriteLine("... Error. The update installation failed.");
-            //                return 1;
-            //            }
-            //        }
-
-            //        return 99;
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("No Update found...");
-            //        return 0;
-            //    }
-            //}
-
-            //System.Threading.Thread.Sleep(500);
-            //if(bError)
-            //    return 2;
-
             return 0;
         }
 
@@ -644,7 +491,7 @@ namespace RZGet
                     {
                         Console.WriteLine("... done.");
                         Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-                        if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
+                        if (oRZSWPreReq.SoftwareUpdate.Install(false, bRetry).Result)
                         {
                             Console.WriteLine("... done.");
                         }
@@ -661,7 +508,7 @@ namespace RZGet
             {
                 Console.WriteLine("... done.");
                 Console.Write("Installing...");
-                if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                if (oRZSW.SoftwareUpdate.Install(false, bRetry).Result)
                 {
                     Console.WriteLine("... done.");
                     return true;
@@ -698,7 +545,7 @@ namespace RZGet
                     {
                         Console.WriteLine("... done.");
                         Console.Write("Installing...");
-                        if (oUpdate.SoftwareUpdate.Install(false, true).Result)
+                        if (oUpdate.SoftwareUpdate.Install(false, bRetry).Result)
                         {
                             Console.WriteLine("... done.");
                         }

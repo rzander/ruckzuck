@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Zander Tools")]
 [assembly: AssemblyProduct("RZGet")]
-[assembly: AssemblyCopyright("Copyright ©  2020 by Roger Zander")]
+[assembly: AssemblyCopyright("Copyright ©  2021 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
