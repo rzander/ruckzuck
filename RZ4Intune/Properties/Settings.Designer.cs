@@ -621,16 +621,18 @@ namespace RuckZuck_Tool.Properties {
             "equirements\";\r\n        \"enforceSignatureCheck\" = $false;\r\n        \"runAs32Bit\"  " +
             "          = $false;\r\n        \"runAsAccount\"          = $type;\r\n        \"scriptCo" +
             "ntent\"         = $reqScript;\r\n        \"detectionType\"         = \"boolean\"\r\n    }" +
-            ")\r\n\r\n# Win32 Application Upload\r\nUpload-Win32Lob -SourceFile $SourceFile -displa" +
-            "yName ($rzSW.ShortName + \" \" + $rzSW.ProductVersion) -publisher $rzSW.Manufactur" +
-            "er `\r\n    -description $rzSW.Description -detectionRules $DetectionRule -returnC" +
-            "odes $ReturnCodes `\r\n    -installCmdLine \"powershell.exe -ExecutionPolicy Bypass" +
-            " .\\install.ps1\" `\r\n    -uninstallCmdLine \"powershell.exe -ExecutionPolicy Bypass" +
-            " .\\uninstall.ps1\" `\r\n    -installExperience $type `\r\n    -imageValue $img `\r\n   " +
-            " -requirementRules $reqRule `\r\n    -informationURL $rzSW.ProductURL `\r\n    -deve" +
-            "loper \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)" +
-            "`nVersion:$($rzSW.ProductVersion)\" `\r\n    -displayVersion \"$($rzSW.ProductVersio" +
-            "n)\"\r\n\r\n####################################################")]
+            ")\r\n\r\n#fix blank manufacturer    \r\nif (-NOT $rzSW.Manufacturer) { $rzSW.Manufactu" +
+            "rer = $rzSW.ShortName }   \r\n\r\n# Win32 Application Upload\r\nUpload-Win32Lob -Sourc" +
+            "eFile $SourceFile -displayName ($rzSW.ShortName + \" \" + $rzSW.ProductVersion) -p" +
+            "ublisher $rzSW.Manufacturer `\r\n    -description $rzSW.Description -detectionRule" +
+            "s $DetectionRule -returnCodes $ReturnCodes `\r\n    -installCmdLine \"powershell.ex" +
+            "e -ExecutionPolicy Bypass .\\install.ps1\" `\r\n    -uninstallCmdLine \"powershell.ex" +
+            "e -ExecutionPolicy Bypass .\\uninstall.ps1\" `\r\n    -installExperience $type `\r\n  " +
+            "  -imageValue $img `\r\n    -requirementRules $reqRule `\r\n    -informationURL $rzS" +
+            "W.ProductURL `\r\n    -developer \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nSho" +
+            "rtName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)\" `\r\n    -displayVersi" +
+            "on \"$($rzSW.ProductVersion)\"\r\n\r\n################################################" +
+            "####")]
         public string RZCreateAppPS {
             get {
                 return ((string)(this["RZCreateAppPS"]));

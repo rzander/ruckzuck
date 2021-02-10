@@ -1302,6 +1302,9 @@ $reqRule = @(@{"@odata.type"    = "#microsoft.graph.win32LobAppPowerShellScriptR
         "detectionType"         = "boolean"
     })
 
+#fix blank manufacturer    
+if (-NOT $rzSW.Manufacturer) { $rzSW.Manufacturer = $rzSW.ShortName }   
+
 # Win32 Application Upload
 Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $rzSW.ProductVersion) -publisher $rzSW.Manufacturer `
     -description $rzSW.Description -detectionRules $DetectionRule -returnCodes $ReturnCodes `

@@ -27,6 +27,7 @@ namespace RuckZuck_Tool
             string PkgName = oRZ.ProductName;
             string PkgVersion = oRZ.ProductVersion;
             string Manufacturer = oRZ.Manufacturer.TrimEnd('.'); //Temp Fix
+
             Bootstrap = false;
             downloadTask.Installing = true;
 
