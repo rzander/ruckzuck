@@ -46,6 +46,11 @@ namespace RuckZuck_Tool
             DateTime dstart = DateTime.Now;
             InitializeComponent();
 
+            List<string> lSponsors = Properties.Settings.Default.SponsorUrl.Cast<string>().ToList().OrderBy(a => Guid.NewGuid()).ToList();
+            Img1.Source = new BitmapImage(new Uri(lSponsors[0]));
+            Img2.Source = new BitmapImage(new Uri(lSponsors[1]));
+            Img3.Source = new BitmapImage(new Uri(lSponsors[2]));
+
             CommandArgs.AddRange(Environment.GetCommandLineArgs());
             CommandArgs.RemoveAt(0);
 

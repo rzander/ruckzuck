@@ -18,5 +18,14 @@
     <Setting Name="ShowAbout" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="SponsorUrl" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/images/baseVISION_small.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/images/ROMAWO_Header_oo_small24.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/images/optimio_small.png&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
