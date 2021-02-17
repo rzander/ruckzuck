@@ -1238,9 +1238,6 @@ try {
 catch { Install-Module AzureAD -Force -Confirm:$false }
 
 $ShortName = $args[0]
-$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
-$Global:User = $args[3]
-#$global:authToken = Get-AuthToken -User $User
 $outFolder = "$env:temp\intunewin"
 if (-NOT (Test-Path $outFolder)) { New-Item -Path $outFolder -ItemType Directory }
 #Remove-Item $sourceFolder -Recurse -Force -ea SilentlyContinue
@@ -1258,11 +1255,26 @@ if ($rzSW.count -gt 1) {
 $sourceFolder = "$env:temp\$($rzSW.ContentID)"
 $file = $rzSW.ShortName
 $rzSW.Files | ForEach-Object { 
-    #Invoke-WebRequest -Uri $_.URL -OutFile "$($sourceFolder)\$($_.FileName)"
     $file = $_.FileName
+    $_.URL &gt; "$env:temp\$($rzSW.ContentID)\$($file).url"
 }
+
 if (-NOT (Test-Path $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Directory }
 Invoke-WebRequest -Uri $rzSW.iconURL -OutFile "$($sourceFolder)\logo.png"
+$rzSW | ConvertTo-Json &gt; "$($sourceFolder)\rzMetadata.json"
+
+#README.md
+"# $($rzSW.ShortName)" &gt; "$($sourceFolder)\README.md"
+"$($rzSW.Description)" &gt;&gt; "$($sourceFolder)\README.md"
+"  " &gt;&gt; "$($sourceFolder)\README.md"
+"ProductName: $($rzSW.ProductName)  " &gt;&gt; "$($sourceFolder)\README.md"
+"Manufacturer: $($rzSW.Manufacturer)  " &gt;&gt; "$($sourceFolder)\README.md"
+"Version: $($rzSW.ProductVersion)  " &gt;&gt; "$($sourceFolder)\README.md"
+"URL: $($rzSW.ProductURL)  " &gt;&gt; "$($sourceFolder)\README.md"
+
+$global:authToken = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($args[1])" ; "ExpiresOn" = [DateTimeOffset]::Parse($args[2]) }
+$Global:User = $args[3]
+#$global:authToken = Get-AuthToken -User $User
 
 #Download IntuneWinAppUtil
 if (-NOT (Test-Path "$($env:temp)\IntuneWinAppUtil.exe")) {
@@ -1326,6 +1338,60 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
     </Setting>
     <Setting Name="NoExit" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="azurepipelines" Type="System.String" Scope="Application">
+      <Value Profile="(Default)"># Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+steps:
+
+- task: UseDotNet@2
+  inputs:
+    version: '3.1.200'
+
+- task: PowerShell@2
+  displayName: 'install IntuneAppBuilder'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your PowerShell commands here.
+      dotnet tool install -g IntuneAppBuilder.Console
+    errorActionPreference: 'silentlyContinue'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: 'create intunewin file'
+  inputs:
+    targetType: 'inline'
+    script: |
+      New-Item -Type Directory '$(Build.Repository.Name)'
+      Copy-Item *.* '$(Build.Repository.Name)'
+      Set-Location '$(Build.Repository.Name)'
+      Get-Item *.url | % { $url = gc $_; wget $url }
+      Remove-Item *.url
+      Remove-Item *.yml
+      IntuneAppBuilder pack -s '/home/vsts/work/1/s/$(Build.Repository.Name)'
+      #Rename-Item  '$(Build.Repository.Name).portal.intunewin' package.intunewin
+      Get-ChildItem
+      New-Item -Type Directory 'publish'
+      Copy-Item *.portal.intunewin publish
+      Copy-Item logo.png publish
+      Copy-Item *.intunewin.json publish
+      Copy-Item rzMetadata.json publish
+      Copy-Item README.md publish
+    errorActionPreference: 'silentlyContinue'
+    pwsh: true
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '/home/vsts/work/1/s/$(Build.Repository.Name)/publish'
+    artifact: 'Intune-package'
+    publishLocation: 'pipeline'</Value>
     </Setting>
   </Settings>
 </SettingsFile>

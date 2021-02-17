@@ -137,11 +137,24 @@ namespace RuckZuck_Tool
 
             File.WriteAllText(Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1"), Properties.Settings.Default.RZCreateAppPS);
 
-            if(Properties.Settings.Default.NoExit)
-                Process.Start("powershell.exe", "-executionpolicy bypass -noexit -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
-            else
-                Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
-
+            try
+            {
+                if (Properties.Settings.Default.NoExit)
+                    Process.Start("powershell.exe", "-executionpolicy bypass -noexit -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
+                else
+                    Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \"" + authResult.AccessToken + "\" \"" + authResult.ExpiresOn.ToString("u") + "\" \"" + authResult.Account.Username + "\"").WaitForExit();
+            }
+            catch
+            {
+                Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \" \" \" \" \" \"").WaitForExit();
+                DirectoryInfo oDir = new DirectoryInfo(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oRZ.ContentID.ToString()));
+                File.WriteAllText(Path.Combine(oDir.FullName, "azure-pipelines.yml"), Properties.Settings.Default.azurepipelines);
+                downloadTask.Status = "";
+                downloadTask.Installing = false;
+                downloadTask.Installed = true;
+                downloadTask.Error = false;
+                return;
+            }
             downloadTask.Status = "";
             downloadTask.Installing = false;
             downloadTask.Installed = true;
