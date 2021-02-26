@@ -148,6 +148,7 @@ namespace RuckZuck_Tool
             {
                 Process.Start("powershell.exe", "-executionpolicy bypass -file " + Environment.ExpandEnvironmentVariables("%TEMP%\\intunewin\\RZ4Intune.ps1") + " \"" + oRZ.ShortName + "\" \" \" \" \" \" \"").WaitForExit();
                 DirectoryInfo oDir = new DirectoryInfo(Path.Combine(Environment.GetEnvironmentVariable("TEMP"), oRZ.ContentID.ToString()));
+                if(!string.IsNullOrEmpty(Properties.Settings.Default.azurepipelines))
                 File.WriteAllText(Path.Combine(oDir.FullName, "azure-pipelines.yml"), Properties.Settings.Default.azurepipelines);
                 downloadTask.Status = "";
                 downloadTask.Installing = false;
