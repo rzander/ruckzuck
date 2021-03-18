@@ -524,7 +524,7 @@ namespace PackageManagement
             else
                 oUpdate.SoftwareUpdate.Download(false, sDLPath).Result.ToString();
 
-            if (oUpdate.SoftwareUpdate.Install(false, true).Result)
+            if (oUpdate.SoftwareUpdate.Install(false, false).Result)
                 request.Verbose(sManu + " " + sProd + " " + sVer + " installed.");
             else
                 request.Verbose(sManu + " " + sProd + " " + sVer + " NOT installed.");
