@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("RuckZuck")]
 [assembly: AssemblyDescription("Software Package Manager for Windows")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Zander Tools")]
+[assembly: AssemblyCompany("Zander - Tools")]
 [assembly: AssemblyProduct("RuckZuck")]
 [assembly: AssemblyCopyright("Copyright © 2021 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
@@ -52,4 +52,4 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.7.2.*")]
-[assembly: AssemblyFileVersion("1.7.2.1")]
+[assembly: AssemblyFileVersion("1.7.2.2")]

@@ -101,7 +101,7 @@
 
         <DockPanel Grid.Row="2">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button DockPanel.Dock="Top" x:Name="btInstall" Content="Start Installation..." IsEnabled="false" BorderBrush="#FF1B491D" Click="btInstall_Click" Width="200" Margin="0,5,10,5">
+                <Button DockPanel.Dock="Top" x:Name="btInstall" Content="Start Updating..." IsEnabled="false" BorderBrush="#FF1B491D" Click="btInstall_Click" Width="200" Margin="0,5,10,5">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#FFAFF06E" Offset="0.356"/>
