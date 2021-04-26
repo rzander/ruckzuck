@@ -43,11 +43,11 @@ namespace RZGet
                 Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
                 Console.WriteLine("");
                 Console.WriteLine("Update:");
-                Console.WriteLine("Update all missing updates : RZGet.exe update --all");
-                Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"]");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all [--retry]");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"] [--retry]");
                 Console.WriteLine("Show all missing updates : RZGet.exe update --list --all");
                 Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\"");
-                Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"]");
+                Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"] [--retry]");
                 Console.WriteLine("");
                 Console.WriteLine("Show:");
                 Console.WriteLine("Show Metadata : RZGet.exe show \"<Shortname>\"");
