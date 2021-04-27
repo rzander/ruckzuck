@@ -208,7 +208,7 @@ namespace RuckZuck.Base
             await tSWScan;
         }
 
-        internal async void _CheckUpdates(List<AddSoftware> aSWCheck)
+        internal void _CheckUpdates(List<AddSoftware> aSWCheck)
         {
             try
             {

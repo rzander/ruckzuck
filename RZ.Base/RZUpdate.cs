@@ -1563,7 +1563,8 @@ namespace RZUpdate
                     sFolder = Path.Combine(sLocalPath, SW.ContentID.ToString());
                 }
 
-                string psPath = string.Format("Set-Location -Path \"{0}\" -ErrorAction SilentlyContinue; $Folder = \"{0}\";", sFolder);
+                //prevent issue with 8.3 naming in PowerShell...
+                string psPath = string.Format("Set-Location (gi \"{0}\").fullname -ErrorAction SilentlyContinue; $Folder = \"{0}\";", sFolder);
                 int iExitCode = -1;
 
                 //Run Install Script
