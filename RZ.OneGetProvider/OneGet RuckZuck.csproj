@@ -142,7 +142,7 @@ for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\So
 "%25MTEXE%25" -manifest "$(ProjectDir)provider.manifest" -outputresource:"$(TargetPath)";#101
 
 if "$(ConfigurationName)"=="sDebug" GOTO  end
- "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\Bin\SignTool.exe" sign /i "COMODO RSA Code Signing CA" /n "Roger Zander" /t "http://timestamp.comodoca.com/authenticode" /q "$(TargetPath)" 
+ "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\Bin\SignTool.exe" sign /i "Sectigo RSA Code Signing CA" /n "Zander - Tools" /t "http://timestamp.comodoca.com/authenticode" /q "$(TargetPath)" 
 :end</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

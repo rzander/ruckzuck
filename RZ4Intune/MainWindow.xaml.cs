@@ -394,9 +394,9 @@ namespace RuckZuck_Tool
         public List<AddSoftware> lNewVersion = new List<AddSoftware>();
         public List<AddSoftware> lUnknownSoftware = new List<AddSoftware>();
 
-        private void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
+        private async void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
         {
-            oSCAN.CheckUpdates(new List<AddSoftware>() { ((AddSoftware)sender) });
+            await oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
         }
 
         private void btNewSoftware_Click(object sender, RoutedEventArgs e)

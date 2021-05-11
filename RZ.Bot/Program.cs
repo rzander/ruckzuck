@@ -26,8 +26,8 @@ namespace RZ.Bot
             
 #if !DEBUG
             RZScan oScan = new RZScan(false, false);
-            oScan.SWScan().Wait();
-            if(oScan.InstalledSoftware.Count >= 2)
+            oScan.SWScanAsync().Wait();
+            if(oScan.InstalledSoftware.Count >= 3)
             {
                 Console.WriteLine("Please run RZ.Bot.exe on a clean Machine !!!");
                 Console.ReadLine();
