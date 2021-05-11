@@ -70,7 +70,7 @@ namespace RuckZuck_Tool.Properties {
         ///[assembly: AssemblyConfiguration(&quot;&quot;)]
         ///[assembly: AssemblyCompany(&quot;RuckZuck.tools&quot;)]
         ///[assembly: AssemblyProduct(&quot;RZRZRZ&quot;)]
-        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2020 by Roger Zander&quot;)]
+        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2021 by Roger Zander&quot;)]
         ///[assembly: AssemblyTrademark(&quot;&quot;)]
         ///[assembly: AssemblyCulture(&quot;&quot;)]
         ///[ [rest of string was truncated]&quot;;.

@@ -694,7 +694,7 @@ namespace RZUpdate
                 Int64 ioldProgress = 0;
                 Int64 iProgress = 0;
 
-                if (URL.StartsWith("http"))
+                if (URL.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     //_DownloadFile(URL, FileName).Result.ToString();
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
@@ -708,7 +708,7 @@ namespace RZUpdate
                     ResponseStream = Response.GetResponseStream();
                 }
 
-                if (URL.StartsWith("ftp"))
+                if (URL.StartsWith("ftp", StringComparison.CurrentCultureIgnoreCase))
                 {
                     var ftpRequest = (FtpWebRequest)WebRequest.Create(URL);
                     ftpRequest.ContentLength.ToString();
@@ -720,6 +720,12 @@ namespace RZUpdate
                     ResponseStream = Response.GetResponseStream();
 
                     ContentLength = Response.ContentLength;
+                }
+
+                if (URL.StartsWith("<skip>", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    DLProgress(100, EventArgs.Empty);
+                    return true;
                 }
 
                 if (ResponseStream == null)
@@ -1329,7 +1335,6 @@ namespace RZUpdate
 
                             if (!_DownloadFile2(vFile.URL, sFile, vFile.FileSize))
                             {
-
                                 downloadTask.Error = true;
                                 downloadTask.PercentDownloaded = 0;
                                 downloadTask.ErrorMessage = "ERROR: download failed... " + vFile.FileName;
@@ -1360,108 +1365,116 @@ namespace RZUpdate
                         //Only Check Hash if downloaded
                         if (!string.IsNullOrEmpty(vFile.FileHash) && bDownload)
                         {
-                            if (string.IsNullOrEmpty(vFile.HashType))
-                                vFile.HashType = "MD5";
-
-                            //Check if there is a File
-                            long iFileSize = 0;
-                            try
+                            if (!vFile.URL.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) && !File.Exists(sFile)) 
                             {
-                                FileInfo fi = new FileInfo(sFile);
-                                iFileSize = fi.Length;
-                            }
-                            catch { }
-
-                            if (iFileSize == 0)
-                            {
-                                downloadTask.Error = true;
-                                downloadTask.PercentDownloaded = 0;
-                                downloadTask.ErrorMessage = "ERROR: empty File... " + vFile.FileName;
-                                Console.WriteLine("ERROR: empty File... " + vFile.FileName);
-                                ProgressDetails(downloadTask, EventArgs.Empty);
-                                File.Delete(sFile);
-                                return false;
-                            }
+                                downloadTask.PercentDownloaded = 100;
+                                downloadTask.Error = false;
+                            } 
                             else
                             {
+                                if (string.IsNullOrEmpty(vFile.HashType))
+                                    vFile.HashType = "MD5";
 
-
-                                //Check default MD5 Hash
-                                if (vFile.HashType.ToUpper() == "MD5")
+                                //Check if there is a File
+                                long iFileSize = 0;
+                                try
                                 {
-                                    if (!_checkFileMd5(sFile, vFile.FileHash))
-                                    {
-                                        downloadTask.Error = true;
-                                        downloadTask.PercentDownloaded = 0;
-                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
-                                        File.Delete(sFile);
-                                        if (SendFeedback)
-                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
-                                        bError = true;
-                                    }
-                                    else
-                                    {
-                                        downloadTask.PercentDownloaded = 100;
-                                    }
+                                    FileInfo fi = new FileInfo(sFile);
+                                    iFileSize = fi.Length;
                                 }
+                                catch { }
 
-                                //Check default SHA1 Hash
-                                if (vFile.HashType.ToUpper() == "SHA1")
+                                if (iFileSize == 0)
                                 {
-                                    if (!_checkFileSHA1(sFile, vFile.FileHash))
-                                    {
-                                        downloadTask.Error = true;
-                                        downloadTask.PercentDownloaded = 0;
-                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
-                                        File.Delete(sFile);
-                                        if (SendFeedback)
-                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
-                                        bError = true;
-                                    }
-                                    else
-                                    {
-                                        downloadTask.PercentDownloaded = 100;
-                                    }
+                                    downloadTask.Error = true;
+                                    downloadTask.PercentDownloaded = 0;
+                                    downloadTask.ErrorMessage = "ERROR: empty File... " + vFile.FileName;
+                                    Console.WriteLine("ERROR: empty File... " + vFile.FileName);
+                                    ProgressDetails(downloadTask, EventArgs.Empty);
+                                    File.Delete(sFile);
+                                    return false;
                                 }
-
-                                //Check default SHA256 Hash
-                                if (vFile.HashType.ToUpper() == "SHA256")
+                                else
                                 {
-                                    if (!_checkFileSHA256(sFile, vFile.FileHash))
-                                    {
-                                        downloadTask.Error = true;
-                                        downloadTask.PercentDownloaded = 0;
-                                        downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                        Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
-                                        File.Delete(sFile);
-                                        if (SendFeedback)
-                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
-                                        bError = true;
-                                    }
-                                    else
-                                    {
-                                        downloadTask.PercentDownloaded = 100;
-                                    }
-                                }
 
-                                if (vFile.HashType.ToUpper() == "X509")
-                                {
-                                    if (!_checkFileX509(sFile, vFile.FileHash))
+
+                                    //Check default MD5 Hash
+                                    if (vFile.HashType.ToUpper() == "MD5")
                                     {
-                                        downloadTask.Error = true;
-                                        downloadTask.PercentDownloaded = 0;
-                                        downloadTask.ErrorMessage = "ERROR: Signature mismatch on File " + vFile.FileName;
-                                        Console.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
-                                        File.Delete(sFile);
-                                        if (SendFeedback)
-                                            RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
-                                        bError = true;
+                                        if (!_checkFileMd5(sFile, vFile.FileHash))
+                                        {
+                                            downloadTask.Error = true;
+                                            downloadTask.PercentDownloaded = 0;
+                                            downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            File.Delete(sFile);
+                                            if (SendFeedback)
+                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
+                                            bError = true;
+                                        }
+                                        else
+                                        {
+                                            downloadTask.PercentDownloaded = 100;
+                                        }
                                     }
-                                    else
+
+                                    //Check default SHA1 Hash
+                                    if (vFile.HashType.ToUpper() == "SHA1")
                                     {
-                                        downloadTask.PercentDownloaded = 100;
+                                        if (!_checkFileSHA1(sFile, vFile.FileHash))
+                                        {
+                                            downloadTask.Error = true;
+                                            downloadTask.PercentDownloaded = 0;
+                                            downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            File.Delete(sFile);
+                                            if (SendFeedback)
+                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                            bError = true;
+                                        }
+                                        else
+                                        {
+                                            downloadTask.PercentDownloaded = 100;
+                                        }
+                                    }
+
+                                    //Check default SHA256 Hash
+                                    if (vFile.HashType.ToUpper() == "SHA256")
+                                    {
+                                        if (!_checkFileSHA256(sFile, vFile.FileHash))
+                                        {
+                                            downloadTask.Error = true;
+                                            downloadTask.PercentDownloaded = 0;
+                                            downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
+                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            File.Delete(sFile);
+                                            if (SendFeedback)
+                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                            bError = true;
+                                        }
+                                        else
+                                        {
+                                            downloadTask.PercentDownloaded = 100;
+                                        }
+                                    }
+
+                                    if (vFile.HashType.ToUpper() == "X509")
+                                    {
+                                        if (!_checkFileX509(sFile, vFile.FileHash))
+                                        {
+                                            downloadTask.Error = true;
+                                            downloadTask.PercentDownloaded = 0;
+                                            downloadTask.ErrorMessage = "ERROR: Signature mismatch on File " + vFile.FileName;
+                                            Console.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
+                                            File.Delete(sFile);
+                                            if (SendFeedback)
+                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                            bError = true;
+                                        }
+                                        else
+                                        {
+                                            downloadTask.PercentDownloaded = 100;
+                                        }
                                     }
                                 }
                             }
