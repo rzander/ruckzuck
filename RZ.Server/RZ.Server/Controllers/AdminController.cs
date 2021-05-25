@@ -279,11 +279,17 @@ namespace RZ.Server.Controllers
         [Authorize]
         public ActionResult Refresh()
         {
-            Plugins.loadPlugins(Path.Combine(Path.Combine(Env.ContentRootPath, "wwwroot"), "plugins"));
-            Base.GetCatalog("", true);
+            try
+            {
+                Plugins.loadPlugins(Path.Combine(Path.Combine(Env.ContentRootPath, "wwwroot"), "plugins"));
+                Base.GetCatalog("", true);
 
-            _hubContext.Clients.All.SendAsync("Reload");
-
+                _hubContext.Clients.All.SendAsync("Reload");
+            }
+            catch(Exception ex)
+            {
+                ex.Message.ToString();
+            }
             return RedirectToAction("Index");
         }
 

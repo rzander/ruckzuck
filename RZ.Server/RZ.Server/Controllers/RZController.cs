@@ -52,7 +52,7 @@ namespace RZ.Server.Controllers
         }
 
         [HttpGet]
-        [Route("rest/v2/GetCatalog")]
+        [Route("rest/v2/_GetCatalog")]
         public ActionResult GetCatalog(string customerid = "", bool nocache = false)
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -169,8 +169,8 @@ namespace RZ.Server.Controllers
 
 
         [HttpGet]
-        [Route("rest/v2/GetSoftwares")]
-        [Route("rest/v2/GetSoftwares/{man}/{name}/{ver}")]
+        [Route("rest/v2/_GetSoftwares")]
+        [Route("rest/v2/_GetSoftwares/{man}/{name}/{ver}")]
         public ActionResult GetSoftwares(string name = "", string ver = "", string man = "", string shortname = "", bool image = false, string customerid = "" )  //result = array
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -314,7 +314,7 @@ namespace RZ.Server.Controllers
         }
 
         [HttpGet]
-        [Route("rest/v2/GetSoftwares/{shortname}")]
+        [Route("rest/v2/_GetSoftwares/{shortname}")]
         public ActionResult GetSoftwares(string shortname = "", string customerid = "") //result = array
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -342,7 +342,7 @@ namespace RZ.Server.Controllers
         }
 
         [HttpGet]
-        [Route("rest/v2/GetUpdate/{man}/{name}/{ver}")]
+        [Route("rest/v2/_GetUpdate/{man}/{name}/{ver}")]
         public ActionResult GetUpdate(string name = "", string ver = "", string man = "", string customerid = "")
         {
             return null;
@@ -476,8 +476,8 @@ namespace RZ.Server.Controllers
         }
 
         [HttpPost]
-        [Route("rest/v2/checkforupdate")]
-        [Route("rest/v2/checkforupdate/{updateshash}")]
+        [Route("rest/v2/_checkforupdate")]
+        [Route("rest/v2/_checkforupdate/{updateshash}")]
         public ActionResult CheckForUpdate(string customerid = "", string updateshash = "")
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -593,10 +593,10 @@ namespace RZ.Server.Controllers
             try
             {
                 //if (bOverload)
-                //    return Content("https://cdnromawo.azureedge.net", "text/html");
+                //    return Content("https://cdn.ruckzuck.tools", "text/html");
 
-                //if(lCount > 120)
-                //    return Content("https://cdnromawo.azureedge.net", "text/html");
+                if (customerid == "81.246.0.34")
+                    return Content("https://rzproxy.azurewebsites.net", "text/html"); 
 
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.SetValidIP(ClientIP);
