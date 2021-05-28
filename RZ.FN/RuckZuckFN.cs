@@ -7,7 +7,6 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -20,6 +19,7 @@ using System.Net.Http;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
+using Microsoft.Extensions.Caching.Memory;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace RZ.Server
@@ -69,35 +69,39 @@ namespace RZ.Server
                     Base._cache = new MemoryCache(new MemoryCacheOptions());
                 }
 
-                //Get Settings from KeyVault
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cat")))
-                    Environment.SetEnvironmentVariable("SAS:Cat", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cat").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cont")))
-                    Environment.SetEnvironmentVariable("SAS:Cont", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cont").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Icon")))
-                    Environment.SetEnvironmentVariable("SAS:Icon", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "icon").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Repo")))
-                    Environment.SetEnvironmentVariable("SAS:Repo", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "repo").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Wait")))
-                    Environment.SetEnvironmentVariable("SAS:Wait", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "wait").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Look")))
-                    Environment.SetEnvironmentVariable("SAS:Look", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "look").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Map")))
-                    Environment.SetEnvironmentVariable("SAS:Map", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "map").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Feedback")))
-                    Environment.SetEnvironmentVariable("SAS:Feedback", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "feedback").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Dlq")))
-                    Environment.SetEnvironmentVariable("SAS:Dlq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "dlq").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Suq")))
-                    Environment.SetEnvironmentVariable("SAS:Suq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "suq").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Faq")))
-                    Environment.SetEnvironmentVariable("SAS:Faq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "faq").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Swq")))
-                    Environment.SetEnvironmentVariable("SAS:Swq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "swq").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Ip")))
-                    Environment.SetEnvironmentVariable("SAS:Ip", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "ip").Result.Value);
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbConnection")))
-                    Environment.SetEnvironmentVariable("sbConnection", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "sbConnection").Result.Value);
+                try
+                {
+                    //Get Settings from KeyVault
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cat")))
+                        Environment.SetEnvironmentVariable("SAS:Cat", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cat").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cont")))
+                        Environment.SetEnvironmentVariable("SAS:Cont", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cont").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Icon")))
+                        Environment.SetEnvironmentVariable("SAS:Icon", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "icon").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Repo")))
+                        Environment.SetEnvironmentVariable("SAS:Repo", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "repo").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Wait")))
+                        Environment.SetEnvironmentVariable("SAS:Wait", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "wait").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Look")))
+                        Environment.SetEnvironmentVariable("SAS:Look", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "look").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Map")))
+                        Environment.SetEnvironmentVariable("SAS:Map", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "map").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Feedback")))
+                        Environment.SetEnvironmentVariable("SAS:Feedback", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "feedback").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Dlq")))
+                        Environment.SetEnvironmentVariable("SAS:Dlq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "dlq").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Suq")))
+                        Environment.SetEnvironmentVariable("SAS:Suq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "suq").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Faq")))
+                        Environment.SetEnvironmentVariable("SAS:Faq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "faq").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Swq")))
+                        Environment.SetEnvironmentVariable("SAS:Swq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "swq").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Ip")))
+                        Environment.SetEnvironmentVariable("SAS:Ip", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "ip").Result.Value);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbConnection")))
+                        Environment.SetEnvironmentVariable("sbConnection", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "sbConnection").Result.Value);
+                }
+                catch { }
 
                 var binDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string ResourcePath = Path.GetFullPath(Path.Combine(binDirectory, ".."));
@@ -163,14 +167,14 @@ namespace RZ.Server
             if (customerid.ToLower() == "--old--")
             {
                 Base.ResetMemoryCache();
-                JArray oRes = Base.GetCatalog(customerid, true);
+                JArray oRes = Base.GetCatalog("", true);
                 JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
                 return new OkObjectResult(jTop);
             }
 
             if (!bOverload)
-                SendStatus("", 0, "Get Catalog");
+                SendStatusAsync("", 0, "Get Catalog");
 
             //Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
             log.LogInformation("GetCatalog from ClientIP: " + ClientIP + " CustomerID: " + customerid);
@@ -462,7 +466,7 @@ namespace RZ.Server
                 Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
 
                 if (!bOverload)
-                    SendStatus("", 0, "CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) ");
+                    SendStatusAsync("", 0, "CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) ");
 
                 //Base.WriteLog("V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
                 return new OkObjectResult(sResult);
@@ -558,12 +562,12 @@ namespace RZ.Server
                             if (bWorking)
                             {
                                 Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
-                                SendStatus("", 3, "success (" + name + ")");
+                                SendStatusAsync("", 3, "success (" + name + ")");
                             }
                             else
                             {
                                 Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
-                                SendStatus("", 2, "failed (" + name + "");
+                                SendStatusAsync("", 2, "failed (" + name + "");
                             }
                         }
 
@@ -659,7 +663,7 @@ namespace RZ.Server
                         await tcRuckZuck.SendAsync(bMSG);
 
                     if (!bOverload)
-                        SendStatus("", 4, "content downloaded (" + shortname + ")");
+                        SendStatusAsync("", 4, "content downloaded (" + shortname + ")");
 
                     //Base.WriteLog($"Content donwloaded: {shortname}", ClientIP, 1300, customerid);
                 }
@@ -764,7 +768,7 @@ namespace RZ.Server
 
         }
 
-        private static async void SendStatus(string code= "", int mType = 0, string statustext = "")
+        private static async void SendStatusAsync(string code= "", int mType = 0, string statustext = "")
         {
             if (string.IsNullOrEmpty(code))
                 code = Environment.GetEnvironmentVariable("StatusCode");
