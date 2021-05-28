@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
-using RZ.Server;
 using RZ.Server.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -8,9 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 
-namespace Plugin_Software
+namespace RZ.Plugin.Catalog.Azure
 {
     public class Plugin_Software : ICatalog
     {
@@ -42,7 +40,6 @@ namespace Plugin_Software
 
         }
 
-
         public JArray GetCatalog(string customerid = "", bool nocache = false)
         {
             JArray jResult = new JArray();
@@ -60,11 +57,73 @@ namespace Plugin_Software
 
             jResult = getCatalog(Settings["catURL"] + "?" + Settings["catSAS"], customerid);
 
-            if (jResult.Count() > 0)
+            if (jResult.Count > 590)
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5)); //cache catalog for 5 Minutes
                 _cache.Set("swcataz" + customerid, jResult, cacheEntryOptions);
             }
+
+            return jResult;
+        }
+
+        private JArray QueryTable(string url, string NextPartitionKey = "", string NextRowKey = "")
+        {
+            string uri = url;
+            if (!string.IsNullOrEmpty(NextPartitionKey))
+                uri = url + $"&NextPartitionKey={NextPartitionKey}&NextRowKey={NextRowKey}";
+
+            var request = (HttpWebRequest)WebRequest.Create(uri);
+
+            request.Method = "GET";
+            request.Headers.Add("x-ms-version", "2017-04-17");
+            request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+            request.Accept = "application/json;odata=nometadata";
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            var content = string.Empty;
+
+            using (var response = (HttpWebResponse)request.GetResponse())
+            {
+                if (!string.IsNullOrEmpty(response.Headers["x-ms-continuation-NextPartitionKey"]))
+                {
+                    NextPartitionKey = response.Headers["x-ms-continuation-NextPartitionKey"];
+                }
+                else
+                {
+                    NextPartitionKey = "";
+                }
+
+                if (!string.IsNullOrEmpty(response.Headers["x-ms-continuation-NextRowKey"]))
+                {
+                    NextRowKey = response.Headers["x-ms-continuation-NextRowKey"];
+                }
+                else
+                {
+                    NextRowKey = "";
+                }
+
+                using (var stream = response.GetResponseStream())
+                {
+                    using (var sr = new StreamReader(stream))
+                    {
+                        content = sr.ReadToEnd();
+                    }
+                }
+            }
+
+            var jres = JObject.Parse(content);
+            JArray jResult = jres["value"] as JArray;
+
+            if (!string.IsNullOrEmpty(NextPartitionKey))
+            {
+                foreach(var jItem in QueryTable(url, NextPartitionKey, NextRowKey))
+                {
+                    jResult.Add(jItem);
+                }
+            }
+
+            jResult.Count.ToString();
+
             return jResult;
         }
 
@@ -80,31 +139,13 @@ namespace Plugin_Software
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer +"' and IsLatest eq true&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category,IconHash,ModifyDate,Timestamp&" + sasToken);
+                string uri = sURL + "()?$filter=PartitionKey eq '" + Customer + "' and IsLatest eq true&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category,IconHash,ModifyDate,Timestamp&" + sasToken;
 
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json;odata=nometadata";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                JArray jResult = QueryTable(uri);
 
-                var content = string.Empty;
-
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
-                }
-
-                var jres = JObject.Parse(content);
-
-                JArray jResult = jres["value"] as JArray;
-
+                if (jResult.Count < 610)
+                    Console.WriteLine("Azure:" + jResult.Count.ToString());
+                
                 foreach (JObject jItem in jResult)
                 {
                     try
@@ -136,19 +177,16 @@ namespace Plugin_Software
                         jItem.Add("Image", null);
                         jItem.Add("Quality", 100);
 
-                        //Backward compatibility; remove after 1.6.2.13
-                        //try
-                        //{
-                        //    jItem.Add("Shortname", jItem["ShortName"]);
-                        //}
-                        //catch { }
                     }
                     catch { }
                 }
-
+               
                 return jResult;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                ex.Message.ToString();
+            }
 
             return new JArray();
         }

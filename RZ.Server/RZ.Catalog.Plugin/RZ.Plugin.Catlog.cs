@@ -5,10 +5,7 @@ using RZ.Server.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace RZ.Plugin.Catlog.Azure
 {
@@ -290,7 +287,7 @@ namespace RZ.Plugin.Catlog.Azure
 
             if (jResult.Count > 0)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5)); //cache catalog for 5 Minutes
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
                 _cache.Set("swcatloc" + customerid, jResult, cacheEntryOptions);
             }
 
