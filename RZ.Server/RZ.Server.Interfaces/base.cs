@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace RZ.Server
 {
     public static class Base
@@ -67,15 +66,19 @@ namespace RZ.Server
         public static JArray GetCatalog(string customerid = "", bool nocache = false)
         {
             JArray jResult = new JArray();
-                        
+
             if (!nocache) //skip cache ?!
             {
-                //Try to get value from Memory
-                if (_cache.TryGetValue("swcat" + customerid, out jResult))
+                try
                 {
-                    if(jResult.Count > 500)
-                        return jResult;
+                    //Try to get value from Memory
+                    if (_cache.TryGetValue("swcat" + customerid, out jResult))
+                    {
+                        if (jResult.Count > 580)
+                            return jResult;
+                    }
                 }
+                catch { }
 
                 jResult = new JArray();
             }
@@ -94,10 +97,6 @@ namespace RZ.Server
                                 jResult.Add(oNewItem); //Only add non existing Items
                             }
                         }
-                        //jResult.Merge(oNewCat, new JsonMergeSettings
-                        //{
-                        //    MergeArrayHandling = MergeArrayHandling.Union
-                        //});
                     }
                     catch { }
                 }
@@ -105,11 +104,15 @@ namespace RZ.Server
                 //Cleanup Items (this allows local JSON Files to remove an Item in the Catalog)
                 foreach (var oItem in jResult.ToList())
                 {
-                    if (string.IsNullOrEmpty(oItem["ProductName"].Value<string>()) && string.IsNullOrEmpty(oItem["Manufacturer"].Value<string>()) && string.IsNullOrEmpty(oItem["ProductVersion"].Value<string>()))
-                        oItem.Remove();
+                    try
+                    {
+                        if (string.IsNullOrEmpty(oItem["ProductName"].Value<string>()) && string.IsNullOrEmpty(oItem["Manufacturer"].Value<string>()) && string.IsNullOrEmpty(oItem["ProductVersion"].Value<string>()))
+                            oItem.Remove();
+                    }
+                    catch { }
                 }
 
-                if (jResult.Count() > 500)
+                if (jResult.Count > 580)
                 {
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)); //cache catalog for 30 Minutes
                     _cache.Set("swcat" + customerid, jResult, cacheEntryOptions);
@@ -412,6 +415,7 @@ namespace RZ.Server
 
             return bResult;
         }
+
         #region SWLookup
         internal static bool? bForward = null;
 
@@ -853,7 +857,7 @@ namespace RZ.Server
             try
             {
 
-                var allDlls = new DirectoryInfo(PluginDirectory).GetFiles("*.dll");
+                var allDlls = Directory.GetParent(PluginDirectory).Parent.GetFiles("*.dll");
 
                 var dll = allDlls.FirstOrDefault(fi => fi.Name == args.Name.Split(',')[0] + ".dll");
                 if (dll == null)
