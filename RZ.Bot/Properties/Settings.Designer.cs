@@ -12,7 +12,7 @@ namespace RZ.Bot.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,38 +25,11 @@ namespace RZ.Bot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Endpoint=sb://ruckzuck.servicebus.windows.net/;SharedAccessKeyName=RZBot;SharedAc" +
-            "cessKey=juTGyw3RWxptimG3c4mumxQ6fTpmGinSJVvh1bE3mh8=")]
-        public string ConnectionString {
+        [global::System.Configuration.DefaultSettingValueAttribute("sv=2019-02-02&st=2021-05-25T17%3A23%3A26Z&se=2025-05-26T17%3A23%3A00Z&sp=raup&sig" +
+            "=xxx")]
+        public string SASToken {
             get {
-                return ((string)(this["ConnectionString"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ruckzuck")]
-        public string TopicName {
-            get {
-                return ((string)(this["TopicName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Failure2")]
-        public string Filtername {
-            get {
-                return ((string)(this["Filtername"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("sys.Label like \'RuckZuck/WCF/Feedback/failure/%\'")]
-        public string SQLFilter {
-            get {
-                return ((string)(this["SQLFilter"]));
+                return ((string)(this["SASToken"]));
             }
         }
     }
