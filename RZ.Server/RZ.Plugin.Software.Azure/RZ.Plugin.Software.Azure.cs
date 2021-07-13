@@ -65,20 +65,32 @@ namespace Plugin_Software
         public JArray GetSoftwares(string shortname, string customerid = "")
         {
             JArray jResult = new JArray();
-            //Try to get value from Memory
-            if (_cache.TryGetValue("sn-" + shortname.ToLower(), out jResult))
+
+            try
             {
-                return jResult;
+                //Try to get value from Memory
+                if (_cache.TryGetValue("sn-" + shortname.ToLower(), out jResult))
+                {
+                    return jResult;
+                }
             }
+            catch { }
 
             foreach (JObject jObj in getlatestSoftware(Settings["catURL"] + "?" + Settings["catSAS"], shortname.ToLower(), "known"))
             {
-                jResult = GetSoftwares(jObj["ProductName"].ToString().ToLower(), jObj["ProductVersion"].ToString().ToLower(), jObj["Manufacturer"].ToString().ToLower(), customerid);
+                try
+                {
+                    jResult = GetSoftwares(jObj["ProductName"].ToString().ToLower(), jObj["ProductVersion"].ToString().ToLower(), jObj["Manufacturer"].ToString().ToLower(), customerid);
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
-                _cache.Set("sn-" + shortname.ToLower(), jResult, cacheEntryOptions);
+                    if (jResult.HasValues)
+                    {
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                        _cache.Set("sn-" + shortname.ToLower(), jResult, cacheEntryOptions);
 
-                return jResult;
+                        return jResult;
+                    }
+                }
+                catch { }
             }
 
 
@@ -744,32 +756,37 @@ namespace Plugin_Software
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer.ToLower() + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&" + sasToken);
+                string uri = sURL + "()?$filter=(PartitionKey eq '" + Customer.ToLower() + "') and (shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "') and (IsLatest eq true)&" + sasToken;
+                return getEntities(uri);
 
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json;odata=nometadata";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                //var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=(PartitionKey eq '" + Customer.ToLower() + "') and (shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "') and (IsLatest eq true)&" + sasToken);
 
-                var content = string.Empty;
+                //request.Method = "GET";
+                //request.Headers.Add("x-ms-version", "2017-04-17");
+                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                //request.Accept = "application/json;odata=nometadata";
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
-                }
+                //var content = string.Empty;
 
-                var jres = JObject.Parse(content);
+                //using (var response = (HttpWebResponse)request.GetResponse())
+                //{
+                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
+                //    using (var stream = response.GetResponseStream())
+                //    {
+                //        using (var sr = new StreamReader(stream))
+                //        {
+                //            content = sr.ReadToEnd();
+                //        }
+                //    }
+                //}
 
-                JArray jResult = jres["value"] as JArray;
+                //var jres = JObject.Parse(content);
 
-                return jResult;
+                //JArray jResult = jres["value"] as JArray;
+
+                //return jResult;
             }
             catch { }
 
@@ -783,7 +800,52 @@ namespace Plugin_Software
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
+                string uri = sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken;
+                return getEntities(uri);
+
+                //var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
+
+                //request.Method = "GET";
+                //request.Headers.Add("x-ms-version", "2017-04-17");
+                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                //request.Accept = "application/json;odata=nometadata";
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                //var content = string.Empty;
+
+                //using (var response = (HttpWebResponse)request.GetResponse())
+                //{
+                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
+                //    using (var stream = response.GetResponseStream())
+                //    {
+                //        using (var sr = new StreamReader(stream))
+                //        {
+                //            content = sr.ReadToEnd();
+                //        }
+                //    }
+                //}
+
+                //var jres = JObject.Parse(content);
+
+                //JArray jResult = jres["value"] as JArray;
+
+                //return jResult;
+            }
+            catch { }
+
+            return new JArray();
+        }
+
+        public static JArray getEntities(string url)
+        {
+            try
+            {
+                string nextPart = "";
+                string nextRow = "";
+                HttpWebRequest request = null;
+
+                request = (HttpWebRequest)WebRequest.Create(url);
 
                 request.Method = "GET";
                 request.Headers.Add("x-ms-version", "2017-04-17");
@@ -795,6 +857,8 @@ namespace Plugin_Software
 
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
+                    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
                     using (var stream = response.GetResponseStream())
                     {
                         using (var sr = new StreamReader(stream))
@@ -808,11 +872,18 @@ namespace Plugin_Software
 
                 JArray jResult = jres["value"] as JArray;
 
+                //Load next Page if there are more than 1000 Items...
+                if (!string.IsNullOrEmpty(nextPart))
+                {
+                    string sNewURL = url.Split("&NextPartitionKey=")[0];
+                    jResult.Merge(getEntities(sNewURL + $"&NextPartitionKey={ nextPart }&NextRowKey={ nextRow }"));
+                }
+
                 return jResult;
             }
             catch { }
 
-            return new JArray();
+            return null;
         }
 
         private static readonly object syncObject = new object();
