@@ -49,6 +49,8 @@ Affected (known) Products:
 
 2019: https://rzander.azurewebsites.net/ruckzuck-figures-for-2019/
 
+2020: https://rzander.azurewebsites.net/ruckzuck-figures-for-2020/
+
 ## RuckZuck components
 ### RuckZuck_Tool (RuckZuck.exe)
 The RuckZuck.exe is a portable tool with a UI to install or update applications from the RZ repository.
