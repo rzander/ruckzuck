@@ -36,6 +36,7 @@ namespace RuckZuck_Tool
             tSearch.Elapsed += TSearch_Elapsed;
             tSearch.Enabled = false;
             tSearch.AutoReset = false;
+            
         }
 
         public delegate void ChangedEventHandler(object sender, EventArgs e);
@@ -604,6 +605,7 @@ namespace RuckZuck_Tool
             Dispatcher.Invoke(update);
 
         }
+
         public class ShortNameToCategory : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -625,6 +627,20 @@ namespace RuckZuck_Tool
             }
         }
 
+        public class CutoffConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                return ((int)value) > Cutoff;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
+
+            public int Cutoff { get; set; }
+        }
 
     }
 

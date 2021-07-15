@@ -124,7 +124,8 @@ namespace RuckZuck.Base
                             ProductURL = item.ProductURL,
                             ProductVersion = item.ProductVersion,
                             ShortName = item.ShortName,
-                            IconHash = item.IconHash
+                            IconHash = item.IconHash,
+                            ModifyDate = item.ModifyDate
                         }).ToList();
                     }
                 }

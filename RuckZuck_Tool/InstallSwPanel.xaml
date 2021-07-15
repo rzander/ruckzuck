@@ -61,11 +61,11 @@
                 </ToolBar>
             </StackPanel>
         </DockPanel>
-        <ListView Name="lvSW" Grid.Row="1" SelectionChanged="lvSW_SelectionChanged">
+        <ListView Name="lvSW" Grid.Row="1" SelectionChanged="lvSW_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <DockPanel>
-                        <DockPanel DockPanel.Dock="Left">
+                        <DockPanel DockPanel.Dock="Left" >
                             <TextBlock>
                                 <Hyperlink NavigateUri="{Binding ProductURL}" RequestNavigate="Hyperlink_RequestNavigate" OverridesDefaultStyle="True" TextDecorations="">
                                     <Image Height="32" Width="32" ToolTip="{Binding ProductName}" Source="{Binding IconURL, IsAsync=True, Mode=OneTime, UpdateSourceTrigger=PropertyChanged}" >
@@ -74,10 +74,11 @@
                             </TextBlock>
                         </DockPanel>
                         <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
-                            <DockPanel DockPanel.Dock="Top">
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding ShortName}" FontWeight="Bold"/>
+                            <DockPanel DockPanel.Dock="Top" >
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ModifyDate, StringFormat=yyyy-MM-dd}" FontSize="9" x:Name="Age" />
+                                <TextBlock DockPanel.Dock="Left" Text="{Binding ShortName}" FontWeight="Bold"/>
                             </DockPanel>
-                            <DockPanel DockPanel.Dock="Top" MaxWidth="500">
+                            <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left"  >
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Description}" TextWrapping="Wrap"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top">
@@ -92,6 +93,22 @@
                             </DockPanel>
                         </DockPanel>
                     </DockPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=Age}" Value="0">
+                            <Setter TargetName="Age" Property="Foreground" Value="#FF003AFF" />
+                            <Setter TargetName="Age" Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Age}" Value="1">
+                            <Setter TargetName="Age" Property="Foreground" Value="#FF4502D4" />
+                            <Setter TargetName="Age" Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Age}" Value="2">
+                            <Setter TargetName="Age" Property="Foreground" Value="#FF4502D4" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Age}" Value="3">
+                            <Setter TargetName="Age" Property="Foreground" Value="#FF4502D4" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ListView.ItemTemplate>
             <ListBox.ItemContainerStyle>
@@ -101,6 +118,7 @@
                             <Setter Property="Background" Value="#4C5DC92A" />
                         </DataTrigger>
                     </Style.Triggers>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListView.GroupStyle>
@@ -187,3 +205,5 @@
         </DockPanel>
     </Grid>
 </UserControl>
+
+

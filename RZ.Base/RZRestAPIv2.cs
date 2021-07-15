@@ -177,6 +177,11 @@ namespace RuckZuck.Base
         public string ShortName { get; set; }
         public long SWId { get; set; }
 
+        public DateTime? ModifyDate { get; set; }
+        public double Age
+        {
+            get { if (ModifyDate == null) { return -1; } else { return Math.Abs((DateTime.Now - (DateTime)ModifyDate).Days); }; }
+        }
     }
 
     class RZRestAPIv2
@@ -190,7 +195,7 @@ namespace RuckZuck.Base
         {
             get
             {
-                if (_sURL != "UDP" && ! string.IsNullOrEmpty(_sURL))
+                if (_sURL != "UDP" && !string.IsNullOrEmpty(_sURL))
                     return _sURL;
 
                 try
@@ -283,7 +288,7 @@ namespace RuckZuck.Base
 
                     List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(await response.Content.ReadAsStringAsync());
                     return lRes;
-                    
+
                     //response.Wait(180000); //3min max
                     //if (response.IsCompleted)
                     //{
@@ -352,7 +357,7 @@ namespace RuckZuck.Base
                 sURL = "UDP"; //reset URL as this part is only called every 30 min
 
                 Task<string> response;
-                if (string.IsNullOrEmpty(customerid) || customerid.Count(t=>t == '.') == 3)
+                if (string.IsNullOrEmpty(customerid) || customerid.Count(t => t == '.') == 3)
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
                 else
                     response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid);
@@ -500,7 +505,7 @@ namespace RuckZuck.Base
         {
             try
             {
-               await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) +"&customerid=" + WebUtility.UrlEncode(CustomerID));
+                await oClient.GetStringAsync(sURL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(CustomerID));
             }
             catch { }
         }

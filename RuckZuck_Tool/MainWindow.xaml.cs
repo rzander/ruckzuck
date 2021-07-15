@@ -383,12 +383,12 @@ namespace RuckZuck_Tool
                                     //Check if SW is already installed
                                     if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true, ModifyDate = oSW.ModifyDate };
                                         oDBCat.Add(oNew);
                                     }
                                     else
                                     {
-                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false };
+                                        GetSoftware oNew = new GetSoftware() { Categories = new List<string> { sCAT }, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false, ModifyDate = oSW.ModifyDate };
                                         oDBCat.Add(oNew);
                                     }
                                 }
@@ -400,11 +400,11 @@ namespace RuckZuck_Tool
                             //Check if SW is already installed
                             if (lSoftware.FirstOrDefault(t => t.ProductName == oSW.ProductName && t.ProductVersion == oSW.ProductVersion) != null)
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = true, ModifyDate = oSW.ModifyDate });
                             }
                             else
                             {
-                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false });
+                                oDBCat.Add(new GetSoftware() { Categories = oSW.Categories, Description = oSW.Description, Downloads = oSW.Downloads, SWId = oSW.SWId, Manufacturer = oSW.Manufacturer, ProductName = oSW.ProductName, ProductURL = oSW.ProductURL, ProductVersion = oSW.ProductVersion, ShortName = oSW.ShortName, IconHash = oSW.IconHash, isInstalled = false, ModifyDate = oSW.ModifyDate });
                             }
                         }
                     }
