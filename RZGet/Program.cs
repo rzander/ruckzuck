@@ -36,7 +36,7 @@ namespace RZGet
             List<string> lArgs = args.ToList();
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck CommandLine Tool (c) 2020 by Roger Zander");
+                Console.WriteLine("RuckZuck CommandLine Tool (c) 2021 by Roger Zander");
                 Console.WriteLine("Install:");
                 Console.WriteLine("Install a Software from Shortname : RZGet.exe install \"<Shortname>\"[;\"<Shortname2>\"]");
                 Console.WriteLine("Install a Software from JSON File : RZGet.exe install \"<JSON full path>\"[;\"<JSON full path>\"]");
