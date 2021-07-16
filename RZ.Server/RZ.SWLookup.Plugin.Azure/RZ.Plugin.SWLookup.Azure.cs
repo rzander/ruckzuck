@@ -300,54 +300,59 @@ namespace RZ.SWLookup.Plugin
             }
         }
 
-        private JArray getlatestSoftware(string url, string ShortName, string Customer = "known")
+        private JArray getlatestSoftwareHash(string url, string rowkey, string partitionkey = "known")
         {
             try
             {
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer.ToLower() + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
+                string uri = sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken;
+                return getEntities(uri);
 
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json;odata=nometadata";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                //var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
 
-                var content = string.Empty;
+                //request.Method = "GET";
+                //request.Headers.Add("x-ms-version", "2017-04-17");
+                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                //request.Accept = "application/json;odata=nometadata";
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
-                }
+                //var content = string.Empty;
 
-                var jres = JObject.Parse(content);
+                //using (var response = (HttpWebResponse)request.GetResponse())
+                //{
+                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
+                //    using (var stream = response.GetResponseStream())
+                //    {
+                //        using (var sr = new StreamReader(stream))
+                //        {
+                //            content = sr.ReadToEnd();
+                //        }
+                //    }
+                //}
 
-                JArray jResult = jres["value"] as JArray;
+                //var jres = JObject.Parse(content);
 
-                return jResult;
+                //JArray jResult = jres["value"] as JArray;
+
+                //return jResult;
             }
             catch { }
 
             return new JArray();
         }
 
-        private JArray getlatestSoftwareHash(string url, string rowkey, string partitionkey = "known")
+        public static JArray getEntities(string url)
         {
             try
             {
-                DateTime dStart = DateTime.Now;
-                string sasToken = url.Substring(url.IndexOf("?") + 1);
-                string sURL = url.Substring(0, url.IndexOf("?"));
+                string nextPart = "";
+                string nextRow = "";
+                HttpWebRequest request = null;
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=ShortName&" + sasToken);
+                request = (HttpWebRequest)WebRequest.Create(url);
 
                 request.Method = "GET";
                 request.Headers.Add("x-ms-version", "2017-04-17");
@@ -359,6 +364,8 @@ namespace RZ.SWLookup.Plugin
 
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
+                    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
                     using (var stream = response.GetResponseStream())
                     {
                         using (var sr = new StreamReader(stream))
@@ -372,8 +379,12 @@ namespace RZ.SWLookup.Plugin
 
                 JArray jResult = jres["value"] as JArray;
 
-                TimeSpan tDur = DateTime.Now - dStart;
-                tDur.TotalMilliseconds.ToString();
+                //Load next Page if there are more than 1000 Items...
+                if (!string.IsNullOrEmpty(nextPart))
+                {
+                    string sNewURL = url.Split("&NextPartitionKey=")[0];
+                    jResult.Merge(getEntities(sNewURL + $"&NextPartitionKey={ nextPart }&NextRowKey={ nextRow }"));
+                }
 
                 return jResult;
             }
@@ -402,32 +413,10 @@ namespace RZ.SWLookup.Plugin
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + Customer + "'&" + sasToken);
+                string uri = sURL + "()?$filter=PartitionKey eq '" + Customer + "'&" + sasToken;
+                jResult = getEntities(uri);
 
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json;odata=nometadata";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                var content = string.Empty;
-
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
-                }
-
-                var jres = JObject.Parse(content);
-
-                jResult = jres["value"] as JArray;
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(15)); //cache hash for 15 Minutes
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(16)); //cache hash for 16 Minutes
                 _cache.Set("automap-" + Customer, jResult, cacheEntryOptions);
 
                 return jResult;
