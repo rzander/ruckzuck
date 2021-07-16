@@ -75,7 +75,7 @@
                         </DockPanel>
                         <DockPanel DockPanel.Dock="Right" Margin="5,0,0,0">
                             <DockPanel DockPanel.Dock="Top" >
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding ModifyDate, StringFormat=yyyy-MM-dd}" FontSize="9" x:Name="Age" />
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ModifyDate, StringFormat=yyyy-MM-dd}" FontSize="9" x:Name="Age" ToolTip="Date of last Update in the RuckZuck repository. Please report missing updates." />
                                 <TextBlock DockPanel.Dock="Left" Text="{Binding ShortName}" FontWeight="Bold"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left"  >
