@@ -6,7 +6,7 @@
     <AssemblyName>RZ.Plugin.Software.Azure</AssemblyName>
     <AssemblyVersion>1.0.0.6</AssemblyVersion>
     <FileVersion>1.0.0.6</FileVersion>
-    <Copyright>(c) 2020 by Roger Zander</Copyright>
+    <Copyright>(c) 2021 by Roger Zander</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

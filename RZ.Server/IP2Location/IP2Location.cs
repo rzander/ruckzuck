@@ -13,10 +13,6 @@ using System.Text;
 using System.Linq;
 using System.Runtime.Caching;
 
-using System.Net;
-using System.Web;
-using System.Net.Http;
-
 namespace IP2Location
 {
     public static class IP2Location
@@ -93,7 +89,7 @@ namespace IP2Location
         private static List<location> ReadCSVBlob(string Filename)
         {
             string BlobURL = Environment.GetEnvironmentVariable("BlobURL");
-            string SASToken = Environment.GetEnvironmentVariable("BlobToken");
+            string SASToken = Environment.GetEnvironmentVariable("BlobToken").TrimStart('?');
 
             List<location> Locations = new List<location>();
 

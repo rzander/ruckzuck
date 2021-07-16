@@ -4,12 +4,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyVersion>1.0.0.3</AssemblyVersion>
     <FileVersion>1.0.0.2</FileVersion>
-    <Copyright>(c) 2019 by Roger Zander</Copyright>
+    <Copyright>(c) 2021 by Roger Zander</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="4.1.0" />
-    <PackageReference Include="Fody" Version="6.2.6">
+    <PackageReference Include="Costura.Fody" Version="5.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Fody" Version="6.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
