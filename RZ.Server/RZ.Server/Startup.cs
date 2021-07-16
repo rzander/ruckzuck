@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,9 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,7 +51,6 @@ namespace RZ.Server
             try
             {
                 Controllers.RZController.sbconnection = Configuration["sbConnection"];
-                Controllers.RZv1Controller.sbconnection = Configuration["sbConnection"];
             }
             catch { }
 
@@ -181,7 +177,7 @@ namespace RZ.Server
             Plugins.loadPlugins(Path.Combine(Path.Combine(Env.ContentRootPath, "wwwroot"), "plugins"));
 
             Console.Write("loading SW-Catalog...");
-            Base.GetCatalog("", true);
+            //Base.GetCatalog("", true);
             Console.WriteLine(" done.");
         }
 
