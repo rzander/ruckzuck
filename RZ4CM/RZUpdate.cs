@@ -59,7 +59,7 @@ namespace RZUpdate
                 oSW.ProductVersion = Version; // ;
                 oSW.Manufacturer = Manufacturer ?? "";
 
-                List<AddSoftware> oResult = RZRestAPIv2.CheckForUpdate(new List<AddSoftware>() { oSW }).ToList();
+                List<AddSoftware> oResult = RZRestAPIv2.CheckForUpdateAsync(new List<AddSoftware>() { oSW }).Result.ToList();
                 if (oResult.Count > 0)
                 {
                     foreach (AddSoftware SW in oResult)

@@ -1379,7 +1379,7 @@ namespace RuckZuck_Tool
                             try
                             {
                                 //Create Device Collection
-                                oCollection = createDeviceCollection(Properties.Settings.Default.CollPrefix_DRI ?? "DRI_" + SW.ShortName + " " + SW.ProductVersion, LimitingDeviceCollectionID);
+                                oCollection = createDeviceCollection(Properties.Settings.Default.CollPrefix_DRI + SW.ShortName + " " + SW.ProductVersion, LimitingDeviceCollectionID);
                                 oCollection["RefreshType"].ObjectValue = CollectionRefreshType.None;
                                 oCollection["Comment"].ObjectValue = SWID;
                                 oCollection.Put();
@@ -1647,7 +1647,7 @@ namespace RuckZuck_Tool
 
             Console.WriteLine(oSCAN.InstalledSoftware.Count.ToString() + " Applications detected");
             Console.WriteLine("Checking for Updates...");
-            oSCAN.CheckUpdates(null).Wait();
+            oSCAN.CheckUpdatesAsync(null).Wait();
             Console.WriteLine(oSCAN.NewSoftwareVersions.Count.ToString() + " Updates detected.");
             SWUpdates = oSCAN.NewSoftwareVersions;
         }

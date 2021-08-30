@@ -380,7 +380,7 @@ namespace RuckZuck_Tool
 
         private void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
         {
-            oSCAN.CheckUpdates(new List<AddSoftware>() { ((AddSoftware)sender) });
+            oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
         }
 
         private void btNewSoftware_Click(object sender, RoutedEventArgs e)
