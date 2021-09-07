@@ -1,31 +1,124 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Repository";
 }
 
-<h2>Repository</h2>
 
-<div class="col-lg-12">
-    <form id="fChanges">
-        @foreach (var SW in ViewBag.RepositoryItems)
-        {
-            <div class="form-group row">
-                <div class="row col-lg-12">
-                    <div class="col-lg-1" style="width:72px">
-                        <img src="@SW.IconURL" width="48px" height="48px" />
-                    </div>
-                    <div class="row col-lg-2">
-                        <a href="@SW.ProductURL" target="_blank"><b>@SW.Shortname</b></a>
-                        @SW.Version
-                    </div>
-                    <div class="col-lg-2">
-                        <p>@SW.Manufacturer</p>
-                    </div>
-                    <div class="col-lg-7">
-                        <p>@SW.Description</p>
-                    </div>
-                </div>
-            </div>
-        }
-    </form>
+@section scripts{
+    <link href="~/lib/datatables.net-bs5/dataTables.bootstrap5.css" rel="stylesheet">
+    <link href="~/lib/datatables.net-select-bs5/select.bootstrap5.min.css" rel="stylesheet">
+    <link href="~/lib/datatables.net-buttons-bs5/buttons.bootstrap5.min.css" rel="stylesheet">
+    <script src="~/lib/jquery/jquery.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-bs5/dataTables.bootstrap5.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-buttons/js/dataTables.buttons.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-select/dataTables.select.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-fixedheader/dataTables.fixedHeader.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-keytable/dataTables.keyTable.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-responsive/dataTables.responsive.min.js" type="text/javascript"></script>
+    <script src="~/lib/datatables.net-scroller/dataTables.scroller.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var ajaxurl = '/Home/GetRepo';
+            $('#datatable').DataTable({
+                "ajax": {
+                    "url": ajaxurl,
+                    "dataSrc": ""
+                },
+                columns: [
+                    {
+                        "data": "Icon",
+                        "width": "50px",
+                        "defaultContent": "",
+                        fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+                            $(nTd).html("<img src='https://cdn.ruckzuck.tools/rest/v2/geticon?iconhash=" + oData.IconHash + "&size=48'/>");
+                        }
+                    },
+                    {
+                        "data": "ShortName",
+                        "className": "bold",
+                        fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+                            $(nTd).html("<a href='https://cdn.ruckzuck.tools/rest/v2/getsoftwares?shortname=" + oData.ShortName + "' target='_blank'>" + oData.ShortName + "</a>");
+                        }
+                    },
+                    {
+                        "data": "Manufacturer",
+                        "defaultContent": "?"
+                    },
+                    {
+                        "data": "ProductVersion",
+                        "defaultContent": "?",
+                        "className": "bold",
+                    },
+                    {
+                        "data": "Description",
+                        "defaultContent": ""
+                    },
+                    {
+                        "data": "ModifyDate",
+                        "render": function (data) {
+                            var date = new Date(data);
+                            return date.getFullYear() + '-' + (date.getMonth() + 1).pad(2) + '-' + date.getDate().pad(2) /*+ ' ' + date.getHours().pad(2) + ':' + date.getMinutes().pad(2) + ':' + date.getSeconds().pad(2)*/;
+                        }
+                    },
+
+                    {
+                        "data": "Downloads",
+                        "defaultContent": "?"
+                    },
+                    {
+                        "data": "SWId",
+                        "defaultContent": "?",
+                        "visible": false
+                    },
+                    {
+                        "data": "IconHash",
+                        "defaultContent": "?",
+                        "visible": false
+                    }
+                ],
+                "order": [[5, "asc"]],
+                "pageLength": 25,
+                rowId: 'ShortName',
+                select: true,
+                colReorder: true,
+                responsive: true,
+                stateSave: true,
+                deferRender: true,
+                buttons: [
+                ],
+                dom: '<"top" Bfirt><"bottom" lp><"clear">'
+            });
+        });
+
+        Number.prototype.pad = function (size) {
+            var s = String(this);
+            while (s.length < (size || 2)) { s = "0" + s; }
+            return s;
+        };
+
+
+    </script>
+}
+<h2 style="margin-top:10px">Software Repository</h2>
+<div class="col-xl-12">
+    <div id="datatable_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+        <div class="col-md-12">
+            <table class="display compact table table-striped  no-footer" id="datatable"
+                   style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>ShortName</th>
+                        <th>Manufacturer</th>
+                        <th>ProductVersion</th>
+                        <th>Description</th>
+                        <th>ModifyDate</th>
+                        <th>Downloads</th>
+                        <th>SWId</th>
+                        <th>IconHash</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 </div>

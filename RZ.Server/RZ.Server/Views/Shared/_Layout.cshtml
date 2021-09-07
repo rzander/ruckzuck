@@ -26,68 +26,74 @@
     <meta name="keywords" content="opensource,software,package,application,update,management,deployment,oneget,powershell,commandline" />
     <title>RuckZuck Software Package Manager for Windows</title>
     <link rel="icon" type="image/ico" sizes="16x16" href="~/favicon.ico">
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    </environment>
-    @Html.Raw(JavaScriptSnippet.FullScript)
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    @*@Html.Raw(JavaScriptSnippet.FullScript)*@
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-dark bg-dark fixed-top navbar-expand-md">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">RuckZuck</a>
-            </div>
+            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                &#x2630;
+            </button> <a asp-area=""
+                         asp-controller="Home" asp-action="Index" class="navbar-brand">RuckZuck</a>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @*<li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>*@
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Support">Support</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Repository">Repository</a></li>
-                    <li><a href="https://github.com/rzander/ruckzuck/wiki" target="_blank">Wiki</a></li>
-                    <li><a href="https://github.com/rzander/ruckzuck/issues" target="_blank">Forum</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Sponsors">Sponsors</a></li>
-                    <li data-toggle="tooltip" title="Pushbullet feed for new Versions and reported Issues...">
-                        <a class="pushbullet-subscribe-widget" data-channel="ruckzuck" data-widget="button" data-size="small"></a>
-                        <script type="text/javascript">(function () { var a = document.createElement('script'); a.type = 'text/javascript'; a.async = true; a.src = 'https://widget.pushbullet.com/embed.js'; var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(a, b); })();</script>
+                    @*
+                        <li class="nav-item"><a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link">Home</a>
+                        </li>*@
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Home" asp-action="About" class="nav-link">About</a>
                     </li>
-                    <li data-toggle="tooltip" title="RSS Feed with all Repository changes...">
-                        <a href="/rss.aspx">
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Home" asp-action="Support" class="nav-link">Support</a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Home" asp-action="Repository" class="nav-link">Repository</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="https://github.com/rzander/ruckzuck/wiki" target="_blank" class="nav-link">Wiki</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="https://github.com/rzander/ruckzuck/issues" target="_blank" class="nav-link">Forum</a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Home" asp-action="Sponsors" class="nav-link">Sponsors</a>
+                    </li>
+                    @*
+                        <li data-toggle="tooltip" title="Pushbullet feed for new Versions and reported Issues..."
+                        class="nav-item"> <a class="pushbullet-subscribe-widget nav-link" data-channel="ruckzuck"
+                            data-widget="button" data-size="small"></a>
+                        </li>*@
+                    <li data-toggle="tooltip" title="RSS Feed with all Repository changes..."
+                        class="nav-item">
+                        <a href="/rss.aspx" class="nav-link">
                             <span>
-                                <img src="/Images/RSS_24.png" alt="RSS" title="RSS" />
+                                <img src="/Images/RSS_24.png" alt="RSS" title="RSS">
                             </span>
                         </a>
                     </li>
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li><a asp-area="" asp-controller="Admin" asp-action="Index">Admin</a></li>
-                    }
                 </ul>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a asp-area="" asp-controller="Admin" asp-action="Index" class="nav-link">Admin</a>
+                        </li>
+                    </ul>}
                 <partial name="_LoginPartial" />
-                @*@Html.Partial("_LoginPartial")*@
-
             </div>
         </div>
     </nav>
+    
 
     <partial name="_CookieConsentPartial" />
 
     <div class="container body-content">
         @RenderBody()
     </div>
-    <div class="footer">
+    <footer class="footer py-3 mt-auto bg-white row">
         <div class="col-sm-7" style="text-align:left;display:inline-block">
             <p style="display:inline-block;padding-right:30px;margin-left:10px">Sponsored by:</p>
             <a href="https://www.itnetx.ch" target="_blank"><img alt="itnetX (Switzerland) AG" src="~/images/itnetx_Logo_small.png" height="24" style="display:inline-block;padding-right:30px" /></a>
@@ -99,28 +105,12 @@
             <p>&copy; 2021 by Roger Zander - RuckZuck Server @ViewBag.appVersion</p>
         </div>
 
-    </div>
+    </footer>
 
-    <environment include="Development">
-        <script src="~/lib/jquery/jquery.min.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-        @*<script src="~/js/site.js" asp-append-version="true"></script>*@
-    </environment>
-    <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-                asp-fallback-src="~/lib/jquery/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
-        </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
-        @*<script src="~/js/site.min.js" asp-append-version="true"></script>*@
-    </environment>
+
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
 
     @RenderSection("Scripts", required: false)
 </body>

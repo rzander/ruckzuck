@@ -1,11 +1,11 @@
 ﻿@if (User.Identity.IsAuthenticated)
 {
     <text>
-        <ul class="nav navbar-nav navbar-right">
-            <li class="navbar-text">
+        <ul class="navbar-nav ms-auto">
+            <li class="navbar-text nav-item">
                 Hello, @User.Identity.Name!
             </li>
-            <li>
+            <li class="nav-item">
                 @Html.ActionLink("Sign out", "SignOut", "Account")
             </li>
         </ul>
@@ -13,7 +13,7 @@
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li>@Html.ActionLink("Sign in", "SignIn", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    <ul class="navbar-nav ms-auto">
+        <li class="nav-item">@Html.ActionLink("Sign in", "SignIn", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
     </ul>
 }

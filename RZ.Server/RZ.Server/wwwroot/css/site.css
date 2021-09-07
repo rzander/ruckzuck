@@ -2,7 +2,7 @@
 for details on configuring this project to bundle and minify static web assets. */
 body {
     padding-top: 50px;
-    padding-bottom: 20px;
+    padding-bottom: 60px;
 }
 
 /* Wrapping element */
@@ -14,10 +14,32 @@ body {
 }
 
 .container {
-    width: 95%;
+    width: 100%;
+    max-width: 1920px;
 }
 
+.page-item.active .page-link {
+    background-color: lightgrey !important;
+    border: 1px solid black;
+}
+
+.page-link {
+    color: black !important;
+}
+
+.footer {
+    height: 50px;
+    position: fixed;
+    bottom: 0;
+    z-index: 1000;
+    text-align: left;
+    margin-left: 15px;
+}
+
+.bold {
+    font-weight: bold;
+}
 
 /* Hide/rearrange for smaller screens */
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1400px) {
 }

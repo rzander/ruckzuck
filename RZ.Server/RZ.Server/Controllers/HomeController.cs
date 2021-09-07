@@ -86,7 +86,7 @@ namespace RZ.Server.Controllers
             JArray jTop = JArray.FromObject(jsorted.Take(30));
             foreach (JObject jSW in jTop)
             {
-                string sImgUrl = string.Format("https://ruckzuck.azureedge.net/rest/v2/GetIcon?size=64&iconhash={0}", jSW["IconHash"].Value<string>());
+                string sImgUrl = string.Format("https://cdn.ruckzuck.tools/rest/v2/GetIcon?size=64&iconhash={0}", jSW["IconHash"].Value<string>());
                 //string sImg = "&lt;img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /&gt;";
                 string sImg = "<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /></br>";
                 //string sImg = "<![CDATA[<img src=\"" + sImgUrl + "\" height=\"64\" width=\"64\" /> ]]>";
@@ -123,41 +123,61 @@ namespace RZ.Server.Controllers
             ViewBag.appVersion = typeof(HomeController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             ViewData["Message"] = "RuckZuck Software Repository";
 
-            string sURL = Request.GetEncodedUrl().ToLower().TrimEnd('/');
-            sURL = sURL.Split("/home")[0];
+            //string sURL = Request.GetEncodedUrl().ToLower().TrimEnd('/');
+            //sURL = sURL.Split("/home")[0];
+
+            //List<RepositoryItem> lSW = new List<RepositoryItem>();
+            //JArray oRes = Base.GetCatalog("", false);
+            //JArray jsorted = new JArray(oRes.OrderBy(x => (string)x["ShortName"]));
+            //JArray jTop = JArray.FromObject(jsorted.Take(5));
+            //foreach (JObject jSW in jsorted)
+            //{
+            //    try
+            //    {
+            //        RepositoryItem oSW = new RepositoryItem();
+            //        oSW.Shortname = jSW["ShortName"].ToString();
+            //        oSW.Version = jSW["ProductVersion"].ToString();
+            //        if (!string.IsNullOrEmpty(jSW["IconHash"].Value<string>()))
+            //            oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconhash=" + jSW["IconHash"].ToString();
+            //        else
+            //        {
+            //            if (jSW["SWId"] != null)
+            //                oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["SWId"].ToString();
+            //            else
+            //                oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["IconId"].ToString();
+            //        }
+            //        //oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
+            //        oSW.Manufacturer = jSW["Manufacturer"].ToString();
+            //        oSW.Description = jSW["Description"].ToString();
+            //        oSW.ProductURL = jSW["ProductURL"].ToString();
+            //        lSW.Add(oSW);
+            //    }
+            //    catch { }
+            //}
+
+            //ViewData["RepositoryItems"] = lSW;
+
+            return View();
+        }
+
+        [AllowAnonymous]
+        public ActionResult GetRepo()
+        {
+            //ViewBag.appVersion = typeof(HomeController).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            //ViewData["Message"] = "RuckZuck Software Repository";
+
+            //string sURL = Request.GetEncodedUrl().ToLower().TrimEnd('/');
+            //sURL = sURL.Split("/home")[0];
 
             List<RepositoryItem> lSW = new List<RepositoryItem>();
             JArray oRes = Base.GetCatalog("", false);
             JArray jsorted = new JArray(oRes.OrderBy(x => (string)x["ShortName"]));
-            //JArray jTop = JArray.FromObject(jsorted.Take(5));
-            foreach (JObject jSW in jsorted)
+            
+            return new ContentResult
             {
-                try
-                {
-                    RepositoryItem oSW = new RepositoryItem();
-                    oSW.Shortname = jSW["ShortName"].ToString();
-                    oSW.Version = jSW["ProductVersion"].ToString();
-                    if (!string.IsNullOrEmpty(jSW["IconHash"].Value<string>()))
-                        oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconhash=" + jSW["IconHash"].ToString();
-                    else
-                    {
-                        if (jSW["SWId"] != null)
-                            oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["SWId"].ToString();
-                        else
-                            oSW.IconURL = sURL + "/rest/v2/GetIcon?size=48&iconid=" + jSW["IconId"].ToString();
-                    }
-                    //oSW.Date = jSW["ModifyDate"].Value<DateTime>().ToString("yyyy-MM-dd");
-                    oSW.Manufacturer = jSW["Manufacturer"].ToString();
-                    oSW.Description = jSW["Description"].ToString();
-                    oSW.ProductURL = jSW["ProductURL"].ToString();
-                    lSW.Add(oSW);
-                }
-                catch { }
-            }
-
-            ViewData["RepositoryItems"] = lSW;
-
-            return View();
+                Content = jsorted.ToString(Newtonsoft.Json.Formatting.None),
+                ContentType = "application/json"
+            };
         }
 
         [AllowAnonymous]
