@@ -30,7 +30,7 @@
                         "width": "50px",
                         "defaultContent": "",
                         fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
-                            $(nTd).html("<img src='https://cdn.ruckzuck.tools/rest/v2/geticon?iconhash=" + oData.IconHash + "&size=48'/>");
+                            $(nTd).html("<a href='" + oData.ProductURL + "' target='_blank'><img src='https://cdn.ruckzuck.tools/rest/v2/geticon?iconhash=" + oData.IconHash + "&size=48'/></a>");
                         }
                     },
                     {
