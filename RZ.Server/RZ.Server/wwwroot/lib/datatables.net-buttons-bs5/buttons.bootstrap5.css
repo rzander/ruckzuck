@@ -227,3 +227,20 @@ div.dt-btn-split-wrapper button.dt-btn-split-drop {
   border-top-right-radius: 0.25rem !important;
   border-bottom-right-radius: 0.25rem !important;
 }
+
+div.dataTables_wrapper div.dt-buttons.btn-group button.btn:last-child:first-of-type {
+  border-radius: 4px !important;
+}
+div.dataTables_wrapper div.dt-buttons.btn-group div.btn-group button.btn:last-of-type {
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+}
+div.dataTables_wrapper div.dt-buttons.btn-group div.btn-group button.btn:first-of-type {
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+div.dataTables_wrapper div.dt-buttons.btn-group div.btn-group:last-child {
+  border: 1px solid #6c757d;
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;
+}

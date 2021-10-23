@@ -5,11 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.Caching;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
@@ -18,12 +19,15 @@ namespace RZ.ServerFN
 {
     public static class UpdateCounters
     {
-        static MemoryCache memoryCache = MemoryCache.Default;
+        static MemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
         public static Dictionary<string, string> Settings { get; set; }
 
         [FunctionName("UpdateCounters")]
         public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
+            //if (myTimer.IsPastDue)
+            //    return;
+
             log.LogInformation($"UpdateCounters started at: {DateTime.Now}");
 
             try
@@ -62,11 +66,15 @@ namespace RZ.ServerFN
 
                     foreach (XmlNode xNode in xmlDoc.SelectNodes("QueueMessagesList/QueueMessage"))
                     {
-                        string sMessageID = xNode["MessageId"].InnerText;
-                        string ShortName = xNode["MessageText"].InnerText;
-                        string sPopReceipt = xNode["PopReceipt"].InnerText;
-                        DLQueue.Add(ShortName);
-                        IDQueue.Add(sMessageID, sPopReceipt);
+                        try
+                        {
+                            string sMessageID = xNode["MessageId"].InnerText;
+                            string ShortName = xNode["MessageText"].InnerText;
+                            string sPopReceipt = xNode["PopReceipt"].InnerText;
+                            DLQueue.Add(ShortName);
+                            IDQueue.Add(sMessageID, sPopReceipt);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -119,11 +127,15 @@ namespace RZ.ServerFN
 
                     foreach (XmlNode xNode in xmlDoc.SelectNodes("QueueMessagesList/QueueMessage"))
                     {
-                        string sMessageID = xNode["MessageId"].InnerText;
-                        string ShortName = xNode["MessageText"].InnerText;
-                        string sPopReceipt = xNode["PopReceipt"].InnerText;
-                        DLQueue.Add(ShortName);
-                        IDQueue.Add(sMessageID, sPopReceipt);
+                        try
+                        {
+                            string sMessageID = xNode["MessageId"].InnerText;
+                            string ShortName = xNode["MessageText"].InnerText;
+                            string sPopReceipt = xNode["PopReceipt"].InnerText;
+                            DLQueue.Add(ShortName);
+                            IDQueue.Add(sMessageID, sPopReceipt);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -146,6 +158,12 @@ namespace RZ.ServerFN
                     oRes.Wait();
                     oRes.Result.ToString();
                 }
+            }
+
+            foreach (var rzfail in DLQueue.Distinct().ToList())
+            {
+                //Add to rzBot queue
+                incQueue(rzfail, "sv=2019-02-02&SAS...", "https://ruckzuck.queue.core.windows.net/rzbot/messages");
             }
         }
 
@@ -176,11 +194,15 @@ namespace RZ.ServerFN
 
                     foreach (XmlNode xNode in xmlDoc.SelectNodes("QueueMessagesList/QueueMessage"))
                     {
-                        string sMessageID = xNode["MessageId"].InnerText;
-                        string ShortName = xNode["MessageText"].InnerText;
-                        string sPopReceipt = xNode["PopReceipt"].InnerText;
-                        DLQueue.Add(ShortName);
-                        IDQueue.Add(sMessageID, sPopReceipt);
+                        try
+                        {
+                            string sMessageID = xNode["MessageId"].InnerText;
+                            string ShortName = xNode["MessageText"].InnerText;
+                            string sPopReceipt = xNode["PopReceipt"].InnerText;
+                            DLQueue.Add(ShortName);
+                            IDQueue.Add(sMessageID, sPopReceipt);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -248,7 +270,7 @@ namespace RZ.ServerFN
 
                             string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
 
-                            string result = memoryCache[sID] as string;
+                            string result = memoryCache.Get("sID") as string; // memoryCache[sID] as string;
 
                             if (string.IsNullOrEmpty(result))
                             {
@@ -309,6 +331,25 @@ namespace RZ.ServerFN
                 {
                     ex.Message.ToString();
                 }
+            }
+        }
+
+        private static void incQueue(string text, string sasToken, string sURL)
+        {
+            try
+            {
+                using (HttpClient oClient = new HttpClient())
+                {
+                    string url = $"{sURL}?timeout=10&{sasToken}";
+                    string body = $"<QueueMessage><MessageText>{text}</MessageText></QueueMessage>";
+                    HttpContent oCont = new StringContent(body);
+                    var oRes = oClient.PostAsync(url, oCont);
+                    oRes.Wait(2000);
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Message.ToString();
             }
         }
 

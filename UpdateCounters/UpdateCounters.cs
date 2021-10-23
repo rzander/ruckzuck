@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Xml;
@@ -12,19 +13,29 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using RZ.Server;
 
 namespace UpdateCounters
 {
-    public static class Function1
+    public static class UpdateCounters
     {
+        static MemoryCache memoryCache = MemoryCache.Default;
+
         [FunctionName("UpdateCounters")]
-        public static void Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"UpdateCounters started at: {DateTime.Now}");
 
-            ProcessDLQueue(log);
-            ProcessFailureQueue(log);
-            ProcessSuccessQueue(log);
+            try
+            {
+                ProcessDLQueue(log);
+                ProcessFailureQueue(log);
+                ProcessSuccessQueue(log);
+            }
+            catch { }
+
+            ProcessSWQueue(log);
+            log.ToString();
         }
 
         private static void ProcessDLQueue(ILogger log)
@@ -189,6 +200,114 @@ namespace UpdateCounters
             }
         }
 
+        private static void ProcessSWQueue(ILogger log)
+        {
+            string sURL = Environment.GetEnvironmentVariable("swSAS").Split('?')[0];
+            string sasToken = Environment.GetEnvironmentVariable("swSAS").Substring(sURL.Length + 1);
+
+            List<string> DLQueue = new List<string>();
+            Dictionary<string, string> IDQueue = new Dictionary<string, string>();
+            int iMessageCount = 33;
+            int icount = 0;
+            //Get bulk of 32 Messages
+            while (iMessageCount >= 32 && icount <= 20)
+            {
+                using (HttpClient oClient = new HttpClient())
+                {
+                    string url = $"{sURL}/messages?numofmessages=32&{sasToken}";
+                    var oRes = oClient.GetStringAsync(url);
+                    oRes.Wait();
+                    string sXML = oRes.Result.ToString();
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.LoadXml(sXML);
+                    iMessageCount = xmlDoc.SelectNodes("QueueMessagesList/QueueMessage").Count;
+                    icount++;
+                    foreach (XmlNode xNode in xmlDoc.SelectNodes("QueueMessagesList/QueueMessage"))
+                    {
+                        try
+                        {
+                            string sMessageID = xNode["MessageId"].InnerText;
+                            string JSON = xNode["MessageText"].InnerText;
+                            string sPopReceipt = xNode["PopReceipt"].InnerText;
+                            //DLQueue.Add(ShortName);
+
+                            JObject jMsg = JObject.Parse(JSON);
+                            string manufacturer = clean(jMsg["Manufacturer"].Value<string>()).Trim().ToLower();
+                            string productname = clean(jMsg["ProductName"].Value<string>()).Trim().ToLower(); ;
+                            string productversion = clean(jMsg["ProductVersion"].Value<string>()).Trim().ToLower();
+                            string shortname = clean(jMsg["ShortName"].Value<string>()).Trim().ToLower();
+
+                            string sID = Hash.CalculateMD5HashString((manufacturer + productname + productversion).Trim());
+
+                            string result = memoryCache[sID] as string;
+
+                            if (string.IsNullOrEmpty(result))
+                            {
+                                if (string.IsNullOrEmpty(shortname))
+                                {
+                                    InsertEntityAsync(Environment.GetEnvironmentVariable("lookupSAS"), "lookup", sID, JSON);
+                                    shortname = "JSON";
+                                }
+                                else
+                                {
+                                    UpdateEntityAsync(Environment.GetEnvironmentVariable("lookupSAS"), "lookup", sID, JSON);
+                                }
+
+                                memoryCache.Set(sID, shortname, DateTimeOffset.Now.AddHours(4));
+                            }
+                            else
+                            {
+                                if (result != shortname)
+                                {
+                                    //only update if shortname is available
+                                    if (!string.IsNullOrEmpty(shortname))
+                                    {
+                                        UpdateEntityAsync(Environment.GetEnvironmentVariable("lookupSAS"), "lookup", sID, JSON);
+                                    }
+                                }
+                            }
+
+                            IDQueue.Add(sMessageID, sPopReceipt);
+                        }
+                        catch(Exception ex)
+                        {
+                            //remove the corrupt message from queue...
+                            try
+                            {
+                                string sMessageID2 = xNode["MessageId"].InnerText;
+                                string sPopReceipt2 = xNode["PopReceipt"].InnerText;
+                                IDQueue.Add(sMessageID2, sPopReceipt2);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+
+            foreach (var sID in IDQueue)
+            {
+                try
+                {
+                    using (HttpClient oClient = new HttpClient())
+                    {
+                        string url = $"{sURL}/messages/{sID.Key}?{sasToken}&popreceipt={HttpUtility.UrlEncode(sID.Value)}";
+                        var oRes = oClient.DeleteAsync(url);
+                        oRes.Wait();
+                        oRes.Result.ToString();
+                    }
+                }
+                catch { }
+            }
+        }
+
+        public static string clean(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return "";
+
+            return (string.Join("", filename.Split(Path.GetInvalidFileNameChars()))).Trim().TrimEnd('.');
+        }
+
         private static void Inc(string ShortName, int count, string PartKey = "known", string AttributeName = "Downloads")
         {
             string sURL = Environment.GetEnvironmentVariable("catSAS").Split('?')[0];
@@ -261,6 +380,58 @@ namespace UpdateCounters
             {
                 ex.Message.ToString();
             }
+        }
+
+        private static async void InsertEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
+        {
+                try
+                {
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    var jObj = JObject.Parse(JSON);
+                    jObj.Add("PartitionKey", PartitionKey);
+                    jObj.Add("RowKey", RowKey);
+                    using (HttpClient oClient = new HttpClient())
+                    {
+                        oClient.DefaultRequestHeaders.Accept.Clear();
+                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                        oCont.Headers.Add("x-ms-version", "2017-04-17");
+                        oCont.Headers.Add("Prefer", "return-no-content");
+                        oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                        var oRes = await oClient.PostAsync(url, oCont);
+                    }
+
+                }
+                catch { }
+        }
+
+        private static async void UpdateEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
+        {
+            try
+            {
+                string sasToken = url.Substring(url.IndexOf("?") + 1);
+                string sURL = url.Substring(0, url.IndexOf("?"));
+
+                url = sURL + "(PartitionKey='" + PartitionKey + "',RowKey='" + RowKey + "')?" + sasToken;
+
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                var jObj = JObject.Parse(JSON);
+
+                using (HttpClient oClient = new HttpClient())
+                {
+                    oClient.DefaultRequestHeaders.Accept.Clear();
+                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    //oClient.DefaultRequestHeaders.Add("If-Match", "*");
+                    HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                    oCont.Headers.Add("x-ms-version", "2017-04-17");
+                    //oCont.Headers.Add("Prefer", "return-no-content");
+                    //oCont.Headers.Add("If-Match", "*");
+                    oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                    var oRes = await oClient.PutAsync(url, oCont);
+                }
+
+            }
+            catch { }
         }
     }
 }
