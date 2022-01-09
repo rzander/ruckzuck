@@ -536,10 +536,12 @@ namespace RZ.Server
 
                             try
                             {
+                                productversion = productversion.Replace("+", ".");
                                 productversion = productversion.Replace("_", ".");
                                 productversion = productversion.Replace("-", ".");
                                 productversion = productversion.TrimStart('v');
                                 productversion = productversion.Replace(" ", "");
+                                sRZVersion = sRZVersion.Replace("+", ".");
                                 sRZVersion = sRZVersion.Replace("_", ".");
                                 sRZVersion = sRZVersion.Replace("-", ".");
                                 sRZVersion = sRZVersion.TrimStart('v');
