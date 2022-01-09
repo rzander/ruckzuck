@@ -109,7 +109,7 @@ namespace RZ.Server.Controllers
         //    {
         //        aRes = Base.GetCatalog("", nocache);
         //    }
-            
+
         //    //Cleanup
         //    foreach(JObject jObj in aRes)
         //    {
@@ -139,7 +139,7 @@ namespace RZ.Server.Controllers
         [Route("rest/v2/GetIcon")]
         [Route("rest/v2/GetIcon/{shortname}")]
         //[Route("wcf/RZService.svc/rest/v2/GetIcon")]
-        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "" , int size = 0)
+        public Task<Stream> GetIcon(string shortname = "", Int32 iconid = 0, string iconhash = "", string customerid = "", int size = 0)
         {
             if (size > 256) //set max size 256
                 size = 256;
@@ -529,7 +529,7 @@ namespace RZ.Server.Controllers
 
         [HttpPost]
         [Route("rest/v2/showstatus")]
-        public ActionResult ShowStatus(string code= "", int mType = 0, string statustext = "")
+        public ActionResult ShowStatus(string code = "", int mType = 0, string statustext = "")
         {
             if (code == Environment.GetEnvironmentVariable("StatusCode"))
             {
@@ -573,6 +573,16 @@ namespace RZ.Server.Controllers
                                 break;
                         }
                     }
+                    else
+                    {
+                        //only show success messages...
+                        switch (mType)
+                        {
+                            case 3:
+                                _hubContext.Clients.All.SendAsync("Append", $"<li class=\"list-group-item list-group-item-success\">%tt% - { statustext }</li>");
+                                break;
+                        }
+                    }
                 }
                 catch { }
             }
@@ -595,8 +605,8 @@ namespace RZ.Server.Controllers
                 //if (bOverload)
                 //    return Content("https://cdn.ruckzuck.tools", "text/html");
 
-                if (customerid == "81.246.0.34")
-                    return Content("https://rzproxy.azurewebsites.net", "text/html"); 
+                //if (customerid == "81.246.0.34")
+                //    return Content("https://rzproxy.azurewebsites.net", "text/html"); 
 
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 Base.SetValidIP(ClientIP);
@@ -749,6 +759,12 @@ namespace RZ.Server.Controllers
         //        return bRes;
         //    }
         //}
+
+        [Route("rest/health")]
+        public IActionResult health()
+        {
+            return new OkResult();
+        }
 
     }
 }

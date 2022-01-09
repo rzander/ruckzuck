@@ -4,13 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using RZ.Extensions;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace RZ.Plugin.Customer.Azure
 {
@@ -41,6 +36,8 @@ namespace RZ.Plugin.Customer.Azure
 
             _cache = new MemoryCache(new MemoryCacheOptions());
 
+
+
             if (Settings == null)
                 Settings = new Dictionary<string, string>();
 
@@ -62,6 +59,7 @@ namespace RZ.Plugin.Customer.Azure
             //var oLoc = GetLocAsync(ip);
             //var jLoc = JObject.Parse(oLoc.Result);
             //string sLocation = jLoc["Location"].ToString();
+
             if (customerid.ToLower().StartsWith("9qz"))
                 return "https://cdnromawo.azureedge.net";
 
@@ -72,7 +70,7 @@ namespace RZ.Plugin.Customer.Azure
             //    return "https://rzproxy.azurewebsites.net";
 
             if (customerid == "swtesting")
-                return "https://ruckzuck.azurewebsites.net";
+                return "https://fnrzk06i2w.azurewebsites.net";
 
             if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
                 return "https://cdn.ruckzuck.tools";
@@ -89,9 +87,20 @@ namespace RZ.Plugin.Customer.Azure
             if (customerid == "poe")
                 return "https://cdnitnetx.azureedge.net";
 
-            if (customerid == "proxy")
-                return "https://rzproxy.azurewebsites.net";
+            if (customerid == "lcs")
+                return "https://cdnitnetx.azureedge.net";
 
+            if (customerid == "ewb")
+                return "https://cdnitnetx.azureedge.net";
+
+            if (customerid == "proxy")
+                return "https://cdn.ruckzuck.tools";
+
+            if (customerid == "ssg")
+                return "https://cdn.ruckzuck.tools";
+
+            if (customerid == "romawo")
+                return "https://fnrzemea.azurewebsites.net";
 
 
             return "https://cdn.ruckzuck.tools";
