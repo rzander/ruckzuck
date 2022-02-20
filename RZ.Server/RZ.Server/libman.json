@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "@microsoft/signalr@6.0.1",
+      "library": "@microsoft/signalr@6.0.2",
       "destination": "wwwroot/lib/signalr/",
       "files": [
         "dist/browser/signalr.js",
@@ -30,13 +30,13 @@
   ,
 {
   "provider": "cdnjs",
-  "library": "datatables.net-buttons@2.2.0",
+  "library": "datatables.net-buttons@2.2.2",
   "destination": "wwwroot/lib/datatables.net-buttons/"
 }
 ,
 {
   "provider": "cdnjs",
-  "library": "datatables.net-fixedheader@3.2.1",
+  "library": "datatables.net-fixedheader@3.2.2",
   "destination": "wwwroot/lib/datatables.net-fixedheader/"
 }
 ,
@@ -60,7 +60,7 @@
 ,
 {
   "provider": "cdnjs",
-  "library": "datatables.net-bs5@1.11.3",
+  "library": "datatables.net-bs5@1.11.4",
   "destination": "wwwroot/lib/datatables.net-bs5/"
 }
 ,
@@ -78,7 +78,7 @@
 ,
 {
   "provider": "cdnjs",
-  "library": "datatables.net-buttons-bs5@2.1.1",
+  "library": "datatables.net-buttons-bs5@2.2.2",
   "destination": "wwwroot/lib/datatables.net-buttons-bs5/"
 }
 ]

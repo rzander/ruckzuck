@@ -9,8 +9,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>Copyright (c) 2022 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.3.0.2</AssemblyVersion>
-    <FileVersion>2.3.0.2</FileVersion>
+    <AssemblyVersion>2.3.0.3</AssemblyVersion>
+    <FileVersion>2.3.0.3</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>

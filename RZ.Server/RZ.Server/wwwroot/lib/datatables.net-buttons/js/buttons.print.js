@@ -87,12 +87,31 @@ DataTable.ext.buttons.print = {
 	},
 
 	action: function ( e, dt, button, config ) {
-		var data = dt.buttons.exportData( config.exportOptions );
+		var data = dt.buttons.exportData(
+			$.extend( {decodeEntities: false}, config.exportOptions ) // XSS protection
+		);
+		var exportInfo = dt.buttons.exportInfo( config );
+		var columnClasses = dt
+			.columns( config.exportOptions.columns )
+			.flatten()
+			.map( function (idx) {
+				return dt.settings()[0].aoColumns[dt.column(idx).index()].sClass;
+			} )
+			.toArray();
+
 		var addRow = function ( d, tag ) {
 			var str = '<tr>';
 
 			for ( var i=0, ien=d.length ; i<ien ; i++ ) {
-				str += '<'+tag+'>'+d[i]+'</'+tag+'>';
+				// null and undefined aren't useful in the print output
+				var dataOut = d[i] === null || d[i] === undefined ?
+					'' :
+					d[i];
+				var classAttr = columnClasses[i] ?
+					'class="'+columnClasses[i]+'"' :
+					'';
+
+				str += '<'+tag+' '+classAttr+'>'+dataOut+'</'+tag+'>';
 			}
 
 			return str + '</tr>';
@@ -114,17 +133,19 @@ DataTable.ext.buttons.print = {
 		if ( config.footer && data.footer ) {
 			html += '<tfoot>'+ addRow( data.footer, 'th' ) +'</tfoot>';
 		}
+		html += '</table>';
 
 		// Open a new window for the printable table
 		var win = window.open( '', '' );
-		var title = config.title;
 
-		if ( typeof title === 'function' ) {
-			title = title();
-		}
+		if (! win) {
+			dt.buttons.info(
+				dt.i18n( 'buttons.printErrorTitle', 'Unable to open print view' ),
+				dt.i18n( 'buttons.printErrorMsg', 'Please allow popups in your browser for this site to be able to view the print view.' ),
+				5000
+			);
 
-		if ( title.indexOf( '*' ) !== -1 ) {
-			title= title.replace( '*', $('title').text() );
+			return;
 		}
 
 		win.document.close();
@@ -133,7 +154,7 @@ DataTable.ext.buttons.print = {
 		// document so the table can retain its base styling. Note that we have
 		// to use string manipulation as IE won't allow elements to be created
 		// in the host document and then appended to the new window.
-		var head = '<title>'+title+'</title>';
+		var head = '<title>'+exportInfo.title+'</title>';
 		$('style, link').each( function () {
 			head += _styleToAbs( this );
 		} );
@@ -147,14 +168,10 @@ DataTable.ext.buttons.print = {
 
 		// Inject the table and other surrounding information
 		win.document.body.innerHTML =
-			'<h1>'+title+'</h1>'+
-			'<div>'+
-				(typeof config.message === 'function' ?
-					config.message( dt, button, config ) :
-					config.message
-				)+
-			'</div>'+
-			html;
+			'<h1>'+exportInfo.title+'</h1>'+
+			'<div>'+(exportInfo.messageTop || '')+'</div>'+
+			html+
+			'<div>'+(exportInfo.messageBottom || '')+'</div>';
 
 		$(win.document.body).addClass('dt-print-view');
 
@@ -163,20 +180,30 @@ DataTable.ext.buttons.print = {
 		} );
 
 		if ( config.customize ) {
-			config.customize( win );
+			config.customize( win, config, dt );
 		}
 
-		setTimeout( function () {
+		// Allow stylesheets time to load
+		var autoPrint = function () {
 			if ( config.autoPrint ) {
 				win.print(); // blocking - so close will not
 				win.close(); // execute until this is done
 			}
-		}, 250 );
+		};
+
+		if ( navigator.userAgent.match(/Trident\/\d.\d/) ) { // IE needs to call this without a setTimeout
+			autoPrint();
+		}
+		else {
+			win.setTimeout( autoPrint, 1000 );
+		}
 	},
 
 	title: '*',
 
-	message: '',
+	messageTop: '*',
+
+	messageBottom: '*',
 
 	exportOptions: {},
 
