@@ -6,12 +6,12 @@ using System.IO;
 using System.Management.Automation;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Web.Script.Serialization;
 using System.Diagnostics;
-using System.Net.Http;
 using RuckZuck.Base;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using Newtonsoft.Json;
+
 
 namespace RZUpdate
 {
@@ -387,8 +387,7 @@ namespace RZUpdate
         {
             try
             {
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                AddSoftware lRes = ser.Deserialize<AddSoftware>(sJSON);
+                AddSoftware lRes = JsonConvert.DeserializeObject<AddSoftware>(sJSON);
                 lRes.PreRequisites = lRes.PreRequisites.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 return lRes;
             }
@@ -408,19 +407,18 @@ namespace RZUpdate
             {
                 try
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
                     string sJson = File.ReadAllText(sFile);
                     AddSoftware lRes;
 
                     //Check if it's an Arrya (new in V2)
                     if (sJson.TrimStart().StartsWith("["))
                     {
-                        List<AddSoftware> lItems = ser.Deserialize<List<AddSoftware>>(sJson);
+                        List<AddSoftware> lItems = JsonConvert.DeserializeObject<List<AddSoftware>>(sJson);
                         lRes = lItems[0];
                     }
                     else
                     {
-                        lRes = ser.Deserialize<AddSoftware>(sJson);
+                        lRes = JsonConvert.DeserializeObject<AddSoftware>(sJson);
                     }
 
                     if (lRes.PreRequisites != null)

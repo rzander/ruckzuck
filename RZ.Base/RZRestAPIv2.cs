@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +10,6 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 
 namespace RuckZuck.Base
 {
@@ -280,13 +280,12 @@ namespace RuckZuck.Base
                     if (string.IsNullOrEmpty(customerid))
                         customerid = CustomerID;
 
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    string sSoftware = ser.Serialize(lSoftware);
+                    string sSoftware = JsonConvert.SerializeObject(lSoftware);
                     HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
                     var response = await oClient.PostAsync(sURL + "/rest/v2/checkforupdate?customerid=" + customerid, oCont);
 
+                    List<AddSoftware> lRes = JsonConvert.DeserializeObject<List<AddSoftware>>(await response.Content.ReadAsStringAsync());
 
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(await response.Content.ReadAsStringAsync());
                     return lRes;
 
                     //response.Wait(180000); //3min max
@@ -340,8 +339,9 @@ namespace RuckZuck.Base
                         {
                             //return cached Content
                             string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                            JavaScriptSerializer ser = new JavaScriptSerializer();
-                            List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(jRes);
+
+                            List<GetSoftware> lRes = JsonConvert.DeserializeObject<List<GetSoftware>>(jRes);
+
                             return lRes;
                         }
                     }
@@ -366,8 +366,7 @@ namespace RuckZuck.Base
 
                 if (response.IsCompleted)
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<GetSoftware> lRes = ser.Deserialize<List<GetSoftware>>(response.Result);
+                    List<GetSoftware> lRes = JsonConvert.DeserializeObject<List<GetSoftware>>(response.Result);
 
                     if (lRes.Count > 500 && !customerid.StartsWith("--"))
                     {
@@ -437,8 +436,9 @@ namespace RuckZuck.Base
                 response.Wait(20000);
                 if (response.IsCompleted)
                 {
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result);
+
+                    List<AddSoftware> lRes = JsonConvert.DeserializeObject<List<AddSoftware>>(response.Result);
+
                     return lRes;
                 }
 
@@ -513,8 +513,8 @@ namespace RuckZuck.Base
         {
             try
             {
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                HttpContent oCont = new StringContent(ser.Serialize(lSoftware), Encoding.UTF8, "application/json");
+
+                HttpContent oCont = new StringContent(JsonConvert.SerializeObject(lSoftware), Encoding.UTF8, "application/json");
 
                 var response = oClient.PostAsync(sURL + "/rest/v2/uploadswentry", oCont);
                 response.Wait(30000); //30s max
