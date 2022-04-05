@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "@microsoft/signalr@6.0.2",
+      "library": "@microsoft/signalr@6.0.3",
       "destination": "wwwroot/lib/signalr/",
       "files": [
         "dist/browser/signalr.js",
@@ -60,7 +60,7 @@
 ,
 {
   "provider": "cdnjs",
-  "library": "datatables.net-bs5@1.11.4",
+  "library": "datatables.net-bs5@1.11.5",
   "destination": "wwwroot/lib/datatables.net-bs5/"
 }
 ,
