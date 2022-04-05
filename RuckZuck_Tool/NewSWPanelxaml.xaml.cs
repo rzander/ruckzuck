@@ -383,6 +383,11 @@ namespace RuckZuck_Tool
                 tbPreReq.Text = "";
             try
             {
+                if (oSoftware.Image == null)
+                {
+                    oSoftware.Image = RZRestAPIv2.GetIcon(oSoftware.IconHash);
+                }
+
                 imgIcon.Tag = oSoftware.Image;
                 imgIcon.Source = ByteToImage(oSoftware.Image);
             }
