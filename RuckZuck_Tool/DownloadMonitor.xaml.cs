@@ -1,10 +1,10 @@
-﻿using System;
+﻿using RuckZuck.Base;
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Collections.ObjectModel;
-using System.Threading;
-using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -181,7 +181,7 @@ namespace RuckZuck_Tool
                 UILock.TryEnterReadLock(5000);
                 try
                 {
-                    var xRem = lDLTasks.Where(x => x.Installed || x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled ).ToList();
+                    var xRem = lDLTasks.Where(x => x.Installed || x.Error || (x.PercentDownloaded == 100 && x.AutoInstall == false) || (x.Status == "Waiting" && x.DownloadedBytes == 0 && x.Downloading == false) || x.UnInstalled).ToList();
                     foreach (var o in xRem)
                     {
                         try

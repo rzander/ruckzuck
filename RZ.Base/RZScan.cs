@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
-using Microsoft.Win32;
 using System.Diagnostics;
 using System.Drawing;
-using RuckZuck.Base;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RuckZuck.Base
 {
@@ -351,78 +350,103 @@ namespace RuckZuck.Base
 
         internal async Task<AddSoftware> GetSWPropertiesAsync(RegistryKey oRegkey)
         {
-            return await Task.Run(() => {
-            AddSoftware oResult = new AddSoftware();
-            Version oVer = null;
-            bool bVersion = false;
-
-            oResult.PSPreReq = "$true";
-
-            if (oRegkey.View == RegistryView.Registry32)
-                oResult.Architecture = "X86";
-            else
+            return await Task.Run(() =>
             {
-                oResult.Architecture = "X64";
-                oResult.PSPreReq = "[Environment]::Is64BitProcess";
-            }
+                AddSoftware oResult = new AddSoftware();
+                Version oVer = null;
+                bool bVersion = false;
 
+                oResult.PSPreReq = "$true";
 
-
-            string sMSI = oRegkey.Name.Split('\\').Last();
-
-            string EncKey = "";
-            if (sMSI.StartsWith("{") && sMSI.EndsWith("}"))
-            {
-                bool bIsMSI = true;
-                EncKey = descramble(sMSI.Substring(1, 36).Replace("-", ""));
-                try
+                if (oRegkey.View == RegistryView.Registry32)
+                    oResult.Architecture = "X86";
+                else
                 {
-                    RegistryKey oBase = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, oRegkey.View);
-                    RegistryKey oKey = oBase.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey, false);
-                    if (oKey == null)
-                        bIsMSI = false;
+                    oResult.Architecture = "X64";
+                    oResult.PSPreReq = "[Environment]::Is64BitProcess";
                 }
-                catch { bIsMSI = false; }
 
-                if (bIsMSI)
+
+
+                string sMSI = oRegkey.Name.Split('\\').Last();
+
+                string EncKey = "";
+                if (sMSI.StartsWith("{") && sMSI.EndsWith("}"))
                 {
-                    oResult.MSIProductID = sMSI;
-                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qn REBOOT=REALLYSUPPRESS \" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-
-
-                    oResult.PSDetection = @"Test-Path 'HKLM:\SOFTWARE\Classes\Installer\Products\" + EncKey + "'";
-
+                    bool bIsMSI = true;
+                    EncKey = descramble(sMSI.Substring(1, 36).Replace("-", ""));
                     try
                     {
-                        RegistryKey oSource = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey + "\\SourceList");
-                        if (oSource != null)
-                        {
-                            oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"" + oSource.GetValue("PackageName") + "`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                        }
+                        RegistryKey oBase = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, oRegkey.View);
+                        RegistryKey oKey = oBase.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey, false);
+                        if (oKey == null)
+                            bIsMSI = false;
                     }
-                    catch
+                    catch { bIsMSI = false; }
+
+                    if (bIsMSI)
                     {
+                        oResult.MSIProductID = sMSI;
+                        oResult.PSUninstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/x " + sMSI + " /qn REBOOT=REALLYSUPPRESS \" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+
+
+                        oResult.PSDetection = @"Test-Path 'HKLM:\SOFTWARE\Classes\Installer\Products\" + EncKey + "'";
+
                         try
                         {
-                            string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
-                            if (Version.TryParse(sVer, out oVer))
-                                oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
-                            else
-                                oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
+                            RegistryKey oSource = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey + "\\SourceList");
+                            if (oSource != null)
+                            {
+                                oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"" + oSource.GetValue("PackageName") + "`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                            }
                         }
-                        catch { }
+                        catch
+                        {
+                            try
+                            {
+                                string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
+                                if (Version.TryParse(sVer, out oVer))
+                                    oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                                else
+                                    oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
+                            }
+                            catch { }
 
-                        oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"<PackageName.msi>`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                            oResult.PSInstall = "$proc = (Start-Process -FilePath \"msiexec.exe\" -ArgumentList \"/i `\"<PackageName.msi>`\" /qn ALLUSERS=2 REBOOT=REALLYSUPPRESS\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                        }
+                    }
+                    else
+                    {
+                        oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+
+                        string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
+                        if (Version.TryParse(sVer, out oVer)) //check if its a Version
+                            bVersion = true;
+
+                        if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
+                        {
+                            if (bVersion)
+                                oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                            else
+                                oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
+                        }
+                        else
+                        {
+                            if (bVersion)
+                                oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
+                            else
+                                oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
+
+                        }
                     }
                 }
                 else
                 {
-                    oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-
                     string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
                     if (Version.TryParse(sVer, out oVer)) //check if its a Version
                         bVersion = true;
 
+                    oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                     if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
                     {
                         if (bVersion)
@@ -436,144 +460,120 @@ namespace RuckZuck.Base
                             oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
                         else
                             oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
-
                     }
-                }
-            }
-            else
-            {
-                string sVer = oRegkey.GetValue("DisplayVersion", "").ToString();
-                if (Version.TryParse(sVer, out oVer)) //check if its a Version
-                    bVersion = true;
 
-                oResult.PSInstall = "$proc = (Start-Process -FilePath \"setup.exe\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                if (Environment.Is64BitOperatingSystem && oRegkey.View == RegistryView.Registry32)
-                {
-                    if (bVersion)
-                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
-                    else
-                        oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:").Replace("SOFTWARE\\", "SOFTWARE\\WOW6432NODE\\") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
-                }
-                else
-                {
-                    if (bVersion)
-                        oResult.PSDetection = @"if(([version](Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue)) -ge '" + sVer + "') { $true } else { $false }";
-                    else
-                        oResult.PSDetection = @"if((Get-ItemPropertyValue -path '" + oRegkey.Name.ToUpper().Replace("HKEY_LOCAL_MACHINE", "HKLM:") + "' -Name DisplayVersion -ea SilentlyContinue) -eq '" + sVer + "') { $true } else { $false }";
                 }
 
-            }
+                oResult.PSDetection = oResult.PSDetection.Replace("HKEY_LOCAL_MACHINE", "HKLM:");
+                oResult.PSDetection = oResult.PSDetection.Replace("HKEY_CURRENT_USER", "HKCU:");
 
-            oResult.PSDetection = oResult.PSDetection.Replace("HKEY_LOCAL_MACHINE", "HKLM:");
-            oResult.PSDetection = oResult.PSDetection.Replace("HKEY_CURRENT_USER", "HKCU:");
+                oResult.ProductName = oRegkey.GetValue("DisplayName", "").ToString();
+                oResult.ProductVersion = oRegkey.GetValue("DisplayVersion", "").ToString();
+                oResult.Manufacturer = oRegkey.GetValue("Publisher", "").ToString().TrimEnd('.');
 
-            oResult.ProductName = oRegkey.GetValue("DisplayName", "").ToString();
-            oResult.ProductVersion = oRegkey.GetValue("DisplayVersion", "").ToString();
-            oResult.Manufacturer = oRegkey.GetValue("Publisher", "").ToString().TrimEnd('.');
-
-            //If not an MSI try to get Uninstall command from Registry
-            if (string.IsNullOrEmpty(oResult.MSIProductID))
-            {
-                try
-                {
-                    string sUninst = oRegkey.GetValue("QuietUninstallString", "").ToString().Replace("\"", "");
-                    if (!string.IsNullOrEmpty(sUninst))
-                    {
-                        try
-                        {
-                            if (sUninst.IndexOf('/') >= 0)
-                                oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst.Split('/')[0] + "\" -ArgumentList \"" + sUninst.Substring(sUninst.IndexOf('/')) + "\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                            else
-                                oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                            //$proc = (Start-Process -FilePath "zps17_en.exe" -ArgumentList "/Silent" -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode
-                        }
-                        catch
-                        {
-                            oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                        }
-                    }
-                }
-                catch { }
-            }
-            //If no silent uninstall is provided, use the normal uninstall string
-            if (string.IsNullOrEmpty(oResult.PSUninstall))
-            {
+                //If not an MSI try to get Uninstall command from Registry
                 if (string.IsNullOrEmpty(oResult.MSIProductID))
-                {
-                    string sUninst = oRegkey.GetValue("UninstallString", "").ToString().Replace("\"", "");
-                    oResult.PSUninstall = "$proc  = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
-                }
-            }
-
-            //get Version String
-            if (string.IsNullOrEmpty(oResult.ProductVersion))
-            {
-                string sVersion = oRegkey.GetValue("Version", "").ToString();
-                if (!string.IsNullOrEmpty(sVersion))
                 {
                     try
                     {
-                        Int32 iVersion = Convert.ToInt32(sVersion);
-                        string sfullval = iVersion.ToString("X8");
-                        sVersion = Convert.ToInt32(sfullval.Substring(0, 2), 16).ToString();
-                        sVersion = sVersion + "." + Convert.ToInt32(sfullval.Substring(2, 2), 16).ToString();
-                        sVersion = sVersion + "." + Convert.ToInt32(sfullval.Substring(4, 4), 16).ToString();
-
-                        oResult.ProductVersion = sVersion;
+                        string sUninst = oRegkey.GetValue("QuietUninstallString", "").ToString().Replace("\"", "");
+                        if (!string.IsNullOrEmpty(sUninst))
+                        {
+                            try
+                            {
+                                if (sUninst.IndexOf('/') >= 0)
+                                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst.Split('/')[0] + "\" -ArgumentList \"" + sUninst.Substring(sUninst.IndexOf('/')) + "\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                                else
+                                    oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                                //$proc = (Start-Process -FilePath "zps17_en.exe" -ArgumentList "/Silent" -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode
+                            }
+                            catch
+                            {
+                                oResult.PSUninstall = "$proc = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
+                            }
+                        }
                     }
-                    catch
-                    {
-                    }
-
+                    catch { }
                 }
-            }
-
-            //Get Image
-            string sDisplayIcon = oRegkey.GetValue("DisplayIcon", "").ToString().Split(',')[0];
-            if (!string.IsNullOrEmpty(EncKey))
-            {
-                try
+                //If no silent uninstall is provided, use the normal uninstall string
+                if (string.IsNullOrEmpty(oResult.PSUninstall))
                 {
-                    RegistryKey oKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey, false);
-                    if (oKey != null)
+                    if (string.IsNullOrEmpty(oResult.MSIProductID))
                     {
-                        string sIcon = oKey.GetValue("ProductIcon", "") as string;
-
-                        if (!string.IsNullOrEmpty(sIcon))
-                            sDisplayIcon = sIcon;
+                        string sUninst = oRegkey.GetValue("UninstallString", "").ToString().Replace("\"", "");
+                        oResult.PSUninstall = "$proc  = (Start-Process -FilePath \"" + sUninst + "\" -ArgumentList \"/?\" -Wait -PassThru);$proc.WaitForExit();$ExitCode = $proc.ExitCode";
                     }
                 }
-                catch { }
-            }
 
-            //Add default Icon
-            if (string.IsNullOrEmpty(sDisplayIcon))
-            {
-                sDisplayIcon = @"C:\windows\system32\msiexec.exe";
-            }
+                //get Version String
+                if (string.IsNullOrEmpty(oResult.ProductVersion))
+                {
+                    string sVersion = oRegkey.GetValue("Version", "").ToString();
+                    if (!string.IsNullOrEmpty(sVersion))
+                    {
+                        try
+                        {
+                            Int32 iVersion = Convert.ToInt32(sVersion);
+                            string sfullval = iVersion.ToString("X8");
+                            sVersion = Convert.ToInt32(sfullval.Substring(0, 2), 16).ToString();
+                            sVersion = sVersion + "." + Convert.ToInt32(sfullval.Substring(2, 2), 16).ToString();
+                            sVersion = sVersion + "." + Convert.ToInt32(sfullval.Substring(4, 4), 16).ToString();
 
-            if (!sDisplayIcon.Contains(":\\"))
-                sDisplayIcon = @"C:\windows\system32\" + sDisplayIcon;
+                            oResult.ProductVersion = sVersion;
+                        }
+                        catch
+                        {
+                        }
 
-            sDisplayIcon = sDisplayIcon.Replace("\"", "");
-            sDisplayIcon = sDisplayIcon.Split(',')[0];
+                    }
+                }
 
-            if (!File.Exists(sDisplayIcon))
-            {
-                if (File.Exists(sDisplayIcon.Replace(" (x86)", "")))
-                    sDisplayIcon = sDisplayIcon.Replace(" (x86)", "");
-                else
-                    sDisplayIcon = "";
-            }
+                //Get Image
+                string sDisplayIcon = oRegkey.GetValue("DisplayIcon", "").ToString().Split(',')[0];
+                if (!string.IsNullOrEmpty(EncKey))
+                {
+                    try
+                    {
+                        RegistryKey oKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Products\" + EncKey, false);
+                        if (oKey != null)
+                        {
+                            string sIcon = oKey.GetValue("ProductIcon", "") as string;
 
-            if (!string.IsNullOrEmpty(sDisplayIcon))
-            {
-                oResult.Image = imageToByteArray(GetImageFromExe(sDisplayIcon.Replace("\"", "")));
-            }
+                            if (!string.IsNullOrEmpty(sIcon))
+                                sDisplayIcon = sIcon;
+                        }
+                    }
+                    catch { }
+                }
 
-            oResult.Architecture = "X64";
+                //Add default Icon
+                if (string.IsNullOrEmpty(sDisplayIcon))
+                {
+                    sDisplayIcon = @"C:\windows\system32\msiexec.exe";
+                }
 
-            return oResult;
+                if (!sDisplayIcon.Contains(":\\"))
+                    sDisplayIcon = @"C:\windows\system32\" + sDisplayIcon;
+
+                sDisplayIcon = sDisplayIcon.Replace("\"", "");
+                sDisplayIcon = sDisplayIcon.Split(',')[0];
+
+                if (!File.Exists(sDisplayIcon))
+                {
+                    if (File.Exists(sDisplayIcon.Replace(" (x86)", "")))
+                        sDisplayIcon = sDisplayIcon.Replace(" (x86)", "");
+                    else
+                        sDisplayIcon = "";
+                }
+
+                if (!string.IsNullOrEmpty(sDisplayIcon))
+                {
+                    oResult.Image = imageToByteArray(GetImageFromExe(sDisplayIcon.Replace("\"", "")));
+                }
+
+                oResult.Architecture = "X64";
+
+                return oResult;
             });
         }
 

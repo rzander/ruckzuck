@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-
-using System.Reflection;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
+using System.Windows;
 
 namespace RuckZuck_Tool
 {
@@ -23,7 +17,7 @@ namespace RuckZuck_Tool
             System.Net.ServicePointManager.CheckCertificateRevocationList = false;
 
             //AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
-            
+
             App app = new App();
 
             app.StartupUri = new System.Uri("MainWindow.xaml", System.UriKind.Relative);

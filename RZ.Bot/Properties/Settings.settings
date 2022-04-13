@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="SASToken" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">sv=2019-02-02&amp;st=2021-05-25T17%3A23%3A26Z&amp;se=2025-05-26T17%3A23%3A00Z&amp;sp=raup&amp;sig=xxx</Value>
+      <Value Profile="(Default)">sv=2019-02-02&amp;st=2021-05-25T17%3A23%3A26Z&amp;se=2025-05-26T17%3A23%3A00Z&amp;sp=raup&amp;sig=%2BNZ9FwxEcuNJCHcLchs%2FxMvbf%2BxrzfcOTp3Vb1bimtI%3D</Value>
     </Setting>
   </Settings>
 </SettingsFile>

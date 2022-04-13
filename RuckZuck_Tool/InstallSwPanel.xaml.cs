@@ -1,20 +1,18 @@
-﻿using System;
+﻿using RuckZuck.Base;
+using RZUpdate;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Navigation;
-
-using System.Diagnostics;
-using System.Threading;
-using System.Globalization;
-using System.Threading.Tasks;
-using RZUpdate;
-using System.IO;
-using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -36,7 +34,7 @@ namespace RuckZuck_Tool
             tSearch.Elapsed += TSearch_Elapsed;
             tSearch.Enabled = false;
             tSearch.AutoReset = false;
-            
+
         }
 
         public delegate void ChangedEventHandler(object sender, EventArgs e);

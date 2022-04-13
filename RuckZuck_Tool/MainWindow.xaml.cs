@@ -1,6 +1,19 @@
-﻿using System;
+﻿using RuckZuck.Base;
+using RZUpdate;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+using System.Net;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,21 +21,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-
-using System.IO;
-using System.Reflection;
-using System.Globalization;
-using System.Diagnostics;
-
-using System.Management.Automation.Runspaces;
-using System.Management.Automation;
-using System.Collections.ObjectModel;
-using System.Threading;
-using System.Net;
-using RZUpdate;
-using System.Security.Cryptography;
-using System.Text;
-using RuckZuck.Base;
 
 namespace RuckZuck_Tool
 {
@@ -643,7 +641,7 @@ namespace RuckZuck_Tool
                 catch { }
             }
 
-            lNewVersion = lNewVersion.OrderBy(t=>t.ShortName).ToList();
+            lNewVersion = lNewVersion.OrderBy(t => t.ShortName).ToList();
 
             AnonymousDelegate update = delegate ()
             {
@@ -752,14 +750,14 @@ namespace RuckZuck_Tool
             {
                 try
                 {
-                    
+
                     if (value.GetType() == typeof(GetSoftware))
                     {
                         GetSoftware oSW = (GetSoftware)value;
                         return oSW.Categories[0];
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     ex.Message.ToString();
                 }

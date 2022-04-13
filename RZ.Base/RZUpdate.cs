@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.IO;
-using System.Management.Automation;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Diagnostics;
+﻿using Newtonsoft.Json;
 using RuckZuck.Base;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management.Automation;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 namespace RZUpdate
@@ -1363,11 +1363,11 @@ namespace RZUpdate
                         //Only Check Hash if downloaded
                         if (!string.IsNullOrEmpty(vFile.FileHash) && bDownload)
                         {
-                            if (!vFile.URL.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) && !File.Exists(sFile)) 
+                            if (!vFile.URL.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) && !File.Exists(sFile))
                             {
                                 downloadTask.PercentDownloaded = 100;
                                 downloadTask.Error = false;
-                            } 
+                            }
                             else
                             {
                                 if (string.IsNullOrEmpty(vFile.HashType))

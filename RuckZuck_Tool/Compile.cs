@@ -50,7 +50,7 @@ namespace RuckZuck_Tool
             }
         }
 
-        
+
 
         public CreateExe(string exeFile)
         {

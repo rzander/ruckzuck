@@ -26,7 +26,7 @@ namespace RZ.Bot.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("sv=2019-02-02&st=2021-05-25T17%3A23%3A26Z&se=2025-05-26T17%3A23%3A00Z&sp=raup&sig" +
-            "=xxx")]
+            "=%2BNZ9FwxEcuNJCHcLchs%2FxMvbf%2BxrzfcOTp3Vb1bimtI%3D")]
         public string SASToken {
             get {
                 return ((string)(this["SASToken"]));

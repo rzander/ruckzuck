@@ -127,13 +127,13 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("RuckZuck.tools")]
 [assembly: AssemblyProduct("RZRZRZ")]
-[assembly: AssemblyCopyright("Copyright ©  2021 by Roger Zander")]
+[assembly: AssemblyCopyright("Copyright ©  2022 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("2193048a-dcd5-433e-a2c0-28384b9ebad2")]
-[assembly: AssemblyVersion("1.7.2.2")]
-[assembly: AssemblyFileVersion("1.7.2.2")]</value>
+[assembly: AssemblyVersion("1.7.2.3")]
+[assembly: AssemblyFileVersion("1.7.2.3")]</value>
   </data>
   <data name="RZRestApi" xml:space="preserve">
     <value>using Microsoft.Win32;

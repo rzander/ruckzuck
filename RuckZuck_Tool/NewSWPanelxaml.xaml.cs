@@ -1,23 +1,23 @@
-﻿using System;
+﻿using RuckZuck.Base;
+using RZUpdate;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WindowsInstaller;
-using System.Globalization;
-using System.IO;
-using System.Security.Cryptography;
-using System.Runtime.InteropServices;
-using System.Threading;
-using RZUpdate;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
-using System.Web.Script.Serialization;
-using RuckZuck.Base;
 //using System.Drawing;
 
 namespace RuckZuck.Base
@@ -567,7 +567,7 @@ namespace RuckZuck_Tool
                         }
                         catch { }
 
-                        if(tbVersion.Text != sOldVersion)
+                        if (tbVersion.Text != sOldVersion)
                         {
                             tbPSDetection.Text = tbPSDetection.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");
                             tbPSUnInstall.Text = tbPSUnInstall.Text.Replace("'" + sOldVersion + "'", "'" + tbVersion.Text + "'");

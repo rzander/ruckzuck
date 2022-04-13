@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.1.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -32,23 +32,6 @@ namespace RuckZuck_Tool.Properties {
             }
             set {
                 this["UpgradeSettings"] = value;
-            }
-        }
-        
-        /// <summary>
-        /// Excluded Updates
-        /// </summary>
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsDescriptionAttribute("Excluded Updates")]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
-            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
-        public global::System.Collections.Specialized.StringCollection UpdExlusion {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
-            }
-            set {
-                this["UpdExlusion"] = value;
             }
         }
         
@@ -91,7 +74,7 @@ namespace RuckZuck_Tool.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
-<ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
   <string>https://cdn.ruckzuck.tools/images/baseVISION_small.png</string>
   <string>https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png</string>
   <string>https://cdn.ruckzuck.tools/images/ROMAWO_Header_oo_small24.png</string>
@@ -100,6 +83,23 @@ namespace RuckZuck_Tool.Properties {
         public global::System.Collections.Specialized.StringCollection SponsorUrl {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["SponsorUrl"]));
+            }
+        }
+        
+        /// <summary>
+        /// Excluded Updates
+        /// </summary>
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsDescriptionAttribute("Excluded Updates")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection UpdExlusion {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
+            }
+            set {
+                this["UpdExlusion"] = value;
             }
         }
     }

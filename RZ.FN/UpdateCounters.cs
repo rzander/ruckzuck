@@ -163,7 +163,7 @@ namespace RZ.ServerFN
             foreach (var rzfail in DLQueue.Distinct().ToList())
             {
                 //Add to rzBot queue
-                incQueue(rzfail, "sv=2019-02-02&SAS...", "https://ruckzuck.queue.core.windows.net/rzbot/messages");
+                incQueue(rzfail, "sv=2019-02-02&st=2021-05-25T16%3A41%3A37Z&se=2025-05-26T16%3A41%3A00Z&sp=a&sig=TYQ%2FEwFux%2B5Xp%2F8IgD2vs3WisKbJlw6ZCfvbxuEtC1E%3D", "https://ruckzuck.queue.core.windows.net/rzbot/messages");
             }
         }
 

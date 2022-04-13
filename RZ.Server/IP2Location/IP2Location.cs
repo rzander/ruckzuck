@@ -185,7 +185,25 @@ namespace RZ.ServerFN
                         if (decimals <= 2) {
                             if (aLoc == null || !aLoc.HasValues)
                             {
-                                InsertEntityAsync(TableURL + "?" + TableToken, sLat, sLong, "{ \"Country\":\"\", \"ISO\":\"\", \"Location\":\"\", \"State\":\"\", \"TimeZone\":\"\", \"ZIP\":\"\"}");
+                                string ISO = "";
+                                string PLZ = "";
+                                string Location = "";
+                                string Country = "";
+                                string State = "";
+
+                                try
+                                {
+                                    JObject jMapBox = GetMapBoxInfo(sLat, sLong);
+                                    ISO = jMapBox["ISO"].Value<string>();
+                                    PLZ = jMapBox["PLZ"].Value<string>();
+                                    Location = jMapBox["Location"].Value<string>();
+                                    Country = jMapBox["Country"].Value<string>();
+                                    State = jMapBox["State"].Value<string>();
+
+                                }
+                                catch { }
+
+                                InsertEntityAsync(TableURL + "?" + TableToken, sLat, sLong, "{ \"Country\":\"" + Country + "\", \"ISO\":\"" + ISO + "\", \"Location\":\"" + Location + "\", \"State\":\"" + State + "\", \"TimeZone\":\"\", \"ZIP\":\"" + PLZ + "\"}");
                             }
                         }
                         memoryCache.Set(sLong + sLat, aLoc, DateTimeOffset.Now.AddHours(4));
@@ -339,6 +357,28 @@ namespace RZ.ServerFN
                 }
                 catch { }
             });
+        }
+
+        public static JObject GetMapBoxInfo(string sLat, string sLong)
+        {
+            JObject jRes = new JObject();
+            try
+            {
+                string uri = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + sLong+ "," + sLat +".json?limit=1&types=place%2Cpostcode&access_token=sk.eyJ1IjoicnphbmRlciIsImEiOiJja3p4NHZsbWQwMjgyMm9ucG83ZzhxaGdwIn0.NaXUocFoDqFfWZuAoO42Pg";
+                string contents;
+                using (var wc = new System.Net.WebClient())
+                    contents = wc.DownloadString(uri);
+                JObject jMap = JObject.Parse(contents);
+
+                jRes.Add("PLZ", jMap["features"][0]["text"].Value<string>());
+                jRes.Add("Location", jMap["features"][0]["context"][0]["text"].Value<string>());
+                jRes.Add("State", jMap["features"][0]["context"][1]["text"].Value<string>());
+                jRes.Add("Country", jMap["features"][0]["context"][2]["text"].Value<string>());
+                jRes.Add("ISO", jMap["features"][0]["context"][2]["short_code"].Value<string>().ToUpper());
+            }
+            catch { }
+
+            return jRes;
         }
 
         /// <summary>
