@@ -226,8 +226,8 @@ namespace RZGet
                 }
 
                 RZScan oScan = new RZScan(false);
-                oScan.GetSWRepository().Wait(10000);
-                oScan.SWScanAsync(bUser, bUpdateAll, bAllUsers).Wait();
+                oScan.GetSWRepository().Wait(30000);
+                oScan.SWScanAsync(bUser, bUpdateAll, bAllUsers).Wait(30000);
                 oScan._CheckUpdates(null);
 
                 List<string> lUpdate = new List<string>();
