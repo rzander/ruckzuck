@@ -141,22 +141,32 @@ namespace RuckZuck.Base
             return bResult;
         }
 
-        public async Task SWScanAsync()
+        public async Task SWScanAsync(bool currentUser = true, bool localMachine = true, bool allUsers = false)
         {
             var tSWScan = Task.Run(() =>
             {
                 List<AddSoftware> TempInstalledSoftware = new List<AddSoftware>();
                 try
                 {
-                    var CUX64 = RegScanAsync(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware);
-                    //var CUX86 = RegScan(RegistryHive.CurrentUser, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX86 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX64 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware);
+                    if (allUsers)
+                    {
+                        var AUX64 = RegScanAsync(RegistryHive.Users, RegistryView.Default, TempInstalledSoftware);
+                        AUX64.Wait();
+                    }
 
-                    CUX64.Wait();
-                    //CUX86.Wait();
-                    LMX86.Wait();
-                    LMX64.Wait();
+                    if (currentUser)
+                    {
+                        var CUX64 = RegScanAsync(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware);
+                        CUX64.Wait();
+                    }
+
+                    if (localMachine)
+                    {
+                        var LMX86 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware);
+                        var LMX64 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware);
+                        LMX86.Wait();
+                        LMX64.Wait();
+                    }
                 }
                 catch { }
 
@@ -273,50 +283,114 @@ namespace RuckZuck.Base
             try
             {
                 RegistryKey oUBase = RegistryKey.OpenBaseKey(RegHive, RegView);
-                RegistryKey oUKey = oUBase.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
                 List<string> USubKeys = new List<string>();
-                USubKeys.AddRange(oUKey.GetSubKeyNames());
-                foreach (string sProdID in USubKeys)
+                if (RegHive == RegistryHive.Users)
                 {
-                    try
+                    foreach (string SID in oUBase.GetSubKeyNames())
                     {
-                        RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
-                        bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
-                        bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
-                        string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
-                        string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
-
-                        //Check if its a SystemComponent or WindowsInstaller
-                        if (bSystemComponent)
-                            continue;
-
-                        //Check if NO PrentKeyName exists
-                        if (!string.IsNullOrEmpty(sParent))
-                            continue;
-
-                        //Check if NO ReleaseType exists
-                        if (!string.IsNullOrEmpty(sRelease))
-                            continue;
-
-                        AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
-                        if (!string.IsNullOrEmpty(oItem.ProductName))
+                        try
                         {
-                            try
-                            {
-                                lock (lScanList)
-                                {
-                                    lScanList.Add(oItem);
-                                }
+                            SID.ToString();
+                            if (!SID.StartsWith("S-1-12") || SID.EndsWith("_Classes"))
+                                continue;
 
-                            }
-                            catch (Exception ex)
+                            RegistryKey oUKey = oUBase.OpenSubKey(SID + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+                            USubKeys.AddRange(oUKey.GetSubKeyNames());
+
+                            foreach (string sProdID in USubKeys)
                             {
-                                ex.Message.ToString();
+                                try
+                                {
+                                    RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
+                                    bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
+                                    bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
+                                    string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
+                                    string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
+
+                                    //Check if its a SystemComponent or WindowsInstaller
+                                    if (bSystemComponent)
+                                        continue;
+
+                                    //Check if NO PrentKeyName exists
+                                    if (!string.IsNullOrEmpty(sParent))
+                                        continue;
+
+                                    //Check if NO ReleaseType exists
+                                    if (!string.IsNullOrEmpty(sRelease))
+                                        continue;
+
+                                    AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
+                                    if (!string.IsNullOrEmpty(oItem.ProductName))
+                                    {
+                                        try
+                                        {
+                                            lock (lScanList)
+                                            {
+                                                lScanList.Add(oItem);
+                                            }
+
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ex.Message.ToString();
+                                        }
+                                    }
+                                }
+                                catch { }
+
+
                             }
                         }
+                        catch { }
                     }
-                    catch { }
+                }
+                else
+                {
+                    RegistryKey oUKey = oUBase.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+                    USubKeys.AddRange(oUKey.GetSubKeyNames());
 
+                    foreach (string sProdID in USubKeys)
+                    {
+                        try
+                        {
+                            RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
+                            bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
+                            bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
+                            string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
+                            string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
+
+                            //Check if its a SystemComponent or WindowsInstaller
+                            if (bSystemComponent)
+                                continue;
+
+                            //Check if NO PrentKeyName exists
+                            if (!string.IsNullOrEmpty(sParent))
+                                continue;
+
+                            //Check if NO ReleaseType exists
+                            if (!string.IsNullOrEmpty(sRelease))
+                                continue;
+
+                            AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
+                            if (!string.IsNullOrEmpty(oItem.ProductName))
+                            {
+                                try
+                                {
+                                    lock (lScanList)
+                                    {
+                                        lScanList.Add(oItem);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    ex.Message.ToString();
+                                }
+                            }
+                        }
+                        catch { }
+
+                    }
                 }
             }
             catch (Exception ex)

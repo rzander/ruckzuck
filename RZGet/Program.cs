@@ -20,6 +20,8 @@ namespace RZGet
         public static RZUpdater oUpdate;
         public static bool bRunning = true;
         public static bool bRetry = false;
+        public static bool bUser = false;
+        public static bool bAllUsers = false;
 
         static int Main(string[] args)
         {
@@ -43,11 +45,11 @@ namespace RZGet
                 Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
                 Console.WriteLine("");
                 Console.WriteLine("Update:");
-                Console.WriteLine("Update all missing updates : RZGet.exe update --all [--retry]");
-                Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"] [--retry]");
-                Console.WriteLine("Show all missing updates : RZGet.exe update --list --all");
-                Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\"");
-                Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"] [--retry]");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all [--retry] [--user]");
+                Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"] [--retry] [--user]");
+                Console.WriteLine("Show all missing updates : RZGet.exe update --list --all [--user] [--allusers]");
+                Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\" [--user]");
+                Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"] [--retry] [--user]");
                 Console.WriteLine("");
                 Console.WriteLine("Show:");
                 Console.WriteLine("Show Metadata : RZGet.exe show \"<Shortname>\"");
@@ -198,6 +200,12 @@ namespace RZGet
                 if (lArgs.Contains("--retry"))
                     bRetry = true;
 
+                if (lArgs.Contains("--user"))
+                    bUser = true;
+
+                if (lArgs.Contains("--allusers"))
+                    bAllUsers = true;
+
                 if (lArgs.Contains("--noretry"))
                     bRetry = false;
 
@@ -219,7 +227,7 @@ namespace RZGet
 
                 RZScan oScan = new RZScan(false);
                 oScan.GetSWRepository().Wait(10000);
-                oScan.SWScanAsync().Wait(10000);
+                oScan.SWScanAsync(bUser, bUpdateAll, bAllUsers).Wait();
                 oScan._CheckUpdates(null);
 
                 List<string> lUpdate = new List<string>();
