@@ -22,6 +22,7 @@ namespace RZGet
         public static bool bRetry = false;
         public static bool bUser = false;
         public static bool bAllUsers = false;
+        public static bool bMachine = true;
 
         static int Main(string[] args)
         {
@@ -201,7 +202,10 @@ namespace RZGet
                     bRetry = true;
 
                 if (lArgs.Contains("--user"))
+                {
                     bUser = true;
+                    bMachine = false;
+                }
 
                 if (lArgs.Contains("--allusers"))
                     bAllUsers = true;
@@ -227,7 +231,7 @@ namespace RZGet
 
                 RZScan oScan = new RZScan(false);
                 oScan.GetSWRepository().Wait(30000);
-                oScan.SWScanAsync(bUser, bUpdateAll, bAllUsers).Wait(30000);
+                oScan.SWScanAsync(bUser, bMachine, bAllUsers).Wait(30000);
                 oScan._CheckUpdates(null);
 
                 List<string> lUpdate = new List<string>();
