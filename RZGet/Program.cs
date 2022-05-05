@@ -198,25 +198,33 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "update")
             {
-                if (lArgs.Contains("--retry"))
+                bool bUpdateAll = true;
+                bool bList = false;
+                bool bExclude = false;
+
+                if (lArgs.Contains("--retry", StringComparer.CurrentCultureIgnoreCase))
                     bRetry = true;
 
-                if (lArgs.Contains("--user"))
+                if (lArgs.Contains("--user", StringComparer.CurrentCultureIgnoreCase))
                 {
                     bUser = true;
                     bMachine = false;
                 }
 
-                if (lArgs.Contains("--allusers"))
+                if (lArgs.Contains("--allusers", StringComparer.CurrentCultureIgnoreCase))
                     bAllUsers = true;
 
-                if (lArgs.Contains("--noretry"))
+                if (lArgs.Contains("--noretry", StringComparer.CurrentCultureIgnoreCase))
                     bRetry = false;
 
-                bool bUpdateAll = false;
-                bool bList = false;
-                bool bExclude = false;
+
                 List<string> lExclude = new List<string>();
+
+                foreach (string sArg in args.Skip(1))
+                {
+                    if (!sArg.StartsWith("--"))
+                        bUpdateAll = false;
+                }
 
                 if (lArgs.Contains("--all", StringComparer.CurrentCultureIgnoreCase))
                     bUpdateAll = true;
@@ -228,6 +236,8 @@ namespace RZGet
                 {
                     bExclude = true;
                 }
+
+
 
                 RZScan oScan = new RZScan(false);
                 oScan.GetSWRepository().Wait(30000);
