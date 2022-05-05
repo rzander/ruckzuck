@@ -473,14 +473,14 @@ namespace RuckZuck.Base
 
                     if (string.IsNullOrEmpty(customerid))
                     {
-                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl");
+                        tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl");
                     }
                     else
-                        tReq = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
+                        tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
 
 
 
-                    tReq.Wait(5000); //wait max 5s
+                    tReq.Wait(10000); //wait max 10s
 
                     if (tReq.IsCompleted)
                     {
