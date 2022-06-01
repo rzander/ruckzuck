@@ -310,7 +310,7 @@ NullLogger.instance = new NullLogger();
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
-const VERSION = "6.0.3";
+const VERSION = "6.0.5";
 /** @private */
 class Arg {
     static isRequired(val, name) {
