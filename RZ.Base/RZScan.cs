@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RuckZuck.Base
@@ -56,7 +57,8 @@ namespace RuckZuck.Base
             {
                 bRunScan = true;
                 //SWScan();
-                GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
+                var cts = new CancellationTokenSource(15000).Token;
+                GetSWRepository(cts).ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
             //Check every 60s
             tRegCheck.Interval = 60000;
@@ -102,14 +104,14 @@ namespace RuckZuck.Base
             }
         }
 
-        public async Task<bool> GetSWRepository()
+        public async Task<bool> GetSWRepository(CancellationToken cts)
         {
             //var tGetSWRepo =
             bool bResult = await Task.Run(() =>
             {
                 try
                 {
-                    var oDB = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                    var oDB = (RZRestAPIv2.GetCatalogAsync().Result).Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     lock (SoftwareRepository)
                     {
                         SoftwareRepository = oDB.Select(item => new GetSoftware()
@@ -136,7 +138,7 @@ namespace RuckZuck.Base
                 OnSWRepoLoaded(this, new EventArgs());
 
                 return true;
-            });
+            }, cts);
 
             return bResult;
         }

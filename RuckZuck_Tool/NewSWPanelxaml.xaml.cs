@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
@@ -385,7 +386,7 @@ namespace RuckZuck_Tool
             {
                 if (oSoftware.Image == null)
                 {
-                    oSoftware.Image = RZRestAPIv2.GetIcon(oSoftware.IconHash);
+                    oSoftware.Image = RZRestAPIv2.GetIconAsync(oSoftware.IconHash).Result;
                 }
 
                 imgIcon.Tag = oSoftware.Image;
@@ -862,7 +863,7 @@ namespace RuckZuck_Tool
         {
             try
             {
-                List<GetSoftware> oSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == tbProductName.Text).ToList();
+                List<GetSoftware> oSW = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.Where(t => t.ShortName == tbProductName.Text).ToList();
                 //List<GetSoftware> oSW = RZRestAPI.SWResults(tbProductName.Text).ToList();
                 if (oSW.FirstOrDefault() != null)
                 {

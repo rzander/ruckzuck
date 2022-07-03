@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RuckZuck.Base
@@ -260,7 +261,7 @@ namespace RuckZuck.Base
 
                 if (string.IsNullOrEmpty(_sURL))
                 {
-                    return GetURL(CustomerID);
+                    return GetURLAsync(CustomerID).Result;
                 }
                 else
                     return _sURL;
@@ -271,10 +272,13 @@ namespace RuckZuck.Base
             }
         }
 
-        public static async Task<List<AddSoftware>> CheckForUpdateAsync(List<AddSoftware> lSoftware, string customerid = "")
+        public static async Task<List<AddSoftware>> CheckForUpdateAsync(List<AddSoftware> lSoftware, string customerid = "", CancellationToken? cts = null)
         {
             try
             {
+                if (cts == null)
+                    cts = new CancellationTokenSource(30000).Token; //30s TimeOut
+
                 if (lSoftware.Count > 0)
                 {
                     if (string.IsNullOrEmpty(customerid))
@@ -282,18 +286,11 @@ namespace RuckZuck.Base
 
                     string sSoftware = JsonConvert.SerializeObject(lSoftware);
                     HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
-                    var response = await oClient.PostAsync(sURL + "/rest/v2/checkforupdate?customerid=" + customerid, oCont);
+                    var response = await oClient.PostAsync(sURL + "/rest/v2/checkforupdate?customerid=" + customerid, oCont, (CancellationToken)cts);
 
                     List<AddSoftware> lRes = JsonConvert.DeserializeObject<List<AddSoftware>>(await response.Content.ReadAsStringAsync());
 
                     return lRes;
-
-                    //response.Wait(180000); //3min max
-                    //if (response.IsCompleted)
-                    //{
-                    //    List<AddSoftware> lRes = ser.Deserialize<List<AddSoftware>>(response.Result.Content.ReadAsStringAsync().Result);
-                    //    return lRes;
-                    //}
                 }
 
             }
@@ -305,13 +302,16 @@ namespace RuckZuck.Base
             return new List<AddSoftware>();
         }
 
-        public static async Task<string> Feedback(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "")
+        public static async Task<string> FeedbackAsync(string productName, string productVersion, string manufacturer, string working, string userKey, string feedback, string customerid = "", CancellationToken? cts = null)
         {
             if (!string.IsNullOrEmpty(feedback))
             {
                 try
                 {
-                    var oRes = await oClient.GetStringAsync(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback) + "&customerid=" + WebUtility.UrlEncode(customerid));
+                    if (cts == null)
+                        cts = new CancellationTokenSource(30000).Token; //30s TimeOut
+
+                    var oRes = await oClient.GetStringAsync(new Uri(sURL + "/rest/v2/feedback?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&ok=" + working + "&user=" + WebUtility.UrlEncode(userKey) + "&text=" + WebUtility.UrlEncode(feedback) + "&customerid=" + WebUtility.UrlEncode(customerid))); //, (CancellationToken)cts on .NET 6
                     return oRes;
                 }
                 catch { }
@@ -320,8 +320,11 @@ namespace RuckZuck.Base
             return "";
         }
 
-        public static List<GetSoftware> GetCatalog(string customerid = "")
+        public static async Task<List<GetSoftware>> GetCatalogAsync(string customerid = "", CancellationToken? cts = null)
         {
+            if (cts == null)
+                cts = new CancellationTokenSource(60000).Token; //60s TimeOut
+
             if (string.IsNullOrEmpty(customerid))
             {
                 RZRestAPIv2.sURL.ToString();
@@ -356,23 +359,21 @@ namespace RuckZuck.Base
             {
                 sURL = "UDP"; //reset URL as this part is only called every 30 min
 
-                Task<string> response;
+                string response;
                 if (string.IsNullOrEmpty(customerid) || customerid.Count(t => t == '.') == 3)
-                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog");
+                    response = await oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog"); //add cts in .NET 6
                 else
-                    response = oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid);
+                    response = await oClient.GetStringAsync(sURL + "/rest/v2/GetCatalog?customerid=" + customerid); //add cts in .NET 6
 
-                response.Wait(60000); //60s max
-
-                if (response.IsCompleted)
+                if (!string.IsNullOrEmpty(response) && !cts.Value.IsCancellationRequested)
                 {
-                    List<GetSoftware> lRes = JsonConvert.DeserializeObject<List<GetSoftware>>(response.Result);
+                    List<GetSoftware> lRes = JsonConvert.DeserializeObject<List<GetSoftware>>(response);
 
                     if (lRes.Count > 500 && !customerid.StartsWith("--"))
                     {
                         try
                         {
-                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response.Result);
+                            File.WriteAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"), response);
                         }
                         catch { }
                     }
@@ -401,24 +402,27 @@ namespace RuckZuck.Base
             return lResult.Distinct().OrderBy(t => t).ToList();
         }
 
-        public static byte[] GetIcon(string iconhash, string customerid = "", int size = 0)
+        public static async Task<byte[]> GetIconAsync(string iconhash, string customerid = "", int size = 0, CancellationToken? cts = null)
         {
-            Task<Stream> response;
+            if (cts == null)
+                cts = new CancellationTokenSource(10000).Token;
 
-            response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size=" + size + "&iconhash=" + iconhash);
-
-            response.Wait(10000);
-
-            if (response.IsCompleted)
+            try
             {
-                using (MemoryStream ms = new MemoryStream())
+                return await Task.Run(() =>
                 {
-                    response.Result.CopyTo(ms);
-                    byte[] bRes = ms.ToArray();
-                    return bRes;
-                }
-            }
+                    var response = oClient.GetStreamAsync(sURL + "/rest/v2/GetIcon?size=" + size + "&iconhash=" + iconhash).Result; //add cts in .NET6
 
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        response.CopyTo(ms);
+                        byte[] bRes = ms.ToArray();
+                        return bRes;
+                    }
+                }, (CancellationToken)cts);
+
+            }
+            catch { }
             return null;
         }
 
@@ -453,54 +457,54 @@ namespace RuckZuck.Base
 
         }
 
-        public static string GetURL(string customerid)
+        public static async Task<string> GetURLAsync(string customerid, CancellationToken? cts = null)
         {
-            using (HttpClient hClient = new HttpClient())
-            {
-                try
-                {
-                    Task<string> tReq;
+            if (cts == null)
+                cts = new CancellationTokenSource(10000).Token;
 
-                    if (string.IsNullOrEmpty(CustomerID))
+            return await Task.Run(() =>
+            {
+                using (HttpClient hClient = new HttpClient())
+                {
+                    try
                     {
-                        using (HttpClient qClient = new HttpClient())
+                        string tReq;
+
+                        if (string.IsNullOrEmpty(CustomerID))
                         {
-                            CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result;
-                            customerid = CustomerID.ToString();
+                            using (HttpClient qClient = new HttpClient())
+                            {
+                                CustomerID = hClient.GetStringAsync("https://ruckzuck.tools/rest/v2/getip").Result; //add cts with .net 6
+                                customerid = CustomerID.ToString();
+                            }
+                        }
+
+                        try
+                        {
+                            if (string.IsNullOrEmpty(customerid))
+                            {
+                                tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl").Result; //add cts with .net 6
+                            }
+                            else
+                                tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl?customerid=" + customerid).Result; //add cts with .net 6
+
+                            _sURL = tReq;
+                            return _sURL;
+                        }
+                        catch
+                        {
+                            _sURL = "https://ruckzuck.azurewebsites.net";
+                            return _sURL;
                         }
                     }
+                    catch{}
 
-
-                    if (string.IsNullOrEmpty(customerid))
-                    {
-                        tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl");
-                    }
-                    else
-                        tReq = hClient.GetStringAsync("https://cdn.ruckzuck.tools/rest/v2/geturl?customerid=" + customerid);
-
-
-
-                    tReq.Wait(10000); //wait max 10s
-
-                    if (tReq.IsCompleted)
-                    {
-                        _sURL = tReq.Result;
-                        return _sURL;
-                    }
-                    else
-                    {
-                        _sURL = "https://ruckzuck.azurewebsites.net";
-                        return _sURL;
-                    }
+                    return "https://ruckzuck.azurewebsites.net";
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("ERROR 145: " + ex.Message);
-                }
+            }, (CancellationToken)cts);
 
-                return "https://ruckzuck.azurewebsites.net";
-            }
         }
+        
         public static async void IncCounter(string shortname = "", string counter = "DL", string customerid = "")
         {
             try

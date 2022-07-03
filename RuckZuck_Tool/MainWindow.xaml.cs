@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -87,7 +88,7 @@ namespace RuckZuck_Tool
                 cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
             }
 
-            tbSVC.Text = RZRestAPIv2.sURL;
+            tbSVC.Text = Task.Run(() => RZRestAPIv2.sURL).Result;
 
             if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
             {
@@ -149,7 +150,8 @@ namespace RuckZuck_Tool
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
 
-            oSCAN.GetSWRepository().ConfigureAwait(false);
+            var cts = new CancellationTokenSource(20000).Token;
+            oSCAN.GetSWRepository(cts).ConfigureAwait(false);
 
             //oSCAN.tRegCheck.Start();
 
@@ -359,7 +361,8 @@ namespace RuckZuck_Tool
                 {
                     try
                     {
-                        oSCAN.GetSWRepository().Wait(2000);
+                        var cts = new CancellationTokenSource(15000).Token;
+                        _ = oSCAN.GetSWRepository(cts);
                     }
                     catch { }
                 }
@@ -510,7 +513,7 @@ namespace RuckZuck_Tool
 
         void oInstPanel_onEdit(object sender, EventArgs e)
         {
-            AnonymousDelegate update = delegate ()
+            AnonymousDelegate update = async delegate ()
             {
                 try
                 {
@@ -531,7 +534,7 @@ namespace RuckZuck_Tool
                         //get Icon
                         if (oSW.SW != null)
                         {
-                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                            oSW.SW.Image = await RZRestAPIv2.GetIconAsync(oSW.SW.IconHash);
 
                             oNewPanel.OpenXML(oSW.SW);
                         }
@@ -563,12 +566,12 @@ namespace RuckZuck_Tool
             Dispatcher.Invoke(update);
         }
 
-        private async void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
+        private void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
         {
-            await oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
+            _ = oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
         }
 
-        private async void OSCAN_OnSWRepoLoaded(object sender, EventArgs e)
+        private void OSCAN_OnSWRepoLoaded(object sender, EventArgs e)
         {
             try
             {
@@ -580,7 +583,7 @@ namespace RuckZuck_Tool
                 Dispatcher.Invoke(update);
 
                 oSCAN.bCheckUpdates = true;
-                await oSCAN.SWScanAsync();
+                _ = oSCAN.SWScanAsync();
             }
             catch { }
         }
@@ -694,7 +697,7 @@ namespace RuckZuck_Tool
                     List<GetSoftware> lServer = new List<GetSoftware>();
                     if (oInstPanel.lvSW.ItemsSource == null)
                     {
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     }
                     else
                     {
@@ -702,7 +705,7 @@ namespace RuckZuck_Tool
                     }
 
                     if (lServer == null)
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
 
                     if (Keyboard.Modifiers == ModifierKeys.Shift)
                     {
@@ -770,6 +773,11 @@ namespace RuckZuck_Tool
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

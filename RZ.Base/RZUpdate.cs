@@ -560,7 +560,7 @@ namespace RZUpdate
                     }
                     else
                     {
-                        var oGetSW = RZRestAPIv2.GetCatalog(RZRestAPIv2.CustomerID).Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        var oGetSW = RZRestAPIv2.GetCatalogAsync(RZRestAPIv2.CustomerID).Result.Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                         if (oGetSW != null)
                         {
                             SW.ProductName = oGetSW.ProductName;
@@ -1340,7 +1340,7 @@ namespace RZUpdate
                                 ProgressDetails(downloadTask, EventArgs.Empty);
                                 File.Delete(sFile);
                                 if (SendFeedback)
-                                    RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "download failed", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                    RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "download failed", RZRestAPIv2.CustomerID).ConfigureAwait(false);
                                 return false;
                             }
                             else
@@ -1407,7 +1407,7 @@ namespace RZUpdate
                                             Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
-                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
+                                                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
                                             bError = true;
                                         }
                                         else
@@ -1427,7 +1427,7 @@ namespace RZUpdate
                                             Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
-                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
                                             bError = true;
                                         }
                                         else
@@ -1447,7 +1447,7 @@ namespace RZUpdate
                                             Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
-                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
                                             bError = true;
                                         }
                                         else
@@ -1466,7 +1466,7 @@ namespace RZUpdate
                                             Console.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
-                                                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                                                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
                                             bError = true;
                                         }
                                         else
@@ -1547,7 +1547,7 @@ namespace RZUpdate
                 ProgressDetails(this.downloadTask, EventArgs.Empty);
 
                 if (SendFeedback)
-                    RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false);
+                    RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false);
 
                 return false;
             }
@@ -1610,7 +1610,7 @@ namespace RZUpdate
                 {
                     ProgressDetails(downloadTask, EventArgs.Empty);
                     if (SendFeedback)
-                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "true", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Ok...", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                        RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "true", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Ok...", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
                     return true;
                 }
                 else
@@ -1623,7 +1623,7 @@ namespace RZUpdate
                     //}
 
                     if (SendFeedback)
-                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Product not detected after installation.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                        RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Product not detected after installation.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
 
                     downloadTask.Error = true;
                     downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
@@ -1636,7 +1636,7 @@ namespace RZUpdate
             catch (Exception ex)
             {
                 Console.WriteLine("ERROR: " + ex.Message);
-                RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
                 downloadTask.Error = true;
                 downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
                 downloadTask.Installed = false;
@@ -1678,7 +1678,7 @@ namespace RZUpdate
                     ProgressDetails(this.downloadTask, EventArgs.Empty);
 
                     if (SendFeedback)
-                        RZRestAPIv2.Feedback(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
+                        RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Requirements not valid. Installation will not start.", RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
 
                     return false;
                 }
