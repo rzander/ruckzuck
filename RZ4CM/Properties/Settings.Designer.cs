@@ -118,6 +118,7 @@ namespace RuckZuck_Tool.Properties {
         [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
 <ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <string>Windows/All_x64_Windows_10_and_higher_Clients</string>
+  <string>Windows/All_x64_Windows_11_and_higher_Clients</string>
   <string>Windows/All_x64_Windows_Server_2016</string>
   <string>Windows/All_x64_Windows_Server_2019_and_higher</string>
 </ArrayOfString>")]
