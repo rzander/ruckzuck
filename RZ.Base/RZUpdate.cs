@@ -547,7 +547,10 @@ namespace RZUpdate
                     }
                     else
                     {
-                        var oGetSW = RZRestAPIv2.GetCatalogAsync(RZRestAPIv2.CustomerID).Result.Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        var tSW = RZRestAPIv2.GetCatalogAsync(RZRestAPIv2.CustomerID);
+                        tSW.Wait();
+                        List<GetSoftware> lCat = tSW.Result;
+                        var oGetSW = lCat.Where(t => t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                         if (oGetSW != null)
                         {
                             SW.ProductName = oGetSW.ProductName;
@@ -557,19 +560,23 @@ namespace RZUpdate
 
                             if (SW.Architecture == null)
                             {
-                                //Load all MetaData for the specific SW
-                                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).Result)
+                                Task.Run(() =>
                                 {
-                                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
-                                        SWCheck.PSPreReq = "$true; ";
-
-                                    //Check PreReq for all Installation-types of the Software
-                                    if ((bool)SWUpdate._RunPSAsync(SWCheck.PSPreReq).Result[0].BaseObject)
+                                    List<AddSoftware> lSW = RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).GetAwaiter().GetResult();
+                                    //Load all MetaData for the specific SW
+                                    foreach (AddSoftware SWCheck in lSW)
                                     {
-                                        SW = SWCheck;
-                                        break;
+                                        if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                                            SWCheck.PSPreReq = "$true; ";
+
+                                        //Check PreReq for all Installation-types of the Software
+                                        if ((bool)SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult()[0].BaseObject)
+                                        {
+                                            SW = SWCheck;
+                                            break;
+                                        }
                                     }
-                                }
+                                }).Wait();
 
                                 //SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
                                 if (SW == null) { Trace.WriteLine("No SW"); }
@@ -764,11 +771,11 @@ namespace RZUpdate
                         if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
                     }
 
-                    await fileStream.WriteAsync(buffer, 0, bytesRead);
-                    ContentLoaded = ContentLoaded + bytesRead;
-
                     try
                     {
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+                        ContentLoaded = ContentLoaded + bytesRead;
+
                         iProgress = (100 * ContentLoaded) / ContentLength;
                         //only send status on percent change
                         if (iProgress != ioldProgress)
@@ -785,7 +792,10 @@ namespace RZUpdate
                             }
                         }
                     }
-                    catch { }
+                    catch(Exception ex)
+                    {
+                        ex.Message.ToString();
+                    }
                 } // end while
 
                 try
@@ -1226,23 +1236,22 @@ namespace RZUpdate
         //        }
         private async Task<bool> _checkFileX509Async(string FilePath, string X509)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
+                await Task.CompletedTask;
+                var Cert = X509Certificate.CreateFromSignedFile(FilePath);
+                if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
                 {
-                    var Cert = X509Certificate.CreateFromSignedFile(FilePath);
-                    if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
-                    {
-                        return AuthenticodeTools.IsTrusted(FilePath);
-                    }
-                    else
-                        return false;
+                    return AuthenticodeTools.IsTrusted(FilePath);
                 }
-                catch
-                {
+                else
                     return false;
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                ex.Message.ToString();
+                return false;
+            }
 
         }
 
@@ -1330,7 +1339,7 @@ namespace RZUpdate
 
                                 if (vFile.HashType.ToUpper() == "X509")
                                 {
-                                    if (!await _checkFileX509Async(sFile, vFile.FileHash))
+                                    if (!(await _checkFileX509Async(sFile, vFile.FileHash)))
                                         File.Delete(sFile); //Hash mismatch
                                     else
                                         bDownload = false; //Do not download, Hash is valid
