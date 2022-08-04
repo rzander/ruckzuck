@@ -3,18 +3,22 @@
 // This Tool is under MS-Pl License (http://ruckzuck.codeplex.com/license)
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.IO;
 using RuckZuck.Base;
 using RZUpdate;
-using Newtonsoft.Json;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RZGet
 {
-    class Program
+    internal class Program
     {
         public static RZScan oScan;
         public static RZUpdater oUpdate;
@@ -24,8 +28,45 @@ namespace RZGet
         public static bool bAllUsers = false;
         public static bool bMachine = true;
 
-        static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
+            List<string> lArgs = args.ToList();
+
+            //Check if AppSettings exists and configure Serilog
+            string logLevel = ConfigurationManager.AppSettings["serilog:minimum-level"];
+            if (!string.IsNullOrEmpty(logLevel))
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.AppSettings()
+                    .Enrich.FromLogContext()
+                    .CreateLogger();
+            }
+            else
+            {
+                if (lArgs.Contains("/verbose", StringComparer.InvariantCultureIgnoreCase))
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Verbose()
+                        .WriteTo.Console()
+                        .Enrich.FromLogContext()
+                        .CreateLogger();
+
+                    lArgs.Remove("/verbose");
+                }
+                else
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Information()
+                        .WriteTo.Console()
+                        .Enrich.FromLogContext()
+                        .CreateLogger();
+                }
+
+            }
+
+
+            Trace.Listeners.Add(new global::SerilogTraceListener.SerilogTraceListener());
+
             bool bError = false;
 
             //Get Proxy from IE
@@ -36,12 +77,12 @@ namespace RZGet
 
             RZRestAPIv2.DisableBroadcast = Properties.Settings.Default.DisableBroadcast;
 
-            List<string> lArgs = args.ToList();
+
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck CommandLine Tool (c) 2021 by Roger Zander");
+                Console.WriteLine("RuckZuck CommandLine Tool (c) 2022 by Roger Zander");
                 Console.WriteLine("Install:");
-                Console.WriteLine("Install a Software from Shortname : RZGet.exe install \"<Shortname>\"[;\"<Shortname2>\"]");
+                Console.WriteLine("Install a Software from Shortname : RZGet.exe install \"<Shortname>\"[;\"<Shortname2>\"] [/cleanup]");
                 Console.WriteLine("Install a Software from JSON File : RZGet.exe install \"<JSON full path>\"[;\"<JSON full path>\"]");
                 Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
                 Console.WriteLine("");
@@ -66,26 +107,30 @@ namespace RZGet
                 return 0;
             }
 
-            if(lArgs[0].ToLower() == "install")
+            if (lArgs[0].ToLower() == "install")
             {
-                if(lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
+                if (lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
                 {
-
                     try
                     {
                         RZUpdater oRZSW = new RZUpdater();
+
                         string ProductName = lArgs[lArgs.FindIndex(t => t.IndexOf("--name", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
                         string Manufacturer = lArgs[lArgs.FindIndex(t => t.IndexOf("--vendor", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
-                        
-                        if(string.IsNullOrEmpty(Manufacturer))
+
+                        if (string.IsNullOrEmpty(Manufacturer))
                             Manufacturer = lArgs[lArgs.FindIndex(t => t.IndexOf("--manufacturer", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
 
                         string ProductVersion = lArgs[lArgs.FindIndex(t => t.IndexOf("--version", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+
+                        Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
+
                         oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer);
 
-                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                        if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
-                            Console.WriteLine("'" + ProductName + "' is NOT available in RuckZuck...!");
+                            Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                            Log.ForContext("Param", lArgs[0].ToLower()).Warning("Software NOT available in repository: '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
                             return 99;
                         }
 
@@ -94,17 +139,17 @@ namespace RZGet
                             oRZSW.SoftwareUpdate.GetInstallType();
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                             {
-                                Console.WriteLine("PreRequisites not valid for '" + oRZSW.SoftwareUpdate.SW.ShortName + "'...!");
+                                Log.ForContext("Param", lArgs[0].ToLower()).Warning("PreRequisites not valid for '{shortname}'", oRZSW.SoftwareUpdate.SW.ShortName);
                                 return 91;
                             }
                         }
 
-                        if (Install(oRZSW))
+                        if (await InstallAsync(oRZSW))
                             return 0;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error: " + ex.Message);
+                        Log.ForContext("Param", lArgs[0].ToLower()).Error("E133: {ex}", ex.Message);
                         return 1;
                     }
                 }
@@ -115,10 +160,9 @@ namespace RZGet
                 if (lArgs.Contains("--noretry"))
                     bRetry = false;
 
-
-                foreach (string sArg in args.Skip(1))
+                foreach (string sArg in lArgs.Skip(1))
                 {
-                    if (!sArg.StartsWith("--"))
+                    if (!sArg.StartsWith("--") && !sArg.StartsWith("/"))
                     {
                         if (File.Exists(sArg) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg)) || File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json")))
                         {
@@ -129,11 +173,13 @@ namespace RZGet
                             if (!File.Exists(sJFile))
                                 sJFile = Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), sArg + ".json");
 
+                            Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{shortname}' from file: '{file}'", sArg, sJFile);
+
                             RZUpdater oRZSW = new RZUpdater(sJFile);
 
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                             {
-                                Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                Log.ForContext("Param", lArgs[0].ToLower()).Error("Unable to read software from file: '{file}'", sJFile);
                                 bError = true;
                                 continue;
                             }
@@ -143,14 +189,24 @@ namespace RZGet
                                 oRZSW.SoftwareUpdate.GetInstallType();
                                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                                 {
-                                    Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                    Log.ForContext("Param", lArgs[0].ToLower()).Warning("PreRequisites not valid for '{shortname}'", sArg);
                                     bError = false;
                                     continue;
                                 }
                             }
 
-                            if (Install(oRZSW))
+                            if (await InstallAsync(oRZSW))
+                            {
+                                if (lArgs.Contains("/cleanup"))
+                                {
+                                    try
+                                    {
+                                        Directory.Delete(oRZSW.SoftwareUpdate.ContentPath, true);
+                                    }
+                                    catch { }
+                                }
                                 continue;
+                            }
                         }
                         else
                         {
@@ -159,9 +215,12 @@ namespace RZGet
                                 RZUpdater oRZSW = new RZUpdater();
                                 oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
 
-                                if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                                Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{shortname}'", sArg);
+
+                                if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                                 {
-                                    Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                    Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                                    Log.ForContext("Param", lArgs[0].ToLower()).Warning("Shortname NOT available in repository: '{shortname}'", sArg);
                                     bError = true;
                                     continue;
                                 }
@@ -171,24 +230,34 @@ namespace RZGet
                                     oRZSW.SoftwareUpdate.GetInstallType();
                                     if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                                     {
-                                        Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                        Log.ForContext("Param", lArgs[0].ToLower()).Warning("PreRequisites not valid for '{shortname}'", sArg);
                                         bError = false;
                                         continue;
                                     }
                                 }
 
-                                if (Install(oRZSW))
+                                if (await InstallAsync(oRZSW))
+                                {
+                                    if (lArgs.Contains("/cleanup"))
+                                    {
+                                        try
+                                        {
+                                            Directory.Delete(oRZSW.SoftwareUpdate.ContentPath, true);
+                                        }
+                                        catch { }
+                                    }
                                     continue;
+                                }
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error: " + ex.Message);
+                                Log.ForContext("Param", lArgs[0].ToLower()).Error("E214: {ex}", ex.Message);
                                 bError = true;
                             }
-
                         }
                     }
                 }
+
 
                 if (bError)
                     return 1;
@@ -217,10 +286,9 @@ namespace RZGet
                 if (lArgs.Contains("--noretry", StringComparer.CurrentCultureIgnoreCase))
                     bRetry = false;
 
-
                 List<string> lExclude = new List<string>();
 
-                foreach (string sArg in args.Skip(1))
+                foreach (string sArg in lArgs.Skip(1))
                 {
                     if (!sArg.StartsWith("--"))
                         bUpdateAll = false;
@@ -237,24 +305,25 @@ namespace RZGet
                     bExclude = true;
                 }
 
-
-
                 RZScan oScan = new RZScan(false);
-                oScan.GetSWRepository().Wait(30000);
-                oScan.SWScanAsync(bUser, bMachine, bAllUsers).Wait(30000);
+                CancellationToken ct = new CancellationTokenSource(30000).Token;
+                await oScan.GetSWRepositoryAsync(ct);
+
+                ct = new CancellationTokenSource(30000).Token;
+                await oScan.SWScanAsync(bUser, bMachine, bAllUsers, ct);
                 oScan._CheckUpdates(null);
 
                 List<string> lUpdate = new List<string>();
                 if (!bUpdateAll)
                 {
-                    foreach (string sArg in args.Skip(1))
+                    foreach (string sArg in lArgs.Skip(1))
                     {
                         if (oScan.NewSoftwareVersions.Count(t => t.ShortName.ToLower() == sArg.ToLower()) > 0)
                         {
                             lUpdate.Add(sArg);
                         }
                     }
-                } 
+                }
                 else
                 {
                     if (!bExclude)
@@ -266,8 +335,14 @@ namespace RZGet
                         int iex = lArgs.IndexOf("--exclude", 0);
                         string scl = lArgs[iex + 1];
                         lExclude = scl.ToLower().Split(';').ToList();
-                        lUpdate = oScan.NewSoftwareVersions.Where(r=> !lExclude.Contains(r.ShortName.ToLower())).Select(t => t.ShortName.ToLower()).ToList();
+                        Log.ForContext("Param", lArgs[0].ToLower()).Verbose("Excludes: {exclude}", scl);
+                        lUpdate = oScan.NewSoftwareVersions.Where(r => !lExclude.Contains(r.ShortName.ToLower())).Select(t => t.ShortName.ToLower()).ToList();
                     }
+                }
+
+                if(lUpdate.Count == 0)
+                {
+                    Log.ForContext("Param", lArgs[0].ToLower()).Debug("No updates found.");
                 }
 
                 foreach (string sArg in lUpdate)
@@ -281,9 +356,10 @@ namespace RZGet
                     {
                         RZUpdater oRZSW = new RZUpdater(sArg);
 
-                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                        if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
-                            Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                            Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                            Log.ForContext("Param", lArgs[0].ToLower()).Warning("Shortname NOT available in repository: '{shortname}'", sArg);
                             bError = true;
                             continue;
                         }
@@ -293,13 +369,13 @@ namespace RZGet
                             oRZSW.SoftwareUpdate.GetInstallType();
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                             {
-                                Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                Log.ForContext("Param", lArgs[0].ToLower()).Warning("PreRequisites not valid for '{shortname}'", sArg);
                                 bError = false;
                                 continue;
                             }
                         }
 
-                        if (Install(oRZSW))
+                        if (await InstallAsync(oRZSW))
                             continue;
                     }
                     else
@@ -309,9 +385,10 @@ namespace RZGet
                             RZUpdater oRZSW = new RZUpdater();
                             oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
 
-                            if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                            if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                             {
-                                Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                                Log.ForContext("Param", lArgs[0].ToLower()).Warning("Software NOT available in repository: '{productname}' '{productversion}' '{manufacturer}'", oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion, oRZSW.SoftwareUpdate.SW.Manufacturer);
                                 bError = true;
                                 continue;
                             }
@@ -321,24 +398,23 @@ namespace RZGet
                                 oRZSW.SoftwareUpdate.GetInstallType();
                                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                                 {
-                                    Console.WriteLine("PreRequisites not valid for '" + sArg + "'...!");
+                                    Log.ForContext("Param", lArgs[0].ToLower()).Warning("PreRequisites not valid for '{shortname}'", sArg);
                                     bError = false;
                                     continue;
                                 }
                             }
 
-                            if (Install(oRZSW))
+                            if (await InstallAsync(oRZSW))
                                 continue;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Error: " + ex.Message);
+                            Log.ForContext("Param", lArgs[0].ToLower()).Error("E365: {ex}", ex.Message);
                             bError = true;
                         }
-
                     }
                 }
-                
+
                 if (bError)
                     return 1;
                 else
@@ -356,66 +432,68 @@ namespace RZGet
             {
                 if (lArgs.Count > 1)
                 {
-                    if (lArgs[1].StartsWith("--")) 
+                    if (lArgs[1].StartsWith("--"))
                     {
                         string sProp = lArgs[1].ToLower().TrimStart('-');
                         string sSearch = lArgs[2].ToLower();
 
-                        if(sProp == "shortname")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ShortName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                        if (sProp == "shortname")
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ShortName.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "manufacturer")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.Manufacturer.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.Manufacturer.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "productname" || sProp == "name")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductName.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "description")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.Description.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.Description.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "categories" || sProp == "category")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => string.Join(";", t.Categories.ToArray()).ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => string.Join(";", t.Categories.ToArray()).ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "producturl" || sProp == "url")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductURL.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductURL.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "productversion" || sProp == "version")
-                            Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductVersion.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductVersion.ToLower().Contains(sSearch))).ToString());
 
                         if (sProp == "isinstalled")
                         {
                             oScan = new RZScan(false, false);
-                            oScan.SWScanAsync().Wait();
-                            oScan.GetSWRepository().Wait();
-                            foreach(var osw in oScan.InstalledSoftware)
+                            await oScan.SWScanAsync();
+
+                            CancellationToken ct = new CancellationTokenSource(30000).Token;
+                            await oScan.GetSWRepositoryAsync(ct);
+
+                            foreach (var osw in oScan.InstalledSoftware)
                             {
                                 var oItem = oScan.SoftwareRepository.FirstOrDefault(t => t.ProductName == osw.ProductName && t.Manufacturer == osw.Manufacturer && t.ProductVersion == osw.ProductVersion);
                                 if (oItem != null)
                                     oItem.isInstalled = true;
                             }
 
-                            Console.WriteLine(JsonConvert.SerializeObject(oScan.SoftwareRepository.Where(t => t.isInstalled.ToString().ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject(oScan.SoftwareRepository.Where(t => t.isInstalled.ToString().ToLower().Contains(sSearch))).ToString());
                         }
-
                     }
                     else
                     {
                         string sSearch = lArgs[1].ToLower();
-                        Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog().Where(t => t.ProductName.ToLower().Contains(sSearch) || t.Manufacturer.ToLower().Contains(sSearch) || t.ShortName.ToLower().Contains(sSearch)), Formatting.Indented).ToString());
+                        Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductName.ToLower().Contains(sSearch) || t.Manufacturer.ToLower().Contains(sSearch) || t.ShortName.ToLower().Contains(sSearch))).ToString());
                     }
                 }
                 else
                 {
-                    Console.WriteLine(JsonConvert.SerializeObject(RZRestAPIv2.GetCatalog(), Formatting.Indented).ToString());
+                    Console.WriteLine(RZRestAPIv2.GetJsonFromObject((await RZRestAPIv2.GetCatalogAsync())).ToString());
                 }
                 return 0;
             }
 
             if (lArgs[0].ToLower() == "show")
             {
+                
                 if (lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
                 {
-
                     try
                     {
                         RZUpdater oRZSW = new RZUpdater();
@@ -426,57 +504,63 @@ namespace RZGet
                             Manufacturer = lArgs[lArgs.FindIndex(t => t.IndexOf("--manufacturer", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
 
                         string ProductVersion = lArgs[lArgs.FindIndex(t => t.IndexOf("--version", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+
+                        Log.ForContext("Param", lArgs[0].ToLower()).Verbose("showing '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
                         oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer);
 
-                        if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
+                        if (oRZSW.SoftwareUpdate == null  || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
-                            Console.WriteLine("'" + ProductName + "' is NOT available in RuckZuck...!");
+                            Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                            Log.ForContext("Param", lArgs[0].ToLower()).Warning("Software NOT available in repository: '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
                             return 99;
                         }
 
-                        Console.WriteLine(JsonConvert.SerializeObject(oRZSW.SoftwareUpdate.SW, Formatting.Indented).ToString());
+                        Log.ForContext("Param", lArgs[0].ToLower()).Debug("Software from repo: '{ProductName}' '{ProductVersion}'", oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion);
+                        Console.WriteLine(RZRestAPIv2.GetJsonFromObject(oRZSW.SoftwareUpdate.SW).ToString());
 
                         return 0;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error: " + ex.Message);
+                        Log.ForContext("Param", lArgs[0].ToLower()).Error("E468: {ex}", ex.Message);
                         return 1;
                     }
                 }
 
-                foreach (string sArg in args.Skip(1))
+                foreach (string sArg in lArgs.Skip(1))
                 {
                     if (File.Exists(sArg))
                     {
                         RZUpdater oRZSW = new RZUpdater(sArg);
-
-                        Console.WriteLine(JsonConvert.SerializeObject(oRZSW.SoftwareUpdate.SW, Formatting.Indented).ToString());
+                        Console.WriteLine(RZRestAPIv2.GetJsonFromObject(oRZSW.SoftwareUpdate.SW).ToString());
                     }
                     else
                     {
                         try
                         {
+                            Log.ForContext("Param", lArgs[0].ToLower()).Verbose("showing '{shortname}'", sArg);
                             RZUpdater oRZSW = new RZUpdater();
                             oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
 
+                            Log.ForContext("Param", lArgs[0].ToLower()).Debug("Software from repo: '{ProductName}' '{ProductVersion}'", oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion);
+
                             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                             {
-                                Console.WriteLine("'" + sArg + "' is NOT available in RuckZuck...!");
+                                Log.ForContext("Param", lArgs[0].ToLower()).Debug("RuckZuck Url: '{url}' customerid: '{customerid}'", RZRestAPIv2.sURL, RZRestAPIv2.CustomerID);
+                                Log.ForContext("Param", lArgs[0].ToLower()).Warning("Shortname NOT available in repository: '{shortname}'", sArg);
                                 bError = true;
                                 continue;
                             }
 
-                            Console.WriteLine(JsonConvert.SerializeObject(oRZSW.SoftwareUpdate.SW, Formatting.Indented).ToString());
+                            Console.WriteLine(RZRestAPIv2.GetJsonFromObject(oRZSW.SoftwareUpdate.SW).ToString());
 
                             return 0;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Error: " + ex.Message);
+                            Log.ForContext("Param", lArgs[0].ToLower()).Error("E500: {ex}", ex.Message);
                             return 1;
                         }
-
                     }
                 }
 
@@ -486,60 +570,70 @@ namespace RZGet
             return 0;
         }
 
-        private static bool Install(RZUpdater oRZSW)
+        private static async Task<bool> InstallAsync(RZUpdater oRZSW)
         {
             if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
             {
                 oRZSW.SoftwareUpdate.GetInstallType();
                 if (string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.PSInstall))
                 {
-                    Console.WriteLine("PreRequisites not valid for '" + oRZSW.SoftwareUpdate.SW.ShortName + "'...!");
+                    Log.Information("PreRequisites not valid for: {shortname}", oRZSW.SoftwareUpdate.SW.ShortName);
+                    Log.Verbose("Prerequistes: {prereq}", oRZSW.SoftwareUpdate.SW.PreRequisites);
                     return false;
                 }
             }
 
+            Log.Information("Processing '{manufacturer}' '{productname}' '{productversion}'", oRZSW.SoftwareUpdate.SW.Manufacturer, oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion);
 
-            Console.WriteLine(oRZSW.SoftwareUpdate.SW.Manufacturer + " " + oRZSW.SoftwareUpdate.SW.ProductName + " " + oRZSW.SoftwareUpdate.SW.ProductVersion);
-            Console.Write("Downloading...");
             foreach (string sPreReq in oRZSW.SoftwareUpdate.SW.PreRequisites)
             {
                 if (!string.IsNullOrEmpty(sPreReq))
                 {
                     RZUpdater oRZSWPreReq = new RZUpdater();
                     oRZSWPreReq.SoftwareUpdate = new SWUpdate(sPreReq);
-                    Console.WriteLine();
-                    Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-                    if (oRZSWPreReq.SoftwareUpdate.Download().Result)
+                    //Console.WriteLine();
+                    Log.Information("Dependency download started: {Shortname}", sPreReq);
+                    if (oRZSWPreReq.SoftwareUpdate.DownloadAsync().Result)
                     {
-                        Console.WriteLine("... done.");
-                        Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-                        if (oRZSWPreReq.SoftwareUpdate.Install(false, bRetry).Result)
+                        Log.Information("Dependency download finished: {Shortname}", sPreReq);
+                        Log.Information("Dependency installation started: {Shortname}", sPreReq);
+                        if (await oRZSWPreReq.SoftwareUpdate.InstallAsync(false, bRetry))
                         {
-                            Console.WriteLine("... done.");
+                            Log.Information("Dependency installation finished: {Shortname}", sPreReq);
                         }
                         else
                         {
-                            Console.WriteLine("... Error. The installation failed.");
+                            Log.Error("Dependency installation failed: {Shortname}  error: {error}", sPreReq, oRZSWPreReq.SoftwareUpdate.downloadTask.ErrorMessage);
                             return false;
                         }
                     }
+                    else
+                    {
+                        Log.Error("Dependency download failed: '{Shortname}' error: {error}  downloaded: {MB}MB", oRZSWPreReq.SoftwareUpdate.SW.ShortName, oRZSWPreReq.SoftwareUpdate.downloadTask.ErrorMessage, oRZSWPreReq.SoftwareUpdate.downloadTask.DownloadedBytes / 1024 / 1024);
+                    }
                 }
-
             }
-            if (oRZSW.SoftwareUpdate.Download().Result)
+            Log.Information("Download started: {Shortname} (all file size:{MB}MB)", oRZSW.SoftwareUpdate.SW.ShortName, oRZSW.SoftwareUpdate.SW.Files.Sum(t=>t.FileSize)/1024/1024);
+            if (await oRZSW.SoftwareUpdate.DownloadAsync())
             {
-                Console.WriteLine("... done.");
-                Console.Write("Installing...");
-                if (oRZSW.SoftwareUpdate.Install(false, bRetry).Result)
+                Log.Information("Download finished: '{Shortname}'  downloaded: {MB}MB", oRZSW.SoftwareUpdate.SW.ShortName, oRZSW.SoftwareUpdate.downloadTask.DownloadedBytes / 1024 / 1024);
+
+                Log.Information("Installation started: {Shortname}", oRZSW.SoftwareUpdate.SW.ShortName);
+
+                if (await oRZSW.SoftwareUpdate.InstallAsync(false, bRetry))
                 {
-                    Console.WriteLine("... done.");
+                    Log.Information("Installation finished: {Shortname}", oRZSW.SoftwareUpdate.SW.ShortName);
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine("... Error. The installation failed.");
+                    Log.Error("Installation failed: {Shortname} error: {error}", oRZSW.SoftwareUpdate.SW.ShortName, oRZSW.SoftwareUpdate.downloadTask.ErrorMessage);
                     return false;
                 }
+            }
+            else
+            {
+                Log.Error("Download failed: '{Shortname}' error: {error}  downloaded: {MB}MB", oRZSW.SoftwareUpdate.SW.ShortName, oRZSW.SoftwareUpdate.downloadTask.ErrorMessage, oRZSW.SoftwareUpdate.downloadTask.DownloadedBytes / 1024 / 1024);
             }
 
             return false;
@@ -547,8 +641,7 @@ namespace RZGet
 
         private static void OScan_OnUpdScanCompleted(object sender, EventArgs e)
         {
-            Console.WriteLine("... done.");
-            Console.WriteLine(oScan.NewSoftwareVersions.Count + " updates found.");
+            Log.Information("Update-Scan completed. {count} updates found.", oScan.NewSoftwareVersions.Count);
 
             foreach (AddSoftware oSW in oScan.NewSoftwareVersions)
             {
@@ -556,33 +649,35 @@ namespace RZGet
                 {
                     if (Properties.Settings.Default.Excludes.Cast<string>().ToList().FirstOrDefault(t => t.ToLower() == oSW.ShortName.ToLower()) != null)
                     {
-                        Console.WriteLine("Skipping: " + oSW.ShortName + " (excluded)");
+                        Log.Information("Skipping: '{shortname}' (excluded).", oSW.ShortName);
                         continue;
                     }
                     Console.WriteLine(oSW.Manufacturer + " " + oSW.ProductName + " new Version: " + oSW.ProductVersion);
+                    Log.Information("Updating {manufacturer} {productname} to new version: {productversion}", oSW.Manufacturer, oSW.ProductName, oSW.ProductVersion);
+
                     oUpdate.SoftwareUpdate.SW = oSW;
                     oUpdate.SoftwareUpdate.GetInstallType();
-                    Console.Write("Downloading...");
-                    if (oUpdate.SoftwareUpdate.Download().Result)
+                    Log.Information("Download started: {Shortname} (all file size:{MB}MB)", oSW.ShortName, oUpdate.SoftwareUpdate.downloadTask.Files.Sum(t => t.FileSize) / 1024 / 1024);
+                    if (oUpdate.SoftwareUpdate.DownloadAsync().Result)
                     {
-                        Console.WriteLine("... done.");
-                        Console.Write("Installing...");
-                        if (oUpdate.SoftwareUpdate.Install(false, bRetry).Result)
+                        Log.Information("Download finished: {Shortname}  downloaded: {MB}MB", oSW.ShortName, oUpdate.SoftwareUpdate.downloadTask.DownloadedBytes / 1024 / 1024);
+                        Log.Information("Installation started: {Shortname}", oSW.ShortName);
+                        if (oUpdate.SoftwareUpdate.InstallAsync(false, bRetry).Result)
                         {
-                            Console.WriteLine("... done.");
+                            Log.Information("Installation finished: {Shortname}", oSW.ShortName);
                         }
                         else
                         {
-                            Console.WriteLine("... Error. The update installation failed.");
+                            Log.Error("Installation failed: {Shortname} error: {error}", oUpdate.SoftwareUpdate.SW.ShortName, oUpdate.SoftwareUpdate.downloadTask.ErrorMessage);
                         }
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("E131:" + ex.Message);
+                    Log.ForContext("Param", "OScan_OnUpdScanCompleted").Error("E630: {ex}", ex.Message);
                 }
             }
-            bRunning = false;       
+            bRunning = false;
         }
     }
 }
