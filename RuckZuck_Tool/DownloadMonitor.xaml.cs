@@ -101,7 +101,7 @@ namespace RuckZuck_Tool
                         Mutex mRes = null;
                         if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                         {
-                            oDL.SWUpd.Install(false, false).ConfigureAwait(false);
+                            oDL.SWUpd.InstallAsync(false, false).ConfigureAwait(false);
                         }
 
                         return;
@@ -131,7 +131,7 @@ namespace RuckZuck_Tool
                                 Mutex mRes = null;
                                 if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                                 {
-                                    oDL.SWUpd.Install(false, false).ConfigureAwait(false);
+                                    oDL.SWUpd.InstallAsync(false, false).ConfigureAwait(false);
                                 }
 
                                 return;
@@ -145,7 +145,7 @@ namespace RuckZuck_Tool
                                     Mutex mRes = null;
                                     if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                                     {
-                                        oDL.SWUpd.Install(false, false).ConfigureAwait(false);
+                                        oDL.SWUpd.InstallAsync(false, false).ConfigureAwait(false);
                                     }
 
                                     return;

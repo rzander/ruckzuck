@@ -1,8 +1,10 @@
 ﻿using Microsoft.CSharp;
+//using Microsoft.CodeDom.Providers.DotNetCompilerPlatform;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace RuckZuck_Tool
 {
@@ -45,7 +47,7 @@ namespace RuckZuck_Tool
 
                     Convert(value, Environment.ExpandEnvironmentVariables(_iconFile.FullName), 64, true);
 
-                    cp.CompilerOptions = Environment.ExpandEnvironmentVariables(@"/win32icon:" + _iconFile.FullName + " /optimize");
+                    cp.CompilerOptions = Environment.ExpandEnvironmentVariables(@"/win32icon:" + _iconFile.FullName + " /optimize /langversion:5");
                 }
             }
         }
@@ -54,6 +56,8 @@ namespace RuckZuck_Tool
 
         public CreateExe(string exeFile)
         {
+            //Environment.SetEnvironmentVariable("ROSLYN_COMPILER_LOCATION", Environment.ExpandEnvironmentVariables(@"%WINDIR%\Microsoft.NET\Framework64\v4.0.30319"), EnvironmentVariableTarget.Process);
+
             provider = new CSharpCodeProvider();
 
             // Build the parameters for source compilation.
@@ -229,5 +233,21 @@ namespace RuckZuck_Tool
 
             return false;
         }
+
+        //static Lazy<CSharpCodeProvider> CodeProvider { get; } = new Lazy<CSharpCodeProvider>(() => {
+        //    var csc = new CSharpCodeProvider();
+        //    var settings = csc
+        //        .GetType()
+        //        .GetField("_compilerSettings", BindingFlags.Instance | BindingFlags.NonPublic)
+        //        .GetValue(csc);
+
+        //    var path = settings
+        //        .GetType()
+        //        .GetField("_compilerFullPath", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        //    path.SetValue(settings, ((string)path.GetValue(settings)).Replace(@"bin\roslyn\", @"roslyn\"));
+
+        //    return csc;
+        //});
     }
 }

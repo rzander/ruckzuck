@@ -150,8 +150,8 @@ namespace RuckZuck_Tool
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
 
-            var cts = new CancellationTokenSource(20000).Token;
-            oSCAN.GetSWRepository(cts).ConfigureAwait(false);
+            var ct = new CancellationTokenSource(30000).Token;
+            _ = oSCAN.GetSWRepositoryAsync(ct); //.ConfigureAwait(false);
 
             //oSCAN.tRegCheck.Start();
 
@@ -362,7 +362,7 @@ namespace RuckZuck_Tool
                     try
                     {
                         var cts = new CancellationTokenSource(15000).Token;
-                        _ = oSCAN.GetSWRepository(cts);
+                        _ = oSCAN.GetSWRepositoryAsync(cts);
                     }
                     catch { }
                 }

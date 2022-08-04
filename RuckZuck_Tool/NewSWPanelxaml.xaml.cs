@@ -629,10 +629,10 @@ namespace RuckZuck_Tool
 
                 Console.WriteLine("Downloading...");
 
-                if (oRZSW.SoftwareUpdate.Download().Result)
+                if (oRZSW.SoftwareUpdate.DownloadAsync().Result)
                 {
                     Console.WriteLine("Installing...");
-                    if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                    if (oRZSW.SoftwareUpdate.InstallAsync(false, true).Result)
                     {
                         Console.WriteLine("done.");
                     }

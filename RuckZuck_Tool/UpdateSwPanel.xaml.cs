@@ -81,7 +81,7 @@ namespace RuckZuck_Tool
                     {
                         oSW.ProgressDetails += OSW_ProgressDetails;
                         oSW.downloadTask.AutoInstall = true;
-                        oSW.Download(false).ConfigureAwait(false);
+                        oSW.DownloadAsync(false).ConfigureAwait(false);
                         dm.lDLTasks.Add(oSW.downloadTask);
 
                         if (oSW.SW.PreRequisites != null)
@@ -96,7 +96,7 @@ namespace RuckZuck_Tool
                                     {
                                         oPreReq.ProgressDetails += OSW_ProgressDetails;
                                         oPreReq.downloadTask.AutoInstall = true;
-                                        oPreReq.Download(false).ConfigureAwait(false);
+                                        oPreReq.DownloadAsync(false).ConfigureAwait(false);
                                         dm.lDLTasks.Add(oPreReq.downloadTask);
                                     }
 
