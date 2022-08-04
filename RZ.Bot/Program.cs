@@ -20,12 +20,12 @@ namespace RZ.Bot
         public static List<string> lDone = new List<string>();
         public static DateTime tStart = DateTime.Now;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             tStart = DateTime.Now;
             RZRestAPIv2.CustomerID = "swtesting";
             RZRestAPIv2.DisableBroadcast = true;
-            RZRestAPIv2.GetURL(RZRestAPIv2.CustomerID);
+            await RZRestAPIv2.GetURLAsync(RZRestAPIv2.CustomerID);
 
 #if !DEBUG
             RZScan oScan = new RZScan(false, false);
@@ -40,7 +40,7 @@ namespace RZ.Bot
             bool bLoop = true;
             while (bLoop)
             {
-                int iCount = ProcessBotQueue();
+                int iCount = await ProcessBotQueueAsync();
                 //Console.WriteLine(iCount.ToString() + " processed");
                 if (iCount == 0)
                 {
@@ -62,10 +62,10 @@ namespace RZ.Bot
             return;
         }
 
-        private static int ProcessBotQueue()
+        private static async Task<int> ProcessBotQueueAsync()
         {
             Console.WriteLine("Get failed installations from queue...");
-            List<GetSoftware> lCat = RZRestAPIv2.GetCatalog();
+            List<GetSoftware> lCat = await RZRestAPIv2.GetCatalogAsync();
 
             string sURL = "https://ruckzuck.queue.core.windows.net/rzbot/messages";
             string sasToken = Properties.Settings.Default.SASToken;
@@ -91,9 +91,8 @@ namespace RZ.Bot
                 using (HttpClient oClient = new HttpClient())
                 {
                     string url = $"{sURL}?numofmessages=32&{sasToken}";
-                    var oRes = oClient.GetStringAsync(url);
-                    oRes.Wait();
-                    string sXML = oRes.Result.ToString();
+                    var oRes = await oClient.GetStringAsync(url);
+                    string sXML = oRes;
                     XmlDocument xmlDoc = new XmlDocument();
                     xmlDoc.LoadXml(sXML);
                     iMessageCount = xmlDoc.SelectNodes("QueueMessagesList/QueueMessage").Count;
@@ -154,13 +153,13 @@ namespace RZ.Bot
                                             oRZSWPreReq.SoftwareUpdate.SendFeedback = false;
                                             Console.WriteLine();
                                             Console.Write("\tDownloading dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-                                            if (oRZSWPreReq.SoftwareUpdate.Download().Result)
+                                            if (await oRZSWPreReq.SoftwareUpdate.DownloadAsync())
                                             {
                                                 Console.ForegroundColor = ConsoleColor.Green;
                                                 Console.WriteLine("... done.");
                                                 Console.ResetColor();
                                                 Console.Write("\tInstalling dependencies (" + oRZSWPreReq.SoftwareUpdate.SW.ShortName + ")...");
-                                                if (oRZSWPreReq.SoftwareUpdate.Install(false, true).Result)
+                                                if (await oRZSWPreReq.SoftwareUpdate.InstallAsync(false, true))
                                                 {
                                                     Console.ForegroundColor = ConsoleColor.Green;
                                                     Console.WriteLine("... done.");
@@ -176,14 +175,14 @@ namespace RZ.Bot
                                                 }
                                             }
                                         }
-                                        if (oRZSW.SoftwareUpdate.Download().Result)
+                                        if (await oRZSW.SoftwareUpdate.DownloadAsync())
                                         {
                                             Console.ForegroundColor = ConsoleColor.Green;
                                             Console.WriteLine("... done.");
                                             Console.ResetColor();
 
                                             Console.Write("Installing...");
-                                            if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                                            if (await oRZSW.SoftwareUpdate.InstallAsync(false, true))
                                             {
                                                 Console.ForegroundColor = ConsoleColor.Green;
                                                 Console.WriteLine("... done.");
