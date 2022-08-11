@@ -13,6 +13,8 @@ Select a software from the repository and RuckZuck handles the download and inst
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
 
+# Aug22: ApiKey will be required to get definitions
+As the Api is more and more overloaded with requests that will bulk dump the software definitions, the API function "GetSoftwares" will require an APIKey in the new future.  API-Keys can be requested by sending me a DM or by opening an Issue here on GitHub.
 
 # Changes in V1.7.x:
 
