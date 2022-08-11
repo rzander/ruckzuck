@@ -41,7 +41,7 @@ New REST API which brings some general changes:
 
 2020: https://rzander.azurewebsites.net/ruckzuck-figures-for-2020/
 
-2021: https://rzander.azurewebsites.net/ruckzuck-figures-for-2021/ 
+2021: https://rzander.azurewebsites.net/ruckzuck-figures-2021/
 
 ## RuckZuck components
 ### RuckZuck_Tool (RuckZuck.exe)
