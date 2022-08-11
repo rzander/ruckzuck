@@ -74,7 +74,7 @@ Search for a manufacturer: RZGet.exe search --manufacturer zander
 Search for a shortname and return PowerShell Object: RZGet.exe search --shortname ruckzuck | convertfrom-json
 ```
 
-### OneGet Provider
+### OneGet Provider (depreciated)
 A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to update or install applications from the RZ repository with powerShell.
 
 > Examples on: https://github.com/rzander/ruckzuck/wiki/RuckZuck-OneGet-Provider
