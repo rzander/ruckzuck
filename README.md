@@ -13,6 +13,8 @@ Select a software from the repository and RuckZuck handles the download and inst
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
 
+# Aug22: ApiKey will be required to get definitions
+As the Api is more and more overloaded with requests that will bulk dump the software definitions, the API function "GetSoftwares" will require an APIKey. API-Keys can be requested by sending me a DM or by opening an Issue here on GitHub.
 
 # Changes in V1.7.x:
 
@@ -24,18 +26,6 @@ New REST API which brings some general changes:
 * It is possible that RuckZuck will store binaries for some packages.
   * If a product does not provide a URL for automatic download and the license allows redistribution of binaries, RuckZuck will be able to host these files.
 * Support for private/disconnected repostories if you host your own RuckZuck Server (no sync from the public repository).
-
-# Shutdown of REST API V1
-The "old" REST API will shutdown by end of August 2019
-Affected (known) Products:
-* RuckZuck.exe < V1.7
-* RZUpdate.exe < V1.7
-* RZOneGet Provider < 1.7
-* RZ4CM < 1.7
-* DeviceCommander Server < 2.0.0.24
-* DeviceCommander Agent < 1.0.0.24
-* Self-Update of SCCMCliCtr < 1.0.5.2
-* RuckZuck Plugin of SCCMCliCtr < 1.0.5.2
 
 ## Statistics and Figures of the Project: 
 
@@ -50,6 +40,8 @@ Affected (known) Products:
 2019: https://rzander.azurewebsites.net/ruckzuck-figures-for-2019/
 
 2020: https://rzander.azurewebsites.net/ruckzuck-figures-for-2020/
+
+2021: https://rzander.azurewebsites.net/ruckzuck-figures-2021/
 
 ## RuckZuck components
 ### RuckZuck_Tool (RuckZuck.exe)
@@ -82,7 +74,7 @@ Search for a manufacturer: RZGet.exe search --manufacturer zander
 Search for a shortname and return PowerShell Object: RZGet.exe search --shortname ruckzuck | convertfrom-json
 ```
 
-### OneGet Provider
+### OneGet Provider (depreciated)
 A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to update or install applications from the RZ repository with powerShell.
 
 > Examples on: https://github.com/rzander/ruckzuck/wiki/RuckZuck-OneGet-Provider
