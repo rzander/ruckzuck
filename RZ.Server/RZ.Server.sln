@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29326.143
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Server", "RZ.Server\RZ.Server.csproj", "{65A7E359-5733-49C4-BFF8-0928D2DC83C0}"
 EndProject
@@ -40,6 +40,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UpdateCounters", "..\UpdateCounters\UpdateCounters.csproj", "{6A01ABF9-3685-4A81-9191-02158F9BA9C5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.ServerFN", "..\RZ.FN\RZ.ServerFN.csproj", "{948B7A21-7184-4DFF-9734-4953CE3D6E3E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.ServerFN6", "..\fnRZ6\RZ.ServerFN6.csproj", "{DF321FA6-2B66-4F10-9001-DAD9A59C60DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RZ.Plugin.Software.AzureCacheContent", "RZ.Plugin.Software.AzureCacheContent\RZ.Plugin.Software.AzureCacheContent.csproj", "{A5A9B4E3-05D5-44AF-8718-F4BB21565BFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +127,14 @@ Global
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{948B7A21-7184-4DFF-9734-4953CE3D6E3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF321FA6-2B66-4F10-9001-DAD9A59C60DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF321FA6-2B66-4F10-9001-DAD9A59C60DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF321FA6-2B66-4F10-9001-DAD9A59C60DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF321FA6-2B66-4F10-9001-DAD9A59C60DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5A9B4E3-05D5-44AF-8718-F4BB21565BFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5A9B4E3-05D5-44AF-8718-F4BB21565BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5A9B4E3-05D5-44AF-8718-F4BB21565BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5A9B4E3-05D5-44AF-8718-F4BB21565BFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

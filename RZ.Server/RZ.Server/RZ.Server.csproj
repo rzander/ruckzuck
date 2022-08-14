@@ -9,8 +9,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>Copyright (c) 2022 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.3.0.5</AssemblyVersion>
-    <FileVersion>2.3.0.5</FileVersion>
+    <AssemblyVersion>2.3.0.7</AssemblyVersion>
+    <FileVersion>2.3.0.7</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>
@@ -92,13 +92,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.0" />
+    <PackageReference Include="Azure.Identity" Version="1.4.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+    <PackageReference Include="Serilog" Version="2.11.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,15 +124,15 @@
     <Content Update="wwwroot\images\ROMAWO_Header_oo_small24.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\plugins\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Update="wwwroot\plugins\RZ.Plugin.Software.Proxy.pdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RZ.Catalog.Plugin.Azure\RZ.Plugin.Catalog.Azure.csproj" />
+    <ProjectReference Include="..\RZ.Plugin.Customer.Azure\RZ.Plugin.Customer.Azure.csproj" />
+    <ProjectReference Include="..\RZ.Plugin.Software.AzureCacheContent\RZ.Plugin.Software.AzureCacheContent.csproj" />
     <ProjectReference Include="..\RZ.Server.Interfaces\RZ.Server.Interfaces.csproj" />
   </ItemGroup>
 

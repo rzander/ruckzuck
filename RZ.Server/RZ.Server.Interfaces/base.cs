@@ -98,7 +98,10 @@ namespace RZ.Server
                             }
                         }
                     }
-                    catch { }
+                    catch(Exception ex)
+                    {
+                        ex.Message.ToString();
+                    }
                 }
 
                 //Cleanup Items (this allows local JSON Files to remove an Item in the Catalog)
@@ -259,7 +262,10 @@ namespace RZ.Server
                         if (oRes != null && oRes.Count > 0)
                             return oRes;
                     }
-                    catch { }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
             catch { }
@@ -851,7 +857,7 @@ namespace RZ.Server
                 return plugins;
             }
 
-            return null;
+            return new List<T>();
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -940,7 +946,7 @@ namespace RZ.Server
                 _CatalogPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
@@ -951,7 +957,7 @@ namespace RZ.Server
                 _SoftwarePlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
@@ -962,7 +968,7 @@ namespace RZ.Server
                 _SWLookupPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
@@ -973,7 +979,7 @@ namespace RZ.Server
                 _FeedbackPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
@@ -984,7 +990,7 @@ namespace RZ.Server
                 _LogPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }
@@ -995,7 +1001,7 @@ namespace RZ.Server
                 _CustomerPlugins.Add(item.Name, item);
                 Console.WriteLine(item.Name);
                 item.Settings = new Dictionary<string, string>();
-                item.Settings.Add("wwwPath", Directory.GetParent(PluginPath).FullName);
+                item.Settings.Add("wwwPath", Path.Combine(Directory.GetParent(PluginPath).FullName, "wwwroot"));
                 item.Init(PluginPath);
                 dSettings.ToList().ForEach(x => item.Settings.Add(x.Key, x.Value));
             }

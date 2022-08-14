@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
-
+using Serilog;
 
 namespace RZ.Server.Controllers
 {
@@ -453,22 +453,24 @@ namespace RZ.Server.Controllers
         {
             string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
-            if (!Base.ValidateIP(ClientIP))
-            {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return null;
-            }
-            else
-            {
-            }
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return null;
+            //}
+            //else
+            //{
+            //}
 
             string sPath = Path.Combine(contentid, filename);
             if (!string.IsNullOrEmpty(shortname))
                 sPath = Path.Combine("proxy", shortname, contentid, filename);
 
-            Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
+            //Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
+            Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("shortname", shortname).Error("GetFile: {path}", sPath);
 
-            return await Base.GetFile(sPath, customerid);
+            return null;
+            //return await Base.GetFile(sPath, customerid);
         }
 
         //[HttpPost]
@@ -598,7 +600,7 @@ namespace RZ.Server.Controllers
 
         [HttpGet]
         [Route("rest/v2/geturl")]
-        public ActionResult GetURL(string customerid = "")
+        public ActionResult GetURL(string customerid = "", string apikey = "")
         {
             try
             {
@@ -608,10 +610,22 @@ namespace RZ.Server.Controllers
                 //if (customerid == "81.246.0.34")
                 //    return Content("https://rzproxy.azurewebsites.net", "text/html"); 
 
+                if (string.IsNullOrEmpty(customerid))
+                    customerid = apikey;
+
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                Base.SetValidIP(ClientIP);
-                Base.WriteLog("Get URL", ClientIP, 1000, customerid);
-                return Content(Base.GetURL(customerid, ClientIP), "text/html");
+                //Base.SetValidIP(ClientIP);
+                //Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+
+                if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
+                {
+                    Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Verbose("Get URL: {url}", "https://cdn.ruckzuck.tools");
+                    return Content("https://cdn.ruckzuck.tools", "text/html");
+                }
+
+                string sURL = Base.GetURL(customerid, ClientIP);
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Debug("Get URL: {url}", sURL);
+                return Content(sURL, "text/html");
             }
             catch
             {

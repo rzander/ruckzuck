@@ -75,15 +75,10 @@ namespace RZ.Plugin.Feedback.Azure
             return tFeedback;
         }
 
-        public void PushBullet(string Message, string Body)
-        {
-        }
-
         public Task<bool> SendNotification(string message = "", string body = "", string customerid = "")
         {
             Task<bool> t = Task<bool>.Run(() =>
             {
-                PushBullet(message, body);
                 return true;
             });
 

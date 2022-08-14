@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 
 namespace RZ.Plugin.Catalog.Azure
@@ -14,6 +15,7 @@ namespace RZ.Plugin.Catalog.Azure
     {
         private IMemoryCache _cache;
         private long SlidingExpiration = 300; //5min cache for Softwares
+        private HttpClient oHttp = new HttpClient();
 
         public string Name
         {
