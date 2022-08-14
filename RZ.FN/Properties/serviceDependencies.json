@@ -6,7 +6,8 @@
     },
     "secrets1": {
       "type": "secrets",
-      "connectionId": "VaultUri"
+      "connectionId": "VaultUri",
+      "dynamicId": null
     }
   }
 }

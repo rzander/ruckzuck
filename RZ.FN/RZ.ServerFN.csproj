@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <Company>Zander - Tools</Company>
     <Copyright>(c) 2022 by Zander - Tools</Copyright>
     <Description>RuckZuck Server running as Azure Function</Description>
-    <AssemblyVersion>1.0.0.6</AssemblyVersion>
-    <FileVersion>1.0.0.6</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <UserSecretsId>12b8cb64-8a50-4434-806d-e231cb4cf2be</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -15,13 +15,27 @@
     <None Remove="wwwroot\images\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
+    <PackageReference Include="Azure.Identity" Version="1.6.1" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.3.0" />
+    <PackageReference Include="jaindb.base" Version="2.0.0.2" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
+    <PackageReference Include="Seq.Extensions.Logging" Version="6.1.0" />
+    <PackageReference Include="Serilog" Version="2.11.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RZ.Server\RZ.Catalog.Plugin.Azure\RZ.Plugin.Catalog.Azure.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.Catalog.Plugin\RZ.Plugin.Catalog.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.Plugin.Customer.Azure\RZ.Plugin.Customer.Azure.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.Plugin.Feedback.Azure\RZ.Plugin.Feedback.Azure.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.Plugin.Software.AzureCacheContent\RZ.Plugin.Software.AzureCacheContent.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.Plugin.Software\RZ.Plugin.Software.csproj" />
     <ProjectReference Include="..\RZ.Server\RZ.Server.Interfaces\RZ.Server.Interfaces.csproj" />
+    <ProjectReference Include="..\RZ.Server\RZ.SWLookup.Plugin.Azure\RZ.Plugin.SWLookup.Azure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

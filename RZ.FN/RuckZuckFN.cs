@@ -1,126 +1,164 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http.Extensions;
-using Newtonsoft.Json.Linq;
-using System.Linq;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using static RZ.Server.RuckZuckFN;
-using System.Reflection;
-using Microsoft.Azure.ServiceBus;
-using System.Net.Http;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
+using RZ.ServerFN;
+using Serilog;
+using Serilog.Events;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+using static RZ.Server.RuckZuckFN;
 
 [assembly: FunctionsStartup(typeof(Startup))]
+
 namespace RZ.Server
 {
     public static class RuckZuckFN
     {
-        public static string sbconnection = "";
-        public static TopicClient tcRuckZuck = null;
         public static DateTime tLoadTime = new DateTime();
         public static bool bOverload = false;
         public static long lCount = 0;
+        private static HttpClient oClient = new HttpClient();
 
         public class Startup : FunctionsStartup
         {
-            private ILoggerFactory _loggerFactory;
-            private IKeyVaultClient _keyVaultClient;
+            //private ILoggerFactory _loggerFactory;
+            //private IKeyVaultClient _keyVaultClient;
 
             public override void Configure(IFunctionsHostBuilder builder)
             {
-                var config = new ConfigurationBuilder().AddJsonFile("local.settings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
-                builder.Services.AddLogging();
+                var config = new ConfigurationBuilder()
+                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                    .AddEnvironmentVariables()
+                    .Build();
+
                 ConfigureServices(builder, config);
             }
 
-            public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-            {
-                var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                var keyVaultClient = new KeyVaultClient(
-                    new KeyVaultClient.AuthenticationCallback(
-                        azureServiceTokenProvider.KeyVaultTokenCallback));
-
-                _keyVaultClient = keyVaultClient;
-
-                //Add KeyVault by using the VaultUri variable
-                //builder.ConfigurationBuilder.AddAzureKeyVault(Environment.GetEnvironmentVariable("VaultUri"), keyVaultClient, new DefaultKeyVaultSecretManager());
-                
-                base.ConfigureAppConfiguration(builder);
-            }
+            //public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+            //{
+            //    //var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            //    var builtConfig = builder.ConfigurationBuilder.Build();
+            //}
 
             public void ConfigureServices(IFunctionsHostBuilder builder, IConfiguration config)
             {
-                _loggerFactory = new LoggerFactory();
-                var logger = _loggerFactory.CreateLogger("Startup");
+                //_loggerFactory = new LoggerFactory();
+                //var logger = _loggerFactory.CreateLogger("Startup");
 
                 if (Base._cache == null)
                 {
                     Base._cache = new MemoryCache(new MemoryCacheOptions());
                 }
 
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Verbose()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Function", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Host", LogEventLevel.Warning)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console()
+                    .WriteTo.Seq(Environment.GetEnvironmentVariable("SeqUri"), apiKey: Environment.GetEnvironmentVariable("SeqAPI"))
+                    .Enrich.WithProperty("host", Environment.MachineName)
+                    .CreateLogger();
+
+                //https://ruckzuckseq.azurewebsites.net/
+                //builder.Services.AddSingleton<ILoggerProvider>(sp => new SerilogLoggerProvider(Log.Logger, true));
+
+                builder.Services.AddLogging(lb =>
+                {
+                    //lb.ClearProviders();
+                    lb.AddSerilog(Log.Logger);
+                });
+
+                SecretClientOptions options = new SecretClientOptions()
+                {
+                    Retry =
+                        {
+                            Delay= TimeSpan.FromSeconds(2),
+                            MaxDelay = TimeSpan.FromSeconds(16),
+                            MaxRetries = 5,
+                            Mode = RetryMode.Exponential
+                        }
+                };
+                string vaultBaseUrl = Environment.GetEnvironmentVariable("VaultUri");
+                var _keyVaultClient = new SecretClient(new Uri(vaultBaseUrl), new DefaultAzureCredential(), options);
+
                 try
                 {
                     //Get Settings from KeyVault
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cat")))
-                        Environment.SetEnvironmentVariable("SAS:Cat", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cat").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Cat", _keyVaultClient.GetSecret("cat").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Cont")))
-                        Environment.SetEnvironmentVariable("SAS:Cont", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "cont").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Cont", _keyVaultClient.GetSecret("cont").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Icon")))
-                        Environment.SetEnvironmentVariable("SAS:Icon", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "icon").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Icon", _keyVaultClient.GetSecret("icon").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Repo")))
-                        Environment.SetEnvironmentVariable("SAS:Repo", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "repo").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Repo", _keyVaultClient.GetSecret("repo").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Wait")))
-                        Environment.SetEnvironmentVariable("SAS:Wait", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "wait").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Wait", _keyVaultClient.GetSecret("wait").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Look")))
-                        Environment.SetEnvironmentVariable("SAS:Look", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "look").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Look", _keyVaultClient.GetSecret("look").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Map")))
-                        Environment.SetEnvironmentVariable("SAS:Map", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "map").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Map", _keyVaultClient.GetSecret("map").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Feedback")))
-                        Environment.SetEnvironmentVariable("SAS:Feedback", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "feedback").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Feedback", _keyVaultClient.GetSecret("feedback").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Dlq")))
-                        Environment.SetEnvironmentVariable("SAS:Dlq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "dlq").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Dlq", _keyVaultClient.GetSecret("dlq").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Suq")))
-                        Environment.SetEnvironmentVariable("SAS:Suq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "suq").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Suq", _keyVaultClient.GetSecret("suq").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Faq")))
-                        Environment.SetEnvironmentVariable("SAS:Faq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "faq").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Faq", _keyVaultClient.GetSecret("faq").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Swq")))
-                        Environment.SetEnvironmentVariable("SAS:Swq", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "swq").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Swq", _keyVaultClient.GetSecret("swq").Value.Value.ToString());
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SAS:Ip")))
-                        Environment.SetEnvironmentVariable("SAS:Ip", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "ip").Result.Value);
-                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbConnection")))
-                        Environment.SetEnvironmentVariable("sbConnection", _keyVaultClient.GetSecretAsync(vaultBaseUrl: config["VaultUri"], secretName: "sbConnection").Result.Value);
+                        Environment.SetEnvironmentVariable("SAS:Ip", _keyVaultClient.GetSecret("ip").Value.Value.ToString());
+                    //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("sbConnection")))
+                    //    Environment.SetEnvironmentVariable("sbConnection", _keyVaultClient.GetSecret("sbConnection").Value.Value.ToString());
+
+                    Log.Verbose("Secrets loaded without error...");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log.ForContext("URL", vaultBaseUrl).Error("Error loading Secrets {ex}", ex.Message);
+                    ex.Message.ToString();
+                }
 
                 var binDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string ResourcePath = Path.GetFullPath(Path.Combine(binDirectory, ".."));
 
-                Console.WriteLine("loading RZ.Software-Providers:");
-                Plugins.loadPlugins(Path.Combine(Path.Combine(ResourcePath, "wwwroot"), "plugins"));
+                //Console.WriteLine("loading RZ.Software-Providers:");
+                //Log.Verbose("loading RZ.Software-Providers from {path}", Path.Combine(Path.Combine(binDirectory, "wwwroot"), "plugins"));
+                //Plugins.loadPlugins(Path.Combine(Path.Combine(binDirectory, "wwwroot"), "plugins"));
 
-                Console.Write("loading SW-Catalog...");
+                Log.Verbose("loading RZ.Software-Providers from {path}", binDirectory);
+                Plugins.loadPlugins(binDirectory);
+
+                //Console.Write("loading SW-Catalog...");
+                Log.Verbose("loading SW-Catalog...");
                 Base.GetCatalog("", true);
-                Console.WriteLine(" done.");
 
                 RZ.ServerFN.IP2Location.Settings = Plugins.dSettings;
                 RZ.ServerFN.UpdateCounters.Settings = Plugins.dSettings;
-                sbconnection = Environment.GetEnvironmentVariable("sbConnection");
+                //sbconnection = Environment.GetEnvironmentVariable("sbConnection");
             }
         }
 
         [FunctionName("GetCatalog")]
-        public static async Task<IActionResult> GetCatalog([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> GetCatalog([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
@@ -146,7 +184,6 @@ namespace RZ.Server
                 lCount++;
             }
 
-
             //if (!Base.ValidateIP(ClientIP))
             //{
             //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
@@ -154,13 +191,17 @@ namespace RZ.Server
             //}
 
             if (string.IsNullOrEmpty(Base.localURL))
+            {
                 Base.localURL = req.GetEncodedUrl().ToLower().Split("/rest/v2/getcatalog")[0];
+                Log.Information("Set local URL to {url}", Base.localURL);
+            }
 
             if (customerid.ToLower() == "--new--")
             {
                 JArray oRes = Base.GetCatalog("", false);
                 JArray jsorted = new JArray(oRes.OrderByDescending(x => (DateTimeOffset?)x["ModifyDate"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get --new--");
                 return new OkObjectResult(jTop);
             }
 
@@ -170,14 +211,15 @@ namespace RZ.Server
                 JArray oRes = Base.GetCatalog("", true);
                 JArray jsorted = new JArray(oRes.OrderBy(x => (DateTimeOffset?)x["Timestamp"]));
                 JArray jTop = JArray.FromObject(jsorted.Take(30));
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get --old--");
                 return new OkObjectResult(jTop);
             }
 
             if (!bOverload)
-                SendStatusAsync("", 0, "Get Catalog");
+                _ = SendStatusAsync("", 0, "Get Catalog");
 
             //Base.WriteLog($"Get Catalog", ClientIP, 1200, customerid);
-            log.LogInformation("GetCatalog from ClientIP: " + ClientIP + " CustomerID: " + customerid);
+            //log.LogInformation("GetCatalog from ClientIP: " + ClientIP + " CustomerID: " + customerid);
 
             JArray aRes = new JArray();
 
@@ -185,7 +227,7 @@ namespace RZ.Server
             if (customerid.Count(t => (t == '.')) != 3)
             {
                 aRes = Base.GetCatalog(customerid, nocache);
-                if(aRes.Count < 500)
+                if (aRes.Count < 500)
                     aRes = Base.GetCatalog(customerid, true);
             }
             else
@@ -221,11 +263,14 @@ namespace RZ.Server
                 catch { }
             }
 
+            Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get Catalog: {count} SW Items", aRes.Count);
+
+            await Task.CompletedTask;
             return new OkObjectResult(aRes);
         }
 
         [FunctionName("GetIcon")]
-        public static async Task<IActionResult> GetIcon([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> GetIcon([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
@@ -243,25 +288,32 @@ namespace RZ.Server
             if (size < 0) //prevent negative numbers
                 size = 0;
 
+            
+
             if (!string.IsNullOrEmpty(shortname))
             {
+                //Log.ForContext("CustomerID", customerid).Verbose("GetIcon {shortname}{size}", shortname,  size);
                 return new OkObjectResult(Base.GetIcon(shortname, customerid, size).Result);
             }
 
             if (!string.IsNullOrEmpty(iconhash))
             {
+                //Log.ForContext("CustomerID", customerid).Verbose("GetIcon {iconhash}{size}", iconhash, size);
                 return new OkObjectResult(Base.GetIcon(0, iconhash, customerid, size).Result);
             }
 
             if (iconid == 0)
                 return null;
 
+            await Task.CompletedTask;
             return null;
         }
 
         [FunctionName("GetSoftwares")]
-        public static async Task<IActionResult> GetSoftwares([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> GetSoftwares([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
+            string apikey = req.Query["apikey"];
+            apikey = apikey ?? "";
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
             string shortname = req.Query["shortname"];
@@ -278,45 +330,84 @@ namespace RZ.Server
 
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
-
-            //if (ClientIP == "88.157.220.241" && string.IsNullOrEmpty(customerid))
+            //if (ClientIP == "88.157.220.241" && string.IsNullOrEmpty(customerid))6
             //    return Content("[]");
 
             if (string.IsNullOrEmpty(Base.localURL))
             {
                 Base.localURL = req.GetEncodedUrl().ToLower().Split("/rest/v2/getsoftwares")[0];
-                Base.WriteLog($"Set localURL: {Base.localURL}", ClientIP, 1000, customerid);
+                //Base.WriteLog($"Set localURL: {Base.localURL}", ClientIP, 1000, customerid);
+                Log.Information("Set local URL to {url}", Base.localURL);
             }
 
-
+            Log.ForContext("CustomerID", customerid).Verbose("shortname: {shortname}, name: {name}", shortname, name);
 
             JArray jSW;
             if (!string.IsNullOrEmpty(shortname))
             {
-                if (!Base.ValidateIP(ClientIP))
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true" && string.IsNullOrEmpty(customerid + apikey))
                 {
-                    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                        return new OkObjectResult("[]");
-                }
-                else
-                {
-                    Base.WriteLog($"Get Definition for: {shortname}", ClientIP, 1500, customerid);
+                    Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("shortname", shortname).Warning("No Customer or ApiKey. Blocking Request.");
+                    return new UnauthorizedResult();
                 }
 
+                if (!string.IsNullOrEmpty(apikey))
+                {
+                    if (ApiKey.ApiKeyIsValid(apikey))
+                    {
+                        Log.Verbose("ApiKey is valid: {key}", apikey);
+                        if (string.IsNullOrEmpty(customerid))
+                            customerid = apikey;
+                    }
+                    else
+                    {
+                        string sCustomer = ApiKey.GetCustomer(apikey);
+                        Log.Verbose("ApiKey is NOT valid: {key} Customer: {customer}", apikey, sCustomer);
+
+                        if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true" && string.IsNullOrEmpty(customerid))
+                        {
+                            Log.ForContext("IP", ClientIP).Warning("Blocking request");
+                            return new UnauthorizedResult();
+                        }
+                    }
+                }
+
+
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get Definition for: {shortname}", shortname);
                 jSW = Base.GetSoftwares(shortname, customerid);
             }
             else
             {
-                if (!Base.ValidateIP(ClientIP))
+
+                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true" && string.IsNullOrEmpty(customerid + apikey))
                 {
-                    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                        return new OkObjectResult("[]");
-                }
-                else
-                {
-                    Base.WriteLog($"Get Definition for: {name}", ClientIP, 1500, customerid);
+                    Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("shortname", shortname).Warning("No Customer or ApiKey. Blocking Request.");
+                    return new UnauthorizedResult();
                 }
 
+                if (!string.IsNullOrEmpty(apikey))
+                {
+                    if (ApiKey.ApiKeyIsValid(apikey))
+                    {
+                        Log.Verbose("ApiKey is valid: {key}", apikey);
+                        if(string.IsNullOrEmpty(customerid))
+                            customerid = apikey;
+                    }
+                    else
+                    {
+                        string sCustomer = ApiKey.GetCustomer(apikey);
+                        Log.Verbose("ApiKey is NOT valid: {key} Customer: {customer}", apikey, sCustomer);
+
+                        if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true" && string.IsNullOrEmpty(customerid))
+                        {
+                            Log.ForContext("IP", ClientIP).Verbose("Blocking request");
+                            return new UnauthorizedResult();
+                            //return new OkObjectResult("[]");
+                        }
+                    }
+                }
+
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get Definition for: {name} {ver} {man}", name, ver, man);
                 jSW = Base.GetSoftwares(name, ver, man, customerid);
             }
             //Cleanup
@@ -404,8 +495,14 @@ namespace RZ.Server
                         jObj.Remove("Author");
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log.Error("Error: {ex}", ex.Message);
+                }
             }
+
+            //Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Verbose("Result {sw}", jSW.ToString());
+            await Task.CompletedTask;
 
             if (jSW != null)
                 return new OkObjectResult(jSW);
@@ -414,7 +511,7 @@ namespace RZ.Server
         }
 
         [FunctionName("checkforupdate")]
-        public static async Task<IActionResult> checkforupdate([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> checkforupdate([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
@@ -458,17 +555,18 @@ namespace RZ.Server
                     if (updateshash != Hash.CalculateMD5HashString(oGet.Result))
                         return new OkObjectResult(new JArray().ToString());
                     else
-                        Console.WriteLine("CheckForUpdates Hash Error !");
+                        Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Error("CheckForUpdates Hash Error !");
                 }
 
                 string sResult = Base.CheckForUpdates(jItems, customerid).ToString();
                 TimeSpan tDuration = DateTime.Now - dStart;
-                //Console.WriteLine("V2 UpdateCheck duration: " + tDuration.TotalMilliseconds.ToString() + "ms");
+                Log.ForContext("CustomerID", customerid).ForContext("IP", ClientIP).ForContext("count", jItems.Count).Verbose("V2 UpdateCheck duration: {duration}ms", Math.Round(tDuration.TotalMilliseconds).ToString());
 
                 if (!bOverload)
-                    SendStatusAsync("", 0, "CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) ");
+                    _ = SendStatusAsync("", 0, "CheckForUpdates(items: " + jItems.Count + " , duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s) ");
 
                 //Base.WriteLog("V2 UpdateCheck duration: " + Math.Round(tDuration.TotalSeconds).ToString() + "s", ClientIP, 1100, customerid);
+                await Task.CompletedTask;
                 return new OkObjectResult(sResult);
             }
             else
@@ -476,19 +574,28 @@ namespace RZ.Server
         }
 
         [FunctionName("geturl")]
-        public static async Task<IActionResult> geturl([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> geturl([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
+            string apikey = req.Query["apikey"];
+            apikey = apikey ?? "";
+
+            if (string.IsNullOrEmpty(customerid))
+                customerid = apikey;
 
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
-            Base.SetValidIP(ClientIP);
-            Base.WriteLog("Get URL", ClientIP, 1000, customerid);
-            return new OkObjectResult(Base.GetURL(customerid, ClientIP));
+            //Base.SetValidIP(ClientIP);
+            //Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+
+            string sURL = Base.GetURL(customerid, ClientIP);
+            Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get URL: {url}", sURL);
+            await Task.CompletedTask;
+            return new OkObjectResult(sURL);
         }
 
         [FunctionName("getip")]
-        public static async Task<IActionResult> getip([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> getip([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = "unknown";
             try
@@ -496,12 +603,13 @@ namespace RZ.Server
                 ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
             }
             catch { }
-
+            Log.Verbose("Get IP: {ip}", ClientIP);
+            await Task.CompletedTask;
             return new OkObjectResult(ClientIP);
         }
 
         [FunctionName("feedback")]
-        public static async Task<IActionResult> feedback([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> feedback([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -561,13 +669,15 @@ namespace RZ.Server
                         {
                             if (bWorking)
                             {
-                                Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
-                                SendStatusAsync("", 3, "success (" + name + ")");
+                                //Base.WriteLog($"{Shortname} : {text}", ClientIP, 2000, customerid);
+                                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("success ({shortname})", Shortname);
+                                _ = SendStatusAsync("", 3, "success (" + name + ")");
                             }
                             else
                             {
-                                Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
-                                SendStatusAsync("", 2, "failed (" + name + "");
+                                //Base.WriteLog($"{Shortname} : {text}", ClientIP, 2001, customerid);
+                                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("failed ({shortname}) {ok} {user} {text}", Shortname, ok, user, text);
+                                _ = SendStatusAsync("", 2, "failed (" + name + ")");
                             }
                         }
 
@@ -575,25 +685,24 @@ namespace RZ.Server
                     }
                     catch { }
 
-
                     if (bWorking)
                         Base.IncCounter(Shortname, "SUCCESS", customerid);
                     else
                         Base.IncCounter(Shortname, "FAILURE", customerid);
-
                 }
                 catch { }
             }
             else
             {
-                Base.WriteLog($"{man} {name} {ver} : {text}", ClientIP, 2001, customerid);
+                //Base.WriteLog($"{man} {name} {ver} : {text}", ClientIP, 2001, customerid);
             }
 
+            await Task.CompletedTask;
             return new OkResult();
         }
 
         [FunctionName("IncCounter")]
-        public static async Task<IActionResult> IncCounter([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> IncCounter([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -628,53 +737,29 @@ namespace RZ.Server
                 lCount++;
             }
 
-            if (string.IsNullOrEmpty(customerid))
-            {
-                //if (ClientIP.StartsWith("152.195.1"))
-                //    return false;
-                //if (ClientIP.StartsWith("152.199.1"))
-                //    return false;
-            }
-
             if (string.IsNullOrEmpty(shortname))
                 return new OkObjectResult(false);
             else
             {
                 try
                 {
-                    Message bMSG;
-                    bMSG = new Message() { Label = "RuckZuck/WCF/downloaded/" + shortname, TimeToLive = new TimeSpan(24, 0, 0) };
-                    bMSG.UserProperties.Add("ShortName", shortname);
-                    bMSG.UserProperties.Add("ClientIP", ClientIP);
-                    bMSG.UserProperties.Add("CustomerID", customerid);
-
-                    if (!string.IsNullOrEmpty(sbconnection))
-                    {
-                        if (tcRuckZuck == null)
-                        {
-                            Console.WriteLine("SBConnection:" + sbconnection);
-                            tcRuckZuck = new TopicClient(sbconnection, "RuckZuck", RetryPolicy.Default);
-                        }
-                    }
-                    else
-                        tcRuckZuck = null;
-
-                    if (tcRuckZuck != null)
-                        await tcRuckZuck.SendAsync(bMSG);
+                    Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("counter", counter).Information("increment ({ct}) count for: {shortname}", counter, shortname);
 
                     if (!bOverload)
-                        SendStatusAsync("", 4, "content downloaded (" + shortname + ")");
+                        _ = SendStatusAsync("", 4, "content downloaded (" + shortname + ")");
 
                     //Base.WriteLog($"Content donwloaded: {shortname}", ClientIP, 1300, customerid);
                 }
                 catch { }
+
+                await Task.CompletedTask;
 
                 return new OkObjectResult(Base.IncCounter(shortname, counter, customerid));
             }
         }
 
         [FunctionName("GetFile")]
-        public static async Task<IActionResult> GetFile([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "GetFile/{contentid}/{filename}")] HttpRequest req, string contentid, string filename, ILogger log)
+        public static async Task<IActionResult> GetFile([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "GetFile/{contentid}/{filename}")] HttpRequest req, string contentid, string filename, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -687,27 +772,28 @@ namespace RZ.Server
             //string filename = req.Query["filename"];
             //filename = filename ?? "";
 
-            if (!Base.ValidateIP(ClientIP))
-            {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return new NotFoundResult();
-            }
-            else
-            {
-            }
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return new NotFoundResult();
+            //}
+            //else
+            //{
+            //}
 
             string sPath = Path.Combine(contentid, filename);
             if (!string.IsNullOrEmpty(shortname))
                 sPath = Path.Combine("proxy", shortname, contentid, filename);
 
-            Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
-            log.LogInformation($"GetFile: {sPath} CustomerID: {customerid}");
+            //Base.WriteLog($"GetFile {sPath}", ClientIP, 1200, customerid);
+            //log.LogInformation($"GetFile: {sPath} CustomerID: {customerid}");
+            Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("shortname", shortname).Information("GetFile: {path}", sPath);
 
             return await Base.GetFile(sPath, customerid);
         }
 
         [FunctionName("UploadSoftware")]
-        public static async Task<IActionResult> UploadSoftware([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> UploadSoftware([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -718,6 +804,9 @@ namespace RZ.Server
             {
                 var oGet = new StreamReader(req.Body).ReadToEndAsync();
                 string sJson = oGet.Result;
+
+                Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("json", sJson).Verbose("Uploading software");
+
                 if (sJson.TrimStart().StartsWith('['))
                     return new OkObjectResult(Base.UploadSoftwareWaiting(JArray.Parse(oGet.Result), customerid));
                 else
@@ -728,20 +817,22 @@ namespace RZ.Server
                 }
             }
             catch { }
-            return new OkObjectResult(false);
 
+            await Task.CompletedTask;
+            return new OkObjectResult(false);
         }
 
         [FunctionName("uploadswentry")]
-        public static async Task<IActionResult> uploadswentry([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+        public static async Task<IActionResult> uploadswentry([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, Microsoft.Extensions.Logging.ILogger log)
         {
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
+            await Task.CompletedTask;
 
-            if (!Base.ValidateIP(ClientIP))
-            {
-                if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
-                    return new OkObjectResult(false);
-            }
+            //if (!Base.ValidateIP(ClientIP))
+            //{
+            //    if (Environment.GetEnvironmentVariable("EnforceGetURL") == "true")
+            //        return new OkObjectResult(false);
+            //}
 
             string customerid = req.Query["customerid"];
             customerid = customerid ?? "";
@@ -749,7 +840,8 @@ namespace RZ.Server
             var oGet = new StreamReader(req.Body).ReadToEndAsync();
             string sJSON = oGet.Result;
 
-            Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1050, customerid);
+            //Base.WriteLog($"NEW SW is waiting for approval...", ClientIP, 1050, customerid);
+            Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("json", sJSON).Verbose("New SW is waiting for approval.");
 
             if (sJSON.TrimStart().StartsWith('['))
             {
@@ -764,25 +856,32 @@ namespace RZ.Server
 
                 return new OkObjectResult(bRes); ;
             }
-            return new OkObjectResult(false);
-
         }
 
-        private static async void SendStatusAsync(string code= "", int mType = 0, string statustext = "")
+        private static async Task SendStatusAsync(string code = "", int mType = 0, string statustext = "")
         {
-            if (string.IsNullOrEmpty(code))
-                code = Environment.GetEnvironmentVariable("StatusCode");
-
-            string sURL = Environment.GetEnvironmentVariable("RZMainPageURL");
-            if (string.IsNullOrEmpty(sURL))
-                sURL = "https://ruckzuck.tools";
-
-            using (HttpClient oClient = new HttpClient())
+            try
             {
-                string url = $"{sURL}/rest/v2/showstatus?code={ code }&mtype={ mType }&statustext={ statustext }";
-                StringContent oCon = new StringContent("");
-                var oRes = await oClient.PostAsync(url, oCon);
-                oRes.StatusCode.ToString();
+                if (string.IsNullOrEmpty(code))
+                    code = Environment.GetEnvironmentVariable("StatusCode");
+
+                string sURL = Environment.GetEnvironmentVariable("RZMainPageURL");
+                if (string.IsNullOrEmpty(sURL))
+                    sURL = "https://ruckzuck.tools";
+
+                using (HttpClient wClient = new HttpClient())
+                {
+                    string url = $"{sURL}/rest/v2/showstatus?code={code}&mtype={mType}&statustext={statustext}";
+                    StringContent oCon = new StringContent("");
+                    var oRes = await wClient.PostAsync(url, oCon);
+                    oRes.StatusCode.ToString();
+                }
+
+                Log.ForContext("url", sURL).ForContext("code", code).Verbose("SendStatus: {text} , type: {type}", statustext, mType);
+            }
+            catch(Exception ex)
+            {
+                Log.Error("SendStatus Error 880: {ex}", ex.Message);
             }
         }
     }

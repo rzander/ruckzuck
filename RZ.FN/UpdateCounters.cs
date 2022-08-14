@@ -14,6 +14,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
+using Serilog;
 
 namespace RZ.ServerFN
 {
@@ -23,12 +24,13 @@ namespace RZ.ServerFN
         public static Dictionary<string, string> Settings { get; set; }
 
         [FunctionName("UpdateCounters")]
-        public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = false)] TimerInfo myTimer, Microsoft.Extensions.Logging.ILogger log)
         {
-            //if (myTimer.IsPastDue)
-            //    return;
+            if (myTimer.IsPastDue)
+                return;
 
-            log.LogInformation($"UpdateCounters started at: {DateTime.Now}");
+            //log.LogInformation($"UpdateCounters started at: {DateTime.Now}");
+            Log.Debug("UpdateCounters started at: {date}", DateTime.Now);
 
             try
             {
@@ -39,10 +41,11 @@ namespace RZ.ServerFN
             catch { }
 
             ProcessSWQueue(log);
-            log.ToString();
+
+            Log.Debug("UpdateCounters finished at: {date}", DateTime.Now);
         }
 
-        private static void ProcessDLQueue(ILogger log)
+        private static void ProcessDLQueue(Microsoft.Extensions.Logging.ILogger log)
         {
             string sURL = Settings["dlqURL"];
             string sasToken = Settings["dlqSAS"].TrimStart('?');
@@ -100,7 +103,7 @@ namespace RZ.ServerFN
             }
         }
 
-        private static void ProcessFailureQueue(ILogger log)
+        private static void ProcessFailureQueue(Microsoft.Extensions.Logging.ILogger log)
         {
             //string sURL = Environment.GetEnvironmentVariable("faSAS").Split('?')[0];
             //string sasToken = Environment.GetEnvironmentVariable("faSAS").Substring(sURL.Length + 1);
@@ -167,7 +170,7 @@ namespace RZ.ServerFN
             }
         }
 
-        private static void ProcessSuccessQueue(ILogger log)
+        private static void ProcessSuccessQueue(Microsoft.Extensions.Logging.ILogger log)
         {
             //string sURL = Environment.GetEnvironmentVariable("suSAS").Split('?')[0];
             //string sasToken = Environment.GetEnvironmentVariable("suSAS").Substring(sURL.Length + 1);
@@ -228,7 +231,7 @@ namespace RZ.ServerFN
             }
         }
 
-        private static void ProcessSWQueue(ILogger log)
+        private static void ProcessSWQueue(Microsoft.Extensions.Logging.ILogger log)
         {
             //string sURL = Environment.GetEnvironmentVariable("swSAS").Split('?')[0];
             //string sasToken = Environment.GetEnvironmentVariable("swSAS").Substring(sURL.Length + 1);

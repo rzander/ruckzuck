@@ -5,10 +5,11 @@
       "connectionId": "AzureWebJobsStorage"
     },
     "secrets1": {
+      "secretStore": null,
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/kvRuckZuck",
       "type": "secrets.keyVault",
       "connectionId": "VaultUri",
-      "secretStore": null
+      "dynamicId": null
     }
   }
 }
