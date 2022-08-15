@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
-using Microsoft.Win32;
 using System.Diagnostics;
 using System.Drawing;
-using RuckZuck.Base;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RuckZuck.Base
 {
@@ -57,7 +57,8 @@ namespace RuckZuck.Base
             {
                 bRunScan = true;
                 //SWScan();
-                GetSWRepository().ConfigureAwait(false); //Scan Runs when Repo is loaded
+                var ct = new CancellationTokenSource(15000).Token;
+                GetSWRepositoryAsync(ct).ConfigureAwait(false); //Scan Runs when Repo is loaded
             }
             //Check every 60s
             tRegCheck.Interval = 60000;
@@ -79,22 +80,6 @@ namespace RuckZuck.Base
             {
                 Bitmap bResult = System.Drawing.Icon.ExtractAssociatedIcon(Filename).ToBitmap();
 
-                //try
-                //{
-                //    TsudaKageyu.IconExtractor iE = new TsudaKageyu.IconExtractor(Filename);
-                //    if (iE.FileName != null)
-                //    {
-                //        List<Icon> lIcons = TsudaKageyu.IconUtil.Split(iE.GetIcon(0)).ToList();
-                //        //Max Size 128px...
-                //        var ico = lIcons.Where(t => t.Height <= 128 && t.ToBitmap().PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb).OrderByDescending(t => t.Height).FirstOrDefault();
-                //        if (ico != null)
-                //            return ico.ToBitmap();
-                //        else
-                //            return bResult;
-                //    }
-                //}
-                //catch { }
-
                 return bResult;
             }
             catch
@@ -103,61 +88,62 @@ namespace RuckZuck.Base
             }
         }
 
-        public async Task<bool> GetSWRepository()
+        public async Task<bool> GetSWRepositoryAsync(CancellationToken ct)
         {
-            //var tGetSWRepo =
-            bool bResult = await Task.Run(() =>
+            try
             {
-                try
+                var oDB = (await RZRestAPIv2.GetCatalogAsync("", ct)).Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                lock (SoftwareRepository)
                 {
-                    var oDB = RZRestAPIv2.GetCatalog().Distinct().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
-                    lock (SoftwareRepository)
+                    SoftwareRepository = oDB.Select(item => new GetSoftware()
                     {
-                        SoftwareRepository = oDB.Select(item => new GetSoftware()
-                        {
-                            Categories = item.Categories ?? new List<string>(),
-                            Description = item.Description,
-                            Downloads = item.Downloads,
-                            SWId = item.SWId,
-                            Manufacturer = item.Manufacturer,
-                            ProductName = item.ProductName,
-                            ProductURL = item.ProductURL,
-                            ProductVersion = item.ProductVersion,
-                            ShortName = item.ShortName,
-                            IconHash = item.IconHash,
-                            ModifyDate = item.ModifyDate
-                        }).ToList();
-                    }
+                        Categories = item.Categories ?? new List<string>(),
+                        Description = item.Description,
+                        Downloads = item.Downloads,
+                        SWId = item.SWId,
+                        Manufacturer = item.Manufacturer,
+                        ProductName = item.ProductName,
+                        ProductURL = item.ProductURL,
+                        ProductVersion = item.ProductVersion,
+                        ShortName = item.ShortName,
+                        IconHash = item.IconHash,
+                        ModifyDate = item.ModifyDate
+                    }).ToList();
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message.ToString());
-                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message.ToString());
+                return false;
+            }
 
-                OnSWRepoLoaded(this, new EventArgs());
+            OnSWRepoLoaded(this, new EventArgs());
 
-                return true;
-            });
-
-            return bResult;
+            return true;
         }
 
-        public async Task SWScanAsync()
+        public async Task SWScanAsync(bool currentUser = true, bool localMachine = true, bool allUsers = false, CancellationToken ct = default(CancellationToken))
         {
-            var tSWScan = Task.Run(() =>
+            await Task.Run(async () =>
             {
                 List<AddSoftware> TempInstalledSoftware = new List<AddSoftware>();
                 try
                 {
-                    var CUX64 = RegScanAsync(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware);
-                    //var CUX86 = RegScan(RegistryHive.CurrentUser, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX86 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware);
-                    var LMX64 = RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware);
+                    if (allUsers)
+                    {
+                        await RegScanAsync(RegistryHive.Users, RegistryView.Default, TempInstalledSoftware, ct);
+                    }
 
-                    CUX64.Wait();
-                    //CUX86.Wait();
-                    LMX86.Wait();
-                    LMX64.Wait();
+                    if (currentUser)
+                    {
+                        await RegScanAsync(RegistryHive.CurrentUser, RegistryView.Default, TempInstalledSoftware, ct);
+                    }
+
+                    if (localMachine)
+                    {
+                        await RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry32, TempInstalledSoftware, ct);
+                        await RegScanAsync(RegistryHive.LocalMachine, RegistryView.Registry64, TempInstalledSoftware, ct);
+                    }
                 }
                 catch { }
 
@@ -204,9 +190,7 @@ namespace RuckZuck.Base
                 }
 
                 OnSWScanCompleted(this, new EventArgs());
-            });
-
-            await tSWScan;
+            }, ct);
         }
 
         internal void _CheckUpdates(List<AddSoftware> aSWCheck)
@@ -274,50 +258,114 @@ namespace RuckZuck.Base
             try
             {
                 RegistryKey oUBase = RegistryKey.OpenBaseKey(RegHive, RegView);
-                RegistryKey oUKey = oUBase.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
                 List<string> USubKeys = new List<string>();
-                USubKeys.AddRange(oUKey.GetSubKeyNames());
-                foreach (string sProdID in USubKeys)
+                if (RegHive == RegistryHive.Users)
                 {
-                    try
+                    foreach (string SID in oUBase.GetSubKeyNames())
                     {
-                        RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
-                        bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
-                        bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
-                        string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
-                        string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
-
-                        //Check if its a SystemComponent or WindowsInstaller
-                        if (bSystemComponent)
-                            continue;
-
-                        //Check if NO PrentKeyName exists
-                        if (!string.IsNullOrEmpty(sParent))
-                            continue;
-
-                        //Check if NO ReleaseType exists
-                        if (!string.IsNullOrEmpty(sRelease))
-                            continue;
-
-                        AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
-                        if (!string.IsNullOrEmpty(oItem.ProductName))
+                        try
                         {
-                            try
-                            {
-                                lock (lScanList)
-                                {
-                                    lScanList.Add(oItem);
-                                }
+                            SID.ToString();
+                            if (!SID.StartsWith("S-1-12") || SID.EndsWith("_Classes"))
+                                continue;
 
-                            }
-                            catch (Exception ex)
+                            RegistryKey oUKey = oUBase.OpenSubKey(SID + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+                            USubKeys.AddRange(oUKey.GetSubKeyNames());
+
+                            foreach (string sProdID in USubKeys)
                             {
-                                ex.Message.ToString();
+                                try
+                                {
+                                    RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
+                                    bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
+                                    bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
+                                    string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
+                                    string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
+
+                                    //Check if its a SystemComponent or WindowsInstaller
+                                    if (bSystemComponent)
+                                        continue;
+
+                                    //Check if NO PrentKeyName exists
+                                    if (!string.IsNullOrEmpty(sParent))
+                                        continue;
+
+                                    //Check if NO ReleaseType exists
+                                    if (!string.IsNullOrEmpty(sRelease))
+                                        continue;
+
+                                    AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
+                                    if (!string.IsNullOrEmpty(oItem.ProductName))
+                                    {
+                                        try
+                                        {
+                                            lock (lScanList)
+                                            {
+                                                lScanList.Add(oItem);
+                                            }
+
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ex.Message.ToString();
+                                        }
+                                    }
+                                }
+                                catch { }
+
+
                             }
                         }
+                        catch { }
                     }
-                    catch { }
+                }
+                else
+                {
+                    RegistryKey oUKey = oUBase.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+                    USubKeys.AddRange(oUKey.GetSubKeyNames());
 
+                    foreach (string sProdID in USubKeys)
+                    {
+                        try
+                        {
+                            RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
+                            bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
+                            bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
+                            string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
+                            string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
+
+                            //Check if its a SystemComponent or WindowsInstaller
+                            if (bSystemComponent)
+                                continue;
+
+                            //Check if NO PrentKeyName exists
+                            if (!string.IsNullOrEmpty(sParent))
+                                continue;
+
+                            //Check if NO ReleaseType exists
+                            if (!string.IsNullOrEmpty(sRelease))
+                                continue;
+
+                            AddSoftware oItem = GetSWPropertiesAsync(oUKey.OpenSubKey(sProdID)).Result;
+                            if (!string.IsNullOrEmpty(oItem.ProductName))
+                            {
+                                try
+                                {
+                                    lock (lScanList)
+                                    {
+                                        lScanList.Add(oItem);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    ex.Message.ToString();
+                                }
+                            }
+                        }
+                        catch { }
+
+                    }
                 }
             }
             catch (Exception ex)
@@ -330,9 +378,9 @@ namespace RuckZuck.Base
         /// Check for updated Version in the RuckZuck Repository
         /// </summary>
         /// <param name="aSWCheck">null = all Installed SW</param>
-        internal async Task CheckUpdatesAsync(List<AddSoftware> aSWCheck)
+        internal async Task CheckUpdatesAsync(List<AddSoftware> aSWCheck, CancellationToken ct = default(CancellationToken))
         {
-            await Task.Run(() => _CheckUpdates(aSWCheck));
+            await Task.Run(() => _CheckUpdates(aSWCheck), ct);
         }
 
         internal string descramble(string sKey)
@@ -351,7 +399,8 @@ namespace RuckZuck.Base
 
         internal async Task<AddSoftware> GetSWPropertiesAsync(RegistryKey oRegkey)
         {
-            return await Task.Run(() => {
+            return await Task.Run(() =>
+            {
                 AddSoftware oResult = new AddSoftware();
                 Version oVer = null;
                 bool bVersion = false;
@@ -589,24 +638,24 @@ namespace RuckZuck.Base
             return null;
         }
 
-        internal async Task RegScanAsync(RegistryHive RegHive, RegistryView RegView, List<AddSoftware> lScanList)
+        internal async Task RegScanAsync(RegistryHive RegHive, RegistryView RegView, List<AddSoftware> lScanList, CancellationToken ct = default(CancellationToken))
         {
-            await Task.Run(() => _RegScan(RegHive, RegView, lScanList));
+            await Task.Run(() => _RegScan(RegHive, RegView, lScanList), ct);
         }
 
-        private async void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
+        private void RZScan_OnSWRepoLoaded(object sender, EventArgs e)
         {
             if (bRunScan)
             {
-                await SWScanAsync();
+                Task task = SWScanAsync();
             }
         }
 
-        private async void RZScan_OnSWScanCompleted(object sender, EventArgs e)
+        private void RZScan_OnSWScanCompleted(object sender, EventArgs e)
         {
             if (bCheckUpdates)
             {
-                await CheckUpdatesAsync(null);
+                Task task = CheckUpdatesAsync(null);
             }
         }
 
@@ -619,9 +668,9 @@ namespace RuckZuck.Base
             }
         }
 
-        private async void TRegCheck_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void TRegCheck_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            await SWScanAsync();
+            Task task = SWScanAsync();
         }
     }
 }

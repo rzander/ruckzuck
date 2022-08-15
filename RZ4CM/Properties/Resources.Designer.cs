@@ -19,7 +19,7 @@ namespace RuckZuck_Tool.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,7 +70,7 @@ namespace RuckZuck_Tool.Properties {
         ///[assembly: AssemblyConfiguration(&quot;&quot;)]
         ///[assembly: AssemblyCompany(&quot;RuckZuck.tools&quot;)]
         ///[assembly: AssemblyProduct(&quot;RZRZRZ&quot;)]
-        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2019 by Roger Zander&quot;)]
+        ///[assembly: AssemblyCopyright(&quot;Copyright ©  2022 by Roger Zander&quot;)]
         ///[assembly: AssemblyTrademark(&quot;&quot;)]
         ///[assembly: AssemblyCulture(&quot;&quot;)]
         ///[ [rest of string was truncated]&quot;;.
@@ -101,19 +101,19 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Net;
         ///using System.Net.Http;
         ///using System.Net.Sockets;
+        ///using System.Reflection;
         ///using System.Text;
+        ///using System.Threading;
         ///using System.Threading.Tasks;
+        ///using System.Web;
         ///using System.Web.Script.Serialization;
         ///
         ///namespace RuckZuck.Base
         ///{
-        ///    class RZRestAPIv2
+        ///    public class AddSoftware
         ///    {
-        ///        private static string _sURL = &quot;UDP&quot;;
-        ///        public static bool DisableBroadcast = false;
-        ///        public static string CustomerID = &quot;&quot;;
-        ///
-        ///    [rest of string was truncated]&quot;;.
+        ///        public string Architecture { get; set; }
+        ///        public string Aut [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
@@ -122,27 +122,24 @@ namespace RuckZuck_Tool.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to using System;
+        ///   Looks up a localized string similar to using RuckZuck.Base;
+        ///using System;
         ///using System.Collections.Generic;
-        ///using System.Linq;
-        ///using System.Net;
-        ///using System.IO;
-        ///using System.Management.Automation;
-        ///using System.Threading.Tasks;
-        ///using System.Threading;
-        ///using System.Web.Script.Serialization;
         ///using System.Diagnostics;
-        ///using System.Net.Http;
-        ///using RuckZuck.Base;
+        ///using System.IO;
+        ///using System.Linq;
+        ///using System.Management.Automation;
+        ///using System.Net;
         ///using System.Runtime.InteropServices;
         ///using System.Security.Cryptography.X509Certificates;
+        ///using System.Threading;
+        ///using System.Threading.Tasks;
         ///
         ///namespace RZUpdate
         ///{
-        ///    /// &lt;summary&gt;
-        ///    /// Updater Class
-        ///    /// &lt;/summary&gt;
-        ///    public class RZ [rest of string was truncated]&quot;;.
+        ///    public static class AuthenticodeTools
+        ///    {
+        ///        //Source: https://stackoverflow.com/questions/6596327/how-to-check-if-a-file-is-signed- [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZUpdate {
             get {
@@ -158,6 +155,7 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Text;
         ///using System.Threading;
         ///using System.Net;
+        ///using System.Threading.Tasks;
         ///
         ///namespace RZWrapper
         ///{
@@ -170,8 +168,7 @@ namespace RuckZuck_Tool.Properties {
         ///            try
         ///            {
         ///                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        ///                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-        ///  [rest of string was truncated]&quot;;.
+        ///                ServicePointManager.ServerCertificateValidationCallback  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {

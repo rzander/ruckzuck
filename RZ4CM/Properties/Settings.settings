@@ -5,10 +5,6 @@
     <Setting Name="UpgradeSettings" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UpdExlusion" Description="Excluded Updates" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Value>
-    </Setting>
     <Setting Name="CM_SQLServer" GenerateDefaultValueInCode="false" Type="System.String" Scope="Application">
       <Value Profile="(Default)">sccm01.wp01.lab</Value>
     </Setting>
@@ -29,23 +25,6 @@
     </Setting>
     <Setting Name="DefaultADGroup" Type="System.String" Scope="Application">
       <Value Profile="(Default)">%USERDOMAIN%\Domain Users</Value>
-    </Setting>
-    <Setting Name="OSRequirementsX64" Type="System.Collections.Specialized.StringCollection" Scope="Application">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;string&gt;Windows/All_x64_Windows_10_and_higher_Clients&lt;/string&gt;
-  &lt;string&gt;Windows/All_x64_Windows_11_and_higher_Clients&lt;/string&gt;      
-  &lt;string&gt;Windows/All_x64_Windows_Server_2016&lt;/string&gt;
-  &lt;string&gt;Windows/All_x64_Windows_Server_2019_and_higher&lt;/string&gt;
-&lt;/ArrayOfString&gt;</Value>
-    </Setting>
-    <Setting Name="OSRequirementsX86" Type="System.Collections.Specialized.StringCollection" Scope="Application">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;string&gt;Windows/All_x86_Windows_7_Client&lt;/string&gt;
-  &lt;string&gt;Windows/All_x86_Windows_8.1_Client&lt;/string&gt;
-  &lt;string&gt;Windows/All_x86_Windows_10_and_higher_Clients&lt;/string&gt;
-&lt;/ArrayOfString&gt;</Value>
     </Setting>
     <Setting Name="PrimaryUserRequired" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
@@ -94,6 +73,27 @@
     </Setting>
     <Setting Name="ShowAbout" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="OSRequirementsX64" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;string&gt;Windows/All_x64_Windows_10_and_higher_Clients&lt;/string&gt;
+  &lt;string&gt;Windows/All_x64_Windows_11_and_higher_Clients&lt;/string&gt;
+  &lt;string&gt;Windows/All_x64_Windows_Server_2016&lt;/string&gt;
+  &lt;string&gt;Windows/All_x64_Windows_Server_2019_and_higher&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="OSRequirementsX86" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;string&gt;Windows/All_x86_Windows_7_Client&lt;/string&gt;
+  &lt;string&gt;Windows/All_x86_Windows_8.1_Client&lt;/string&gt;
+  &lt;string&gt;Windows/All_x86_Windows_10_and_higher_Clients&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="UpdExlusion" Description="Excluded Updates" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" /&gt;</Value>
     </Setting>
   </Settings>
 </SettingsFile>

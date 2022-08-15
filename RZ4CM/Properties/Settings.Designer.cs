@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.2.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -32,23 +32,6 @@ namespace RuckZuck_Tool.Properties {
             }
             set {
                 this["UpgradeSettings"] = value;
-            }
-        }
-        
-        /// <summary>
-        /// Excluded Updates
-        /// </summary>
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsDescriptionAttribute("Excluded Updates")]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
-            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
-        public global::System.Collections.Specialized.StringCollection UpdExlusion {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
-            }
-            set {
-                this["UpdExlusion"] = value;
             }
         }
         
@@ -110,35 +93,6 @@ namespace RuckZuck_Tool.Properties {
         public string DefaultADGroup {
             get {
                 return ((string)(this["DefaultADGroup"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
-<ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <string>Windows/All_x64_Windows_10_and_higher_Clients</string>
-  <string>Windows/All_x64_Windows_11_and_higher_Clients</string>
-  <string>Windows/All_x64_Windows_Server_2016</string>
-  <string>Windows/All_x64_Windows_Server_2019_and_higher</string>
-</ArrayOfString>")]
-        public global::System.Collections.Specialized.StringCollection OSRequirementsX64 {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["OSRequirementsX64"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
-<ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <string>Windows/All_x86_Windows_7_Client</string>
-  <string>Windows/All_x86_Windows_8.1_Client</string>
-  <string>Windows/All_x86_Windows_10_and_higher_Clients</string>
-</ArrayOfString>")]
-        public global::System.Collections.Specialized.StringCollection OSRequirementsX86 {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["OSRequirementsX86"]));
             }
         }
         
@@ -297,6 +251,52 @@ namespace RuckZuck_Tool.Properties {
             }
             set {
                 this["ShowAbout"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <string>Windows/All_x64_Windows_10_and_higher_Clients</string>
+  <string>Windows/All_x64_Windows_11_and_higher_Clients</string>
+  <string>Windows/All_x64_Windows_Server_2016</string>
+  <string>Windows/All_x64_Windows_Server_2019_and_higher</string>
+</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection OSRequirementsX64 {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["OSRequirementsX64"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <string>Windows/All_x86_Windows_7_Client</string>
+  <string>Windows/All_x86_Windows_8.1_Client</string>
+  <string>Windows/All_x86_Windows_10_and_higher_Clients</string>
+</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection OSRequirementsX86 {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["OSRequirementsX86"]));
+            }
+        }
+        
+        /// <summary>
+        /// Excluded Updates
+        /// </summary>
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsDescriptionAttribute("Excluded Updates")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection UpdExlusion {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
+            }
+            set {
+                this["UpdExlusion"] = value;
             }
         }
     }

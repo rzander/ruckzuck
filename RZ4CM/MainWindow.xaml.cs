@@ -23,6 +23,7 @@ using RZUpdate;
 using System.Security.Cryptography;
 using System.Text;
 using RuckZuck.Base;
+using System.Threading.Tasks;
 
 namespace RuckZuck_Tool
 {
@@ -141,7 +142,7 @@ namespace RuckZuck_Tool
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
 
-            oSCAN.GetSWRepository().ConfigureAwait(false);
+            var bRes = oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult;
 
             //oSCAN.tRegCheck.Start();
 
@@ -342,7 +343,7 @@ namespace RuckZuck_Tool
                         SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
 
                         //get Icon
-                        oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                        oSW.SW.Image = RZRestAPIv2.GetIconAsync(oSW.SW.IconHash).GetAwaiter().GetResult();
 
                         oNewPanel.OpenXML(oSW.SW);
 
@@ -398,7 +399,7 @@ namespace RuckZuck_Tool
                 {
                     try
                     {
-                        oSCAN.GetSWRepository().Wait(2000);
+                        oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult();
                     }
                     catch { }
                 }
@@ -618,7 +619,7 @@ namespace RuckZuck_Tool
                     List<GetSoftware> lServer = new List<GetSoftware>();
                     if (oInstPanel.lvSW.ItemsSource == null)
                     {
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     }
                     else
                     {
@@ -626,7 +627,7 @@ namespace RuckZuck_Tool
                     }
 
                     if (lServer == null)
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
 
                     if (Keyboard.Modifiers == ModifierKeys.Shift)
                     {
@@ -738,7 +739,7 @@ namespace RuckZuck_Tool
                 btSettingsSave.IsEnabled = false;
 
                 oSCAN.SoftwareRepository = new List<GetSoftware>();
-                oSCAN.GetSWRepository().ConfigureAwait(false);
+                oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult();
             }
             catch
             {

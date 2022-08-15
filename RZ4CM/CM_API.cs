@@ -115,10 +115,10 @@ namespace RuckZuck_Tool
             return Convert.ToBase64String(time.Concat(key).ToArray());
         }
 
-        private List<GetSoftware> GetRZSoftware(string ProdName, string ProdVersion, string Manufacturer)
+        private async Task<List<GetSoftware>> GetRZSoftware(string ProdName, string ProdVersion, string Manufacturer)
         {
             List<GetSoftware> oResult = new List<GetSoftware>();
-            oResult.AddRange(RZRestAPIv2.GetCatalog().Where(t => t.ProductName == ProdName && t.Manufacturer == Manufacturer && t.ProductVersion == ProdVersion));
+            oResult.AddRange((await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductName == ProdName && t.Manufacturer == Manufacturer && t.ProductVersion == ProdVersion));
 
             return oResult;
         }
@@ -946,7 +946,8 @@ namespace RuckZuck_Tool
 
             downloadTask.Installing = true;
 
-            var lSW = GetRZSoftware(PkgName, PkgVersion, Manufacturer);
+            var tRZSW = GetRZSoftware(PkgName, PkgVersion, Manufacturer);
+            List<GetSoftware> lSW = (tRZSW.GetAwaiter()).GetResult();
 
             foreach (var SW in lSW)
             {
@@ -1062,7 +1063,7 @@ namespace RuckZuck_Tool
                                 //Listener.WriteLine(SW.Shortname, "Downloading File(s)...");
                                 if (!Bootstrap)
                                 {
-                                    bDownloadStatus = oUpd.Download(true, oDir.FullName).Result;
+                                    bDownloadStatus = oUpd.DownloadAsync(true, oDir.FullName).Result;
 
                                     //DL Failed!
                                     if (!bDownloadStatus)
@@ -1639,7 +1640,7 @@ namespace RuckZuck_Tool
             }
             RZScan oSCAN = new RZScan(false, false);
             Console.WriteLine("Connecting RuckZuck Repository...");
-            oSCAN.GetSWRepository().Wait();
+            oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult();
             Console.WriteLine(oSCAN.SoftwareRepository.Count.ToString() + " Items in Repsoitory");
             Console.WriteLine("Checking current Applications...");
 
@@ -1830,10 +1831,10 @@ namespace RZUpdate
             return true;
         }
 
-        public string GetDLPath()
+        public async Task<string> GetDLPath()
         {
             string sSourcePath = RuckZuck_Tool.Properties.Settings.Default.CMContentSourceUNC;
-            var lSW = RZRestAPIv2.GetCatalog().Where(t => t.ProductName == SW.ProductName && t.Manufacturer == SW.Manufacturer && t.ProductVersion == SW.ProductVersion);
+            var lSW = (await RZRestAPIv2.GetCatalogAsync()).Where(t => t.ProductName == SW.ProductName && t.Manufacturer == SW.Manufacturer && t.ProductVersion == SW.ProductVersion);
 
             string sDir = Path.Combine(sSourcePath, SW.ProductName + " " + SW.ProductVersion + " " + SW.Architecture + "_" + lSW.First().SWId);
             DirectoryInfo oDir = new DirectoryInfo(Path.Combine(sSourcePath, SW.ProductName + " " + SW.ProductVersion + " " + SW.Architecture + "_" + lSW.First().SWId));
