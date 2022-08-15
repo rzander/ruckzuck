@@ -68,7 +68,8 @@ namespace RuckZuck_Tool
             s.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
             tabWizard.ItemContainerStyle = s;
 
-            tbSVC.Text = RZRestAPIv2.sURL;
+            tbSVC.Text = Task.Run(() => RZRestAPIv2.sURL).Result;
+
             if (RZRestAPIv2.DisableBroadcast)
             {
                 cbRZCache.IsChecked = false;
@@ -82,15 +83,13 @@ namespace RuckZuck_Tool
 
             if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
             {
-                tbCustomerID.IsEnabled = true;
-                RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
-                btSettingsSave.IsEnabled = true;
+                //tbCustomerID.IsEnabled = true;
+                //RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
             }
             else
             {
                 tbCustomerID.Text = RZRestAPIv2.CustomerID;
                 tbCustomerID.IsEnabled = false;
-                btSettingsSave.IsEnabled = false;
             }
 
             oInstPanel.onEdit += oInstPanel_onEdit;
@@ -142,7 +141,8 @@ namespace RuckZuck_Tool
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
 
-            var bRes = oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult;
+            var ct = new CancellationTokenSource(30000).Token;
+            _ = oSCAN.GetSWRepositoryAsync(ct); //.ConfigureAwait(false);
 
             //oSCAN.tRegCheck.Start();
 

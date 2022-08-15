@@ -1037,7 +1037,7 @@ namespace RuckZuck_Tool
                     {
                         bool bPreReq = false;
 
-                        foreach (var oIT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer))
+                        foreach (var oIT in RZRestAPIv2.GetSoftwares(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
                         {
                             try
                             {
@@ -1598,6 +1598,7 @@ namespace RuckZuck_Tool
         public List<AddSoftware> SWUpdates { get; set; }
 
         internal CMAPI oCM12 = new CMAPI();
+
         public void Scan()
         {
             //Disable SSL/TLS Errors
@@ -1754,6 +1755,9 @@ namespace RZUpdate
                 ProgressDetails(downloadTask, EventArgs.Empty);
                 return false;
             }
+
+            await Task.CompletedTask;
+
             return true;
         }
 
@@ -1828,6 +1832,9 @@ namespace RZUpdate
             //Downloaded(downloadTask, EventArgs.Empty);
             ProgressDetails(downloadTask, EventArgs.Empty);
             //OnSWUpdated(this, new EventArgs());
+
+            await Task.CompletedTask;
+
             return true;
         }
 
