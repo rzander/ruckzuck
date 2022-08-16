@@ -1227,6 +1227,11 @@ $sleep = 30
 # args2 = ExpireTime string
 # args3 = Username
 
+#Fix IE Error
+$keyPath = 'Registry::HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main'
+if (!(Test-Path $keyPath)) { New-Item $keyPath -Force | Out-Null }
+Set-ItemProperty -Path $keyPath -Name "DisableFirstRunCustomize" -Value 1
+
 Add-Type -AssemblyName System.Web
 #Check if nuget provider is installed...
 if (-NOT (Get-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name "Nuget" -Force }
@@ -1244,7 +1249,7 @@ if (-NOT (Test-Path $outFolder)) { New-Item -Path $outFolder -ItemType Directory
 #New-Item $sourceFolder -ItemType Directory -Force
 
 $url = Invoke-RestMethod -Uri "https://ruckzuck.tools/rest/v2/geturl"
-$rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))" 
+$rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))&amp;apikey=$((date).Ticks)" 
 
 #rzSW can have multiple InstallTypes
 if ($rzSW.count -gt 1) {
@@ -1335,10 +1340,6 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
 
 ####################################################</Value>
     </Setting>
-    <Setting Name="UpdExlusion" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Value>
-    </Setting>
     <Setting Name="NoExit" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -1395,6 +1396,10 @@ steps:
     artifact: 'Intune-package'
     publishLocation: 'pipeline'
 </Value>
+    </Setting>
+    <Setting Name="UpdExlusion" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" /&gt;</Value>
     </Setting>
   </Settings>
 </SettingsFile>

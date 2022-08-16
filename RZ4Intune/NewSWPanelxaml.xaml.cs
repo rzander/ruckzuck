@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using RuckZuck.Base;
 using WindowsInstaller;
+using System.Threading.Tasks;
 //using System.Drawing;
 
 namespace RuckZuck_Tool
@@ -598,7 +599,7 @@ namespace RuckZuck_Tool
         {
             try
             {
-                List<GetSoftware> oSW = RZRestAPIv2.GetCatalog().Where(t => t.ShortName == tbProductName.Text).ToList();
+                List<GetSoftware> oSW = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.Where(t => t.ShortName == tbProductName.Text).ToList();
                 //List<GetSoftware> oSW = RZRestAPI.SWResults(tbProductName.Text).ToList();
                 if (oSW.FirstOrDefault() != null)
                 {
@@ -676,10 +677,10 @@ namespace RuckZuck_Tool
 
                 Console.WriteLine("Downloading...");
 
-                if (oRZSW.SoftwareUpdate.Download().Result)
+                if (oRZSW.SoftwareUpdate.DownloadAsync().Result)
                 {
                     Console.WriteLine("Installing...");
-                    if (oRZSW.SoftwareUpdate.Install(false, true).Result)
+                    if (oRZSW.SoftwareUpdate.InstallAsync(false, true).Result)
                     {
                         Console.WriteLine("done.");
                     }

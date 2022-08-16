@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.2.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -575,89 +575,79 @@ namespace RuckZuck_Tool.Properties {
             "\n$azureStorageUploadChunkSizeInMb = 6l;\r\n\r\n$sleep = 30\r\n\r\n######################" +
             "##############################\r\n# Sample Win32 Application\r\n####################" +
             "################################\r\n# args0 = ShortName string\r\n# args1 = Token st" +
-            "ring\r\n# args2 = ExpireTime string\r\n# args3 = Username\r\n\r\nAdd-Type -AssemblyName " +
-            "System.Web\r\n#Check if nuget provider is installed...\r\nif (-NOT (Get-PackageProvi" +
-            "der nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageProvider -Name " +
-            "\"Nuget\" -Force }\r\n\r\n#Install AzureAD Module if missing\r\ntry {\r\n    if ([version]" +
-            "(((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1]).Version -lt \"2" +
-            ".0.2.61\") { Install-Module AzureAD -Force -Confirm:$false }\r\n}\r\ncatch { Install-" +
-            "Module AzureAD -Force -Confirm:$false }\r\n\r\n$ShortName = $args[0]\r\n$outFolder = \"" +
-            "$env:temp\\intunewin\"\r\nif (-NOT (Test-Path $outFolder)) { New-Item -Path $outFold" +
-            "er -ItemType Directory }\r\n#Remove-Item $sourceFolder -Recurse -Force -ea Silentl" +
-            "yContinue\r\n#New-Item $sourceFolder -ItemType Directory -Force\r\n\r\n$url = Invoke-R" +
-            "estMethod -Uri \"https://ruckzuck.tools/rest/v2/geturl\"\r\n$rzSW = Invoke-RestMetho" +
-            "d -Uri \"$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEn" +
-            "code($ShortName))\" \r\n\r\n#rzSW can have multiple InstallTypes\r\nif ($rzSW.count -gt" +
-            " 1) {\r\n    #take InstallType that matches the PreRequisites\r\n    $rzsw = $rzsw |" +
-            " ForEach-Object { if ($_.PSPreReq | Invoke-Expression) { $_ } }\r\n}\r\n\r\n$sourceFol" +
-            "der = \"$env:temp\\$($rzSW.ContentID)\"\r\n$file = $rzSW.ShortName\r\n$rzSW.Files | For" +
-            "Each-Object { \r\n    $file = $_.FileName\r\n    $_.URL > \"$env:temp\\$($rzSW.Content" +
-            "ID)\\$($file).url\"\r\n}\r\n\r\nif (-NOT (Test-Path $sourceFolder)) { New-Item -Path $so" +
-            "urceFolder -ItemType Directory }\r\nInvoke-WebRequest -Uri $rzSW.iconURL -OutFile " +
-            "\"$($sourceFolder)\\logo.png\"\r\n$rzSW | ConvertTo-Json > \"$($sourceFolder)\\package." +
-            "json\"\r\n\r\n#README.md\r\n\"# $($rzSW.ShortName)\" > \"$($sourceFolder)\\README.md\"\r\n\"$($" +
-            "rzSW.Description)\" >> \"$($sourceFolder)\\README.md\"\r\n\"  \" >> \"$($sourceFolder)\\RE" +
-            "ADME.md\"\r\n\"ProductName: $($rzSW.ProductName)  \" >> \"$($sourceFolder)\\README.md\"\r" +
-            "\n\"Manufacturer: $($rzSW.Manufacturer)  \" >> \"$($sourceFolder)\\README.md\"\r\n\"Versi" +
-            "on: $($rzSW.ProductVersion)  \" >> \"$($sourceFolder)\\README.md\"\r\n\"URL: $($rzSW.Pr" +
-            "oductURL)  \" >> \"$($sourceFolder)\\README.md\"\r\n\"  \" >> \"$($sourceFolder)\\README.m" +
-            "d\"\r\n\"Install Command: ``powershell.exe -ExecutionPolicy Bypass .\\install.ps1``  " +
-            "\"  >> \"$($sourceFolder)\\README.md\"\r\n\"UnInstall Command: ``powershell.exe -Execut" +
-            "ionPolicy Bypass .\\uninstall.ps1``  \"  >> \"$($sourceFolder)\\README.md\"\r\n\r\n$globa" +
-            "l:authToken = @{ \"Content-Type\" = \"application/json\"; \"Authorization\" = \"Bearer " +
-            "$($args[1])\" ; \"ExpiresOn\" = [DateTimeOffset]::Parse($args[2]) }\r\n$Global:User =" +
-            " $args[3]\r\n#$global:authToken = Get-AuthToken -User $User\r\n\r\n#Download IntuneWin" +
-            "AppUtil\r\nif (-NOT (Test-Path \"$($env:temp)\\IntuneWinAppUtil.exe\")) {\r\n    Invoke" +
-            "-WebRequest -Uri \"https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Co" +
-            "ntent-Prep-Tool/master/IntuneWinAppUtil.exe\" -OutFile \"$($env:temp)\\IntuneWinApp" +
-            "Util.exe\"\r\n}\r\n&\"$($env:temp)\\IntuneWinAppUtil.exe\" -c $sourceFolder -s $file -o " +
-            "$outFolder -q\r\n\r\n$file = [io.path]::GetFileNameWithoutExtension($file)\r\n$SourceF" +
-            "ile = \"$($outFolder)\\$($file).intunewin\"\r\n\r\n$img = [Convert]::ToBase64String((In" +
-            "voke-WebRequest \"$($rzSW.iconURL)&size=128\").Content)\r\n#$img = [Convert]::ToBase" +
-            "64String($rzSW.Image)\r\n\r\n# Defining Intunewin32 detectionRules\r\n#$DetectionXML =" +
-            " Get-IntuneWinXML \"$SourceFile\" -fileName \"detection.xml\"\r\n$PowerShellScript = \"" +
-            "$($sourceFolder)\\detection.ps1\"\r\n$PowerShellRule = New-DetectionRule -PowerShell" +
-            " -ScriptFile \"$PowerShellScript\" -enforceSignatureCheck $false -runAs32Bit $fals" +
-            "e\r\n#$RegistryRule = New-DetectionRule -Registry -RegistryKeyPath \"HKEY_LOCAL_MAC" +
-            "HINE\\SOFTWARE\\App\" -RegistryDetectionType exists -check32BitRegOn64System True\r\n" +
-            "# Creating Array for detection Rule\r\n$DetectionRule = @($PowerShellRule)\r\n$Retur" +
-            "nCodes = Get-DefaultReturnCodes\r\n\r\n$type = \'system\'\r\nif ($rzSW.PSDetection.conta" +
-            "ins(\'HKCU:\')) { $type = \'user\' }\r\n\r\n#requirements\r\n$bReq = [System.Text.Encoding" +
-            "]::UTF8.GetBytes((Get-Content -Path \"$($sourceFolder)\\requirements.ps1\"))\r\n$reqS" +
-            "cript = [System.Convert]::ToBase64String($bReq)\r\n$reqRule = @(@{\"@odata.type\"   " +
-            " = \"#microsoft.graph.win32LobAppPowerShellScriptRequirement\";\r\n        \"operator" +
-            "\"              = \"equal\";\r\n        \"detectionValue\"        = \"true\";\r\n        \"d" +
-            "isplayName\"           = \"requirements\";\r\n        \"enforceSignatureCheck\" = $fals" +
-            "e;\r\n        \"runAs32Bit\"            = $false;\r\n        \"runAsAccount\"          =" +
-            " $type;\r\n        \"scriptContent\"         = $reqScript;\r\n        \"detectionType\" " +
-            "        = \"boolean\"\r\n    })\r\n\r\n#fix blank manufacturer    \r\nif (-NOT $rzSW.Manuf" +
-            "acturer) { $rzSW.Manufacturer = $rzSW.ShortName }   \r\n\r\n# Win32 Application Uplo" +
-            "ad\r\nUpload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + \" \" " +
-            "+ $rzSW.ProductVersion) -publisher $rzSW.Manufacturer `\r\n    -description $rzSW." +
-            "Description -detectionRules $DetectionRule -returnCodes $ReturnCodes `\r\n    -ins" +
-            "tallCmdLine \"powershell.exe -ExecutionPolicy Bypass .\\install.ps1\" `\r\n    -unins" +
-            "tallCmdLine \"powershell.exe -ExecutionPolicy Bypass .\\uninstall.ps1\" `\r\n    -ins" +
-            "tallExperience $type `\r\n    -imageValue $img `\r\n    -requirementRules $reqRule `" +
-            "\r\n    -informationURL $rzSW.ProductURL `\r\n    -developer \"RuckZuck\" `\r\n    -note" +
-            "s \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVers" +
-            "ion)\" `\r\n    -displayVersion \"$($rzSW.ProductVersion)\"\r\n\r\n######################" +
-            "##############################")]
+            "ring\r\n# args2 = ExpireTime string\r\n# args3 = Username\r\n\r\n#Fix IE Error\r\n$keyPath" +
+            " = \'Registry::HKEY_LOCAL_MACHINE\\Software\\Policies\\Microsoft\\Internet Explorer\\M" +
+            "ain\'\r\nif (!(Test-Path $keyPath)) { New-Item $keyPath -Force | Out-Null }\r\nSet-It" +
+            "emProperty -Path $keyPath -Name \"DisableFirstRunCustomize\" -Value 1\r\n\r\nAdd-Type " +
+            "-AssemblyName System.Web\r\n#Check if nuget provider is installed...\r\nif (-NOT (Ge" +
+            "t-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageP" +
+            "rovider -Name \"Nuget\" -Force }\r\n\r\n#Install AzureAD Module if missing\r\ntry {\r\n   " +
+            " if ([version](((Get-Module -ListAvailable AzureAD) | Sort-Object version)[-1])." +
+            "Version -lt \"2.0.2.61\") { Install-Module AzureAD -Force -Confirm:$false }\r\n}\r\nca" +
+            "tch { Install-Module AzureAD -Force -Confirm:$false }\r\n\r\n$ShortName = $args[0]\r\n" +
+            "$outFolder = \"$env:temp\\intunewin\"\r\nif (-NOT (Test-Path $outFolder)) { New-Item " +
+            "-Path $outFolder -ItemType Directory }\r\n#Remove-Item $sourceFolder -Recurse -For" +
+            "ce -ea SilentlyContinue\r\n#New-Item $sourceFolder -ItemType Directory -Force\r\n\r\n$" +
+            "url = Invoke-RestMethod -Uri \"https://ruckzuck.tools/rest/v2/geturl\"\r\n$rzSW = In" +
+            "voke-RestMethod -Uri \"$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpU" +
+            "tility]::UrlEncode($ShortName))&apikey=$((date).Ticks)\" \r\n\r\n#rzSW can have multi" +
+            "ple InstallTypes\r\nif ($rzSW.count -gt 1) {\r\n    #take InstallType that matches t" +
+            "he PreRequisites\r\n    $rzsw = $rzsw | ForEach-Object { if ($_.PSPreReq | Invoke-" +
+            "Expression) { $_ } }\r\n}\r\n\r\n$sourceFolder = \"$env:temp\\$($rzSW.ContentID)\"\r\n$file" +
+            " = $rzSW.ShortName\r\n$rzSW.Files | ForEach-Object { \r\n    $file = $_.FileName\r\n  " +
+            "  $_.URL > \"$env:temp\\$($rzSW.ContentID)\\$($file).url\"\r\n}\r\n\r\nif (-NOT (Test-Path" +
+            " $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Directory }\r\nInvoke-We" +
+            "bRequest -Uri $rzSW.iconURL -OutFile \"$($sourceFolder)\\logo.png\"\r\n$rzSW | Conver" +
+            "tTo-Json > \"$($sourceFolder)\\package.json\"\r\n\r\n#README.md\r\n\"# $($rzSW.ShortName)\"" +
+            " > \"$($sourceFolder)\\README.md\"\r\n\"$($rzSW.Description)\" >> \"$($sourceFolder)\\REA" +
+            "DME.md\"\r\n\"  \" >> \"$($sourceFolder)\\README.md\"\r\n\"ProductName: $($rzSW.ProductName" +
+            ")  \" >> \"$($sourceFolder)\\README.md\"\r\n\"Manufacturer: $($rzSW.Manufacturer)  \" >>" +
+            " \"$($sourceFolder)\\README.md\"\r\n\"Version: $($rzSW.ProductVersion)  \" >> \"$($sourc" +
+            "eFolder)\\README.md\"\r\n\"URL: $($rzSW.ProductURL)  \" >> \"$($sourceFolder)\\README.md" +
+            "\"\r\n\"  \" >> \"$($sourceFolder)\\README.md\"\r\n\"Install Command: ``powershell.exe -Exe" +
+            "cutionPolicy Bypass .\\install.ps1``  \"  >> \"$($sourceFolder)\\README.md\"\r\n\"UnInst" +
+            "all Command: ``powershell.exe -ExecutionPolicy Bypass .\\uninstall.ps1``  \"  >> \"" +
+            "$($sourceFolder)\\README.md\"\r\n\r\n$global:authToken = @{ \"Content-Type\" = \"applicat" +
+            "ion/json\"; \"Authorization\" = \"Bearer $($args[1])\" ; \"ExpiresOn\" = [DateTimeOffse" +
+            "t]::Parse($args[2]) }\r\n$Global:User = $args[3]\r\n#$global:authToken = Get-AuthTok" +
+            "en -User $User\r\n\r\n#Download IntuneWinAppUtil\r\nif (-NOT (Test-Path \"$($env:temp)\\" +
+            "IntuneWinAppUtil.exe\")) {\r\n    Invoke-WebRequest -Uri \"https://raw.githubusercon" +
+            "tent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe" +
+            "\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\"\r\n}\r\n&\"$($env:temp)\\IntuneWinAppUt" +
+            "il.exe\" -c $sourceFolder -s $file -o $outFolder -q\r\n\r\n$file = [io.path]::GetFile" +
+            "NameWithoutExtension($file)\r\n$SourceFile = \"$($outFolder)\\$($file).intunewin\"\r\n\r" +
+            "\n$img = [Convert]::ToBase64String((Invoke-WebRequest \"$($rzSW.iconURL)&size=128\"" +
+            ").Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)\r\n\r\n# Defining Intunew" +
+            "in32 detectionRules\r\n#$DetectionXML = Get-IntuneWinXML \"$SourceFile\" -fileName \"" +
+            "detection.xml\"\r\n$PowerShellScript = \"$($sourceFolder)\\detection.ps1\"\r\n$PowerShel" +
+            "lRule = New-DetectionRule -PowerShell -ScriptFile \"$PowerShellScript\" -enforceSi" +
+            "gnatureCheck $false -runAs32Bit $false\r\n#$RegistryRule = New-DetectionRule -Regi" +
+            "stry -RegistryKeyPath \"HKEY_LOCAL_MACHINE\\SOFTWARE\\App\" -RegistryDetectionType e" +
+            "xists -check32BitRegOn64System True\r\n# Creating Array for detection Rule\r\n$Detec" +
+            "tionRule = @($PowerShellRule)\r\n$ReturnCodes = Get-DefaultReturnCodes\r\n\r\n$type = " +
+            "\'system\'\r\nif ($rzSW.PSDetection.contains(\'HKCU:\')) { $type = \'user\' }\r\n\r\n#requir" +
+            "ements\r\n$bReq = [System.Text.Encoding]::UTF8.GetBytes((Get-Content -Path \"$($sou" +
+            "rceFolder)\\requirements.ps1\"))\r\n$reqScript = [System.Convert]::ToBase64String($b" +
+            "Req)\r\n$reqRule = @(@{\"@odata.type\"    = \"#microsoft.graph.win32LobAppPowerShellS" +
+            "criptRequirement\";\r\n        \"operator\"              = \"equal\";\r\n        \"detecti" +
+            "onValue\"        = \"true\";\r\n        \"displayName\"           = \"requirements\";\r\n  " +
+            "      \"enforceSignatureCheck\" = $false;\r\n        \"runAs32Bit\"            = $fals" +
+            "e;\r\n        \"runAsAccount\"          = $type;\r\n        \"scriptContent\"         = " +
+            "$reqScript;\r\n        \"detectionType\"         = \"boolean\"\r\n    })\r\n\r\n#fix blank m" +
+            "anufacturer    \r\nif (-NOT $rzSW.Manufacturer) { $rzSW.Manufacturer = $rzSW.Short" +
+            "Name }   \r\n\r\n# Win32 Application Upload\r\nUpload-Win32Lob -SourceFile $SourceFile" +
+            " -displayName ($rzSW.ShortName + \" \" + $rzSW.ProductVersion) -publisher $rzSW.Ma" +
+            "nufacturer `\r\n    -description $rzSW.Description -detectionRules $DetectionRule " +
+            "-returnCodes $ReturnCodes `\r\n    -installCmdLine \"powershell.exe -ExecutionPolic" +
+            "y Bypass .\\install.ps1\" `\r\n    -uninstallCmdLine \"powershell.exe -ExecutionPolic" +
+            "y Bypass .\\uninstall.ps1\" `\r\n    -installExperience $type `\r\n    -imageValue $im" +
+            "g `\r\n    -requirementRules $reqRule `\r\n    -informationURL $rzSW.ProductURL `\r\n " +
+            "   -developer \"RuckZuck\" `\r\n    -notes \"RZID:$($rzSW.SWId)`nShortName:$($rzSW.Sh" +
+            "ortName)`nVersion:$($rzSW.ProductVersion)\" `\r\n    -displayVersion \"$($rzSW.Produ" +
+            "ctVersion)\"\r\n\r\n####################################################")]
         public string RZCreateAppPS {
             get {
                 return ((string)(this["RZCreateAppPS"]));
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
-            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
-        public global::System.Collections.Specialized.StringCollection UpdExlusion {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
-            }
-            set {
-                this["UpdExlusion"] = value;
             }
         }
         
@@ -675,6 +665,19 @@ namespace RuckZuck_Tool.Properties {
         public string azurepipelines {
             get {
                 return ((string)(this["azurepipelines"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection UpdExlusion {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["UpdExlusion"]));
+            }
+            set {
+                this["UpdExlusion"] = value;
             }
         }
     }

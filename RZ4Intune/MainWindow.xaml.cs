@@ -79,7 +79,6 @@ namespace RuckZuck_Tool
             s.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
             tabWizard.ItemContainerStyle = s;
 
-            tbSVC.Text = RZRestAPIv2.sURL;
             if (RZRestAPIv2.DisableBroadcast)
             {
                 cbRZCache.IsChecked = false;
@@ -91,17 +90,17 @@ namespace RuckZuck_Tool
                 cbRZCache.IsChecked = !Properties.Settings.Default.DisableBroadcast;
             }
 
+            tbSVC.Text = Task.Run(() => RZRestAPIv2.sURL).Result;
+
             if (string.IsNullOrEmpty(RZRestAPIv2.CustomerID))
             {
-                tbCustomerID.IsEnabled = true;
-                RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
-                btSettingsSave.IsEnabled = true;
+                //tbCustomerID.IsEnabled = true;
+                //RZRestAPIv2.CustomerID = Properties.Settings.Default.CustomerID;
             }
             else
             {
                 tbCustomerID.Text = RZRestAPIv2.CustomerID;
                 tbCustomerID.IsEnabled = false;
-                btSettingsSave.IsEnabled = false;
             }
 
             oInstPanel.onEdit += oInstPanel_onEdit;
@@ -144,7 +143,7 @@ namespace RuckZuck_Tool
             oSCAN = new RZScan(false, false);
 
             //AzureAD Authentication
-            GetAADTokenAsync();
+            _ = GetAADTokenAsync();
 
             FileVersionInfo FI = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location);
 
@@ -156,7 +155,8 @@ namespace RuckZuck_Tool
             oSCAN.OnInstalledSWAdded += OSCAN_OnInstalledSWAdded;
             oSCAN.bCheckUpdates = true;
 
-            oSCAN.GetSWRepository().ConfigureAwait(false);
+            var ct = new CancellationTokenSource(30000).Token;
+            _ = oSCAN.GetSWRepositoryAsync(ct); //.ConfigureAwait(false);
 
             //oSCAN.tRegCheck.Start();
 
@@ -339,7 +339,7 @@ namespace RuckZuck_Tool
 
         void oInstPanel_onEdit(object sender, EventArgs e)
         {
-            AnonymousDelegate update = delegate ()
+            AnonymousDelegate update = async delegate ()
             {
                 try
                 {
@@ -358,7 +358,7 @@ namespace RuckZuck_Tool
                         SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
 
                         //get Icon
-                        oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                        oSW.SW.Image = await RZRestAPIv2.GetIconAsync(oSW.SW.IconHash);
 
                         oNewPanel.OpenXML(oSW.SW);
 
@@ -414,7 +414,8 @@ namespace RuckZuck_Tool
                 {
                     try
                     {
-                        oSCAN.GetSWRepository().Wait(2000);
+                        var cts = new CancellationTokenSource(15000).Token;
+                        _ = oSCAN.GetSWRepositoryAsync(cts);
                     }
                     catch { }
                 }
@@ -634,7 +635,7 @@ namespace RuckZuck_Tool
                     List<GetSoftware> lServer = new List<GetSoftware>();
                     if (oInstPanel.lvSW.ItemsSource == null)
                     {
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
                     }
                     else
                     {
@@ -642,7 +643,7 @@ namespace RuckZuck_Tool
                     }
 
                     if (lServer == null)
-                        lServer = RZRestAPIv2.GetCatalog().OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
+                        lServer = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.OrderBy(t => t.ShortName).ThenByDescending(t => t.ProductVersion).ThenByDescending(t => t.ProductName).ToList();
 
                     if (Keyboard.Modifiers == ModifierKeys.Shift)
                     {
@@ -754,7 +755,7 @@ namespace RuckZuck_Tool
                 btSettingsSave.IsEnabled = false;
 
                 oSCAN.SoftwareRepository = new List<GetSoftware>();
-                oSCAN.GetSWRepository().ConfigureAwait(false);
+                oSCAN.GetSWRepositoryAsync(new CancellationTokenSource(30000).Token).GetAwaiter().GetResult();
             }
             catch
             {

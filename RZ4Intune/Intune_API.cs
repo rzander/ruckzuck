@@ -170,7 +170,7 @@ namespace RuckZuck_Tool
         private List<GetSoftware> GetRZSoftware(string ProdName, string ProdVersion, string Manufacturer)
         {
             List<GetSoftware> oResult = new List<GetSoftware>();
-            oResult.AddRange(RZRestAPIv2.GetCatalog().Where(t => t.ProductName == ProdName && t.Manufacturer == Manufacturer && t.ProductVersion == ProdVersion));
+            oResult.AddRange(RZRestAPIv2.GetCatalogAsync().GetAwaiter().GetResult().Where(t => t.ProductName == ProdName && t.Manufacturer == Manufacturer && t.ProductVersion == ProdVersion));
 
             return oResult;
         }

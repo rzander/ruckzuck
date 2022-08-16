@@ -273,7 +273,7 @@ namespace RuckZuck_Tool
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = true;
 
-                                oSW.Download(true).ConfigureAwait(false); //Enforce download
+                                _ = oSW.DownloadAsync(false);
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
                                 foreach (string sPreReq in oSW.SW.PreRequisites)
@@ -293,7 +293,7 @@ namespace RuckZuck_Tool
                                                 //oPreReq.Downloaded += OSW_Downloaded;
                                                 oPreReq.ProgressDetails += OSW_ProgressDetails;
                                                 oPreReq.downloadTask.AutoInstall = true;
-                                                oPreReq.Download(false).ConfigureAwait(false); ;
+                                                _ = oPreReq.DownloadAsync(false);
                                                 dm.lDLTasks.Add(oPreReq.downloadTask);
                                             }
                                         }
@@ -370,7 +370,7 @@ namespace RuckZuck_Tool
 
                                 if (oFeedBack.hasFeedback)
                                 {
-                                    RZRestAPIv2.Feedback(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), Properties.Settings.Default.CustomerID, oFeedBack.tbFeedback.Text).ConfigureAwait(false); ;
+                                    RZRestAPIv2.FeedbackAsync(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, oFeedBack.isWorking.ToString(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, oFeedBack.tbFeedback.Text, RZRestAPIv2.CustomerID).ConfigureAwait(false); ;
                                 }
                             };
                             Dispatcher.Invoke(update);
@@ -414,7 +414,7 @@ namespace RuckZuck_Tool
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = false;
-                                oSW.Download(false).ConfigureAwait(false);
+                                _ = oSW.DownloadAsync(false).ConfigureAwait(false);
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
                             }
@@ -455,7 +455,7 @@ namespace RuckZuck_Tool
             Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                var oldSW = RZRestAPIv2.GetCatalog("--old--"); //.Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, ShortName = x.ShortName, isInstalled = false }).ToList();
+                var oldSW = Task.Run(() => RZRestAPIv2.GetCatalogAsync("--old--")).Result; //.Distinct().Select(x => new GetSoftware() { Categories = x.Categories.ToList(), Description = x.Description, Downloads = x.Downloads, IconId = x.IconId, Image = x.Image, Manufacturer = x.Manufacturer, ProductName = x.ProductName, ProductURL = x.ProductURL, ProductVersion = x.ProductVersion, Quality = x.Quality, ShortName = x.ShortName, isInstalled = false }).ToList();
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -478,7 +478,7 @@ namespace RuckZuck_Tool
             try
             {
                 tSearch.Stop();
-                var badSW = RZRestAPIv2.GetCatalog("--new--");
+                List<GetSoftware> badSW = Task.Run(() => RZRestAPIv2.GetCatalogAsync("--new--")).Result;
                 tbSearch.Text = "";
 
                 //Mark all installed...
@@ -622,7 +622,7 @@ namespace RuckZuck_Tool
 
                         //Get Icon if missing
                         if (oSW.SW.Image == null)
-                            oSW.SW.Image = RZRestAPIv2.GetIcon(oSW.SW.IconHash);
+                            oSW.SW.Image = Task.Run(() => RZRestAPIv2.GetIconAsync(oSW.SW.IconHash, "", 48)).Result;
 
                         oExe.Icon = oSW.SW.Image;
                         oExe.Sources.Add(Properties.Resources.Source.Replace("RZRZRZ", oSW.SW.ShortName));
