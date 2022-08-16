@@ -386,7 +386,8 @@ namespace RuckZuck_Tool
             {
                 if (oSoftware.Image == null)
                 {
-                    oSoftware.Image = RZRestAPIv2.GetIconAsync(oSoftware.IconHash).Result;
+
+                    oSoftware.Image = Task.Run(() => RZRestAPIv2.GetIconAsync(oSoftware.IconHash)).Result;
                 }
 
                 imgIcon.Tag = oSoftware.Image;
@@ -629,10 +630,10 @@ namespace RuckZuck_Tool
 
                 Console.WriteLine("Downloading...");
 
-                if (oRZSW.SoftwareUpdate.DownloadAsync().Result)
+                if (oRZSW.SoftwareUpdate.DownloadAsync().GetAwaiter().GetResult())
                 {
                     Console.WriteLine("Installing...");
-                    if (oRZSW.SoftwareUpdate.InstallAsync(false, true).Result)
+                    if (oRZSW.SoftwareUpdate.InstallAsync(false, true).GetAwaiter().GetResult())
                     {
                         Console.WriteLine("done.");
                     }
@@ -863,8 +864,8 @@ namespace RuckZuck_Tool
         {
             try
             {
-                List<GetSoftware> oSW = (Task.Run(() => RZRestAPIv2.GetCatalogAsync())).Result.Where(t => t.ShortName == tbProductName.Text).ToList();
-                //List<GetSoftware> oSW = RZRestAPI.SWResults(tbProductName.Text).ToList();
+                List<GetSoftware> oSW = Task.Run(() => RZRestAPIv2.GetCatalogAsync()).Result.Where(t => t.ShortName == tbProductName.Text).ToList(); 
+
                 if (oSW.FirstOrDefault() != null)
                 {
                     tbProductURL.Text = oSW.FirstOrDefault().ProductURL;
