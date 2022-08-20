@@ -177,7 +177,7 @@ namespace RuckZuck_Tool
 
         public class GraphRZ
         {
-            public long RZID { get; set; }
+            //public long RZID { get; set; }
             public string Shortname { get; set; }
             public bool Bootstrap { get; set; }
             public string Version { get; set; }
@@ -198,18 +198,22 @@ namespace RuckZuck_Tool
                         string sNotes =oRes["notes"].Value<string>();
                         foreach(string sLine in sNotes.Split('\n'))
                         {
-                            switch(sLine.Split(':')[0].ToUpper())
+                            try
                             {
-                                case ("RZID"):
-                                    oRZ.RZID = long.Parse(sLine.Split(':')[1]);
-                                    break;
-                                case ("SHORTNAME"):
-                                    oRZ.Shortname = sLine.Split(':')[1];
-                                    break;
-                                case ("VERSION"):
-                                    oRZ.Version = sLine.Split(':')[1];
-                                    break;
+                                switch (sLine.Split(':')[0].ToUpper())
+                                {
+                                    case ("RZID"):
+                                        //oRZ.RZID = long.Parse(sLine.Split(':')[1]);
+                                        break;
+                                    case ("SHORTNAME"):
+                                        oRZ.Shortname = sLine.Split(':')[1];
+                                        break;
+                                    case ("VERSION"):
+                                        oRZ.Version = sLine.Split(':')[1];
+                                        break;
+                                }
                             }
+                            catch { }
                         }
 
                         lResult.Add(oRZ);
@@ -314,6 +318,8 @@ namespace RZUpdate
                 ProgressDetails(downloadTask, EventArgs.Empty);
                 return false;
             }
+
+            await Task.CompletedTask;
             return true;
         }
 
@@ -432,13 +438,9 @@ namespace RuckZuck.Base
                 {
                     try
                     {
-                        if (SoftwareRepository.Count(t => t.SWId == RZSW.RZID) == 0)
+                        if(SoftwareRepository.Count(t => t.ShortName == RZSW.Shortname) != 0)
                         {
-                            //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "not match, IconId:" + SQLRZ.RZID.ToString() });
-
-                            var oSW = SoftwareRepository.FirstOrDefault(t => t.ShortName == RZSW.Shortname);
-
-                            if (oSW != null)
+                            foreach(var oSW in SoftwareRepository.Where(t=> t.ShortName == RZSW.Shortname))
                             {
                                 AddSoftware oNew = new AddSoftware()
                                 {
@@ -447,63 +449,94 @@ namespace RuckZuck.Base
                                     Manufacturer = oSW.Manufacturer,
                                     ShortName = oSW.ShortName,
                                     Description = oSW.Description,
-                                    SWId = oSW.SWId,
+                                    //SWId = oSW.SWId,
                                     IconHash = oSW.IconHash,
                                     MSIProductID = RZSW.Version
-                            };
+                                };
 
-                            //if (RZSW.Bootstrap)
-                            //    oNew.Author = "BootstrapTrue";
-                            //else
-                            //    oNew.Author = "BootstrapFalse";
-
-#if DEBUG
-                            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S1;" + "New SWVersion: ", oNew.ProductName, oNew.ProductVersion, oNew.MSIProductID });
-#endif
-                            NewSoftwareVersions.Add(oNew);
-                        }
-                    }
-                        else
-                    {
-                        try
-                        {
-                            var oSW = SoftwareRepository.FirstOrDefault(t => t.SWId == RZSW.RZID);
-                            if (oSW != null)
-                            {
-                                try
+                                if (oSW.ProductVersion != RZSW.Version)
                                 {
-                                    AddSoftware oExisting = new AddSoftware()
-                                    {
-                                        ProductName = oSW.ProductName,
-                                        ProductVersion = oSW.ProductVersion,
-                                        Manufacturer = oSW.Manufacturer,
-                                        ShortName = oSW.ShortName,
-                                        Description = oSW.Description,
-                                        IconHash = oSW.IconHash,
-                                        SWId = oSW.SWId
-                                    };
-
-                                    //if (RZSW.Bootstrap)
-                                    //    oExisting.Author = "BootstrapTrue";
-                                    //else
-                                    //    oExisting.Author = "BootstrapFalse";
-
-#if DEBUG
-                                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S2;" + "Installed SWVersion: ", oExisting.ProductName, oExisting.ProductVersion });
-#endif
-                                    InstalledSoftware.Add(oExisting);
+                                    NewSoftwareVersions.Add(oNew);
+                                } 
+                                else
+                                {
+                                    InstalledSoftware.Add(oNew);
                                 }
-                                catch { }
                             }
-
                         }
-                        catch { }
+
+//                        if (SoftwareRepository.Count(t => t.SWId == RZSW.RZID) == 0)
+//                        {
+//                            //File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\dbg.txt"), new string[] { "not match, IconId:" + SQLRZ.RZID.ToString() });
+
+//                            var oSW = SoftwareRepository.FirstOrDefault(t => t.ShortName == RZSW.Shortname);
+
+//                            if (oSW != null)
+//                            {
+//                                AddSoftware oNew = new AddSoftware()
+//                                {
+//                                    ProductName = oSW.ProductName,
+//                                    ProductVersion = oSW.ProductVersion,
+//                                    Manufacturer = oSW.Manufacturer,
+//                                    ShortName = oSW.ShortName,
+//                                    Description = oSW.Description,
+//                                    SWId = oSW.SWId,
+//                                    IconHash = oSW.IconHash,
+//                                    MSIProductID = RZSW.Version
+//                                };
+
+//                                //if (RZSW.Bootstrap)
+//                                //    oNew.Author = "BootstrapTrue";
+//                                //else
+//                                //    oNew.Author = "BootstrapFalse";
+
+//#if DEBUG
+//                            System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S1;" + "New SWVersion: ", oNew.ProductName, oNew.ProductVersion, oNew.MSIProductID });
+//#endif
+//                                NewSoftwareVersions.Add(oNew);
+//                            }
+//                        }
+//                        else
+//                        {
+//                            try
+//                            {
+//                                var oSW = SoftwareRepository.FirstOrDefault(t => t.SWId == RZSW.RZID);
+//                                if (oSW != null)
+//                                {
+//                                    try
+//                                    {
+//                                        AddSoftware oExisting = new AddSoftware()
+//                                        {
+//                                            ProductName = oSW.ProductName,
+//                                            ProductVersion = oSW.ProductVersion,
+//                                            Manufacturer = oSW.Manufacturer,
+//                                            ShortName = oSW.ShortName,
+//                                            Description = oSW.Description,
+//                                            IconHash = oSW.IconHash,
+//                                            SWId = oSW.SWId
+//                                        };
+
+//                                        //if (RZSW.Bootstrap)
+//                                        //    oExisting.Author = "BootstrapTrue";
+//                                        //else
+//                                        //    oExisting.Author = "BootstrapFalse";
+
+//#if DEBUG
+//                                    System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";S2;" + "Installed SWVersion: ", oExisting.ProductName, oExisting.ProductVersion });
+//#endif
+//                                        InstalledSoftware.Add(oExisting);
+//                                    }
+//                                    catch { }
+//                                }
+
+//                            }
+//                            catch { }
+//                        }
                     }
-                }
                     catch (Exception ex)
-            {
-                System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1814E1" + ex.Message });
-            }
+                    {
+                        System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZError.txt"), new string[] { DateTime.Now.ToString() + ";F1814E1" + ex.Message });
+                    }
         }
 
                 //Cleanup SW where new Version already exists

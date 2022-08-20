@@ -15,7 +15,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="RZGetExistingAppsURL" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://graph.microsoft.com/beta/deviceAppManagement/mobileApps?$select=id,DisplayName,notes&amp;$filter=startswith(notes,'RZID:')</Value>
+      <Value Profile="(Default)">https://graph.microsoft.com/beta/deviceAppManagement/mobileApps?$select=id,DisplayName,notes&amp;$filter=contains(notes,'ShortName:')</Value>
     </Setting>
     <Setting Name="RZSecurityScope" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DeviceManagementConfiguration.ReadWrite.All;DeviceManagementApps.ReadWrite.All</Value>
@@ -1249,7 +1249,7 @@ if (-NOT (Test-Path $outFolder)) { New-Item -Path $outFolder -ItemType Directory
 #New-Item $sourceFolder -ItemType Directory -Force
 
 $url = Invoke-RestMethod -Uri "https://ruckzuck.tools/rest/v2/geturl"
-$rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))&amp;apikey=$((date).Ticks)" 
+$rzSW = Invoke-RestMethod -Uri "$($url)/rest/v2/getsoftwares?shortname=$([System.Web.HttpUtility]::UrlEncode($ShortName))&amp;apikey=$((Get-date).Ticks)" 
 
 #rzSW can have multiple InstallTypes
 if ($rzSW.count -gt 1) {
@@ -1335,7 +1335,7 @@ Upload-Win32Lob -SourceFile $SourceFile -displayName ($rzSW.ShortName + " " + $r
     -requirementRules $reqRule `
     -informationURL $rzSW.ProductURL `
     -developer "RuckZuck" `
-    -notes "RZID:$($rzSW.SWId)`nShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)" `
+    -notes "ShortName:$($rzSW.ShortName)`nVersion:$($rzSW.ProductVersion)" `
     -displayVersion "$($rzSW.ProductVersion)"
 
 ####################################################</Value>
