@@ -277,6 +277,7 @@ namespace RuckZuck_Tool
 
                 oSCAN.bCheckUpdates = true;
                 oSCAN.SWScan();
+                //_ = oSCAN.SWScanAsync();
             }
             catch { }
         }
@@ -324,7 +325,7 @@ namespace RuckZuck_Tool
 
         void oInstPanel_onEdit(object sender, EventArgs e)
         {
-            AnonymousDelegate update = delegate ()
+            AnonymousDelegate update = async delegate ()
             {
                 try
                 {
@@ -343,10 +344,13 @@ namespace RuckZuck_Tool
                         SWUpdate oSW = new SWUpdate(oSelectedItem.ProductName, oSelectedItem.ProductVersion, oSelectedItem.Manufacturer, bNoPreReqCheck);
 
                         //get Icon
-                        oSW.SW.Image = RZRestAPIv2.GetIconAsync(oSW.SW.IconHash).GetAwaiter().GetResult();
+                        if (oSW.SW != null)
+                        {
+                            oSW.SW.Image = await RZRestAPIv2.GetIconAsync(oSW.SW.IconHash);
 
-                        oNewPanel.OpenXML(oSW.SW);
-
+                            oNewPanel.OpenXML(oSW.SW);
+                        }
+                        tabNewSWSMI.Tag = tabWizard.SelectedItem;
                         tabWizard.SelectedItem = tabNewSWSMI;
                     }
 
@@ -381,7 +385,7 @@ namespace RuckZuck_Tool
 
         private void OSCAN_OnInstalledSWAdded(object sender, EventArgs e)
         {
-            oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
+            _ = oSCAN.CheckUpdatesAsync(new List<AddSoftware>() { ((AddSoftware)sender) });
         }
 
         private void btNewSoftware_Click(object sender, RoutedEventArgs e)
@@ -759,7 +763,26 @@ namespace RuckZuck_Tool
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Application.Current.Shutdown();
+            bool allowclose = true;
+            if (oUpdPanel.dm.lDLTasks.Count(t => t.Downloading || t.Installing) > 0)
+            {
+                if (MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                    allowclose = false;
+            }
+            if (oInstPanel.dm.lDLTasks.Count(t => t.Downloading || t.Installing) > 0)
+            {
+                if (MessageBox.Show("RuckZuck has some download/installation jobs running, do you really want to quit and kill these jobs ?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                    allowclose = false;
+            }
+
+            if (allowclose)
+            {
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                e.Cancel = true;
+            }
         }
 
         private void btUpdExclusion_Click(object sender, RoutedEventArgs e)

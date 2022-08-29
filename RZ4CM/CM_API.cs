@@ -364,7 +364,7 @@ namespace RuckZuck_Tool
                         oRes.Version = sqlReader["Version"] as string;
 
 #if DEBUG
-                        System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R4;" + "SW found: ", oRes.RZID.ToString(), oRes.Shortname, oRes.Version, oRes.Bootstrap.ToString() });
+                        System.IO.File.AppendAllLines(Environment.ExpandEnvironmentVariables("%TEMP%\\RZDebug.txt"), new string[] { DateTime.Now.ToString() + ";R4;" + "SW found: ", oRes.Shortname, oRes.Version, oRes.Bootstrap.ToString() });
 #endif
 
                         lResult.Add(oRes);
