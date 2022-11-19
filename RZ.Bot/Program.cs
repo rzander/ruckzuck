@@ -136,6 +136,7 @@ namespace RZ.Bot
                                     {
                                         Console.ForegroundColor = ConsoleColor.Red;
                                         Console.WriteLine("Error: Product not valid... " + Shortname);
+                                        lDone.Add(Shortname.ToLower());
                                         Console.ResetColor();
                                         continue;
                                     }
