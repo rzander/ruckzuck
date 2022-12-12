@@ -127,7 +127,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("RuckZuck.tools")]
 [assembly: AssemblyProduct("RZRZRZ")]
-[assembly: AssemblyCopyright("Copyright ©  2022 by Roger Zander")]
+[assembly: AssemblyCopyright("Copyright ©  2023 by Roger Zander")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]

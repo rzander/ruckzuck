@@ -919,7 +919,7 @@ namespace RuckZuck_Tool
                 oSoftware.Image = imgIcon.Tag as byte[];
 
             //Convert to JSON
-            JavaScriptSerializer ser = new JavaScriptSerializer();
+            RuckZuck.Base.JavaScriptSerializer ser = new RuckZuck.Base.JavaScriptSerializer();
             string sJson = ser.Serialize(oSoftware);
             File.WriteAllText(sFile, sJson);
         }
