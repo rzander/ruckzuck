@@ -482,27 +482,30 @@ namespace RZUpdate
 
             if (SW == null)
             {
-                //Load all MetaData for the specific SW
-                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).Result)
+                Task.Run(async () =>
                 {
-                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
-                        SWCheck.PSPreReq = "$true; ";
-
-                    //Check PreReq for all Installation-types of the Software
-                    if ((bool)(SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult())[0].BaseObject)
+                    //Load all MetaData for the specific SW
+                    foreach (AddSoftware SWCheck in await RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
                     {
-                        SW = SWCheck;
-                        break;
+                        if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                            SWCheck.PSPreReq = "$true; ";
+
+                        //Check PreReq for all Installation-types of the Software
+                        if ((bool)(SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult())[0].BaseObject)
+                        {
+                            SW = SWCheck;
+                            break;
+                        }
                     }
-                }
 
-                //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+                    //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
 
-                if (SW.Files == null)
-                    SW.Files = new List<contentFiles>();
+                    if (SW.Files == null)
+                        SW.Files = new List<contentFiles>();
 
-                if (string.IsNullOrEmpty(SW.PSPreReq))
-                    SW.PSPreReq = "$true; ";
+                    if (string.IsNullOrEmpty(SW.PSPreReq))
+                        SW.PSPreReq = "$true; ";
+                }).Wait();
             }
 
             if (SW.Files != null)
@@ -721,10 +724,10 @@ namespace RZUpdate
                 {
                     //_DownloadFile(URL, FileName).Result.ToString();
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
-                    httpRequest.UserAgent = "chocolatey command line";
+                    //httpRequest.UserAgent = "ruckzuck package manager";
                     httpRequest.AllowAutoRedirect = true;
                     httpRequest.MaximumAutomaticRedirections = 5;
-                    Response = httpRequest.GetResponse();
+                    Response = await httpRequest.GetResponseAsync();
 
                     // Get back the HTTP response for web server
                     //Response = (HttpWebResponse)httpRequest.GetResponse();
@@ -792,7 +795,7 @@ namespace RZUpdate
                             }
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         ex.Message.ToString();
                     }
@@ -1651,7 +1654,7 @@ namespace RZUpdate
             catch (Exception ex)
             {
                 Trace.WriteLine("ERROR: " + ex.Message);
-                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID);
+                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID).Result.ToString();
                 downloadTask.Error = true;
                 downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
                 downloadTask.Installed = false;

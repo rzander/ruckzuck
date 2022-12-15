@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Script.Serialization;
+//using System.Web.Script.Serialization;
 
 namespace RuckZuck.Base
 {
@@ -748,6 +748,19 @@ namespace RuckZuck.Base
             catch { }
 
             return false;
+        }
+    }
+
+    internal class JavaScriptSerializer
+    {
+        internal T Deserialize<T>(string jsonObject)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal string Serialize<T>(T jsonObject)
+        {
+            throw new NotImplementedException();
         }
     }
 }

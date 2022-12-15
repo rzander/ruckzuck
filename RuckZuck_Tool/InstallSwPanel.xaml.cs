@@ -315,7 +315,7 @@ namespace RuckZuck_Tool
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = false;
-                                _ = oSW.DownloadAsync(false).ConfigureAwait(false);
+                                _ = oSW.DownloadAsync(false);
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
                             }

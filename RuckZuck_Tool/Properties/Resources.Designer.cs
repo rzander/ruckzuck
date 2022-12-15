@@ -96,14 +96,14 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Threading;
         ///using System.Threading.Tasks;
         ///using System.Web;
-        ///using System.Web.Script.Serialization;
+        /////using System.Web.Script.Serialization;
         ///
         ///namespace RuckZuck.Base
         ///{
         ///    public class AddSoftware
         ///    {
         ///        public string Architecture { get; set; }
-        ///        public string Aut [rest of string was truncated]&quot;;.
+        ///        public string A [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
