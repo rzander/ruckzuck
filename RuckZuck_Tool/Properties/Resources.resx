@@ -132,8 +132,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("2193048a-dcd5-433e-a2c0-28384b9ebad2")]
-[assembly: AssemblyVersion("1.7.2.5")]
-[assembly: AssemblyFileVersion("1.7.2.5")]</value>
+[assembly: AssemblyVersion("1.7.2.6")]
+[assembly: AssemblyFileVersion("1.7.2.6")]</value>
   </data>
   <data name="RZRestApi" xml:space="preserve">
     <value>using Microsoft.Win32;
@@ -150,6 +150,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.UI.WebControls;
 using System.Web.Script.Serialization;
 
 namespace RuckZuck.Base
@@ -503,7 +504,7 @@ namespace RuckZuck.Base
                     return serializer.Deserialize&lt;T&gt;(JsonObject); //System.Web.Script.Serialization;
                 }
             }
-            catch (ReflectionTypeLoadException ex)
+            catch (Exception ex)
             {
                 ex.Message.ToString();
             }
@@ -534,7 +535,7 @@ namespace RuckZuck.Base
                 if (Assembly.Load("Newtonsoft.Json") != null)
                     return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ex.Message.ToString();
             }
@@ -675,7 +676,7 @@ namespace RuckZuck.Base
                 if (!string.IsNullOrEmpty(response) &amp;&amp; !ct.Value.IsCancellationRequested)
                 {
                     List&lt;GetSoftware&gt; lRes = GetObjectFromJson&lt;List&lt;GetSoftware&gt;&gt;(response);
-                    Console.WriteLine(lRes.Count);
+
                     if (lRes.Count &gt; 500 &amp;&amp; !customerid.StartsWith("--"))
                     {
                         try
@@ -789,7 +790,7 @@ namespace RuckZuck.Base
                 }
 
                 return new List&lt;AddSoftware&gt;();
-            });
+            }, (CancellationToken)ct);
         }
 
         public static async Task&lt;string&gt; GetURLAsync(string customerid, CancellationToken? ct = null)
@@ -1059,7 +1060,7 @@ namespace RZUpdate
                 dwStateAction = StateAction.Ignore;
                 hWVTStateData = IntPtr.Zero;
                 pwszURLReference = IntPtr.Zero;
-                dwProvFlags = TrustProviderFlags.Safer;
+                dwProvFlags = TrustProviderFlags.HashOnly;
                 dwUIContext = UIContext.Execute;
             }
 
@@ -1278,7 +1279,7 @@ namespace RZUpdate
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
 
             return new AddSoftware();
@@ -1375,27 +1376,30 @@ namespace RZUpdate
 
             if (SW == null)
             {
-                //Load all MetaData for the specific SW
-                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).Result)
+                Task.Run(async () =&gt;
                 {
-                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
-                        SWCheck.PSPreReq = "$true; ";
-
-                    //Check PreReq for all Installation-types of the Software
-                    if ((bool)(SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult())[0].BaseObject)
+                    //Load all MetaData for the specific SW
+                    foreach (AddSoftware SWCheck in await RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID))
                     {
-                        SW = SWCheck;
-                        break;
+                        if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                            SWCheck.PSPreReq = "$true; ";
+
+                        //Check PreReq for all Installation-types of the Software
+                        if ((bool)(SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult())[0].BaseObject)
+                        {
+                            SW = SWCheck;
+                            break;
+                        }
                     }
-                }
 
-                //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
+                    //SW = RZRestAPIv2.GetSoftwares(ProductName, ProductVersion, Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
 
-                if (SW.Files == null)
-                    SW.Files = new List&lt;contentFiles&gt;();
+                    if (SW.Files == null)
+                        SW.Files = new List&lt;contentFiles&gt;();
 
-                if (string.IsNullOrEmpty(SW.PSPreReq))
-                    SW.PSPreReq = "$true; ";
+                    if (string.IsNullOrEmpty(SW.PSPreReq))
+                        SW.PSPreReq = "$true; ";
+                }).Wait();
             }
 
             if (SW.Files != null)
@@ -1440,7 +1444,10 @@ namespace RZUpdate
                     }
                     else
                     {
-                        var oGetSW = RZRestAPIv2.GetCatalogAsync(RZRestAPIv2.CustomerID).Result.Where(t =&gt; t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
+                        var tSW = RZRestAPIv2.GetCatalogAsync(RZRestAPIv2.CustomerID);
+                        tSW.Wait();
+                        List&lt;GetSoftware&gt; lCat = tSW.Result;
+                        var oGetSW = lCat.Where(t =&gt; t.ShortName.ToLower() == ShortName.ToLower()).FirstOrDefault(); // RZRestAPI.SWGet(ShortName).FirstOrDefault();
                         if (oGetSW != null)
                         {
                             SW.ProductName = oGetSW.ProductName;
@@ -1450,22 +1457,26 @@ namespace RZUpdate
 
                             if (SW.Architecture == null)
                             {
-                                //Load all MetaData for the specific SW
-                                foreach (AddSoftware SWCheck in RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).Result)
+                                Task.Run(() =&gt;
                                 {
-                                    if (string.IsNullOrEmpty(SWCheck.PSPreReq))
-                                        SWCheck.PSPreReq = "$true; ";
-
-                                    //Check PreReq for all Installation-types of the Software
-                                    if ((bool)SWUpdate._RunPSAsync(SWCheck.PSPreReq).Result[0].BaseObject)
+                                    List&lt;AddSoftware&gt; lSW = RZRestAPIv2.GetSoftwaresAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, RZRestAPIv2.CustomerID).GetAwaiter().GetResult();
+                                    //Load all MetaData for the specific SW
+                                    foreach (AddSoftware SWCheck in lSW)
                                     {
-                                        SW = SWCheck;
-                                        break;
+                                        if (string.IsNullOrEmpty(SWCheck.PSPreReq))
+                                            SWCheck.PSPreReq = "$true; ";
+
+                                        //Check PreReq for all Installation-types of the Software
+                                        if ((bool)SWUpdate._RunPSAsync(SWCheck.PSPreReq).GetAwaiter().GetResult()[0].BaseObject)
+                                        {
+                                            SW = SWCheck;
+                                            break;
+                                        }
                                     }
-                                }
+                                }).Wait();
 
                                 //SW = RZRestAPIv2.GetSoftwares(oGetSW.ProductName, oGetSW.ProductVersion, oGetSW.Manufacturer, RZRestAPIv2.CustomerID).FirstOrDefault();
-                                if (SW == null) { Console.WriteLine("No SW"); }
+                                if (SW == null) { Trace.WriteLine("No SW"); }
                                 SW.ShortName = ShortName;
 
                                 if (SW.Files == null)
@@ -1607,10 +1618,10 @@ namespace RZUpdate
                 {
                     //_DownloadFile(URL, FileName).Result.ToString();
                     var httpRequest = (HttpWebRequest)WebRequest.Create(URL);
-                    httpRequest.UserAgent = "chocolatey command line";
+                    //httpRequest.UserAgent = "ruckzuck package manager";
                     httpRequest.AllowAutoRedirect = true;
                     httpRequest.MaximumAutomaticRedirections = 5;
-                    Response = httpRequest.GetResponse();
+                    Response = await httpRequest.GetResponseAsync();
 
                     // Get back the HTTP response for web server
                     //Response = (HttpWebResponse)httpRequest.GetResponse();
@@ -1657,11 +1668,11 @@ namespace RZUpdate
                         if (ContentLength == 1) { Int64.TryParse(Response.Headers.Get("Content-Length"), out ContentLength); }
                     }
 
-                    await fileStream.WriteAsync(buffer, 0, bytesRead);
-                    ContentLoaded = ContentLoaded + bytesRead;
-
                     try
                     {
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+                        ContentLoaded = ContentLoaded + bytesRead;
+
                         iProgress = (100 * ContentLoaded) / ContentLength;
                         //only send status on percent change
                         if (iProgress != ioldProgress)
@@ -1678,7 +1689,10 @@ namespace RZUpdate
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        ex.Message.ToString();
+                    }
                 } // end while
 
                 try
@@ -1700,7 +1714,7 @@ namespace RZUpdate
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
                 return false;
             }
 
@@ -1766,7 +1780,7 @@ namespace RZUpdate
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Trace.WriteLine(ex.Message);
                 }
 
                 downloadTask.Installed = false;
@@ -1913,7 +1927,7 @@ namespace RZUpdate
                         msiIsRunning = true;
                         if (Retry)
                         {
-                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Trace.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
                             Thread.Sleep(new TimeSpan(0, 0, 10));
                         }
                         else
@@ -1934,7 +1948,7 @@ namespace RZUpdate
                         RZisRunning = true;
                         if (Retry)
                         {
-                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Trace.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
                             Thread.Sleep(new TimeSpan(0, 0, 10));
                         }
                         else
@@ -1977,7 +1991,7 @@ namespace RZUpdate
                         msiIsRunning = true;
                         if (Retry)
                         {
-                            Console.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
+                            Trace.WriteLine("Warning: Windows-Installer setup is already running!... waiting...");
                             Thread.Sleep(new TimeSpan(0, 0, 10));
                         }
                         else
@@ -1998,7 +2012,7 @@ namespace RZUpdate
                         RZisRunning = true;
                         if (Retry)
                         {
-                            Console.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
+                            Trace.WriteLine("Warning: RuckZuck setup is already running!... waiting...");
                             Thread.Sleep(new TimeSpan(0, 0, 10));
                         }
                         else
@@ -2030,13 +2044,13 @@ namespace RZUpdate
         private static void ConsoleError(object sender, DataAddingEventArgs e)
         {
             if (e.ItemAdded != null)
-                Console.WriteLine("ERROR:" + e.ItemAdded.ToString());
+                Trace.WriteLine("ERROR:" + e.ItemAdded.ToString());
         }
 
         private static void ConsoleOutput(object sender, DataAddingEventArgs e)
         {
             //if (e.ItemAdded != null)
-            //    Console.WriteLine(e.ItemAdded.ToString());
+            //    Trace.WriteLine(e.ItemAdded.ToString());
         }
 
         private bool _checkFileMd5(string FilePath, string MD5)
@@ -2086,7 +2100,7 @@ namespace RZUpdate
         //    }
         //    catch (Exception ex)
         //    {
-        //        Console.WriteLine(ex.Message);
+        //        Trace.WriteLine(ex.Message);
         //        return false;
         //    }
         private bool _checkFileSHA256(string FilePath, string SHA256)
@@ -2114,28 +2128,27 @@ namespace RZUpdate
         //                {
         //                    await streamToReadFrom.CopyToAsync(streamToWriteTo);
         //                }
-        //                Console.WriteLine("Donwloaded: " + URL);
+        //                Trace.WriteLine("Donwloaded: " + URL);
         //            }
         //        }
         private async Task&lt;bool&gt; _checkFileX509Async(string FilePath, string X509)
         {
-            return await Task.Run(() =&gt;
+            try
             {
-                try
+                await Task.CompletedTask;
+                var Cert = X509Certificate.CreateFromSignedFile(FilePath);
+                if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
                 {
-                    var Cert = X509Certificate.CreateFromSignedFile(FilePath);
-                    if (Cert.GetCertHashString().ToLower().Replace(" ", "") == X509.ToLower())
-                    {
-                        return AuthenticodeTools.IsTrusted(FilePath);
-                    }
-                    else
-                        return false;
+                    return AuthenticodeTools.IsTrusted(FilePath);
                 }
-                catch
-                {
+                else
                     return false;
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                ex.Message.ToString();
+                return false;
+            }
 
         }
 
@@ -2200,7 +2213,7 @@ namespace RZUpdate
                                 {
                                     if (!_checkFileMd5(sFile, vFile.FileHash))
                                     {
-                                        Console.WriteLine("Hash mismatch on existing File " + vFile.FileName);
+                                        Trace.WriteLine("Hash mismatch on existing File " + vFile.FileName);
                                         File.Delete(sFile); //Hash mismatch
                                     }
                                     else
@@ -2223,7 +2236,7 @@ namespace RZUpdate
 
                                 if (vFile.HashType.ToUpper() == "X509")
                                 {
-                                    if (!await _checkFileX509Async(sFile, vFile.FileHash))
+                                    if (!(await _checkFileX509Async(sFile, vFile.FileHash)))
                                         File.Delete(sFile); //Hash mismatch
                                     else
                                         bDownload = false; //Do not download, Hash is valid
@@ -2242,7 +2255,7 @@ namespace RZUpdate
                                 downloadTask.Error = true;
                                 downloadTask.PercentDownloaded = 0;
                                 downloadTask.ErrorMessage = "ERROR: download failed... " + vFile.FileName;
-                                Console.WriteLine("ERROR: download failed... " + vFile.FileName);
+                                Trace.WriteLine("ERROR: download failed... " + vFile.FileName);
                                 ProgressDetails(downloadTask, EventArgs.Empty);
                                 File.Delete(sFile);
                                 if (SendFeedback)
@@ -2290,7 +2303,7 @@ namespace RZUpdate
                                     downloadTask.Error = true;
                                     downloadTask.PercentDownloaded = 0;
                                     downloadTask.ErrorMessage = "ERROR: empty File... " + vFile.FileName;
-                                    Console.WriteLine("ERROR: empty File... " + vFile.FileName);
+                                    Trace.WriteLine("ERROR: empty File... " + vFile.FileName);
                                     ProgressDetails(downloadTask, EventArgs.Empty);
                                     File.Delete(sFile);
                                     return false;
@@ -2305,7 +2318,7 @@ namespace RZUpdate
                                             downloadTask.Error = true;
                                             downloadTask.PercentDownloaded = 0;
                                             downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            Trace.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
                                                 await RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch").ConfigureAwait(false);
@@ -2325,7 +2338,7 @@ namespace RZUpdate
                                             downloadTask.Error = true;
                                             downloadTask.PercentDownloaded = 0;
                                             downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            Trace.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
                                                 await RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
@@ -2345,7 +2358,7 @@ namespace RZUpdate
                                             downloadTask.Error = true;
                                             downloadTask.PercentDownloaded = 0;
                                             downloadTask.ErrorMessage = "ERROR: Hash mismatch on File " + vFile.FileName;
-                                            Console.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
+                                            Trace.WriteLine("ERROR: Hash mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
                                                 await RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Hash mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
@@ -2364,7 +2377,7 @@ namespace RZUpdate
                                             downloadTask.Error = true;
                                             downloadTask.PercentDownloaded = 0;
                                             downloadTask.ErrorMessage = "ERROR: Signature mismatch on File " + vFile.FileName;
-                                            Console.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
+                                            Trace.WriteLine("ERROR: Signature mismatch on File " + vFile.FileName);
                                             File.Delete(sFile);
                                             if (SendFeedback)
                                                 await RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "Signature mismatch", RZRestAPIv2.CustomerID).ConfigureAwait(false);
@@ -2383,7 +2396,7 @@ namespace RZUpdate
                     {
                         downloadTask.PercentDownloaded = 0;
                         downloadTask.ErrorMessage = ex.Message;
-                        Console.WriteLine("ERROR: " + ex.Message);
+                        Trace.WriteLine("ERROR: " + ex.Message);
                         bError = true;
                     }
                 }
@@ -2438,7 +2451,7 @@ namespace RZUpdate
             downloadTask.Installing = true;
             if (!await CheckDTPreReqAsync())
             {
-                Console.WriteLine("Requirements not valid. Installation will not start.");
+                Trace.WriteLine("Requirements not valid. Installation will not start.");
                 downloadTask.Installing = false;
                 downloadTask.Installed = false;
                 downloadTask.Error = true;
@@ -2498,7 +2511,7 @@ namespace RZUpdate
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("PS ERROR: " + ex.Message);
+                        Trace.WriteLine("PS ERROR: " + ex.Message);
                     }
 
                     //InstProgress(this, EventArgs.Empty);
@@ -2514,7 +2527,7 @@ namespace RZUpdate
                 }
                 else
                 {
-                    Console.WriteLine("WARNING: Product not detected after installation.");
+                    Trace.WriteLine("WARNING: Product not detected after installation.");
                     //if (iExitCode != 0 &amp;&amp; iExitCode != 3010)
                     //{
                     //    if (SendFeedback)
@@ -2534,8 +2547,8 @@ namespace RZUpdate
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR: " + ex.Message);
-                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID);
+                Trace.WriteLine("ERROR: " + ex.Message);
+                RZRestAPIv2.FeedbackAsync(SW.ProductName, SW.ProductVersion, SW.Manufacturer, "false", System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "ERROR: " + ex.Message, RZRestAPIv2.CustomerID).Result.ToString();
                 downloadTask.Error = true;
                 downloadTask.ErrorMessage = "WARNING: Product not detected after installation.";
                 downloadTask.Installed = false;
@@ -2566,7 +2579,7 @@ namespace RZUpdate
 
             if (!await CheckDTPreReqAsync() &amp;&amp; !Force)
             {
-                Console.WriteLine("Requirements not valid. Installation will not start.");
+                Trace.WriteLine("Requirements not valid. Installation will not start.");
                 downloadTask.Installing = false;
                 downloadTask.Installed = false;
                 downloadTask.Error = true;
@@ -2634,7 +2647,7 @@ namespace RZUpdate
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("PS ERROR: " + ex.Message);
+                        Trace.WriteLine("PS ERROR: " + ex.Message);
                     }
 
                     downloadTask.Installing = false;
@@ -2654,7 +2667,7 @@ namespace RZUpdate
                 }
                 else
                 {
-                    Console.WriteLine("WARNING: Product is still installed.");
+                    Trace.WriteLine("WARNING: Product is still installed.");
                     downloadTask.Error = true;
                     downloadTask.ErrorMessage = "WARNING: Product is still installed.";
                     downloadTask.Installed = false;
@@ -2665,7 +2678,7 @@ namespace RZUpdate
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR: " + ex.Message);
+                Trace.WriteLine("ERROR: " + ex.Message);
                 downloadTask.Error = true;
                 downloadTask.ErrorMessage = "WARNING: Product is still installed.";
                 downloadTask.Installed = false;
@@ -2707,7 +2720,6 @@ using System.Resources;
 using System.Text;
 using System.Threading;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace RZWrapper
 {

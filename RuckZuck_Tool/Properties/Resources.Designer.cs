@@ -96,14 +96,14 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Threading;
         ///using System.Threading.Tasks;
         ///using System.Web;
-        /////using System.Web.Script.Serialization;
+        ///using System.Web.UI.WebControls;
+        ///using System.Web.Script.Serialization;
         ///
         ///namespace RuckZuck.Base
         ///{
         ///    public class AddSoftware
         ///    {
-        ///        public string Architecture { get; set; }
-        ///        public string A [rest of string was truncated]&quot;;.
+        ///        public string Architecture { get; [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RZRestApi {
             get {
@@ -145,7 +145,6 @@ namespace RuckZuck_Tool.Properties {
         ///using System.Text;
         ///using System.Threading;
         ///using System.Net;
-        ///using System.Threading.Tasks;
         ///
         ///namespace RZWrapper
         ///{
@@ -158,7 +157,8 @@ namespace RuckZuck_Tool.Properties {
         ///            try
         ///            {
         ///                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        ///                ServicePointManager.ServerCertificateValidationCallback  [rest of string was truncated]&quot;;.
+        ///                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+        ///  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Source {
             get {

@@ -69,7 +69,7 @@ namespace RuckZuck_Tool
             cp.ReferencedAssemblies.Add("System.dll");
             cp.ReferencedAssemblies.Add("System.Core.dll");
             cp.ReferencedAssemblies.Add("System.Xml.dll");
-            cp.ReferencedAssemblies.Add("System.Runtime.Serialization.dll");
+            //cp.ReferencedAssemblies.Add("System.Runtime.Serialization.dll");
             cp.ReferencedAssemblies.Add("System.Web.dll");
             cp.ReferencedAssemblies.Add("System.Web.Services.dll");
 

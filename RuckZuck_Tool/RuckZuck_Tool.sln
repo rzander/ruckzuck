@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuckZuck_Tool", "RuckZuck_Tool.csproj", "{FA2BB9EC-FB07-48E9-8AB0-1895725F7C55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RZEXE", "..\RZEXE\RZEXE.csproj", "{282E93D5-2576-433C-A649-99A6898376B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +17,15 @@ Global
 		{FA2BB9EC-FB07-48E9-8AB0-1895725F7C55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA2BB9EC-FB07-48E9-8AB0-1895725F7C55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA2BB9EC-FB07-48E9-8AB0-1895725F7C55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{282E93D5-2576-433C-A649-99A6898376B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{282E93D5-2576-433C-A649-99A6898376B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{282E93D5-2576-433C-A649-99A6898376B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{282E93D5-2576-433C-A649-99A6898376B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 1
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs26
-		SccProjectUniqueName0 = RuckZuck_Tool.csproj
-		SccProjectName0 = .
-		SccAuxPath0 = https://tfs.codeplex.com/tfs/tfs26
-		SccLocalPath0 = .
-		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6AE51440-3589-4B39-B34D-B8D2056B6458}
 	EndGlobalSection
 EndGlobal
