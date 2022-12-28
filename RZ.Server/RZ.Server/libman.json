@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "@microsoft/signalr@6.0.8",
+      "library": "@microsoft/signalr@7.0.0",
       "destination": "wwwroot/lib/signalr/",
       "files": [
         "dist/browser/signalr.js",
@@ -14,7 +14,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "jquery@3.6.0",
+      "library": "jquery@3.6.3",
       "destination": "wwwroot/lib/jquery/"
     },
     {
@@ -24,51 +24,51 @@
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-select@1.4.0",
+      "library": "datatables.net-select@1.5.0",
       "destination": "wwwroot/lib/datatables.net-select/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-buttons@2.2.3",
+      "library": "datatables.net-buttons@2.3.3",
       "destination": "wwwroot/lib/datatables.net-buttons/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-keytable@2.7.0",
+      "library": "datatables.net-keytable@2.8.0",
       "destination": "wwwroot/lib/datatables.net-keytable/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-responsive@2.3.0",
+      "library": "datatables.net-responsive@2.4.0",
       "destination": "wwwroot/lib/datatables.net-responsive/"
     },
     {
-      "library": "datatables.net-scroller@2.0.6",
+      "library": "datatables.net-scroller@2.1.0",
       "destination": "wwwroot/lib/datatables.net-scroller/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-bs5@1.12.1",
+      "library": "datatables.net-bs5@1.13.1",
       "destination": "wwwroot/lib/datatables.net-bs5/"
     },
     {
       "provider": "cdnjs",
-      "library": "bootstrap@5.2.0",
+      "library": "bootstrap@5.2.3",
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-select-bs5@1.4.0",
+      "library": "datatables.net-select-bs5@1.5.0",
       "destination": "wwwroot/lib/datatables.net-select-bs5/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-buttons-bs5@2.2.3",
+      "library": "datatables.net-buttons-bs5@2.3.3",
       "destination": "wwwroot/lib/datatables.net-buttons-bs5/"
     },
     {
       "provider": "unpkg",
-      "library": "datatables.net-fixedheader@3.2.3",
+      "library": "datatables.net-fixedheader@3.3.1",
       "destination": "wwwroot/lib/datatables.net-fixedheader/"
     }
   ]

@@ -16,7 +16,7 @@ namespace RZ.Server.Controllers
         private readonly IHubContext<Default> _hubContext;
         private IMemoryCache _cache;
         private IHttpContextAccessor _accessor;
-        public static string sbconnection = "";
+        //public static string sbconnection = "";
         //public static TopicClient tcRuckZuck = null;
         public static DateTime tLoadTime = new DateTime();
         public static bool bOverload = false;
@@ -615,7 +615,7 @@ namespace RZ.Server.Controllers
 
                 string ClientIP = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
                 //Base.SetValidIP(ClientIP);
-                //Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+                Base.WriteLog("Get URL", ClientIP, 1000, customerid);
 
                 if (customerid.Split('.').Length == 4) // if customerid is IP, use CDN as we know the source ip
                 {

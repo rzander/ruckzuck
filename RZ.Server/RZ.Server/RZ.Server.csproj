@@ -9,8 +9,8 @@
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <Copyright>Copyright (c) 2022 by Roger Zander</Copyright>
     <PackageProjectUrl>https://github.com/rzander/ruckzuck</PackageProjectUrl>
-    <AssemblyVersion>2.3.0.7</AssemblyVersion>
-    <FileVersion>2.3.0.7</FileVersion>
+    <AssemblyVersion>2.3.0.8</AssemblyVersion>
+    <FileVersion>2.3.0.8</FileVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <UserSecretsId>cdc25b9c-e8f0-46e4-a7db-bbdfe00855c9</UserSecretsId>
@@ -30,6 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\.well-known\**" />
     <Compile Remove="wwwroot\ipdb\**" />
     <Compile Remove="wwwroot\jaindb\**" />
     <Compile Remove="wwwroot\lib\datatables.net - Copy\**" />
@@ -42,6 +43,7 @@
     <Compile Remove="wwwroot\lib\jquery-validation\**" />
     <Compile Remove="wwwroot\lib\_jquery-validation\**" />
     <Compile Remove="wwwroot\swlookup\**" />
+    <Content Remove="wwwroot\.well-known\**" />
     <Content Remove="wwwroot\ipdb\**" />
     <Content Remove="wwwroot\jaindb\**" />
     <Content Remove="wwwroot\lib\datatables.net - Copy\**" />
@@ -54,6 +56,7 @@
     <Content Remove="wwwroot\lib\jquery-validation\**" />
     <Content Remove="wwwroot\lib\_jquery-validation\**" />
     <Content Remove="wwwroot\swlookup\**" />
+    <EmbeddedResource Remove="wwwroot\.well-known\**" />
     <EmbeddedResource Remove="wwwroot\ipdb\**" />
     <EmbeddedResource Remove="wwwroot\jaindb\**" />
     <EmbeddedResource Remove="wwwroot\lib\datatables.net - Copy\**" />
@@ -66,6 +69,7 @@
     <EmbeddedResource Remove="wwwroot\lib\jquery-validation\**" />
     <EmbeddedResource Remove="wwwroot\lib\_jquery-validation\**" />
     <EmbeddedResource Remove="wwwroot\swlookup\**" />
+    <None Remove="wwwroot\.well-known\**" />
     <None Remove="wwwroot\ipdb\**" />
     <None Remove="wwwroot\jaindb\**" />
     <None Remove="wwwroot\lib\datatables.net - Copy\**" />
@@ -88,21 +92,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="wwwroot\.well-known\microsoft-identity-association.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.0" />
-    <PackageReference Include="Azure.Identity" Version="1.4.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
+    <PackageReference Include="Azure.Identity" Version="1.8.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.2.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
-    <PackageReference Include="Serilog" Version="2.11.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -158,6 +158,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\content\" />
     <Folder Include="wwwroot\icons\" />
+    <Folder Include="wwwroot\wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
