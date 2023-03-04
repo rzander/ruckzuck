@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "@microsoft/signalr@7.0.0",
+      "library": "@microsoft/signalr@7.0.3",
       "destination": "wwwroot/lib/signalr/",
       "files": [
         "dist/browser/signalr.js",
@@ -24,17 +24,17 @@
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-select@1.5.0",
+      "library": "datatables.net-select@1.6.1",
       "destination": "wwwroot/lib/datatables.net-select/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-buttons@2.3.3",
+      "library": "datatables.net-buttons@2.3.5",
       "destination": "wwwroot/lib/datatables.net-buttons/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-keytable@2.8.0",
+      "library": "datatables.net-keytable@2.8.1",
       "destination": "wwwroot/lib/datatables.net-keytable/"
     },
     {
@@ -48,7 +48,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-bs5@1.13.1",
+      "library": "datatables.net-bs5@1.13.3",
       "destination": "wwwroot/lib/datatables.net-bs5/"
     },
     {
@@ -58,12 +58,12 @@
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-select-bs5@1.5.0",
+      "library": "datatables.net-select-bs5@1.6.1",
       "destination": "wwwroot/lib/datatables.net-select-bs5/"
     },
     {
       "provider": "cdnjs",
-      "library": "datatables.net-buttons-bs5@2.3.3",
+      "library": "datatables.net-buttons-bs5@2.3.5",
       "destination": "wwwroot/lib/datatables.net-buttons-bs5/"
     },
     {

@@ -38,7 +38,7 @@
                         "data": "ShortName",
                         "className": "bold",
                         fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
-                            $(nTd).html("<a href='https://cdn.ruckzuck.tools/rest/v2/getsoftwares?apikey=" + apikey + "&shortname=" + oData.ShortName + "' target='_blank'>" + oData.ShortName + "</a>");
+                            $(nTd).html("<a href='https://cdn.ruckzuck.tools/rest/v2/getsoftwares?apikey=" + apikey + "&shortname=" + encodeURIComponent(oData.ShortName) + "' target='_blank'>" + oData.ShortName + "</a>");
                         }
                     },
                     {
