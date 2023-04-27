@@ -24,7 +24,7 @@ namespace RZ.ServerFN
         public static Dictionary<string, string> Settings { get; set; }
 
         [FunctionName("UpdateCounters")]
-        public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = false)] TimerInfo myTimer, Microsoft.Extensions.Logging.ILogger log)
+        public static void Run([TimerTrigger("0 */5 * * * *", RunOnStartup = false), Disable] TimerInfo myTimer, Microsoft.Extensions.Logging.ILogger log)
         {
             if (myTimer.IsPastDue)
                 return;

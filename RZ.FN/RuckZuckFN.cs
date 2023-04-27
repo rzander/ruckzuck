@@ -17,7 +17,9 @@ using Serilog.Events;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using static RZ.Server.RuckZuckFN;
@@ -328,6 +330,7 @@ namespace RZ.Server
             bool image = false;
             bool.TryParse(req.Query["image"], out image);
 
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
 
             //if (ClientIP == "88.157.220.241" && string.IsNullOrEmpty(customerid))6
@@ -586,7 +589,7 @@ namespace RZ.Server
 
             string ClientIP = req.HttpContext.Connection.RemoteIpAddress.ToString();
             //Base.SetValidIP(ClientIP);
-            //Base.WriteLog("Get URL", ClientIP, 1000, customerid);
+            Base.WriteLog("Get URL", ClientIP, 1000, customerid);
 
             string sURL = Base.GetURL(customerid, ClientIP);
             Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).Information("Get URL: {url}", sURL);
@@ -789,7 +792,7 @@ namespace RZ.Server
             //log.LogInformation($"GetFile: {sPath} CustomerID: {customerid}");
             Log.ForContext("IP", ClientIP).ForContext("CustomerID", customerid).ForContext("shortname", shortname).Information("GetFile: {path}", sPath);
 
-            return await Base.GetFile(sPath, customerid);
+            return new FileStreamResult(await Base.GetFile(sPath, customerid), "application/octet-stream");
         }
 
         [FunctionName("UploadSoftware")]
