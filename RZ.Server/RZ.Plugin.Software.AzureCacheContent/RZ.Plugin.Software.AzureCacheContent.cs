@@ -1,10 +1,10 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using RZ.Server;
 using RZ.Server.Interfaces;
+using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
@@ -12,6 +12,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -27,6 +28,9 @@ namespace Plugin_Software
         private IMemoryCache _cache;
         private long SlidingExpiration = 300; //5min cache for Softwares
         private HttpClient oClient = new HttpClient();
+        private HttpClient oFileClient = new HttpClient();
+        private HttpClient oIconClient = new HttpClient();
+        private static HttpClient oEntitiesClient = new HttpClient();
 
         public string Name
         {
@@ -70,7 +74,7 @@ namespace Plugin_Software
             try
             {
                 //Try to get value from Memory
-                if (_cache.TryGetValue("sn-" + shortname.ToLower(), out jResult))
+                if (_cache.TryGetValue("sn-" + shortname.ToLower() + customerid, out jResult))
                 {
                     return jResult;
                 }
@@ -85,8 +89,8 @@ namespace Plugin_Software
 
                     if (jResult.HasValues)
                     {
-                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
-                        _cache.Set("sn-" + shortname.ToLower(), jResult, cacheEntryOptions);
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                        _cache.Set("sn-" + shortname.ToLower() + customerid, jResult, cacheEntryOptions);
 
                         return jResult;
                     }
@@ -94,8 +98,9 @@ namespace Plugin_Software
                 catch { }
             }
 
-            var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
-            _cache.Set("sn-" + shortname.ToLower(), new JArray(), cacheEntryOptions2);
+            var cacheEntryOptions2 = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(15)); //cache hash for 15 Seconds
+            _cache.Set("sn-" + shortname.ToLower() + customerid, new JArray(), cacheEntryOptions2);
+
             return new JArray();
         }
 
@@ -122,6 +127,7 @@ namespace Plugin_Software
                 BlobServiceClient oRepoClient = new BlobServiceClient(new Uri(Settings["repoURL"] + "?" + Settings["repoSAS"]));
                 var blobContainerClient = oRepoClient.GetBlobContainerClient("");
 
+
                 // Call the listing operation and return pages of the specified size.
                 var resultSegment = blobContainerClient.GetBlobs(BlobTraits.None, BlobStates.None, sID, canTok).AsPages(default, 25);
 
@@ -135,7 +141,7 @@ namespace Plugin_Software
                             if (blobItem.Name.EndsWith(".json"))
                             {
                                 BlobClient bClient = blobContainerClient.GetBlobClient(blobItem.Name);
-                                jResult = JArray.Parse(bClient.DownloadContent().Value.Content.ToString());
+                                jResult = JArray.Parse((bClient.DownloadContentAsync().Result).Value.Content.ToString());
 
                                 UpdateURLs(ref jResult); //Update URL's before caching to cache the change...
 
@@ -144,9 +150,16 @@ namespace Plugin_Software
                                     _ = downloadFilesAsync(jResult);
                                 }
 
-                                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
-                                _cache.Set("mnv-" + Base.clean(man).ToLower() + Base.clean(name).ToLower() + Base.clean(ver).ToLower(), jResult, cacheEntryOptions);
-
+                                if (jResult.Count > 0)
+                                {
+                                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(SlidingExpiration)); //cache hash for x Seconds
+                                    _cache.Set("mnv-" + Base.clean(man).ToLower() + Base.clean(name).ToLower() + Base.clean(ver).ToLower(), jResult, cacheEntryOptions);
+                                }
+                                else
+                                {
+                                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(15)); //cache hash for 15 Seconds
+                                    _cache.Set("mnv-" + Base.clean(man).ToLower() + Base.clean(name).ToLower() + Base.clean(ver).ToLower(), jResult, cacheEntryOptions);
+                                }
                                 return jResult;
                             }
                         }
@@ -166,30 +179,44 @@ namespace Plugin_Software
         {
             foreach (JObject jSW in jPackage)
             {
-                string sContentID = jSW["ContentID"].Value<string>();
-                foreach (JObject oFiles in jSW["Files"])
+                try
                 {
-                    try
+                    string sContentID = jSW["ContentID"].Value<string>();
+                    foreach (JObject oFiles in jSW["Files"])
                     {
-                        string sContentPath = Path.Combine(Settings["content"], sContentID);
-                        if (!File.Exists(Path.Combine(sContentPath, oFiles["FileName"].Value<string>())))
+                        try
                         {
-                            if (!Directory.Exists(sContentPath))
+                            if (oFiles["URL"].Value<string>().ToLower().Contains("https://cdn.ruckzuck.tools/rest/v2/GetFile"))
+                                continue; //Skip file from cdn.ruckzuck.tools
+
+                            string sContentPath = Path.Combine(Settings["content"], sContentID);
+                            if (!File.Exists(Path.Combine(sContentPath, oFiles["FileName"].Value<string>())))
                             {
-                                Directory.CreateDirectory(sContentPath);
-                            }
-                            using (HttpClient hClient = new HttpClient())
-                            {
-                                var response = await hClient.GetAsync(oFiles["URL"].Value<string>());
-                                using (var fs = new FileStream(Path.Combine(sContentPath, oFiles["FileName"].Value<string>()), FileMode.CreateNew))
+                                if (!Directory.Exists(sContentPath))
                                 {
-                                    CancellationToken ct = new CancellationTokenSource(90000).Token; //90s timeout
-                                    await response.Content.CopyToAsync(fs, ct);
+                                    Directory.CreateDirectory(sContentPath);
                                 }
+                                using (HttpClient hClient = new HttpClient())
+                                {
+                                    var response = await hClient.GetAsync(oFiles["URL"].Value<string>());
+                                    using (var fs = new FileStream(Path.Combine(sContentPath, oFiles["FileName"].Value<string>()), FileMode.CreateNew))
+                                    {
+                                        CancellationToken ct = new CancellationTokenSource(90000).Token; //90s timeout
+                                        await response.Content.CopyToAsync(fs, ct);
+                                    }
+                                }
+                                Log.Verbose("downloadFilesAsync cached file: {file}", oFiles["FileName"].Value<string>());
                             }
                         }
+                        catch(Exception ex)
+                        {
+                            Log.Error("ERROR 201: downloadFilesAsync, {ex}", ex.Message);
+                        }
                     }
-                    catch { }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("ERROR 209: downloadFilesAsync, {ex}", ex.Message);
                 }
             }
         }
@@ -254,11 +281,12 @@ namespace Plugin_Software
                     //CloudBlobContainer oIcoContainer = new CloudBlobContainer(new Uri(Settings["iconURL"] + "?" + Settings["iconSAS"]));
                     //CloudBlockBlob cIcoBlock = oIcoContainer.GetBlockBlobReference(sIconHash + ".jpg");
 
-                    CancellationToken canTok = new CancellationTokenSource(15000).Token;
+                    CancellationToken canTok = new CancellationTokenSource(150000).Token;
                     BlobServiceClient oIcoClient = new BlobServiceClient(new Uri(Settings["iconURL"] + "?" + Settings["iconSAS"]));
-                    var blobIcoContainerClient = oIcoClient.GetBlobContainerClient(sIconHash + ".jpg");
+                    var blobIcoContainerClient = oIcoClient.GetBlobContainerClient("");
+                    var blob = blobIcoContainerClient.GetBlobClient(sIconHash + ".jpg");
 
-                    if (!blobIcoContainerClient.Exists(canTok))
+                    if (!blob.Exists())
                     {
                         blobIcoContainerClient.UploadBlob(sIconHash + ".jpg", new MemoryStream(bIcon), canTok);
                     }
@@ -519,9 +547,11 @@ namespace Plugin_Software
             {
                 string sURL = Settings["iconURL"] + "/" + sico + ".jpg?" + Settings["iconSAS"];
 
-                WebRequest myWebRequest = WebRequest.Create(sURL);
-                WebResponse myWebResponse = myWebRequest.GetResponse();
-                bResult = myWebResponse.GetResponseStream();
+                //WebRequest myWebRequest = WebRequest.Create(sURL);
+                //WebResponse myWebResponse = myWebRequest.GetResponse();
+                //bResult = myWebResponse.GetResponseStream();
+
+                bResult = await oIconClient.GetStreamAsync(sURL);
 
                 MemoryStream ms = new MemoryStream();
                 bResult.CopyTo(ms);
@@ -663,13 +693,15 @@ namespace Plugin_Software
             }
         }
 
-        public async Task<IActionResult> GetFile(string FilePath, string customerid = "")
+        public async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
             string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
 
-            WebRequest myWebRequest = WebRequest.Create(sURL);
-            WebResponse myWebResponse = myWebRequest.GetResponse();
-            return new FileStreamResult(myWebResponse.GetResponseStream(), "application/octet-stream");
+            return await oFileClient.GetStreamAsync(sURL);
+
+            //WebRequest myWebRequest = WebRequest.Create(sURL);
+            //WebResponse myWebResponse = myWebRequest.GetResponse();
+            //return new FileStreamResult(myWebResponse.GetResponseStream(), "application/octet-stream");
         }
 
         public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
@@ -688,7 +720,7 @@ namespace Plugin_Software
             //JArray jRes = GetSoftwares(name.ToLower(), ver.ToLower(), man.ToLower());
             foreach (JObject jObj in jRes)
             {
-                string shortname = jObj["ShortName"].ToString();
+                string shortname = jObj["shortname"].ToString();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration * 2)); //cache hash for x Seconds
                 _cache.Set("lookup-" + sID, shortname, cacheEntryOptions);
@@ -870,7 +902,7 @@ namespace Plugin_Software
                 string sasToken = url.Substring(url.IndexOf("?") + 1);
                 string sURL = url.Substring(0, url.IndexOf("?"));
 
-                string uri = sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken;
+                string uri = sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,shortname,Description,ProductURL,IconId,Downloads,Category&" + sasToken;
                 return getEntities(uri);
 
                 //var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
@@ -913,30 +945,56 @@ namespace Plugin_Software
             {
                 string nextPart = "";
                 string nextRow = "";
-                HttpWebRequest request = null;
+                //HttpWebRequest request = null;
 
-                request = (HttpWebRequest)WebRequest.Create(url);
+                //request = (HttpWebRequest)WebRequest.Create(url);
 
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json;odata=nometadata";
+                //request.Method = "GET";
+                //request.Headers.Add("x-ms-version", "2017-04-17");
+                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                //request.Accept = "application/json;odata=nometadata";
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 var content = string.Empty;
 
-                using (var response = (HttpWebResponse)request.GetResponse())
+                oEntitiesClient.DefaultRequestHeaders.Accept.Clear();
+                //oEntitiesClient.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata=verbose"));
+                oEntitiesClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                if (!oEntitiesClient.DefaultRequestHeaders.Contains("x-ms-version"))
                 {
-                    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
-                    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
+                    oEntitiesClient.DefaultRequestHeaders.Add("x-ms-version", "2017-04-17");
                 }
+                if (oEntitiesClient.DefaultRequestHeaders.Contains("x-ms-date"))
+                {
+                    oEntitiesClient.DefaultRequestHeaders.Remove("x-ms-date");
+                }
+                oEntitiesClient.DefaultRequestHeaders.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+
+                using (var response = oEntitiesClient.GetAsync(url).Result)
+                {
+                    if (response.Headers.Contains("x-ms-continuation-NextPartitionKey"))
+                    {
+                        nextPart = response.Headers.GetValues("x-ms-continuation-NextPartitionKey").FirstOrDefault();
+                    }
+                    if (response.Headers.Contains("x-ms-continuation-NextRowKey"))
+                    {
+                        nextRow = response.Headers.GetValues("x-ms-continuation-NextRowKey").FirstOrDefault();
+                    }
+                    content = response.Content.ReadAsStringAsync().Result;
+                }
+
+                //using (var response = (HttpWebResponse)request.GetResponse())
+                //{
+                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
+                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
+                //    using (var stream = response.GetResponseStream())
+                //    {
+                //        using (var sr = new StreamReader(stream))
+                //        {
+                //            content = sr.ReadToEnd();
+                //        }
+                //    }
+                //}
 
                 var jres = JObject.Parse(content);
 
@@ -958,47 +1016,6 @@ namespace Plugin_Software
 
         private static readonly object syncObject = new object();
         private Mutex mut = new Mutex(true, "inccounter");
-
-        private void inc(string ShortName, string sasToken, string sURL, string PartKey, string AttributeName = "Downloads")
-        {
-            try
-            {
-                var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + PartKey + "' and shortname eq '" + WebUtility.UrlEncode(ShortName.ToLower()) + "' and IsLatest eq true&$select=PartitionKey,RowKey," + AttributeName + "&" + sasToken);
-
-                request.Method = "GET";
-                request.Headers.Add("x-ms-version", "2017-04-17");
-                request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                request.Accept = "application/json";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                var content = string.Empty;
-                string ETag = "";
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var stream = response.GetResponseStream())
-                    {
-                        using (var sr = new StreamReader(stream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
-                    }
-                }
-
-                var jres = JObject.Parse(content);
-
-                JArray jResult = jres["value"] as JArray;
-                ETag = jResult[0]["odata.etag"].ToString();
-                string PartitionKey = jResult[0]["PartitionKey"].ToString();
-                string RowKey = jResult[0]["RowKey"].ToString();
-                int iCount = jResult[0][AttributeName].Value<int>();
-                iCount++;
-                JObject jUpd = new JObject();
-                jUpd.Add(AttributeName, iCount);
-
-                MergeEntityAsync(Settings["catURL"] + "?" + Settings["catSAS"], PartitionKey, RowKey, jUpd.ToString(), ETag);
-            }
-            catch { }
-        }
 
         private void incQueue(string ShortName, string sasToken, string sURL)
         {
