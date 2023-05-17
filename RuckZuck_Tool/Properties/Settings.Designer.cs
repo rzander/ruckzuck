@@ -12,7 +12,7 @@ namespace RuckZuck_Tool.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.1.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.5.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -75,10 +75,10 @@ namespace RuckZuck_Tool.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
 <ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
-  <string>https://cdn.ruckzuck.tools/images/baseVISION_small.png</string>
-  <string>https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png</string>
-  <string>https://cdn.ruckzuck.tools/images/ROMAWO_Header_oo_small24.png</string>
-  <string>https://cdn.ruckzuck.tools/images/optimio_small.png</string>
+  <string>https://cdn.ruckzuck.tools/rest/v2/images/baseVISION_small.png</string>
+  <string>https://cdn.ruckzuck.tools/rest/v2/images/itnetx_Logo_small.png</string>
+  <string>https://cdn.ruckzuck.tools/rest/v2/images/ROMAWO_Header_oo_small24.png</string>
+  <string>https://cdn.ruckzuck.tools/rest/v2/images/optimio_small.png</string>
 </ArrayOfString>")]
         public global::System.Collections.Specialized.StringCollection SponsorUrl {
             get {

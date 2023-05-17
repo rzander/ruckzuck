@@ -101,11 +101,10 @@ namespace RuckZuck_Tool
                                         _ = oPreReq.DownloadAsync(false);
                                         dm.lDLTasks.Add(oPreReq.downloadTask);
                                     }
-
                                 }
                                 catch { }
-
                             }
+                            
                         }
                     }
                     dm.Show();
@@ -114,6 +113,7 @@ namespace RuckZuck_Tool
                 catch { }
 
                 OnSWUpdated(this, new EventArgs());
+                dm.RefreshData();
             }
         }
 

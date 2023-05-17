@@ -23,7 +23,7 @@ namespace RuckZuck_Tool
     {
         public DownloadMonitor dm = new DownloadMonitor();
         public List<GetSoftware> lAllSoftware;
-        public List<DLTask> lDLTasks = new List<DLTask>();
+        //public List<DLTask> lDLTasks = new List<DLTask>();
         public List<AddSoftware> lSoftware = new List<AddSoftware>();
         public string sAuthToken;
         public System.Timers.Timer tSearch = new System.Timers.Timer(1000);
@@ -105,16 +105,11 @@ namespace RuckZuck_Tool
                             //Allow only one entry
                             if (dm.lDLTasks.FirstOrDefault(t => t.ProductName == oSW.SW.ProductName) == null)
                             {
-
-
-
                                 //oSW.Downloaded += OSW_Downloaded;
                                 oSW.ProgressDetails += OSW_ProgressDetails;
                                 oSW.downloadTask.AutoInstall = true;
 
-
                                 _ = oSW.DownloadAsync(false);
-
 
                                 dm.lDLTasks.Add(oSW.downloadTask);
 
@@ -122,7 +117,6 @@ namespace RuckZuck_Tool
                                 {
                                     try
                                     {
-
                                         SWUpdate oPreReq = new SWUpdate(sPreReq);
                                         if (oPreReq.GetInstallType())
                                         {
@@ -144,7 +138,7 @@ namespace RuckZuck_Tool
                                     }
 
                                 }
-
+                                
                                 dm.Show();
                             }
                         }
@@ -156,7 +150,7 @@ namespace RuckZuck_Tool
                 }
                 catch { }
                 OnSWUpdated(this, new EventArgs());
-
+                dm.RefreshData();
             }
         }
 

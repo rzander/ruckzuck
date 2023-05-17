@@ -17,10 +17,10 @@
     <Setting Name="SponsorUrl" Type="System.Collections.Specialized.StringCollection" Scope="Application">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-  &lt;string&gt;https://cdn.ruckzuck.tools/images/baseVISION_small.png&lt;/string&gt;
-  &lt;string&gt;https://cdn.ruckzuck.tools/images/itnetx_Logo_small.png&lt;/string&gt;
-  &lt;string&gt;https://cdn.ruckzuck.tools/images/ROMAWO_Header_oo_small24.png&lt;/string&gt;
-  &lt;string&gt;https://cdn.ruckzuck.tools/images/optimio_small.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/rest/v2/images/baseVISION_small.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/rest/v2/images/itnetx_Logo_small.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/rest/v2/images/ROMAWO_Header_oo_small24.png&lt;/string&gt;
+  &lt;string&gt;https://cdn.ruckzuck.tools/rest/v2/images/optimio_small.png&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
     <Setting Name="UpdExlusion" Description="Excluded Updates" Type="System.Collections.Specialized.StringCollection" Scope="User">

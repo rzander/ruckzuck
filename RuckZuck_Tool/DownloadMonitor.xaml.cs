@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.Generic;
 
 namespace RuckZuck_Tool
 {
@@ -14,6 +15,7 @@ namespace RuckZuck_Tool
     public partial class DownloadMonitor : Window
     {
         public ObservableCollection<DLTask> lDLTasks = new ObservableCollection<DLTask>();
+
         delegate void AnonymousDelegate();
         System.Timers.Timer tDelay;
         public event EventHandler AllDone = delegate { };
@@ -89,7 +91,7 @@ namespace RuckZuck_Tool
                 if (lDLTasks.Count(t => t.Installing) > 0)
                 {
                     bInstalling = true;
-                    tDelay.Interval = 800;
+                    tDelay.Interval = 1000;
                     tDelay.Start();
                     return;
                 }
@@ -102,9 +104,8 @@ namespace RuckZuck_Tool
                         if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                         {
                             _ = oDL.SWUpd.InstallAsync(false, false);
+                            //return;
                         }
-
-                        return;
                     }
                     catch
                     {
@@ -132,9 +133,8 @@ namespace RuckZuck_Tool
                                 if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                                 {
                                     _ = oDL.SWUpd.InstallAsync(false, false);
+                                    //return;
                                 }
-
-                                return;
                             }
                         }
                         else
@@ -146,9 +146,8 @@ namespace RuckZuck_Tool
                                     if (!Mutex.TryOpenExisting(@"RuckZuck", out mRes))
                                     {
                                         _ = oDL.SWUpd.InstallAsync(false, false);
+                                        //return;
                                     }
-
-                                    return;
                                 }
                         }
                     }
@@ -157,12 +156,17 @@ namespace RuckZuck_Tool
                     }
                 }
 
-                tDelay.Interval = 300;
+                if(lDLTasks.Where(t => (t.PercentDownloaded != 100 && t.AutoInstall) || !t.Installed || (t.Downloading && t.AutoInstall) || t.WaitingForDependency || t.Installing).Count() == 0)
+                {
+                    return;
+                }
+
+                tDelay.Interval = 500;
                 tDelay.Start();
             }
             catch
             {
-                tDelay.Interval = 500;
+                tDelay.Interval = 1000;
                 tDelay.Start();
             }
             finally
