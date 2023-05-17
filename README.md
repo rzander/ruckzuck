@@ -43,6 +43,8 @@ New REST API which brings some general changes:
 
 2021: https://rzander.azurewebsites.net/ruckzuck-figures-2021/
 
+2022: https://rzander.azurewebsites.net/ruckzuck-figures-2022/
+
 ## RuckZuck components
 ### RuckZuck_Tool (RuckZuck.exe)
 The RuckZuck.exe is a portable tool with a UI to install or update applications from the RZ repository.
