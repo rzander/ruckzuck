@@ -7,7 +7,7 @@
 		exports["signalR"] = factory();
 	else
 		root["signalR"] = factory();
-})(self, function() {
+})(self, () => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The require scope
@@ -133,7 +133,7 @@ class UnsupportedTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.UnsupportedTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message, transport) {
         const trueProto = new.target.prototype;
@@ -151,7 +151,7 @@ class DisabledTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.DisabledTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message, transport) {
         const trueProto = new.target.prototype;
@@ -169,7 +169,7 @@ class FailedToStartTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.FailedToStartTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message, transport) {
         const trueProto = new.target.prototype;
@@ -197,7 +197,7 @@ class FailedToNegotiateWithServerError extends Error {
         this.__proto__ = trueProto;
     }
 }
-/** Error thrown when multiple errors have occured. */
+/** Error thrown when multiple errors have occurred. */
 /** @private */
 class AggregateErrors extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.AggregateErrors}.
@@ -310,7 +310,7 @@ NullLogger.instance = new NullLogger();
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
-const VERSION = "6.0.5";
+const VERSION = "7.0.3";
 /** @private */
 class Arg {
     static isRequired(val, name) {
@@ -388,16 +388,8 @@ function isArrayBuffer(val) {
             (val.constructor && val.constructor.name === "ArrayBuffer"));
 }
 /** @private */
-async function sendMessage(logger, transportName, httpClient, url, accessTokenFactory, content, options) {
-    let headers = {};
-    if (accessTokenFactory) {
-        const token = await accessTokenFactory();
-        if (token) {
-            headers = {
-                ["Authorization"]: `Bearer ${token}`,
-            };
-        }
-    }
+async function sendMessage(logger, transportName, httpClient, url, content, options) {
+    const headers = {};
     const [name, value] = getUserAgentHeader();
     headers[name] = value;
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, options.logMessageContent)}.`);
@@ -628,6 +620,19 @@ class FetchHttpClient extends HttpClient {
                 error = new TimeoutError();
             }, msTimeout);
         }
+        if (request.content === "") {
+            request.content = undefined;
+        }
+        if (request.content) {
+            // Explicitly setting the Content-Type header for React Native on Android platform.
+            request.headers = request.headers || {};
+            if (isArrayBuffer(request.content)) {
+                request.headers["Content-Type"] = "application/octet-stream";
+            }
+            else {
+                request.headers["Content-Type"] = "text/plain;charset=UTF-8";
+            }
+        }
         let response;
         try {
             response = await this._fetchType(request.url, {
@@ -635,7 +640,6 @@ class FetchHttpClient extends HttpClient {
                 cache: "no-cache",
                 credentials: request.withCredentials === true ? "include" : "same-origin",
                 headers: {
-                    "Content-Type": "text/plain;charset=UTF-8",
                     "X-Requested-With": "XMLHttpRequest",
                     ...request.headers,
                 },
@@ -703,6 +707,7 @@ function deserializeContent(response, responseType) {
 
 
 
+
 class XhrHttpClient extends HttpClient {
     constructor(logger) {
         super();
@@ -725,8 +730,18 @@ class XhrHttpClient extends HttpClient {
             xhr.open(request.method, request.url, true);
             xhr.withCredentials = request.withCredentials === undefined ? true : request.withCredentials;
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            // Explicitly setting the Content-Type header for React Native on Android platform.
-            xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+            if (request.content === "") {
+                request.content = undefined;
+            }
+            if (request.content) {
+                // Explicitly setting the Content-Type header for React Native on Android platform.
+                if (isArrayBuffer(request.content)) {
+                    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+                }
+                else {
+                    xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+                }
+            }
             const headers = request.headers;
             if (headers) {
                 Object.keys(headers)
@@ -765,7 +780,7 @@ class XhrHttpClient extends HttpClient {
                 this._logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
                 reject(new TimeoutError());
             };
-            xhr.send(request.content || "");
+            xhr.send(request.content);
         });
     }
 }
@@ -949,6 +964,7 @@ class Subject {
 
 
 
+
 const DEFAULT_TIMEOUT_IN_MS = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS = 15 * 1000;
 /** Describes the current state of the {@link HubConnection} to the server. */
@@ -1093,6 +1109,9 @@ class HubConnection {
                 // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw this._stopDuringStartError;
             }
+            if (!this.connection.features.inherentKeepAlive) {
+                await this._sendMessage(this._cachedPingMessage);
+            }
         }
         catch (e) {
             this._logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
@@ -1144,7 +1163,7 @@ class HubConnection {
         }
         this._cleanupTimeout();
         this._cleanupPingTimer();
-        this._stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
+        this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
         // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
         // to the disconnected state if need be before HttpConnection.stop() completes.
@@ -1270,11 +1289,6 @@ class HubConnection {
         });
         return p;
     }
-    /** Registers a handler that will be invoked when the hub method with the specified method name is invoked.
-     *
-     * @param {string} methodName The name of the hub method to define.
-     * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
-     */
     on(methodName, newMethod) {
         if (!methodName || !newMethod) {
             return;
@@ -1351,6 +1365,7 @@ class HubConnection {
             for (const message of messages) {
                 switch (message.type) {
                     case MessageType.Invocation:
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         this._invokeClientMethod(message);
                         break;
                     case MessageType.StreamItem:
@@ -1463,31 +1478,70 @@ class HubConnection {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
-    _invokeClientMethod(invocationMessage) {
-        const methods = this._methods[invocationMessage.target.toLowerCase()];
-        if (methods) {
+    async _invokeClientMethod(invocationMessage) {
+        const methodName = invocationMessage.target.toLowerCase();
+        const methods = this._methods[methodName];
+        if (!methods) {
+            this._logger.log(LogLevel.Warning, `No client method with the name '${methodName}' found.`);
+            // No handlers provided by client but the server is expecting a response still, so we send an error
+            if (invocationMessage.invocationId) {
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
+            }
+            return;
+        }
+        // Avoid issues with handlers removing themselves thus modifying the list while iterating through it
+        const methodsCopy = methods.slice();
+        // Server expects a response
+        const expectsResponse = invocationMessage.invocationId ? true : false;
+        // We preserve the last result or exception but still call all handlers
+        let res;
+        let exception;
+        let completionMessage;
+        for (const m of methodsCopy) {
             try {
-                methods.forEach((m) => m.apply(this, invocationMessage.arguments));
+                const prevRes = res;
+                res = await m.apply(this, invocationMessage.arguments);
+                if (expectsResponse && res && prevRes) {
+                    this._logger.log(LogLevel.Error, `Multiple results provided for '${methodName}'. Sending error to server.`);
+                    completionMessage = this._createCompletionMessage(invocationMessage.invocationId, `Client provided multiple results.`, null);
+                }
+                // Ignore exception if we got a result after, the exception will be logged
+                exception = undefined;
             }
             catch (e) {
-                this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
-            }
-            if (invocationMessage.invocationId) {
-                // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
-                const message = "Server requested a response, which is not supported in this version of the client.";
-                this._logger.log(LogLevel.Error, message);
-                // We don't want to wait on the stop itself.
-                this._stopPromise = this._stopInternal(new Error(message));
+                exception = e;
+                this._logger.log(LogLevel.Error, `A callback for the method '${methodName}' threw error '${e}'.`);
             }
         }
+        if (completionMessage) {
+            await this._sendWithProtocol(completionMessage);
+        }
+        else if (expectsResponse) {
+            // If there is an exception that means either no result was given or a handler after a result threw
+            if (exception) {
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId, `${exception}`, null);
+            }
+            else if (res !== undefined) {
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId, null, res);
+            }
+            else {
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                // Client didn't provide a result or throw from a handler, server expects a response so we send an error
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null);
+            }
+            await this._sendWithProtocol(completionMessage);
+        }
         else {
-            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target}' found.`);
+            if (res) {
+                this._logger.log(LogLevel.Error, `Result given for '${methodName}' method but server is not expecting a result.`);
+            }
         }
     }
     _connectionClosed(error) {
         this._logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in state ${this._connectionState}.`);
         // Triggering this.handshakeRejecter is insufficient because it could already be resolved without the continuation having run yet.
-        this._stopDuringStartError = this._stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
+        this._stopDuringStartError = this._stopDuringStartError || error || new AbortError("The underlying connection was closed before the hub handshake could complete.");
         // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
         // If it has already completed, this should just noop.
         if (this._handshakeResolver) {
@@ -1804,6 +1858,53 @@ class HeaderNames {
 HeaderNames.Authorization = "Authorization";
 HeaderNames.Cookie = "Cookie";
 
+;// CONCATENATED MODULE: ./src/AccessTokenHttpClient.ts
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+
+/** @private */
+class AccessTokenHttpClient extends HttpClient {
+    constructor(innerClient, accessTokenFactory) {
+        super();
+        this._innerClient = innerClient;
+        this._accessTokenFactory = accessTokenFactory;
+    }
+    async send(request) {
+        let allowRetry = true;
+        if (this._accessTokenFactory && (!this._accessToken || (request.url && request.url.indexOf("/negotiate?") > 0))) {
+            // don't retry if the request is a negotiate or if we just got a potentially new token from the access token factory
+            allowRetry = false;
+            this._accessToken = await this._accessTokenFactory();
+        }
+        this._setAuthorizationHeader(request);
+        const response = await this._innerClient.send(request);
+        if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
+            this._accessToken = await this._accessTokenFactory();
+            this._setAuthorizationHeader(request);
+            return await this._innerClient.send(request);
+        }
+        return response;
+    }
+    _setAuthorizationHeader(request) {
+        if (!request.headers) {
+            request.headers = {};
+        }
+        if (this._accessToken) {
+            request.headers[HeaderNames.Authorization] = `Bearer ${this._accessToken}`;
+        }
+        // don't remove the header if there isn't an access token factory, the user manually added the header in this case
+        else if (this._accessTokenFactory) {
+            if (request.headers[HeaderNames.Authorization]) {
+                delete request.headers[HeaderNames.Authorization];
+            }
+        }
+    }
+    getCookieString(url) {
+        return this._innerClient.getCookieString(url);
+    }
+}
+
 ;// CONCATENATED MODULE: ./src/ITransport.ts
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
@@ -1866,13 +1967,11 @@ class AbortController_AbortController {
 
 
 
-
 // Not exported from 'index', this type is internal.
 /** @private */
 class LongPollingTransport {
-    constructor(httpClient, accessTokenFactory, logger, options) {
+    constructor(httpClient, logger, options) {
         this._httpClient = httpClient;
-        this._accessTokenFactory = accessTokenFactory;
         this._logger = logger;
         this._pollAbort = new AbortController_AbortController();
         this._options = options;
@@ -1906,8 +2005,6 @@ class LongPollingTransport {
         if (transferFormat === TransferFormat.Binary) {
             pollOptions.responseType = "arraybuffer";
         }
-        const token = await this._getAccessToken();
-        this._updateHeaderToken(pollOptions, token);
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
         const pollUrl = `${url}&_=${Date.now()}`;
@@ -1924,30 +2021,9 @@ class LongPollingTransport {
         }
         this._receiving = this._poll(this._url, pollOptions);
     }
-    async _getAccessToken() {
-        if (this._accessTokenFactory) {
-            return await this._accessTokenFactory();
-        }
-        return null;
-    }
-    _updateHeaderToken(request, token) {
-        if (!request.headers) {
-            request.headers = {};
-        }
-        if (token) {
-            request.headers[HeaderNames.Authorization] = `Bearer ${token}`;
-            return;
-        }
-        if (request.headers[HeaderNames.Authorization]) {
-            delete request.headers[HeaderNames.Authorization];
-        }
-    }
     async _poll(url, pollOptions) {
         try {
             while (this._running) {
-                // We have to get the access token on each poll, in case it changes
-                const token = await this._getAccessToken();
-                this._updateHeaderToken(pollOptions, token);
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
                     this._logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
@@ -2008,7 +2084,7 @@ class LongPollingTransport {
         if (!this._running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url, this._accessTokenFactory, data, this._options);
+        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url, data, this._options);
     }
     async stop() {
         this._logger.log(LogLevel.Trace, "(LongPolling transport) Stopping polling.");
@@ -2027,8 +2103,6 @@ class LongPollingTransport {
                 timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
             };
-            const token = await this._getAccessToken();
-            this._updateHeaderToken(deleteOptions, token);
             await this._httpClient.delete(this._url, deleteOptions);
             this._logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request sent.");
         }
@@ -2059,9 +2133,9 @@ class LongPollingTransport {
 
 /** @private */
 class ServerSentEventsTransport {
-    constructor(httpClient, accessTokenFactory, logger, options) {
+    constructor(httpClient, accessToken, logger, options) {
         this._httpClient = httpClient;
-        this._accessTokenFactory = accessTokenFactory;
+        this._accessToken = accessToken;
         this._logger = logger;
         this._options = options;
         this.onreceive = null;
@@ -2072,13 +2146,10 @@ class ServerSentEventsTransport {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
         this._logger.log(LogLevel.Trace, "(SSE transport) Connecting.");
-        // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
+        // set url before accessTokenFactory because this._url is only for send and we set the auth header instead of the query string for send
         this._url = url;
-        if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
-            }
+        if (this._accessToken) {
+            url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(this._accessToken)}`;
         }
         return new Promise((resolve, reject) => {
             let opened = false;
@@ -2141,7 +2212,7 @@ class ServerSentEventsTransport {
         if (!this._eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "SSE", this._httpClient, this._url, this._accessTokenFactory, data, this._options);
+        return sendMessage(this._logger, "SSE", this._httpClient, this._url, data, this._options);
     }
     stop() {
         this._close();
@@ -2182,28 +2253,34 @@ class WebSocketTransport {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
         this._logger.log(LogLevel.Trace, "(WebSockets transport) Connecting.");
+        let token;
         if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
-            }
+            token = await this._accessTokenFactory();
         }
         return new Promise((resolve, reject) => {
             url = url.replace(/^http/, "ws");
             let webSocket;
             const cookies = this._httpClient.getCookieString(url);
             let opened = false;
-            if (Platform.isNode) {
+            if (Platform.isNode || Platform.isReactNative) {
                 const headers = {};
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
+                if (token) {
+                    headers[HeaderNames.Authorization] = `Bearer ${token}`;
+                }
                 if (cookies) {
-                    headers[HeaderNames.Cookie] = `${cookies}`;
+                    headers[HeaderNames.Cookie] = cookies;
                 }
                 // Only pass headers when in non-browser environments
                 webSocket = new this._webSocketConstructor(url, undefined, {
                     headers: { ...headers, ...this._headers },
                 });
+            }
+            else {
+                if (token) {
+                    url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+                }
             }
             if (!webSocket) {
                 // Chrome is not happy with passing 'undefined' as protocol
@@ -2364,7 +2441,7 @@ class HttpConnection {
                 options.EventSource = eventSourceModule;
             }
         }
-        this._httpClient = options.httpClient || new DefaultHttpClient(this._logger);
+        this._httpClient = new AccessTokenHttpClient(options.httpClient || new DefaultHttpClient(this._logger), options.accessTokenFactory);
         this._connectionState = "Disconnected" /* Disconnected */;
         this._connectionStarted = false;
         this._options = options;
@@ -2388,13 +2465,13 @@ class HttpConnection {
             this._logger.log(LogLevel.Error, message);
             // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
             await this._stopPromise;
-            return Promise.reject(new Error(message));
+            return Promise.reject(new AbortError(message));
         }
         else if (this._connectionState !== "Connected" /* Connected */) {
             // stop() was called and transitioned the client into the Disconnecting state.
             const message = "HttpConnection.startInternal completed gracefully but didn't enter the connection into the connected state!";
             this._logger.log(LogLevel.Error, message);
-            return Promise.reject(new Error(message));
+            return Promise.reject(new AbortError(message));
         }
         this._connectionStarted = true;
     }
@@ -2459,6 +2536,7 @@ class HttpConnection {
         // as part of negotiating
         let url = this.baseUrl;
         this._accessTokenFactory = this._options.accessTokenFactory;
+        this._httpClient._accessTokenFactory = this._accessTokenFactory;
         try {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
@@ -2479,7 +2557,7 @@ class HttpConnection {
                     negotiateResponse = await this._getNegotiationResponse(url);
                     // the user tries to stop the connection when it is being started
                     if (this._connectionState === "Disconnecting" /* Disconnecting */ || this._connectionState === "Disconnected" /* Disconnected */) {
-                        throw new Error("The connection was stopped during negotiation.");
+                        throw new AbortError("The connection was stopped during negotiation.");
                     }
                     if (negotiateResponse.error) {
                         throw new Error(negotiateResponse.error);
@@ -2495,6 +2573,9 @@ class HttpConnection {
                         // the returned access token
                         const accessToken = negotiateResponse.accessToken;
                         this._accessTokenFactory = () => accessToken;
+                        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
+                        this._httpClient._accessToken = accessToken;
+                        this._httpClient._accessTokenFactory = undefined;
                     }
                     redirects++;
                 } while (negotiateResponse.url && redirects < MAX_REDIRECTS);
@@ -2527,12 +2608,6 @@ class HttpConnection {
     }
     async _getNegotiationResponse(url) {
         const headers = {};
-        if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                headers[HeaderNames.Authorization] = `Bearer ${token}`;
-            }
-        }
         const [name, value] = getUserAgentHeader();
         headers[name] = value;
         const negotiateUrl = this._resolveNegotiateUrl(url);
@@ -2614,7 +2689,7 @@ class HttpConnection {
                     if (this._connectionState !== "Connecting" /* Connecting */) {
                         const message = "Failed to select transport before stop() was called.";
                         this._logger.log(LogLevel.Debug, message);
-                        return Promise.reject(new Error(message));
+                        return Promise.reject(new AbortError(message));
                     }
                 }
             }
@@ -2635,9 +2710,9 @@ class HttpConnection {
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
+                return new ServerSentEventsTransport(this._httpClient, this._httpClient._accessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
+                return new LongPollingTransport(this._httpClient, this._logger, this._options);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

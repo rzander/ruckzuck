@@ -1,5 +1,5 @@
 /*! Bootstrap 5 styling wrapper for Select
- * ©2021 SpryMedia Ltd - datatables.net/license
+ * © SpryMedia Ltd - datatables.net/license
  */
 
 (function( factory ){
@@ -13,11 +13,19 @@
 		// CommonJS
 		module.exports = function (root, $) {
 			if ( ! root ) {
+				// CommonJS environments without a window global must pass a
+				// root. This will give an error otherwise
 				root = window;
 			}
 
-			if ( ! $ || ! $.fn.dataTable ) {
-				$ = require('datatables.net-bs5')(root, $).$;
+			if ( ! $ ) {
+				$ = typeof window !== 'undefined' ? // jQuery's factory checks for a global window
+					require('jquery') :
+					require('jquery')( root );
+			}
+
+			if ( ! $.fn.dataTable ) {
+				require('datatables.net-bs5')(root, $);
 			}
 
 			if ( ! $.fn.dataTable.select ) {
@@ -32,7 +40,11 @@
 		factory( jQuery, window, document );
 	}
 }(function( $, window, document, undefined ) {
+'use strict';
+var DataTable = $.fn.dataTable;
 
-return $.fn.dataTable;
 
+
+
+return DataTable;
 }));

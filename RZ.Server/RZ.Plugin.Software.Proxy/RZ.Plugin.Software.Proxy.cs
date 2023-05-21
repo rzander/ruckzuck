@@ -518,7 +518,7 @@ namespace Plugin_Software
                 return sResult;
             }
 
-            JArray jSW = GetSoftwares(name, ver, man, customerid);
+            JArray jSW = GetSoftwaresAsync(name, ver, man, customerid);
 
             foreach(JObject jObj in jSW)
             {

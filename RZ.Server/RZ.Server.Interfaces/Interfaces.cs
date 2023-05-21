@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,7 +54,7 @@ namespace RZ.Server.Interfaces
         //Get JSON of a pending Software
         string GetPending(string Software, string customerid = "");
 
-        Task<IActionResult> GetFile(string FilePath, string customerid = "");
+        Task<Stream> GetFile(string FilePath, string customerid = "");
 
         bool IncCounter(string shortname = "", string counter = "", string customerid = "");
     }
