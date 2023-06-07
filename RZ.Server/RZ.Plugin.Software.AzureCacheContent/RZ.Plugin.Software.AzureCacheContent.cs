@@ -18,6 +18,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,15 @@ namespace Plugin_Software
         private HttpClient oFileClient = new HttpClient();
         private HttpClient oIconClient = new HttpClient();
         private static HttpClient oEntitiesClient = new HttpClient();
+        private static HttpClient insClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+        };
+        private static HttpClient updClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+        };
+        private static HttpClient hClient = new HttpClient();
 
         public string Name
         {
@@ -186,7 +196,7 @@ namespace Plugin_Software
                     {
                         try
                         {
-                            if (oFiles["URL"].Value<string>().ToLower().Contains("https://cdn.ruckzuck.tools/rest/v2/GetFile"))
+                            if (oFiles["URL"].Value<string>().ToLower().Contains("https://cdn.ruckzuck.tools/rest/v2/getfile"))
                                 continue; //Skip file from cdn.ruckzuck.tools
 
                             string sContentPath = Path.Combine(Settings["content"], sContentID);
@@ -196,21 +206,19 @@ namespace Plugin_Software
                                 {
                                     Directory.CreateDirectory(sContentPath);
                                 }
-                                using (HttpClient hClient = new HttpClient())
+
+                                var response = await hClient.GetAsync(oFiles["URL"].Value<string>());
+                                using (var fs = new FileStream(Path.Combine(sContentPath, oFiles["FileName"].Value<string>()), FileMode.CreateNew))
                                 {
-                                    var response = await hClient.GetAsync(oFiles["URL"].Value<string>());
-                                    using (var fs = new FileStream(Path.Combine(sContentPath, oFiles["FileName"].Value<string>()), FileMode.CreateNew))
-                                    {
-                                        CancellationToken ct = new CancellationTokenSource(90000).Token; //90s timeout
-                                        await response.Content.CopyToAsync(fs, ct);
-                                    }
+                                    CancellationToken ct = new CancellationTokenSource(90000).Token; //90s timeout
+                                    await response.Content.CopyToAsync(fs, ct);
                                 }
                                 Log.Verbose("downloadFilesAsync cached file: {file}", oFiles["FileName"].Value<string>());
                             }
                         }
                         catch(Exception ex)
                         {
-                            Log.Error("ERROR 201: downloadFilesAsync, {ex}", ex.Message);
+                            Log.Error("ERROR 201: downloadFilesAsync, {ex} , {url}", ex.Message, oFiles["URL"].Value<string>());
                         }
                     }
                 }
@@ -743,19 +751,21 @@ namespace Plugin_Software
                     var jObj = JObject.Parse(JSON);
                     jObj.Add("PartitionKey", PartitionKey);
                     jObj.Add("RowKey", RowKey);
-                    using (HttpClient oClient = new HttpClient())
-                    {
-                        oClient.DefaultRequestHeaders.Accept.Clear();
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                        oCont.Headers.Add("x-ms-version", "2017-04-17");
-                        oCont.Headers.Add("Prefer", "return-no-content");
-                        oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                        var oRes = oClient.PostAsync(url, oCont);
-                        oRes.Wait();
-                    }
+
+                    HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                    oCont.Headers.Add("x-ms-version", "2017-04-17");
+                    oCont.Headers.Add("Prefer", "return-no-content");
+                    oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                    var oRes = insClient.PostAsync(url, oCont);
+                    oRes.Wait(5000);
+
                 }
-                catch { }
+                catch {
+                    insClient = new HttpClient()
+                    {
+                        DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+                    };
+                }
             });
         }
 
@@ -770,21 +780,20 @@ namespace Plugin_Software
 
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 var jObj = JObject.Parse(JSON);
-                using (HttpClient oClient = new HttpClient())
-                {
-                    oClient.DefaultRequestHeaders.Accept.Clear();
-                    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    oClient.DefaultRequestHeaders.Add("If-Match", "*");
-                    HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                    oCont.Headers.Add("x-ms-version", "2017-04-17");
-                    oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                    var oRes = oClient.PutAsync(url, oCont);
-                    oRes.Wait();
-                }
+
+                HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                oCont.Headers.Add("x-ms-version", "2017-04-17");
+                oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                var oRes = updClient.PutAsync(url, oCont);
+                oRes.Wait(5000);
             }
             catch (Exception ex)
             {
-                ex.Message.ToString();
+                ex.ToString();
+                updClient = new HttpClient()
+                {
+                    DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+                };
             }
         }
 
