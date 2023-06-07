@@ -4,7 +4,6 @@ using RZ.Server;
 using RZ.Server.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -17,6 +16,10 @@ namespace RZ.Plugin.Feedback.Azure
     public class Plugin_Feedback : IFeedback
     {
         private IMemoryCache _cache;
+        private static HttpClient insClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+        };
 
         public string Name
         {
@@ -66,57 +69,18 @@ namespace RZ.Plugin.Feedback.Azure
             {
                 try
                 {
-                    //try
-                    //{
-                    //    Message bMSG;
-
-                    //    if (feedback == "NEW Version ?!")
-                    //    {
-                    //        bMSG = new Message() { Label = "RuckZuck/WCF/NEW/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                    //        failure = true;
-                    //    }
-                    //    else
-                    //    {
-                    //        if (failure == false)
-                    //        {
-                    //            bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/success/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                    //            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-success\">%tt% - success (" + name + ")</li>");
-                    //        }
-                    //        else
-                    //        {
-                    //            //_hubContext.Clients.All.SendAsync("Append", "<li class=\"list-group-item list-group-item-danger\">%tt% - failed (" + name + ")</li>");
-                    //            bMSG = new Message() { Label = "RuckZuck/WCF/Feedback/failure/" + name + ";" + ver, TimeToLive = new TimeSpan(24, 0, 0) };
-                    //        }
-                    //    }
-
-                    //    bMSG.UserProperties.Add("User", user);
-                    //    bMSG.UserProperties.Add("feedback", feedback);
-                    //    bMSG.UserProperties.Add("ProductName", name);
-                    //    bMSG.UserProperties.Add("ProductVersion", ver);
-                    //    bMSG.UserProperties.Add("Manufacturer", man);
-
-                    //    if (!string.IsNullOrEmpty(ip))
-                    //        bMSG.UserProperties.Add("ClientIP", ip);
-
-                    //    if (!string.IsNullOrEmpty(customerid))
-                    //        bMSG.UserProperties.Add("CustomerID", customerid);
-
-                    //    if (tcRuckZuck != null)
-                    //        tcRuckZuck.SendAsync(bMSG);
-
-                    //}
-                    //catch { }
-
                     if (feedback.ToLower().Trim() != "test")
                     {
-                        JObject jEntity = new JObject();
-                        jEntity.Add("Manufacturer", man);
-                        jEntity.Add("ProductName", name);
-                        jEntity.Add("ProductVersion", ver);
-                        jEntity.Add("Shortname", shortname);
-                        jEntity.Add("Feedback", feedback);
-                        jEntity.Add("User", user);
-                        jEntity.Add("Failure", failure ?? false);
+                        JObject jEntity = new JObject
+                        {
+                            { "Manufacturer", man },
+                            { "ProductName", name },
+                            { "ProductVersion", ver },
+                            { "Shortname", shortname },
+                            { "Feedback", feedback },
+                            { "User", user },
+                            { "Failure", failure ?? false }
+                        };
 
                         string manufacturer = Server.Base.clean(man).Trim();
                         string productname = Server.Base.clean(name).Trim();
@@ -151,20 +115,31 @@ namespace RZ.Plugin.Feedback.Azure
                     var jObj = JObject.Parse(JSON);
                     jObj.Add("PartitionKey", PartitionKey);
                     jObj.Add("RowKey", RowKey);
-                    using (HttpClient oClient = new HttpClient())
-                    {
-                        oClient.DefaultRequestHeaders.Accept.Clear();
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                        oCont.Headers.Add("x-ms-version", "2017-04-17");
-                        oCont.Headers.Add("Prefer", "return-no-content");
-                        oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                        var oRes = oClient.PostAsync(url, oCont);
-                        oRes.Wait();
-                    }
+                    //using (HttpClient oClient = new HttpClient())
+                    //{
+                    //    oClient.DefaultRequestHeaders.Accept.Clear();
+                    //    oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    //    HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                    //    oCont.Headers.Add("x-ms-version", "2017-04-17");
+                    //    oCont.Headers.Add("Prefer", "return-no-content");
+                    //    oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                    //    var oRes = oClient.PostAsync(url, oCont);
+                    //    oRes.Wait();
+                    //}
 
+                    HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                    oCont.Headers.Add("x-ms-version", "2017-04-17");
+                    oCont.Headers.Add("Prefer", "return-no-content");
+                    oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                    var oRes = insClient.PostAsync(url, oCont);
+                    oRes.Wait(5000);
                 }
-                catch { }
+                catch {
+                    insClient = new HttpClient()
+                    {
+                        DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+                    };
+                }
             });
         }
 
