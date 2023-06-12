@@ -21,6 +21,15 @@ namespace RZ.SWLookup.Plugin
         private IMemoryCache _cache;
         private long SlidingExpiration = 300; //5min cache for Softwares
         private HttpClient oClient = new HttpClient();
+        private static HttpClient oEntitiesClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") },  }
+        };
+
+        private HttpClient updClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+        };
 
         public string Name
         {
@@ -182,7 +191,7 @@ namespace RZ.SWLookup.Plugin
 
                 string sRowKey = sID; // Hash.CalculateMD5HashString(sID);
 
-                InsertEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString());
+                _ = InsertEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString());
 
                 //if (!string.IsNullOrEmpty(shortname))
                 //    UpdateEntityAsync(Settings["lookURL"] + "?" + Settings["lookSAS"], "lookup", sRowKey, jEntity.ToString()); //only update if there is a shortname
@@ -197,84 +206,52 @@ namespace RZ.SWLookup.Plugin
             return false;
         }
 
-        public void InsertEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
+        public async Task InsertEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
         {
-            //Task.Run(() =>
-            //{
-            //    try
-            //    {
-            //        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            //        var jObj = JObject.Parse(JSON);
-            //        jObj.Add("PartitionKey", PartitionKey);
-            //        jObj.Add("RowKey", RowKey);
-            //        using (HttpClient oClient = new HttpClient())
-            //        {
-            //            oClient.DefaultRequestHeaders.Accept.Clear();
-            //            oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //            HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-            //            oCont.Headers.Add("x-ms-version", "2017-04-17");
-            //            oCont.Headers.Add("Prefer", "return-no-content");
-            //            oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-            //            var oRes = oClient.PostAsync(url, oCont);
-            //            oRes.Wait();
-            //        }
-
-            //    }
-            //    catch { }
-
-
-            //});
-
-            QueueInsertAsync(JSON, Settings["swqSAS"], Settings["swqURL"]);
+            await QueueInsertAsync(JSON, Settings["swqSAS"], Settings["swqURL"]);
         }
 
-        public void UpdateEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
+        private void UpdateEntityAsync(string url, string PartitionKey, string RowKey, string JSON)
         {
-            Task.Run(() =>
+            try
             {
-                try
+                string sasToken = url.Substring(url.IndexOf("?") + 1);
+                string sURL = url.Substring(0, url.IndexOf("?"));
+
+                url = sURL + "(PartitionKey='" + PartitionKey + "',RowKey='" + RowKey + "')?" + sasToken;
+
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                var jObj = JObject.Parse(JSON);
+
+                HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
+                oCont.Headers.Add("x-ms-version", "2017-04-17");
+                oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+                var oRes = updClient.PutAsync(url, oCont);
+                oRes.Wait(5000);
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                updClient = new HttpClient()
                 {
-                    string sasToken = url.Substring(url.IndexOf("?") + 1);
-                    string sURL = url.Substring(0, url.IndexOf("?"));
-
-                    url = sURL + "(PartitionKey='" + PartitionKey + "',RowKey='" + RowKey + "')?" + sasToken;
-
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    var jObj = JObject.Parse(JSON);
-                    //jObj.Add("PartitionKey", PartitionKey);
-                    //jObj.Add("RowKey", RowKey);
-                    using (HttpClient oClient = new HttpClient())
-                    {
-                        oClient.DefaultRequestHeaders.Accept.Clear();
-                        oClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        //oClient.DefaultRequestHeaders.Add("If-Match", "*");
-                        HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                        oCont.Headers.Add("x-ms-version", "2017-04-17");
-                        //oCont.Headers.Add("Prefer", "return-no-content");
-                        //oCont.Headers.Add("If-Match", "*");
-                        oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                        var oRes = oClient.PutAsync(url, oCont);
-                        oRes.Wait();
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    ex.Message.ToString();
-                }
-            });
+                    DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+                };
+            }
         }
 
-        private async void QueueInsertAsync(string JSON, string sasToken, string sURL)
+        private async Task QueueInsertAsync(string JSON, string sasToken, string sURL)
         {
             try
             {
                 string url = $"{sURL}?timeout=10&{sasToken}";
                 string body = $"<QueueMessage><MessageText>{JSON}</MessageText></QueueMessage>";
                 HttpContent oCont = new StringContent(body);
-                var oRes = await oClient.PostAsync(url, oCont);
+                var oRes = await oClient.PostAsync(url, oCont, new System.Threading.CancellationTokenSource(10000).Token); //10s expiration
             }
-            catch { }
+            catch
+            {
+                oClient = new HttpClient(); 
+            }
         }
 
         public IEnumerable<string> SWLookupItems(string filter, string customerid = "")
@@ -310,34 +287,6 @@ namespace RZ.SWLookup.Plugin
                 string uri = sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken;
                 return getEntities(uri);
 
-                //var request = (HttpWebRequest)WebRequest.Create(sURL + "()?$filter=PartitionKey eq '" + partitionkey + "' and RowKey eq '" + rowkey + "'&$select=Manufacturer,ProductName,ProductVersion,ShortName,Description,ProductURL,IconId,Downloads,Category&" + sasToken);
-
-                //request.Method = "GET";
-                //request.Headers.Add("x-ms-version", "2017-04-17");
-                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                //request.Accept = "application/json;odata=nometadata";
-                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                //var content = string.Empty;
-
-                //using (var response = (HttpWebResponse)request.GetResponse())
-                //{
-                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
-                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
-                //    using (var stream = response.GetResponseStream())
-                //    {
-                //        using (var sr = new StreamReader(stream))
-                //        {
-                //            content = sr.ReadToEnd();
-                //        }
-                //    }
-                //}
-
-                //var jres = JObject.Parse(content);
-
-                //JArray jResult = jres["value"] as JArray;
-
-                //return jResult;
             }
             catch { }
 
@@ -345,6 +294,58 @@ namespace RZ.SWLookup.Plugin
         }
 
         public static JArray getEntities(string url)
+        {
+            try
+            {
+                string nextPart = "";
+                string nextRow = "";
+ 
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                var content = string.Empty;
+
+                if (!oEntitiesClient.DefaultRequestHeaders.Contains("x-ms-version"))
+                {
+                    oEntitiesClient.DefaultRequestHeaders.Add("x-ms-version", "2017-04-17");
+                }
+                if (oEntitiesClient.DefaultRequestHeaders.Contains("x-ms-date"))
+                {
+                    oEntitiesClient.DefaultRequestHeaders.Remove("x-ms-date");
+                }
+                oEntitiesClient.DefaultRequestHeaders.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
+
+                using (var response = oEntitiesClient.GetAsync(url).Result)
+                {
+                    if (response.Headers.Contains("x-ms-continuation-NextPartitionKey"))
+                    {
+                        nextPart = response.Headers.GetValues("x-ms-continuation-NextPartitionKey").FirstOrDefault();
+                    }
+                    if (response.Headers.Contains("x-ms-continuation-NextRowKey"))
+                    {
+                        nextRow = response.Headers.GetValues("x-ms-continuation-NextRowKey").FirstOrDefault();
+                    }
+                    content = response.Content.ReadAsStringAsync().Result;
+                }
+
+                var jres = JObject.Parse(content);
+
+                JArray jResult = jres["value"] as JArray;
+
+                //Load next Page if there are more than 1000 Items...
+                if (!string.IsNullOrEmpty(nextPart))
+                {
+                    string sNewURL = url.Split("&NextPartitionKey=")[0];
+                    jResult.Merge(getEntities(sNewURL + $"&NextPartitionKey={nextPart}&NextRowKey={nextRow}"));
+                }
+
+                return jResult;
+            }
+            catch { }
+
+            return null;
+        }
+
+        public static JArray getEntities_old(string url)
         {
             try
             {
