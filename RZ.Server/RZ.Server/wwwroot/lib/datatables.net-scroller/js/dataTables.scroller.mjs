@@ -1,16 +1,18 @@
-/*! Scroller 2.1.0
- * ©2011-2022 SpryMedia Ltd - datatables.net/license
+/*! Scroller 2.2.0
+ * © SpryMedia Ltd - datatables.net/license
  */
 
-import $ from 'jquery';
+import jQuery from 'jquery';
 import DataTable from 'datatables.net';
 
+// Allow reassignment of the $ variable
+let $ = jQuery;
 
 
 /**
  * @summary     Scroller
  * @description Virtual rendering for DataTables
- * @version     2.1.0
+ * @version     2.2.0
  * @author      SpryMedia Ltd (www.sprymedia.co.uk)
  * @contact     www.sprymedia.co.uk/contact
  * @copyright   SpryMedia Ltd.
@@ -24,7 +26,6 @@ import DataTable from 'datatables.net';
  *
  * For details please refer to: http://www.datatables.net
  */
-
 
 /**
  * Scroller is a virtual rendering plug-in for DataTables which allows large
@@ -57,7 +58,7 @@ import DataTable from 'datatables.net';
  *  @constructor
  *  @global
  *  @param {object} dt DataTables settings object or API instance
- *  @param {object} [opts={}] Configuration object for Scroller. Options 
+ *  @param {object} [opts={}] Configuration object for Scroller. Options
  *    are defined by {@link Scroller.defaults}
  *
  *  @requires jQuery 1.7+
@@ -73,18 +74,18 @@ import DataTable from 'datatables.net';
  *        } );
  *    } );
  */
-var Scroller = function ( dt, opts ) {
+var Scroller = function (dt, opts) {
 	/* Sanity check - you just know it will happen */
-	if ( ! (this instanceof Scroller) ) {
-		alert( "Scroller warning: Scroller must be initialised with the 'new' keyword." );
+	if (!(this instanceof Scroller)) {
+		alert("Scroller warning: Scroller must be initialised with the 'new' keyword.");
 		return;
 	}
 
-	if ( opts === undefined ) {
+	if (opts === undefined) {
 		opts = {};
 	}
 
-	var dtApi = $.fn.dataTable.Api( dt );
+	var dtApi = $.fn.dataTable.Api(dt);
 
 	/**
 	 * Settings object which contains customisable information for the Scroller instance
@@ -207,7 +208,7 @@ var Scroller = function ( dt, opts ) {
 
 	// @todo The defaults should extend a `c` property and the internal settings
 	// only held in the `s` property. At the moment they are mixed
-	this.s = $.extend( this.s, Scroller.oDefaults, opts );
+	this.s = $.extend(this.s, Scroller.oDefaults, opts);
 
 	// Workaround for row height being read from height object (see above comment)
 	this.s.heights.row = this.s.rowHeight;
@@ -219,16 +220,16 @@ var Scroller = function ( dt, opts ) {
 	 *
 	 */
 	this.dom = {
-		"force":    document.createElement('div'),
-		"label":    $('<div class="dts_label">0</div>'),
-		"scroller": null,
-		"table":    null,
-		"loader":   null
+		force: document.createElement('div'),
+		label: $('<div class="dts_label">0</div>'),
+		scroller: null,
+		table: null,
+		loader: null
 	};
 
 	// Attach the instance to the DataTables instance so it can be accessed in
 	// future. Don't initialise Scroller twice on the same table
-	if ( this.s.dt.oScroller ) {
+	if (this.s.dt.oScroller) {
 		return;
 	}
 
@@ -238,9 +239,7 @@ var Scroller = function ( dt, opts ) {
 	this.construct();
 };
 
-
-
-$.extend( Scroller.prototype, {
+$.extend(Scroller.prototype, {
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Public methods - to be exposed via the DataTables API
 	 */
@@ -254,30 +253,27 @@ $.extend( Scroller.prototype, {
 	 *    the new dimensions forming the basis for the draw.
 	 *  @returns {void}
 	 */
-	measure: function ( redraw )
-	{
-		if ( this.s.autoHeight )
-		{
+	measure: function (redraw) {
+		if (this.s.autoHeight) {
 			this._calcRowHeight();
 		}
 
 		var heights = this.s.heights;
 
-		if ( heights.row ) {
+		if (heights.row) {
 			heights.viewport = this._parseHeight($(this.dom.scroller).css('max-height'));
 
-			this.s.viewportRows = parseInt( heights.viewport / heights.row, 10 )+1;
+			this.s.viewportRows = parseInt(heights.viewport / heights.row, 10) + 1;
 			this.s.dt._iDisplayLength = this.s.viewportRows * this.s.displayBuffer;
 		}
 
 		var label = this.dom.label.outerHeight();
-		
+
 		heights.xbar = this.dom.scroller.offsetHeight - this.dom.scroller.clientHeight;
 		heights.labelHeight = label;
 
-		if ( redraw === undefined || redraw )
-		{
-			this.s.dt.oInstance.fnDraw( false );
+		if (redraw === undefined || redraw) {
+			this.s.dt.oInstance.fnDraw(false);
 		}
 	},
 
@@ -290,18 +286,18 @@ $.extend( Scroller.prototype, {
 	 *      start: {int}, // the 0-indexed record at the top of the viewport
 	 *      end:   {int}, // the 0-indexed record at the bottom of the viewport
 	 *  }
-	*/
-	pageInfo: function()
-	{
-		var 
-			dt = this.s.dt,
+	 */
+	pageInfo: function () {
+		var dt = this.s.dt,
 			iScrollTop = this.dom.scroller.scrollTop,
 			iTotal = dt.fnRecordsDisplay(),
-			iPossibleEnd = Math.ceil(this.pixelsToRow(iScrollTop + this.s.heights.viewport, false, this.s.ani));
+			iPossibleEnd = Math.ceil(
+				this.pixelsToRow(iScrollTop + this.s.heights.viewport, false, this.s.ani)
+			);
 
 		return {
 			start: Math.floor(this.pixelsToRow(iScrollTop, false, this.s.ani)),
-			end: iTotal < iPossibleEnd ? iTotal-1 : iPossibleEnd-1
+			end: iTotal < iPossibleEnd ? iTotal - 1 : iPossibleEnd - 1
 		};
 	},
 
@@ -318,16 +314,13 @@ $.extend( Scroller.prototype, {
 	 *  @param {int} [virtual=false] Perform the calculations in the virtual domain
 	 *  @returns {int} Row index
 	 */
-	pixelsToRow: function ( pixels, intParse, virtual )
-	{
+	pixelsToRow: function (pixels, intParse, virtual) {
 		var diff = pixels - this.s.baseScrollTop;
-		var row = virtual ?
-			(this._domain( 'physicalToVirtual', this.s.baseScrollTop ) + diff) / this.s.heights.row :
-			( diff / this.s.heights.row ) + this.s.baseRowTop;
+		var row = virtual
+			? (this._domain('physicalToVirtual', this.s.baseScrollTop) + diff) / this.s.heights.row
+			: diff / this.s.heights.row + this.s.baseRowTop;
 
-		return intParse || intParse === undefined ?
-			parseInt( row, 10 ) :
-			row;
+		return intParse || intParse === undefined ? parseInt(row, 10) : row;
 	},
 
 	/**
@@ -336,13 +329,12 @@ $.extend( Scroller.prototype, {
 	 *  @param {int} iRow Row number to calculate the position of
 	 *  @returns {int} Pixels
 	 */
-	rowToPixels: function ( rowIdx, intParse, virtual )
-	{
+	rowToPixels: function (rowIdx, intParse, virtual) {
 		var pixels;
 		var diff = rowIdx - this.s.baseRowTop;
 
-		if ( virtual ) {
-			pixels = this._domain( 'virtualToPhysical', this.s.baseScrollTop );
+		if (virtual) {
+			pixels = this._domain('virtualToPhysical', this.s.baseScrollTop);
 			pixels += diff * this.s.heights.row;
 		}
 		else {
@@ -350,11 +342,8 @@ $.extend( Scroller.prototype, {
 			pixels += diff * this.s.heights.row;
 		}
 
-		return intParse || intParse === undefined ?
-			parseInt( pixels, 10 ) :
-			pixels;
+		return intParse || intParse === undefined ? parseInt(pixels, 10) : pixels;
 	},
-
 
 	/**
 	 * Calculate the row number that will be found at the given pixel position (y-scroll)
@@ -362,55 +351,57 @@ $.extend( Scroller.prototype, {
 	 *  @param {bool} [animate=true] Animate the transition or not
 	 *  @returns {void}
 	 */
-	scrollToRow: function ( row, animate )
-	{
+	scrollToRow: function (row, animate) {
 		var that = this;
 		var ani = false;
-		var px = this.rowToPixels( row );
+		var px = this.rowToPixels(row);
 
 		// We need to know if the table will redraw or not before doing the
 		// scroll. If it will not redraw, then we need to use the currently
 		// displayed table, and scroll with the physical pixels. Otherwise, we
 		// need to calculate the table's new position from the virtual
 		// transform.
-		var preRows = ((this.s.displayBuffer-1)/2) * this.s.viewportRows;
+		var preRows = ((this.s.displayBuffer - 1) / 2) * this.s.viewportRows;
 		var drawRow = row - preRows;
-		if ( drawRow < 0 ) {
+		if (drawRow < 0) {
 			drawRow = 0;
 		}
 
-		if ( (px > this.s.redrawBottom || px < this.s.redrawTop) && this.s.dt._iDisplayStart !== drawRow ) {
+		if (
+			(px > this.s.redrawBottom || px < this.s.redrawTop) &&
+			this.s.dt._iDisplayStart !== drawRow
+		) {
 			ani = true;
-			px = this._domain( 'virtualToPhysical', row * this.s.heights.row );
+			px = this._domain('virtualToPhysical', row * this.s.heights.row);
 
 			// If we need records outside the current draw region, but the new
 			// scrolling position is inside that (due to the non-linear nature
 			// for larger numbers of records), we need to force position update.
-			if ( this.s.redrawTop < px && px < this.s.redrawBottom ) {
+			if (this.s.redrawTop < px && px < this.s.redrawBottom) {
 				this.s.forceReposition = true;
 				animate = false;
 			}
 		}
 
-		if ( animate === undefined || animate )
-		{
+		if (animate === undefined || animate) {
 			this.s.ani = ani;
-			$(this.dom.scroller).animate( {
-				"scrollTop": px
-			}, function () {
-				// This needs to happen after the animation has completed and
-				// the final scroll event fired
-				setTimeout( function () {
-					that.s.ani = false;
-				}, 250 );
-			} );
+			$(this.dom.scroller).animate(
+				{
+					scrollTop: px
+				},
+				function () {
+					// This needs to happen after the animation has completed and
+					// the final scroll event fired
+					setTimeout(function () {
+						that.s.ani = false;
+					}, 250);
+				}
+			);
 		}
-		else
-		{
-			$(this.dom.scroller).scrollTop( px );
+		else {
+			$(this.dom.scroller).scrollTop(px);
 		}
 	},
-
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Constructor
@@ -421,67 +412,65 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	construct: function ()
-	{
+	construct: function () {
 		var that = this;
 		var dt = this.s.dtApi;
 
 		/* Sanity check */
-		if ( !this.s.dt.oFeatures.bPaginate ) {
-			this.s.dt.oApi._fnLog( this.s.dt, 0, 'Pagination must be enabled for Scroller' );
+		if (!this.s.dt.oFeatures.bPaginate) {
+			this.s.dt.oApi._fnLog(this.s.dt, 0, 'Pagination must be enabled for Scroller');
 			return;
 		}
 
 		/* Insert a div element that we can use to force the DT scrolling container to
 		 * the height that would be required if the whole table was being displayed
 		 */
-		this.dom.force.style.position = "relative";
-		this.dom.force.style.top = "0px";
-		this.dom.force.style.left = "0px";
-		this.dom.force.style.width = "1px";
+		this.dom.force.style.position = 'relative';
+		this.dom.force.style.top = '0px';
+		this.dom.force.style.left = '0px';
+		this.dom.force.style.width = '1px';
 
-		this.dom.scroller = $('div.'+this.s.dt.oClasses.sScrollBody, this.s.dt.nTableWrapper)[0];
-		this.dom.scroller.appendChild( this.dom.force );
-		this.dom.scroller.style.position = "relative";
+		this.dom.scroller = $('div.' + this.s.dt.oClasses.sScrollBody, this.s.dt.nTableWrapper)[0];
+		this.dom.scroller.appendChild(this.dom.force);
+		this.dom.scroller.style.position = 'relative';
 
 		this.dom.table = $('>table', this.dom.scroller)[0];
-		this.dom.table.style.position = "absolute";
-		this.dom.table.style.top = "0px";
-		this.dom.table.style.left = "0px";
+		this.dom.table.style.position = 'absolute';
+		this.dom.table.style.top = '0px';
+		this.dom.table.style.left = '0px';
 
 		// Add class to 'announce' that we are a Scroller table
 		$(dt.table().container()).addClass('dts DTS');
 
 		// Add a 'loading' indicator
-		if ( this.s.loadingIndicator )
-		{
-			this.dom.loader = $('<div class="dataTables_processing dts_loading">'+this.s.dt.oLanguage.sLoadingRecords+'</div>')
-				.css('display', 'none');
+		if (this.s.loadingIndicator) {
+			this.dom.loader = $(
+				'<div class="dataTables_processing dts_loading">' +
+					this.s.dt.oLanguage.sLoadingRecords +
+					'</div>'
+			).css('display', 'none');
 
-			$(this.dom.scroller.parentNode)
-				.css('position', 'relative')
-				.append( this.dom.loader );
+			$(this.dom.scroller.parentNode).css('position', 'relative').append(this.dom.loader);
 		}
 
 		this.dom.label.appendTo(this.dom.scroller);
 
 		/* Initial size calculations */
-		if ( this.s.heights.row && this.s.heights.row != 'auto' )
-		{
+		if (this.s.heights.row && this.s.heights.row != 'auto') {
 			this.s.autoHeight = false;
 		}
 
 		// Scrolling callback to see if a page change is needed
 		this.s.ingnoreScroll = true;
-		$(this.dom.scroller).on( 'scroll.dt-scroller', function (e) {
-			that._scroll.call( that );
-		} );
+		$(this.dom.scroller).on('scroll.dt-scroller', function (e) {
+			that._scroll.call(that);
+		});
 
 		// In iOS we catch the touchstart event in case the user tries to scroll
 		// while the display is already scrolling
 		$(this.dom.scroller).on('touchstart.dt-scroller', function () {
-			that._scroll.call( that );
-		} );
+			that._scroll.call(that);
+		});
 
 		$(this.dom.scroller)
 			.on('mousedown.dt-scroller', function () {
@@ -494,18 +483,18 @@ $.extend( Scroller.prototype, {
 			});
 
 		// On resize, update the information element, since the number of rows shown might change
-		$(window).on( 'resize.dt-scroller', function () {
-			that.measure( false );
+		$(window).on('resize.dt-scroller', function () {
+			that.measure(false);
 			that._info();
-		} );
+		});
 
 		// Add a state saving parameter to the DT state saving so we can restore the exact
 		// position of the scrolling.
 		var initialStateSave = true;
 		var loadedState = dt.state.loaded();
 
-		dt.on( 'stateSaveParams.scroller', function ( e, settings, data ) {
-			if ( initialStateSave && loadedState ) {
+		dt.on('stateSaveParams.scroller', function (e, settings, data) {
+			if (initialStateSave && loadedState) {
 				data.scroller = loadedState.scroller;
 				initialStateSave = false;
 
@@ -522,28 +511,28 @@ $.extend( Scroller.prototype, {
 					scrollTop: that.s.lastScrollTop
 				};
 			}
-		} );
+		});
 
-		dt.on( 'stateLoadParams.scroller', function( e, settings, data ) {
+		dt.on('stateLoadParams.scroller', function (e, settings, data) {
 			if (data.scroller !== undefined) {
 				that.scrollToRow(data.scroller.topRow);
 			}
 		});
 
-		if ( loadedState && loadedState.scroller ) {
+		if (loadedState && loadedState.scroller) {
 			this.s.topRowFloat = loadedState.scroller.topRow;
 			this.s.baseScrollTop = loadedState.scroller.baseScrollTop;
 			this.s.baseRowTop = loadedState.scroller.baseRowTop;
 		}
 
-		this.measure( false );
-	
-		that.s.stateSaveThrottle = that.s.dt.oApi._fnThrottle( function () {
-			that.s.dtApi.state.save();
-		}, 500 );
+		this.measure(false);
 
-		dt.on( 'init.scroller', function () {
-			that.measure( false );
+		that.s.stateSaveThrottle = that.s.dt.oApi._fnThrottle(function () {
+			that.s.dtApi.state.save();
+		}, 500);
+
+		dt.on('init.scroller', function () {
+			that.measure(false);
 
 			// Setting to `jump` will instruct _draw to calculate the scroll top
 			// position
@@ -551,32 +540,31 @@ $.extend( Scroller.prototype, {
 			that._draw();
 
 			// Update the scroller when the DataTable is redrawn
-			dt.on( 'draw.scroller', function () {
+			dt.on('draw.scroller', function () {
 				that._draw();
 			});
-		} );
+		});
 
 		// Set height before the draw happens, allowing everything else to update
 		// on draw complete without worry for roder.
-		dt.on( 'preDraw.dt.scroller', function () {
+		dt.on('preDraw.dt.scroller', function () {
 			that._scrollForce();
-		} );
+		});
 
 		// Destructor
-		dt.on( 'destroy.scroller', function () {
-			$(window).off( 'resize.dt-scroller' );
+		dt.on('destroy.scroller', function () {
+			$(window).off('resize.dt-scroller');
 			$(that.dom.scroller).off('.dt-scroller');
-			$(that.s.dt.nTable).off( '.scroller' );
+			$(that.s.dt.nTable).off('.scroller');
 
 			$(that.s.dt.nTableWrapper).removeClass('DTS');
 			$('div.DTS_Loading', that.dom.scroller.parentNode).remove();
 
-			that.dom.table.style.position = "";
-			that.dom.table.style.top = "";
-			that.dom.table.style.left = "";
-		} );
+			that.dom.table.style.position = '';
+			that.dom.table.style.top = '';
+			that.dom.table.style.left = '';
+		});
 	},
-
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Private methods
@@ -590,48 +578,53 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	_calcRowHeight: function ()
-	{
+	_calcRowHeight: function () {
 		var dt = this.s.dt;
 		var origTable = dt.nTable;
-		var nTable = origTable.cloneNode( false );
-		var tbody = $('<tbody/>').appendTo( nTable );
+		var nTable = origTable.cloneNode(false);
+		var tbody = $('<tbody/>').appendTo(nTable);
 		var container = $(
-			'<div class="'+dt.oClasses.sWrapper+' DTS">'+
-				'<div class="'+dt.oClasses.sScrollWrapper+'">'+
-					'<div class="'+dt.oClasses.sScrollBody+'"></div>'+
-				'</div>'+
-			'</div>'
+			'<div class="' +
+				dt.oClasses.sWrapper +
+				' DTS">' +
+				'<div class="' +
+				dt.oClasses.sScrollWrapper +
+				'">' +
+				'<div class="' +
+				dt.oClasses.sScrollBody +
+				'"></div>' +
+				'</div>' +
+				'</div>'
 		);
 
 		// Want 3 rows in the sizing table so :first-child and :last-child
 		// CSS styles don't come into play - take the size of the middle row
-		$('tbody tr:lt(4)', origTable).clone().appendTo( tbody );
-        var rowsCount = $('tr', tbody).length;
+		$('tbody tr:lt(4)', origTable).clone().appendTo(tbody);
+		var rowsCount = $('tr', tbody).length;
 
-        if ( rowsCount === 1 ) {
-            tbody.prepend('<tr><td>&#160;</td></tr>');
-            tbody.append('<tr><td>&#160;</td></tr>');
+		if (rowsCount === 1) {
+			tbody.prepend('<tr><td>&#160;</td></tr>');
+			tbody.append('<tr><td>&#160;</td></tr>');
 		}
 		else {
-            for (; rowsCount < 3; rowsCount++) {
-                tbody.append('<tr><td>&#160;</td></tr>');
-            }
+			for (; rowsCount < 3; rowsCount++) {
+				tbody.append('<tr><td>&#160;</td></tr>');
+			}
 		}
-	
-		$('div.'+dt.oClasses.sScrollBody, container).append( nTable );
+
+		$('div.' + dt.oClasses.sScrollBody, container).append(nTable);
 
 		// If initialised using `dom`, use the holding element as the insert point
 		var insertEl = this.s.dt.nHolding || origTable.parentNode;
 
-		if ( ! $(insertEl).is(':visible') ) {
+		if (!$(insertEl).is(':visible')) {
 			insertEl = 'body';
 		}
 
 		// Remove form element links as they might select over others (particularly radio and checkboxes)
-		container.find("input").removeAttr("name");
+		container.find('input').removeAttr('name');
 
-		container.appendTo( insertEl );
+		container.appendTo(insertEl);
 		this.s.heights.row = $('tr', tbody).eq(1).outerHeight();
 
 		container.remove();
@@ -644,10 +637,8 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	_draw: function ()
-	{
-		var
-			that = this,
+	_draw: function () {
+		var that = this,
 			heights = this.s.heights,
 			iScrollTop = this.dom.scroller.scrollTop,
 			iTableHeight = $(this.s.dt.nTable).height(),
@@ -660,13 +651,18 @@ $.extend( Scroller.prototype, {
 		this.s.skip = true;
 
 		// If paging is reset
-		if ( (this.s.dt.bSorted || this.s.dt.bFiltered) && displayStart === 0 && !this.s.dt._drawHold ) {
+		if (
+			(this.s.dt.bSorted || this.s.dt.bFiltered) &&
+			displayStart === 0 &&
+			!this.s.dt._drawHold
+		) {
 			this.s.topRowFloat = 0;
 		}
 
-		iScrollTop = this.s.scrollType === 'jump' ?
-			this._domain( 'virtualToPhysical', this.s.topRowFloat * heights.row ) :
-			iScrollTop;
+		iScrollTop =
+			this.s.scrollType === 'jump'
+				? this._domain('virtualToPhysical', this.s.topRowFloat * heights.row)
+				: iScrollTop;
 
 		// Store positional information so positional calculations can be based
 		// upon the current table draw position
@@ -674,11 +670,11 @@ $.extend( Scroller.prototype, {
 		this.s.baseRowTop = this.s.topRowFloat;
 
 		// Position the table in the virtual scroller
-		var tableTop = iScrollTop - ((this.s.topRowFloat - displayStart) * heights.row);
-		if ( displayStart === 0 ) {
+		var tableTop = iScrollTop - (this.s.topRowFloat - displayStart) * heights.row;
+		if (displayStart === 0) {
 			tableTop = 0;
 		}
-		else if ( displayStart + displayLen >= displayEnd ) {
+		else if (displayStart + displayLen >= displayEnd) {
 			tableTop = heights.scroll - iTableHeight;
 		}
 		else {
@@ -693,7 +689,7 @@ $.extend( Scroller.prototype, {
 			}
 		}
 
-		this.dom.table.style.top = tableTop+'px';
+		this.dom.table.style.top = tableTop + 'px';
 
 		/* Cache some information for the scroller */
 		this.s.tableTop = tableTop;
@@ -703,37 +699,42 @@ $.extend( Scroller.prototype, {
 		// scroll event listener
 		var boundaryPx = (iScrollTop - this.s.tableTop) * this.s.boundaryScale;
 		this.s.redrawTop = iScrollTop - boundaryPx;
-		this.s.redrawBottom = iScrollTop + boundaryPx > heights.scroll - heights.viewport - heights.row ?
-			heights.scroll - heights.viewport - heights.row :
-			iScrollTop + boundaryPx;
+		this.s.redrawBottom =
+			iScrollTop + boundaryPx > heights.scroll - heights.viewport - heights.row
+				? heights.scroll - heights.viewport - heights.row
+				: iScrollTop + boundaryPx;
 
 		this.s.skip = false;
 
-		if(that.s.ingnoreScroll) {
+		if (that.s.ingnoreScroll) {
 			// Restore the scrolling position that was saved by DataTable's state
 			// saving Note that this is done on the second draw when data is Ajax
 			// sourced, and the first draw when DOM soured
-			if ( this.s.dt.oFeatures.bStateSave && this.s.dt.oLoadedState !== null &&
-				 typeof this.s.dt.oLoadedState.scroller != 'undefined' )
-			{
+			if (
+				this.s.dt.oFeatures.bStateSave &&
+				this.s.dt.oLoadedState !== null &&
+				typeof this.s.dt.oLoadedState.scroller != 'undefined'
+			) {
 				// A quirk of DataTables is that the draw callback will occur on an
 				// empty set if Ajax sourced, but not if server-side processing.
-				var ajaxSourced = (this.s.dt.sAjaxSource || that.s.dt.ajax) && ! this.s.dt.oFeatures.bServerSide ?
-					true :
-					false;
-	
-				if ( ( ajaxSourced && this.s.dt.iDraw >= 2) ||
-					 (!ajaxSourced && this.s.dt.iDraw >= 1) )
-				{
-					setTimeout( function () {
-						$(that.dom.scroller).scrollTop( that.s.dt.oLoadedState.scroller.scrollTop );
-	
+				var ajaxSourced =
+					(this.s.dt.sAjaxSource || that.s.dt.ajax) && !this.s.dt.oFeatures.bServerSide
+						? true
+						: false;
+
+				if (
+					(ajaxSourced && this.s.dt.iDraw >= 2) ||
+					(!ajaxSourced && this.s.dt.iDraw >= 1)
+				) {
+					setTimeout(function () {
+						$(that.dom.scroller).scrollTop(that.s.dt.oLoadedState.scroller.scrollTop);
+
 						// In order to prevent layout thrashing we need another
 						// small delay
-						setTimeout( function () {
+						setTimeout(function () {
 							that.s.ingnoreScroll = false;
-						}, 0 );
-					}, 0 );
+						}, 0);
+					}, 0);
 				}
 			}
 			else {
@@ -741,21 +742,20 @@ $.extend( Scroller.prototype, {
 			}
 		}
 
-
 		// Because of the order of the DT callbacks, the info update will
 		// take precedence over the one we want here. So a 'thread' break is
 		// needed.  Only add the thread break if bInfo is set
-		if ( this.s.dt.oFeatures.bInfo ) {
-			setTimeout( function () {
-				that._info.call( that );
-			}, 0 );
+		if (this.s.dt.oFeatures.bInfo) {
+			setTimeout(function () {
+				that._info.call(that);
+			}, 0);
 		}
 
 		$(this.s.dt.nTable).triggerHandler('position.dts.dt', tableTop);
 
 		// Hide the loading indicator
-		if ( this.dom.loader && this.s.loaderVisible ) {
-			this.dom.loader.css( 'display', 'none' );
+		if (this.dom.loader && this.s.loaderVisible) {
+			this.dom.loader.css('display', 'none');
 			this.s.loaderVisible = false;
 		}
 	},
@@ -766,33 +766,32 @@ $.extend( Scroller.prototype, {
 	 * had scrolling containers of infinite height (i.e. the absolute value)
 	 *
 	 *  @param {string} dir Domain transform direction, `virtualToPhysical` or
-	 *    `physicalToVirtual` 
+	 *    `physicalToVirtual`
 	 *  @returns {number} Calculated transform
 	 *  @private
 	 */
-	_domain: function ( dir, val )
-	{
+	_domain: function (dir, val) {
 		var heights = this.s.heights;
 		var diff;
 		var magic = 10000; // the point at which the non-linear calculations start to happen
 
 		// If the virtual and physical height match, then we use a linear
 		// transform between the two, allowing the scrollbar to be linear
-		if ( heights.virtual === heights.scroll ) {
+		if (heights.virtual === heights.scroll) {
 			return val;
 		}
 
 		// In the first 10k pixels and the last 10k pixels, we want the scrolling
 		// to be linear. After that it can be non-linear. It would be unusual for
 		// anyone to mouse wheel through that much.
-		if ( val < magic ) {
+		if (val < magic) {
 			return val;
 		}
-		else if ( dir === 'virtualToPhysical' && val >= heights.virtual - magic ) {
+		else if (dir === 'virtualToPhysical' && val >= heights.virtual - magic) {
 			diff = heights.virtual - val;
 			return heights.scroll - diff;
 		}
-		else if ( dir === 'physicalToVirtual' && val >= heights.scroll - magic ) {
+		else if (dir === 'physicalToVirtual' && val >= heights.scroll - magic) {
 			diff = heights.scroll - val;
 			return heights.virtual - diff;
 		}
@@ -806,11 +805,9 @@ $.extend( Scroller.prototype, {
 		// non-linear, but with such massive data sets, the scrollbar is going
 		// to be a best guess anyway
 		var m = (heights.virtual - magic - magic) / (heights.scroll - magic - magic);
-		var c = magic - (m*magic);
+		var c = magic - m * magic;
 
-		return dir === 'virtualToPhysical' ?
-			(val-c) / m :
-			(m*val) + c;
+		return dir === 'virtualToPhysical' ? (val - c) / m : m * val + c;
 	},
 
 	/**
@@ -820,84 +817,75 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	_info: function ()
-	{
-		if ( !this.s.dt.oFeatures.bInfo )
-		{
+	_info: function () {
+		if (!this.s.dt.oFeatures.bInfo) {
 			return;
 		}
 
-		var
-			dt = this.s.dt,
+		var dt = this.s.dt,
 			language = dt.oLanguage,
 			iScrollTop = this.dom.scroller.scrollTop,
-			iStart = Math.floor( this.pixelsToRow(iScrollTop, false, this.s.ani)+1 ),
+			iStart = Math.floor(this.pixelsToRow(iScrollTop, false, this.s.ani) + 1),
 			iMax = dt.fnRecordsTotal(),
 			iTotal = dt.fnRecordsDisplay(),
-			iPossibleEnd = Math.ceil( this.pixelsToRow(iScrollTop+this.s.heights.viewport, false, this.s.ani) ),
+			iPossibleEnd = Math.ceil(
+				this.pixelsToRow(iScrollTop + this.s.heights.viewport, false, this.s.ani)
+			),
 			iEnd = iTotal < iPossibleEnd ? iTotal : iPossibleEnd,
-			sStart = dt.fnFormatNumber( iStart ),
-			sEnd = dt.fnFormatNumber( iEnd ),
-			sMax = dt.fnFormatNumber( iMax ),
-			sTotal = dt.fnFormatNumber( iTotal ),
+			sStart = dt.fnFormatNumber(iStart),
+			sEnd = dt.fnFormatNumber(iEnd),
+			sMax = dt.fnFormatNumber(iMax),
+			sTotal = dt.fnFormatNumber(iTotal),
 			sOut;
 
-		if ( dt.fnRecordsDisplay() === 0 &&
-			   dt.fnRecordsDisplay() == dt.fnRecordsTotal() )
-		{
+		if (dt.fnRecordsDisplay() === 0 && dt.fnRecordsDisplay() == dt.fnRecordsTotal()) {
 			/* Empty record set */
-			sOut = language.sInfoEmpty+ language.sInfoPostFix;
+			sOut = language.sInfoEmpty + language.sInfoPostFix;
 		}
-		else if ( dt.fnRecordsDisplay() === 0 )
-		{
+		else if (dt.fnRecordsDisplay() === 0) {
 			/* Empty record set after filtering */
-			sOut = language.sInfoEmpty +' '+
-				language.sInfoFiltered.replace('_MAX_', sMax)+
-					language.sInfoPostFix;
-		}
-		else if ( dt.fnRecordsDisplay() == dt.fnRecordsTotal() )
-		{
-			/* Normal record set */
-			sOut = language.sInfo.
-					replace('_START_', sStart).
-					replace('_END_',   sEnd).
-					replace('_MAX_',   sMax).
-					replace('_TOTAL_', sTotal)+
+			sOut =
+				language.sInfoEmpty +
+				' ' +
+				language.sInfoFiltered.replace('_MAX_', sMax) +
 				language.sInfoPostFix;
 		}
-		else
-		{
+		else if (dt.fnRecordsDisplay() == dt.fnRecordsTotal()) {
+			/* Normal record set */
+			sOut =
+				language.sInfo
+					.replace('_START_', sStart)
+					.replace('_END_', sEnd)
+					.replace('_MAX_', sMax)
+					.replace('_TOTAL_', sTotal) + language.sInfoPostFix;
+		}
+		else {
 			/* Record set after filtering */
-			sOut = language.sInfo.
-					replace('_START_', sStart).
-					replace('_END_',   sEnd).
-					replace('_MAX_',   sMax).
-					replace('_TOTAL_', sTotal) +' '+
-				language.sInfoFiltered.replace(
-					'_MAX_',
-					dt.fnFormatNumber(dt.fnRecordsTotal())
-				)+
+			sOut =
+				language.sInfo
+					.replace('_START_', sStart)
+					.replace('_END_', sEnd)
+					.replace('_MAX_', sMax)
+					.replace('_TOTAL_', sTotal) +
+				' ' +
+				language.sInfoFiltered.replace('_MAX_', dt.fnFormatNumber(dt.fnRecordsTotal())) +
 				language.sInfoPostFix;
 		}
 
 		var callback = language.fnInfoCallback;
-		if ( callback ) {
-			sOut = callback.call( dt.oInstance,
-				dt, iStart, iEnd, iMax, iTotal, sOut
-			);
+		if (callback) {
+			sOut = callback.call(dt.oInstance, dt, iStart, iEnd, iMax, iTotal, sOut);
 		}
 
 		var n = dt.aanFeatures.i;
-		if ( typeof n != 'undefined' )
-		{
-			for ( var i=0, iLen=n.length ; i<iLen ; i++ )
-			{
-				$(n[i]).html( sOut );
+		if (typeof n != 'undefined') {
+			for (var i = 0, iLen = n.length; i < iLen; i++) {
+				$(n[i]).html(sOut);
 			}
 		}
 
 		// DT doesn't actually (yet) trigger this event, but it will in future
-		$(dt.nTable).triggerHandler( 'info.dt' );
+		$(dt.nTable).triggerHandler('info.dt');
 	},
 
 	/**
@@ -910,7 +898,7 @@ $.extend( Scroller.prototype, {
 	 *  @returns {number} height
 	 *  @private
 	 */
-	_parseHeight: function(cssHeight) {
+	_parseHeight: function (cssHeight) {
 		var height;
 		var matches = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(px|em|rem|vh)$/.exec(cssHeight);
 
@@ -921,22 +909,20 @@ $.extend( Scroller.prototype, {
 		var value = parseFloat(matches[1]);
 		var unit = matches[2];
 
-		if ( unit === 'px' ) {
+		if (unit === 'px') {
 			height = value;
 		}
-		else if ( unit === 'vh' ) {
-			height = ( value / 100 ) * $(window).height();
+		else if (unit === 'vh') {
+			height = (value / 100) * $(window).height();
 		}
-		else if ( unit === 'rem' ) {
+		else if (unit === 'rem') {
 			height = value * parseFloat($(':root').css('font-size'));
 		}
-		else if ( unit === 'em' ) {
+		else if (unit === 'em') {
 			height = value * parseFloat($('body').css('font-size'));
 		}
 
-		return height ?
-			height :
-			0;
+		return height ? height : 0;
 	},
 
 	/**
@@ -948,30 +934,28 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	_scroll: function ()
-	{
-		var
-			that = this,
+	_scroll: function () {
+		var that = this,
 			heights = this.s.heights,
 			iScrollTop = this.dom.scroller.scrollTop,
 			iTopRow;
 
-		if ( this.s.skip ) {
+		if (this.s.skip) {
 			return;
 		}
 
-		if ( this.s.ingnoreScroll ) {
+		if (this.s.ingnoreScroll) {
 			return;
 		}
 
-		if ( iScrollTop === this.s.lastScrollTop ) {
+		if (iScrollTop === this.s.lastScrollTop) {
 			return;
 		}
 
 		/* If the table has been sorted or filtered, then we use the redraw that
 		 * DataTables as done, rather than performing our own
 		 */
-		if ( this.s.dt.bFiltered || this.s.dt.bSorted ) {
+		if (this.s.dt.bFiltered || this.s.dt.bSorted) {
 			this.s.lastScrollTop = 0;
 			return;
 		}
@@ -983,44 +967,48 @@ $.extend( Scroller.prototype, {
 		 * handed, so use a timeout to update the state saving only when the
 		 * scrolling has finished
 		 */
-		clearTimeout( this.s.stateTO );
-		this.s.stateTO = setTimeout( function () {
+		clearTimeout(this.s.stateTO);
+		this.s.stateTO = setTimeout(function () {
 			that.s.dtApi.state.save();
-		}, 250 );
+		}, 250);
 
-		this.s.scrollType = Math.abs(iScrollTop - this.s.lastScrollTop) > heights.viewport ?
-			'jump' :
-			'cont';
+		this.s.scrollType =
+			Math.abs(iScrollTop - this.s.lastScrollTop) > heights.viewport ? 'jump' : 'cont';
 
-		this.s.topRowFloat = this.s.scrollType === 'cont' ?
-			this.pixelsToRow( iScrollTop, false, false ) :
-			this._domain( 'physicalToVirtual', iScrollTop ) / heights.row;
+		this.s.topRowFloat =
+			this.s.scrollType === 'cont'
+				? this.pixelsToRow(iScrollTop, false, false)
+				: this._domain('physicalToVirtual', iScrollTop) / heights.row;
 
-		if ( this.s.topRowFloat < 0 ) {
+		if (this.s.topRowFloat < 0) {
 			this.s.topRowFloat = 0;
 		}
 
 		/* Check if the scroll point is outside the trigger boundary which would required
 		 * a DataTables redraw
 		 */
-		if ( this.s.forceReposition || iScrollTop < this.s.redrawTop || iScrollTop > this.s.redrawBottom ) {
-			var preRows = Math.ceil( ((this.s.displayBuffer-1)/2) * this.s.viewportRows );
+		if (
+			this.s.forceReposition ||
+			iScrollTop < this.s.redrawTop ||
+			iScrollTop > this.s.redrawBottom
+		) {
+			var preRows = Math.ceil(((this.s.displayBuffer - 1) / 2) * this.s.viewportRows);
 
 			iTopRow = parseInt(this.s.topRowFloat, 10) - preRows;
 			this.s.forceReposition = false;
 
-			if ( iTopRow <= 0 ) {
+			if (iTopRow <= 0) {
 				/* At the start of the table */
 				iTopRow = 0;
 			}
-			else if ( iTopRow + this.s.dt._iDisplayLength > this.s.dt.fnRecordsDisplay() ) {
+			else if (iTopRow + this.s.dt._iDisplayLength > this.s.dt.fnRecordsDisplay()) {
 				/* At the end of the table */
 				iTopRow = this.s.dt.fnRecordsDisplay() - this.s.dt._iDisplayLength;
-				if ( iTopRow < 0 ) {
+				if (iTopRow < 0) {
 					iTopRow = 0;
 				}
 			}
-			else if ( iTopRow % 2 !== 0 ) {
+			else if (iTopRow % 2 !== 0) {
 				// For the row-striping classes (odd/even) we want only to start
 				// on evens otherwise the stripes will change between draws and
 				// look rubbish
@@ -1031,53 +1019,53 @@ $.extend( Scroller.prototype, {
 			// that the draw function will still use it.
 			this.s.targetTop = iTopRow;
 
-			if ( iTopRow != this.s.dt._iDisplayStart ) {
+			if (iTopRow != this.s.dt._iDisplayStart) {
 				/* Cache the new table position for quick lookups */
 				this.s.tableTop = $(this.s.dt.nTable).offset().top;
 				this.s.tableBottom = $(this.s.dt.nTable).height() + this.s.tableTop;
 
 				var draw = function () {
 					that.s.dt._iDisplayStart = that.s.targetTop;
-					that.s.dt.oApi._fnDraw( that.s.dt );
+					that.s.dt.oApi._fnDraw(that.s.dt);
 				};
 
 				/* Do the DataTables redraw based on the calculated start point - note that when
 				 * using server-side processing we introduce a small delay to not DoS the server...
 				 */
-				if ( this.s.dt.oFeatures.bServerSide ) {
+				if (this.s.dt.oFeatures.bServerSide) {
 					this.s.forceReposition = true;
 
-					clearTimeout( this.s.drawTO );
-					this.s.drawTO = setTimeout( draw, this.s.serverWait );
+					clearTimeout(this.s.drawTO);
+					this.s.drawTO = setTimeout(draw, this.s.serverWait);
 				}
 				else {
 					draw();
 				}
 
-				if ( this.dom.loader && ! this.s.loaderVisible ) {
-					this.dom.loader.css( 'display', 'block' );
+				if (this.dom.loader && !this.s.loaderVisible) {
+					this.dom.loader.css('display', 'block');
 					this.s.loaderVisible = true;
 				}
 			}
 		}
 		else {
-			this.s.topRowFloat = this.pixelsToRow( iScrollTop, false, true );
+			this.s.topRowFloat = this.pixelsToRow(iScrollTop, false, true);
 		}
 
 		this.s.lastScrollTop = iScrollTop;
 		this.s.stateSaveThrottle();
 
-		if ( this.s.scrollType === 'jump' && this.s.mousedown ) {
+		if (this.s.scrollType === 'jump' && this.s.mousedown) {
 			this.s.labelVisible = true;
 		}
 		if (this.s.labelVisible) {
-			var labelFactor = (heights.viewport-heights.labelHeight - heights.xbar) / heights.scroll;
+			var labelFactor =
+				(heights.viewport - heights.labelHeight - heights.xbar) / heights.scroll;
 
 			this.dom.label
-				.html( this.s.dt.fnFormatNumber( parseInt( this.s.topRowFloat, 10 )+1 ) )
-				.css( 'top', iScrollTop + (iScrollTop * labelFactor) )
-				.css( 'right', 10 - this.dom.scroller.scrollLeft)
-				.css( 'display', 'block' );
+				.html(this.s.dt.fnFormatNumber(parseInt(this.s.topRowFloat, 10) + 1))
+				.css('top', iScrollTop + iScrollTop * labelFactor)
+				.css('display', 'block');
 		}
 	},
 
@@ -1092,32 +1080,27 @@ $.extend( Scroller.prototype, {
 	 *  @returns {void}
 	 *  @private
 	 */
-	_scrollForce: function ()
-	{
+	_scrollForce: function () {
 		var heights = this.s.heights;
 		var max = 1000000;
 
 		heights.virtual = heights.row * this.s.dt.fnRecordsDisplay();
 		heights.scroll = heights.virtual;
 
-		if ( heights.scroll > max ) {
+		if (heights.scroll > max) {
 			heights.scroll = max;
 		}
 
 		// Minimum height so there is always a row visible (the 'no rows found'
 		// if reduced to zero filtering)
-		this.dom.force.style.height = heights.scroll > this.s.heights.row ?
-			heights.scroll+'px' :
-			this.s.heights.row+'px';
+		this.dom.force.style.height =
+			heights.scroll > this.s.heights.row ? heights.scroll + 'px' : this.s.heights.row + 'px';
 	}
-} );
-
-
+});
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Statics
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
 
 /**
  * Scroller default settings for initialisation
@@ -1171,7 +1154,7 @@ Scroller.defaults = {
 	 *  @default  auto
 	 *  @static
 	 */
-	rowHeight: "auto",
+	rowHeight: 'auto',
 
 	/**
 	 * When using server-side processing, Scroller will wait a small amount of time to allow
@@ -1186,8 +1169,6 @@ Scroller.defaults = {
 
 Scroller.oDefaults = Scroller.defaults;
 
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Constants
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -1199,9 +1180,7 @@ Scroller.oDefaults = Scroller.defaults;
  *  @name      Scroller.version
  *  @static
  */
-Scroller.version = "2.1.0";
-
-
+Scroller.version = '2.2.0';
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Initialisation
@@ -1209,102 +1188,100 @@ Scroller.version = "2.1.0";
 
 // Attach a listener to the document which listens for DataTables initialisation
 // events so we can automatically initialise
-$(document).on( 'preInit.dt.dtscroller', function (e, settings) {
-	if ( e.namespace !== 'dt' ) {
+$(document).on('preInit.dt.dtscroller', function (e, settings) {
+	if (e.namespace !== 'dt') {
 		return;
 	}
 
 	var init = settings.oInit.scroller;
 	var defaults = DataTable.defaults.scroller;
 
-	if ( init || defaults ) {
-		var opts = $.extend( {}, init, defaults );
+	if (init || defaults) {
+		var opts = $.extend({}, init, defaults);
 
-		if ( init !== false ) {
-			new Scroller( settings, opts  );
+		if (init !== false) {
+			new Scroller(settings, opts);
 		}
 	}
-} );
-
+});
 
 // Attach Scroller to DataTables so it can be accessed as an 'extra'
 $.fn.dataTable.Scroller = Scroller;
 $.fn.DataTable.Scroller = Scroller;
 
-
 // DataTables 1.10 API method aliases
 var Api = $.fn.dataTable.Api;
 
-Api.register( 'scroller()', function () {
+Api.register('scroller()', function () {
 	return this;
-} );
+});
 
 // Undocumented and deprecated - is it actually useful at all?
-Api.register( 'scroller().rowToPixels()', function ( rowIdx, intParse, virtual ) {
+Api.register('scroller().rowToPixels()', function (rowIdx, intParse, virtual) {
 	var ctx = this.context;
 
-	if ( ctx.length && ctx[0].oScroller ) {
-		return ctx[0].oScroller.rowToPixels( rowIdx, intParse, virtual );
+	if (ctx.length && ctx[0].oScroller) {
+		return ctx[0].oScroller.rowToPixels(rowIdx, intParse, virtual);
 	}
 	// undefined
-} );
+});
 
 // Undocumented and deprecated - is it actually useful at all?
-Api.register( 'scroller().pixelsToRow()', function ( pixels, intParse, virtual ) {
+Api.register('scroller().pixelsToRow()', function (pixels, intParse, virtual) {
 	var ctx = this.context;
 
-	if ( ctx.length && ctx[0].oScroller ) {
-		return ctx[0].oScroller.pixelsToRow( pixels, intParse, virtual );
+	if (ctx.length && ctx[0].oScroller) {
+		return ctx[0].oScroller.pixelsToRow(pixels, intParse, virtual);
 	}
 	// undefined
-} );
+});
 
 // `scroller().scrollToRow()` is undocumented and deprecated. Use `scroller.toPosition()
-Api.register( ['scroller().scrollToRow()', 'scroller.toPosition()'], function ( idx, ani ) {
-	this.iterator( 'table', function ( ctx ) {
-		if ( ctx.oScroller ) {
-			ctx.oScroller.scrollToRow( idx, ani );
+Api.register(['scroller().scrollToRow()', 'scroller.toPosition()'], function (idx, ani) {
+	this.iterator('table', function (ctx) {
+		if (ctx.oScroller) {
+			ctx.oScroller.scrollToRow(idx, ani);
 		}
-	} );
+	});
 
 	return this;
-} );
+});
 
-Api.register( 'row().scrollTo()', function ( ani ) {
+Api.register('row().scrollTo()', function (ani) {
 	var that = this;
 
-	this.iterator( 'row', function ( ctx, rowIdx ) {
-		if ( ctx.oScroller ) {
+	this.iterator('row', function (ctx, rowIdx) {
+		if (ctx.oScroller) {
 			var displayIdx = that
-				.rows( { order: 'applied', search: 'applied' } )
+				.rows({ order: 'applied', search: 'applied' })
 				.indexes()
-				.indexOf( rowIdx );
+				.indexOf(rowIdx);
 
-			ctx.oScroller.scrollToRow( displayIdx, ani );
+			ctx.oScroller.scrollToRow(displayIdx, ani);
 		}
-	} );
+	});
 
 	return this;
-} );
+});
 
-Api.register( 'scroller.measure()', function ( redraw ) {
-	this.iterator( 'table', function ( ctx ) {
-		if ( ctx.oScroller ) {
-			ctx.oScroller.measure( redraw );
+Api.register('scroller.measure()', function (redraw) {
+	this.iterator('table', function (ctx) {
+		if (ctx.oScroller) {
+			ctx.oScroller.measure(redraw);
 		}
-	} );
+	});
 
 	return this;
-} );
+});
 
-Api.register( 'scroller.page()', function() {
+Api.register('scroller.page()', function () {
 	var ctx = this.context;
 
-	if ( ctx.length && ctx[0].oScroller ) {
+	if (ctx.length && ctx[0].oScroller) {
 		return ctx[0].oScroller.pageInfo();
 	}
 	// undefined
-} );
+});
 
 
 export default DataTable;
