@@ -16,9 +16,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,7 +38,8 @@ namespace Plugin_Software
         };
         private static HttpClient updClient = new HttpClient()
         {
-            DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+            //IfMatch = { new EntityTagHeaderValue("\"*\"") }
+            DefaultRequestHeaders = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
         };
         private static HttpClient hClient = new HttpClient();
 
@@ -470,7 +471,7 @@ namespace Plugin_Software
                                 image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                                 using (var imgs = new MemoryStream())
                                 {
-                                    var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                    var imageEncoder = image.GetConfiguration().ImageFormatsManager.GetEncoder(PngFormat.Instance);
                                     image.Save(imgs, imageEncoder);
                                     bCache = imgs.ToArray();
                                 }
@@ -498,7 +499,7 @@ namespace Plugin_Software
                                     image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                                     using (var imgs = new MemoryStream())
                                     {
-                                        var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                                        var imageEncoder = image.GetConfiguration().ImageFormatsManager.GetEncoder(PngFormat.Instance);
                                         image.Save(imgs, imageEncoder);
                                         bCache = imgs.ToArray();
                                     }
@@ -572,7 +573,7 @@ namespace Plugin_Software
                         image.Mutate(i => i.Resize(new ResizeOptions { Size = new SixLabors.ImageSharp.Size(size, size) }));
                         using (var imgs = new MemoryStream())
                         {
-                            var imageEncoder = image.GetConfiguration().ImageFormatsManager.FindEncoder(PngFormat.Instance);
+                            var imageEncoder = image.GetConfiguration().ImageFormatsManager.GetEncoder(PngFormat.Instance);
                             image.Save(imgs, imageEncoder);
                             bCache = imgs.ToArray();
                         }
@@ -590,7 +591,10 @@ namespace Plugin_Software
                 await Task.CompletedTask;
                 return new MemoryStream(bCache);
             }
-            catch { }
+            catch 
+            {
+                oIconClient = new HttpClient();
+            }
 
             return null;
         }
@@ -703,13 +707,18 @@ namespace Plugin_Software
 
         public async Task<Stream> GetFile(string FilePath, string customerid = "")
         {
-            string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
+            try
+            {
+                string sURL = Settings["contURL"] + "/" + FilePath.Replace('\\', '/') + "?" + Settings["contSAS"];
 
-            return await oFileClient.GetStreamAsync(sURL);
+                return await oFileClient.GetStreamAsync(sURL);
+            }
+            catch
+            {
+                oFileClient = new HttpClient();
+            }
 
-            //WebRequest myWebRequest = WebRequest.Create(sURL);
-            //WebResponse myWebResponse = myWebRequest.GetResponse();
-            //return new FileStreamResult(myWebResponse.GetResponseStream(), "application/octet-stream");
+            return null;
         }
 
         public string GetShortname(string name = "", string ver = "", string man = "", string customerid = "")
@@ -784,7 +793,11 @@ namespace Plugin_Software
                 HttpContent oCont = new StringContent(jObj.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
                 oCont.Headers.Add("x-ms-version", "2017-04-17");
                 oCont.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                var oRes = updClient.PutAsync(url, oCont);
+
+                if (updClient.DefaultRequestHeaders.Accept.Count == 0)
+                    updClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var oRes = updClient.PatchAsync(url, oCont);
                 oRes.Wait(5000);
             }
             catch (Exception ex)
@@ -792,7 +805,8 @@ namespace Plugin_Software
                 ex.ToString();
                 updClient = new HttpClient()
                 {
-                    DefaultRequestHeaders = { IfMatch = { new EntityTagHeaderValue("\"*\"") }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
+                    //IfMatch = { new EntityTagHeaderValue("\"*\"") },
+                    DefaultRequestHeaders = {  Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
                 };
             }
         }
@@ -954,14 +968,7 @@ namespace Plugin_Software
             {
                 string nextPart = "";
                 string nextRow = "";
-                //HttpWebRequest request = null;
 
-                //request = (HttpWebRequest)WebRequest.Create(url);
-
-                //request.Method = "GET";
-                //request.Headers.Add("x-ms-version", "2017-04-17");
-                //request.Headers.Add("x-ms-date", DateTime.Now.ToUniversalTime().ToString("R"));
-                //request.Accept = "application/json;odata=nometadata";
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 var content = string.Empty;
@@ -992,19 +999,6 @@ namespace Plugin_Software
                     content = response.Content.ReadAsStringAsync().Result;
                 }
 
-                //using (var response = (HttpWebResponse)request.GetResponse())
-                //{
-                //    nextPart = response.Headers["x-ms-continuation-NextPartitionKey"];
-                //    nextRow = response.Headers["x-ms-continuation-NextRowKey"];
-                //    using (var stream = response.GetResponseStream())
-                //    {
-                //        using (var sr = new StreamReader(stream))
-                //        {
-                //            content = sr.ReadToEnd();
-                //        }
-                //    }
-                //}
-
                 var jres = JObject.Parse(content);
 
                 JArray jResult = jres["value"] as JArray;
@@ -1018,7 +1012,10 @@ namespace Plugin_Software
 
                 return jResult;
             }
-            catch { }
+            catch
+            {
+                oEntitiesClient = new HttpClient();
+            }
 
             return null;
         }
@@ -1038,17 +1035,10 @@ namespace Plugin_Software
                     var oRes = oClient.PostAsync(url, oCont);
                     oRes.Wait(5000);
                 }
-                catch { }
-
-                //using (HttpClient oClient = new HttpClient())
-                //{
-                //    string url = $"{sURL}?timeout=10&{sasToken}";
-                //    string body = $"<QueueMessage><MessageText>{ShortName}</MessageText></QueueMessage>";
-                //    HttpContent oCont = new StringContent(body);
-                //    var oRes = oClient.PostAsync(url, oCont);
-                //    oRes.Wait(5000);
-                //    oRes.Result.ToString();
-                //}
+                catch
+                {
+                    oClient = new HttpClient();
+                }
             });
         }
 
