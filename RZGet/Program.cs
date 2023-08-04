@@ -80,7 +80,7 @@ namespace RZGet
 
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck CommandLine Tool (c) 2022 by Roger Zander");
+                Console.WriteLine("RuckZuck CommandLine Tool (c) 2023 by Roger Zander");
                 Console.WriteLine("Install:");
                 Console.WriteLine("Install a Software from Shortname : RZGet.exe install \"<Shortname>\"[;\"<Shortname2>\"] [/cleanup]");
                 Console.WriteLine("Install a Software from JSON File : RZGet.exe install \"<JSON full path>\"[;\"<JSON full path>\"]");
@@ -89,7 +89,7 @@ namespace RZGet
                 Console.WriteLine("Update:");
                 Console.WriteLine("Update all missing updates : RZGet.exe update --all [--retry] [--user]");
                 Console.WriteLine("Update all missing updates : RZGet.exe update --all --exclude \"<Shortname>\"[;\"<Shortname2>\"] [--retry] [--user]");
-                Console.WriteLine("Show all missing updates : RZGet.exe update --list --all [--user] [--allusers]");
+                Console.WriteLine("Show all missing updates (delay=days after release) : RZGet.exe update --list --all [--user] [--allusers] [--delay=5]");
                 Console.WriteLine("check if a Software requires an update : RZGet.exe update --list \"<Shortname>\" [--user]");
                 Console.WriteLine("Update a Software from Shortname : RZGet.exe update \"<Shortname>\"[;\"<Shortname2>\"] [--retry] [--user]");
                 Console.WriteLine("");
@@ -270,6 +270,7 @@ namespace RZGet
                 bool bUpdateAll = true;
                 bool bList = false;
                 bool bExclude = false;
+                int iDelay = 0;
 
                 if (lArgs.Contains("--retry", StringComparer.CurrentCultureIgnoreCase))
                     bRetry = true;
@@ -304,6 +305,11 @@ namespace RZGet
                 {
                     bExclude = true;
                 }
+                if(lArgs.Count(t =>t.IndexOf("--delay") >= 0) > 0)
+                {
+                    int.TryParse(lArgs.First(t=>t.IndexOf("--delay") >= 0).Split('=')[1], out iDelay);
+                }
+
 
                 RZScan oScan = new RZScan(false);
                 CancellationToken ct = new CancellationTokenSource(30000).Token;
@@ -342,7 +348,13 @@ namespace RZGet
 
                 if(lUpdate.Count == 0)
                 {
-                    Log.ForContext("Param", lArgs[0].ToLower()).Debug("No updates found.");
+                    Log.ForContext("Param", lArgs[0].ToLower()).Debug("No updates found."); 
+                }
+
+                if(iDelay > 0)
+                {
+                    //var lFiltered = lUpdate.Where(t => t == oScan.SoftwareRepository.FirstOrDefault(r => r.ShortName.ToLower() == t.ToLower() && r.ModifyDate != null && (DateTime.Now - r.ModifyDate).Value.TotalDays > iDelay)?.ShortName);
+                    lUpdate = lUpdate.Where(t => t == oScan.SoftwareRepository.FirstOrDefault(r => r.ShortName.ToLower() == t.ToLower() && (DateTime.Now - r.ModifyDate ?? new TimeSpan(365,0,0,0)).TotalDays > iDelay)?.ShortName)?.ToList();
                 }
 
                 foreach (string sArg in lUpdate)
