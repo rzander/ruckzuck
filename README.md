@@ -53,15 +53,16 @@ The RuckZuck.exe is a portable tool with a UI to install or update applications 
 Successor of `RZUpdate.exe`.
 ```
 Install:
-Install a Software from Shortname : RZGet.exe install "<Shortname>"[;"<Shortname2>"]
+Install a Software from Shortname : RZGet.exe install "<Shortname>"[;"<Shortname2>"] [/cleanup]
 Install a Software from JSON File : RZGet.exe install "<JSON full path>"[;"<JSON full path>"]
 Install a Sepcific Version : RZGet.exe install --name "<ProductName>" --vendor "<Manufacturer>" --version "<ProductVersion>"
 
 Update:
-Update all missing updates : RZGet.exe update --all
-Show all missing updates : RZGet.exe update --list --all
-check if a Software requires an update : RZGet.exe update --list "<Shortname>"
-Update a Software from Shortname : RZGet.exe update "<Shortname>"[;"<Shortname2>"]
+Update all missing updates : RZGet.exe update --all [--retry] [--user]
+Update all missing updates : RZGet.exe update --all --exclude "<Shortname>"[;"<Shortname2>"] [--retry] [--user]
+Show all missing updates (delay=days after release) : RZGet.exe update --list --all [--user] [--allusers] [--delay=5]
+check if a Software requires an update : RZGet.exe update --list "<Shortname>" [--user]
+Update a Software from Shortname : RZGet.exe update "<Shortname>"[;"<Shortname2>"] [--retry] [--user]
 
 Show:
 Show Metadata : RZGet.exe show "<Shortname>"
@@ -74,6 +75,11 @@ Search SW in a Category: RZGet.exe search --categories compression
 Search for installed SW: RZGet.exe search --isinstalled true
 Search for a manufacturer: RZGet.exe search --manufacturer zander
 Search for a shortname and return PowerShell Object: RZGet.exe search --shortname ruckzuck | convertfrom-json
+
+UnInstall:
+UnInstall a Software from Shortname : RZGet.exe uninstall "<Shortname>"[;"<Shortname2>"] [/cleanup]
+UnInstall a Software from JSON File : RZGet.exe uninstall "<JSON full path>"[;"<JSON full path>"]
+UnInstall a Sepcific Version : RZGet.exe uninstall --name "<ProductName>" --vendor "<Manufacturer>" --version "<ProductVersion>"
 ```
 
 ### OneGet Provider (depreciated)
