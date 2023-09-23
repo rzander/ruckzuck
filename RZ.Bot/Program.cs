@@ -28,14 +28,14 @@ namespace RZ.Bot
             await RZRestAPIv2.GetURLAsync(RZRestAPIv2.CustomerID);
 
 #if !DEBUG
-            RZScan oScan = new RZScan(false, false);
-            oScan.SWScanAsync().Wait();
-            if (oScan.InstalledSoftware.Count >= 7)
-            {
-                Console.WriteLine("Please run RZ.Bot.exe on a clean Machine !!!");
-                Console.ReadLine();
-                return;
-            }
+            //RZScan oScan = new RZScan(false, false);
+            //oScan.SWScanAsync().Wait();
+            //if (oScan.InstalledSoftware.Count >= 7)
+            //{
+            //    Console.WriteLine("Please run RZ.Bot.exe on a clean Machine !!!");
+            //    Console.ReadLine();
+            //    return;
+            //}
 #endif
             bool bLoop = true;
             while (bLoop)
@@ -107,6 +107,12 @@ namespace RZ.Bot
                             string sMessageID = xNode["MessageId"].InnerText;
                             string Shortname = xNode["MessageText"].InnerText;
                             string sPopReceipt = xNode["PopReceipt"].InnerText;
+
+                            if(Properties.Settings.Default.WhiteListApps.Contains(Shortname.ToLower()))
+                            {
+                                DeleteFromQueueAsync(sURL, sasToken, sMessageID, sPopReceipt).Wait(1000);
+                                continue;
+                            }
 
                             if (lDelete.Contains(Shortname.ToLower()))
                             {
@@ -245,7 +251,7 @@ namespace RZ.Bot
 
             foreach (var sID in IDQueue)
             {
-                DeleteFromQueueAsync(sURL, sasToken, sID.Key, sID.Value).Wait(2000);
+                DeleteFromQueueAsync(sURL, sasToken, sID.Key, sID.Value).Wait(3000);
             }
 
             return iResult;

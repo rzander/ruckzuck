@@ -12,7 +12,7 @@ namespace RZ.Bot.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,11 +25,25 @@ namespace RZ.Bot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("sv=2019-02-02&st=2021-05-25T17%3A23%3A26Z&se=2025-05-26T17%3A23%3A00Z&sp=raup&sig" +
-            "=%2BNZ9FwxEcuNJCHcLchs%2FxMvbf%2BxrzfcOTp3Vb1bimtI%3D")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ttttt")]
         public string SASToken {
             get {
                 return ((string)(this["SASToken"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <string>adobe acrobat reader dc (64-bit)</string>
+  <string>adobereader dc</string>
+  <string>adobereader dc mui</string>
+  <string>companyportal</string>
+</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection WhiteListApps {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["WhiteListApps"]));
             }
         }
     }
