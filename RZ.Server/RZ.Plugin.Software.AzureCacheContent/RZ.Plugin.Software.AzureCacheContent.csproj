@@ -4,13 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>RZ.Plugin.Software.AzureCacheContent</AssemblyName>
-    <AssemblyVersion>1.0.0.11</AssemblyVersion>
-    <FileVersion>1.0.0.11</FileVersion>
+    <AssemblyVersion>1.0.0.12</AssemblyVersion>
+    <FileVersion>1.0.0.12</FileVersion>
     <Copyright>(c) 2023 by Roger Zander</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
     <PackageReference Include="Costura.Fody" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -199,6 +199,8 @@ namespace Plugin_Software
                         {
                             if (oFiles["URL"].Value<string>().ToLower().Contains("https://cdn.ruckzuck.tools/rest/v2/getfile"))
                                 continue; //Skip file from cdn.ruckzuck.tools
+                            if (!oFiles["URL"].Value<string>().ToLower().StartsWith("http"))
+                                continue; //Skip files without http content
 
                             string sContentPath = Path.Combine(Settings["content"], sContentID);
                             if (!File.Exists(Path.Combine(sContentPath, oFiles["FileName"].Value<string>())))
