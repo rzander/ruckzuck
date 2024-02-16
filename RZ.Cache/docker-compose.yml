@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  rzwcf:
-    image: zanderr/ruckzuck
-    build:
-      context: ./RZCache
-      dockerfile: Dockerfile
