@@ -1,4 +1,3 @@
-<img src="https://github.com/rzander/ruckzuck/blob/master/RZ.Server/RZ.Server/wwwroot/images/RZ-Logo.png">
 Software Package Manager for Windows provides a quick way to install and update software....
 
 <img src="https://cloud.githubusercontent.com/assets/11909453/24813479/7340c22a-1bce-11e7-8df7-a0d8236775df.png" width="520">
