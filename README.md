@@ -90,16 +90,4 @@ A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to upd
 ### RZ for Configuration Manager
 Allows applications to be imported from the RZ repository into Microsofts System Center Configuration Manager from a UI. It will create ConfigMgr Applications, DeploymentType, Collection and a Deployment. V1.5.1.8 news: https://rzander.azurewebsites.net/ruckzuck-for-configmgr-new-v1-5-18/
 
-### RuckZuck Caching Service ###
-Docker container to cache RuckZuck traffic (SW definitions, Icons and binary-downloads).
-https://github.com/rzander/ruckzuck/wiki/RuckZuck-Proxy-Server 
-https://hub.docker.com/r/zanderr/ruckzuck/
-
-### RZ.Server
-RuckZuck Web-UI and REST API.
-
-### RZ.Bot
-(internals) A "Service" to automatically download and install failed apps.
-### RZ.LogConsole
-(internals) A real-time Log-Console to get failed and success installations.
 
