@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 
 namespace RZ.Base.Lib
 {
@@ -22,8 +23,8 @@ namespace RZ.Base.Lib
         {
             get
             {
-                if(_catalog.Count <= 0)
-                    _catalog = GetCatalogAsync().Result;    
+                if (_catalog.Count <= 0)
+                    _catalog = GetCatalogAsync().Result;
 
                 return _catalog;
             }
@@ -44,10 +45,10 @@ namespace RZ.Base.Lib
 
             _feedback = SendFeedback;
 
-            if(logger == null)
+            if (logger == null)
                 _logger = new LoggerFactory().CreateLogger<RuckZuck>();
             else
-                _logger = logger;   
+                _logger = logger;
 
             if (string.IsNullOrEmpty(customerid))
             {
@@ -105,7 +106,7 @@ namespace RZ.Base.Lib
                 _URL = "https://ruckzuck.azurewebsites.net";
             }
 
-            _logger.LogDebug("CustomerId: {id} ; URL: {URL}",Customerid, _URL);
+            _logger.LogDebug("CustomerId: {id} ; URL: {URL}", Customerid, _URL);
         }
 
         internal async Task<JArray> GetCatalogAsync()
@@ -181,7 +182,7 @@ namespace RZ.Base.Lib
 
         public async Task<JArray> GetSoftwares(string shortname, string customerid = "")
         {
-            if(string.IsNullOrEmpty(shortname))
+            if (string.IsNullOrEmpty(shortname))
                 return new JArray();
 
             _logger.LogInformation("GetSoftwares: {shortname}", shortname);
@@ -255,13 +256,13 @@ namespace RZ.Base.Lib
             {
                 if (jSW["PSPreReq"] != null && jSW["PSPreReq"]?.Value<string>() != "")
                 {
-                    string sPreReq = RunPS(jSW["PSPreReq"]?.Value<string>() ?? "");    
-                    if(!string.IsNullOrEmpty(sPreReq) && sPreReq.ToLower().Contains("true"))
+                    string sPreReq = RunPS(jSW["PSPreReq"]?.Value<string>() ?? "");
+                    if (!string.IsNullOrEmpty(sPreReq) && sPreReq.ToLower().Contains("true"))
                     {
                         _logger.LogDebug("PreReq passed: {SW}; PS:{ps}", jSW["ShortName"]?.Value<string>() ?? "", jSW["PSPreReq"]?.Value<string>());
-                        if(!await Download(jSW, includeDependencies))
+                        if (!await Download(jSW, includeDependencies))
                             bRes = false;
-                        return bRes; 
+                        return bRes;
                     }
                     else
                     {
@@ -302,7 +303,7 @@ namespace RZ.Base.Lib
                 {
                     try
                     {
-                        if(jSW["URL"] == null || string.IsNullOrEmpty(jSW["URL"]?.Value<string>()))
+                        if (jSW["URL"] == null || string.IsNullOrEmpty(jSW["URL"]?.Value<string>()))
                         {
                             continue;
                         }
@@ -398,7 +399,7 @@ namespace RZ.Base.Lib
                         {
                             try
                             {
-                                CancellationTokenSource cts = new CancellationTokenSource(new TimeSpan(0,15,0)); //15min Timeout
+                                CancellationTokenSource cts = new CancellationTokenSource(new TimeSpan(0, 15, 0)); //15min Timeout
 
                                 _logger.LogInformation("Downloading {file} from {URL}", sFile, sURL);
 
@@ -571,7 +572,7 @@ namespace RZ.Base.Lib
                 _ = await SendFeedback(Software, "false", System.Reflection.Assembly.GetExecutingAssembly()?.GetName().Name ?? "RZ.Base", "download failed", Customerid);
                 return false;
             }
-            else 
+            else
             {
                 //_ = await SendFeedback(Software, "true", System.Reflection.Assembly.GetExecutingAssembly()?.GetName().Name ?? "RZ.Base", "download failed", Customerid);
             }
@@ -607,7 +608,7 @@ namespace RZ.Base.Lib
                 }
                 else
                 {
-                    _logger.LogWarning("PSDetection failed: {SW}", Software["ShortName"]?.Value<string>() ?? ""); 
+                    _logger.LogWarning("PSDetection failed: {SW}", Software["ShortName"]?.Value<string>() ?? "");
                     _ = await SendFeedback(Software, "false", System.Reflection.Assembly.GetExecutingAssembly()?.GetName().Name ?? "RZ.Base", "Product not detected after installation.", Customerid);
                     return false;
                 }
@@ -620,7 +621,7 @@ namespace RZ.Base.Lib
         {
             if (_feedback && !string.IsNullOrEmpty(feedback))
             {
-                if(string.IsNullOrEmpty(customerid))
+                if (string.IsNullOrEmpty(customerid))
                     customerid = Customerid;
 
                 string productName = Software["ProductName"]?.ToString() ?? "";
@@ -649,12 +650,12 @@ namespace RZ.Base.Lib
 
         internal async Task IncCounter(string shortname, string counter = "DL", string customerid = "")
         {
-            if(!_feedback)
+            if (!_feedback)
                 return;
-            if(string.IsNullOrEmpty(shortname))
-                return; 
-            if(string.IsNullOrEmpty(customerid))
-                customerid = Customerid;    
+            if (string.IsNullOrEmpty(shortname))
+                return;
+            if (string.IsNullOrEmpty(customerid))
+                customerid = Customerid;
             _ = await oClient.GetStringAsync(_URL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(customerid), new CancellationTokenSource(5000).Token);
         }
 
@@ -733,7 +734,11 @@ namespace RZ.Base.Lib
                     _logger.LogWarning("Warning: Windows-Installer setup is already running!... waiting...");
                     bRes = true;
                 }
+            }
+            catch { }
 
+            try
+            {
                 //Check if RuckZuck is running...
                 using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
                 {
@@ -741,10 +746,7 @@ namespace RZ.Base.Lib
                     bRes = true;
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error: 741: InstallRunning: {ex}", ex.Message);
-            }
+            catch { }
 
             return bRes;
         }
