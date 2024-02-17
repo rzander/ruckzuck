@@ -12,6 +12,7 @@ namespace RZ.Base.Lib
         public string Customerid = "";
         internal string _URL = "";
         internal readonly HttpClient oClient = new HttpClient();
+        internal readonly HttpClient bClient = new HttpClient();
         internal JArray _catalog = new JArray();
         internal bool _feedback = true;
 
@@ -21,7 +22,7 @@ namespace RZ.Base.Lib
         {
             get
             {
-                if(_catalog.Count == 0)
+                if(_catalog.Count <= 0)
                     _catalog = GetCatalogAsync().Result;    
 
                 return _catalog;
@@ -37,6 +38,10 @@ namespace RZ.Base.Lib
 
         public RuckZuck(string customerid = "", string URL = "", bool SendFeedback = true, ILogger<RuckZuck> logger = null)
         {
+            //specify to use TLS 1.2 as default connection
+            System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+
             _feedback = SendFeedback;
 
             if(logger == null)
@@ -297,6 +302,10 @@ namespace RZ.Base.Lib
                 {
                     try
                     {
+                        if(jSW["URL"] == null || string.IsNullOrEmpty(jSW["URL"]?.Value<string>()))
+                        {
+                            continue;
+                        }
                         string sURL = jSW["URL"]?.Value<string>() ?? "";
                         string sFile = jSW["FileName"]?.Value<string>() ?? "";
                         string sContentID = Software["ContentID"]?.Value<string>() ?? "";
@@ -376,7 +385,7 @@ namespace RZ.Base.Lib
                             }
                             else
                             {
-                                if (sRes != "<skip>")
+                                if (!(sRes ?? "").ToLower().Contains("<skip>"))
                                 {
                                     _logger.LogError("Error: 613: nor valid URL: {url}, for File: {file}", sURL, sFile);
                                     bRes = false;
@@ -389,11 +398,11 @@ namespace RZ.Base.Lib
                         {
                             try
                             {
-                                CancellationTokenSource cts = new CancellationTokenSource(900000); //15min Timeout
+                                CancellationTokenSource cts = new CancellationTokenSource(new TimeSpan(0,15,0)); //15min Timeout
 
                                 _logger.LogInformation("Downloading {file} from {URL}", sFile, sURL);
 
-                                byte[] bFile = await oClient.GetByteArrayAsync(sURL, cts.Token);
+                                byte[] bFile = await bClient.GetByteArrayAsync(sURL, cts.Token);
 
                                 if (bFile.Length > 0)
                                 {
@@ -567,6 +576,11 @@ namespace RZ.Base.Lib
                 //_ = await SendFeedback(Software, "true", System.Reflection.Assembly.GetExecutingAssembly()?.GetName().Name ?? "RZ.Base", "download failed", Customerid);
             }
 
+            while (InstallRunning())
+            {
+                Thread.Sleep(3000);
+            }
+
             _logger.LogDebug("Installing: {Software}", Software["ShortName"]?.Value<string>() ?? "");
 
             if (Software != null && Software["PSInstall"] != null)
@@ -705,6 +719,34 @@ namespace RZ.Base.Lib
             }
 
             return "";
+        }
+
+        internal bool InstallRunning()
+        {
+
+            bool bRes = false;
+            try
+            {
+                //Check if MSI is running...
+                using (var mutex = Mutex.OpenExisting(@"Global\_MSIExecute"))
+                {
+                    _logger.LogWarning("Warning: Windows-Installer setup is already running!... waiting...");
+                    bRes = true;
+                }
+
+                //Check if RuckZuck is running...
+                using (var mutex = Mutex.OpenExisting(@"Global\RuckZuck"))
+                {
+                    _logger.LogWarning("Warning: RuckZuck setup is already running!... waiting...");
+                    bRes = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error: 741: InstallRunning: {ex}", ex.Message);
+            }
+
+            return bRes;
         }
     }
 
