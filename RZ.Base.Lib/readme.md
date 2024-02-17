@@ -1,5 +1,7 @@
 # RuckZuck Base Library for .NET6/8
 
+Library is published on Nuget: https://www.nuget.org/packages/RZ.Base.Lib
+
 Example with SeriLog logger:
 ```C#
 using Microsoft.Extensions.Logging;
