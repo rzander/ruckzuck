@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace RZ.Base.Lib
 {
@@ -16,6 +17,12 @@ namespace RZ.Base.Lib
         internal readonly HttpClient bClient = new HttpClient();
         internal JArray _catalog = new JArray();
         internal bool _feedback = true;
+        public List<string> swExlude = new List<string>() { 
+            "windows sdk addon", "windows 11 installation assistant", "microsoft intune management extension", "microsoft edge update", "microsoft visio -", 
+            "microsoft 365 apps for enterprise -", "vs_coreeditorfonts", "microsoft odbc driver 17 for sql server", "nvidia graphics driver", "nvidia frameview sdk", "nvidia rtx desktop manager",
+            "nvidia hd audio driver", "microsoft update health tool", "microsoft web deploy 4.0", "iis 10.0 express", "microsoft .net sdk",
+            "microsoft system clr types for sql", "windows subsystem for linux update", "microsoft visual studio installer", "windows software development kit - windows 10", "windows subsystem for linux",
+            "microsoft teams meeting add-in for microsoft office", "microsoft gameinput", "visual studio professional"};
 
         private readonly ILogger<RuckZuck> _logger;
 
@@ -132,7 +139,7 @@ namespace RZ.Base.Lib
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error: E506: GetCatalog: {ex}", ex.Message);
+                        _logger.LogError("Error: E142: GetCatalogAsync: {ex}", ex.Message);
                     }
                 }
             }
@@ -209,7 +216,7 @@ namespace RZ.Base.Lib
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error: E598: GetSoftwares: {ex}", ex.Message);
+                    _logger.LogError("Error: E219: GetSoftwares: {ex}", ex.Message);
                 }
             }
 
@@ -242,7 +249,7 @@ namespace RZ.Base.Lib
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("E1" + ex.Message, "GetSoftwares");
+                _logger.LogError("Error: E252: GetSoftwares: {ex}", ex.Message);
             }
 
             _logger.LogInformation("GetSoftwares: {productName} ; {productVersion} ; {manufacturer} not found", productName, productVersion, manufacturer);
@@ -254,21 +261,29 @@ namespace RZ.Base.Lib
             bool bRes = true;
             foreach (JObject jSW in Software)
             {
-                if (jSW["PSPreReq"] != null && jSW["PSPreReq"]?.Value<string>() != "")
+                try
                 {
-                    string sPreReq = RunPS(jSW["PSPreReq"]?.Value<string>() ?? "");
-                    if (!string.IsNullOrEmpty(sPreReq) && sPreReq.ToLower().Contains("true"))
+                    if (jSW["PSPreReq"] != null && jSW["PSPreReq"]?.Value<string>() != "")
                     {
-                        _logger.LogDebug("PreReq passed: {SW}; PS:{ps}", jSW["ShortName"]?.Value<string>() ?? "", jSW["PSPreReq"]?.Value<string>());
-                        if (!await Download(jSW, includeDependencies))
-                            bRes = false;
-                        return bRes;
+                        string sPreReq = RunPS(jSW["PSPreReq"]?.Value<string>() ?? "");
+                        if (!string.IsNullOrEmpty(sPreReq) && sPreReq.ToLower().Contains("true"))
+                        {
+                            _logger.LogDebug("PreReq passed: {SW}; PS:{ps}", jSW["ShortName"]?.Value<string>() ?? "", jSW["PSPreReq"]?.Value<string>());
+                            if (!await Download(jSW, includeDependencies))
+                                bRes = false;
+                            return bRes;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("PreReq failed: {SW}", jSW["ShortName"]?.Value<string>() ?? "");
+                            continue;
+                        }
                     }
-                    else
-                    {
-                        _logger.LogWarning("PreReq failed: {SW}", jSW["ShortName"]?.Value<string>() ?? "");
-                        continue;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error: 285: Download: {ex}", ex.Message);
+                    bRes = false;
                 }
             }
 
@@ -276,6 +291,9 @@ namespace RZ.Base.Lib
         }
         public async Task<bool> Download(JObject Software, bool includeDependencies = true)
         {
+            if(Software == null)
+                return false;   
+            
             _logger.LogDebug("Checking Content for: {Software}", Software["ShortName"]?.Value<string>() ?? "");
 
             bool bRes = true;
@@ -285,14 +303,22 @@ namespace RZ.Base.Lib
             {
                 foreach (string? sPreReq in Software["PreRequisites"]?.Values<string>() ?? new List<string>())
                 {
-                    if (string.IsNullOrEmpty(sPreReq))
+                    try
                     {
-                        JArray oPreSW = await GetSoftwares(sPreReq ?? "", Customerid);
-                        if (oPreSW.Count > 0)
+                        if (string.IsNullOrEmpty(sPreReq))
                         {
-                            if (!await Download(oPreSW))
-                                bRes = false;
+                            JArray oPreSW = await GetSoftwares(sPreReq ?? "", Customerid);
+                            if (oPreSW.Count > 0)
+                            {
+                                if (!await Download(oPreSW))
+                                    bRes = false;
+                            }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Error: 320: Download: {ex}", ex.Message);
+                        bRes = false;
                     }
                 }
             }
@@ -472,14 +498,14 @@ namespace RZ.Base.Lib
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError("Error: 788: Download: {ex}", ex.Message);
+                                _logger.LogError("Error: 501: Download: {ex}", ex.Message);
                                 bRes = false;
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error:795: Download: {ex}", ex.Message);
+                        _logger.LogError("Error:508: Download: {ex}", ex.Message);
                         bRes = false;
                     }
                 }
@@ -502,7 +528,6 @@ namespace RZ.Base.Lib
 
             return bRes;
         }
-
         public async Task<bool> Install(JObject Software, bool includeDependencies = true, bool ignoreDependencyFailure = false)
         {
             if (Software == null)
@@ -638,7 +663,10 @@ namespace RZ.Base.Lib
 
                     return oRes;
                 }
-                catch { }
+                catch(Exception ex)
+                {
+                    _logger.LogError("Error: 668: SendFeedback: {ex}", ex.Message);
+                }
             }
             else
             {
@@ -646,6 +674,193 @@ namespace RZ.Base.Lib
             }
 
             return "";
+        }
+
+        public async Task<JArray> InstalledSoftware()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var aSW = await RegScan(Microsoft.Win32.RegistryHive.CurrentUser, Microsoft.Win32.RegistryView.Default);
+                aSW.Merge(await RegScan(Microsoft.Win32.RegistryHive.Users, Microsoft.Win32.RegistryView.Default));
+                aSW.Merge(await RegScan(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32));
+                aSW.Merge(await RegScan(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64));
+                return aSW;
+            }
+            else
+            {
+                return new JArray();
+            }
+        }
+
+        public async Task<JArray> CheckUpdates(JArray? installedSoftware = null)
+        {
+            try
+            {
+                if (installedSoftware == null)
+                    installedSoftware = await InstalledSoftware();
+
+                //we do not have to check for updates if it's in the Catalog
+                foreach (var oSW in Catalog)
+                {
+                    foreach (var oDel in installedSoftware.Where(t => t["ProductName"]?.ToString().ToLower().Trim() == oSW["ProductName"]?.ToString().ToLower().Trim() && t["Manufacturer"]?.ToString().ToLower().Trim() == oSW["Manufacturer"]?.ToString().ToLower().Trim() && t["ProductVersion"]?.ToString().ToLower().Trim() == oSW["ProductVersion"]?.ToString().ToLower().Trim()).ToList())
+                    {
+                        installedSoftware.Remove(oDel);
+                    }
+                }
+
+                //remove duplicates
+                var oRes = installedSoftware.GroupBy(x => new
+                {
+                    ProductName = x["ProductName"],
+                    Manufacturer = x["Manufacturer"],
+                    ProductVersion = x["ProductVersion"]
+                })
+                .Select(x => x.First()).ToList();
+
+                //remove excluded Software
+                oRes.RemoveAll(t => swExlude.Any(o => (t["ProductName"]?.ToString() ?? "").ToLower().Trim().StartsWith(o)) || string.IsNullOrEmpty(t["ProductName"]?.ToString()));
+
+                return await CheckForUpdateAsync(new JArray(oRes));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: 727: CheckUpdates: {ex}", ex.Message);
+            }
+
+            return new JArray();
+        }
+
+        internal async Task<JArray> RegScan(RegistryHive RegHive, RegistryView RegView)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                try
+                {
+                    RegistryKey oUBase = RegistryKey.OpenBaseKey(RegHive, RegView);
+                    JArray lScanList = new JArray();
+                    List<string> USubKeys = new List<string>();
+                    if (oUBase != null && RegHive == RegistryHive.Users)
+                    {
+                        //loop through all User Profiles
+                        foreach (string SID in oUBase.GetSubKeyNames())
+                        {
+                            try
+                            {
+                                if (!SID.StartsWith("S-1-12") || SID.EndsWith("_Classes"))
+                                    continue;
+
+                                RegistryKey? oUKey = oUBase.OpenSubKey(SID + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+                                if (oUKey != null)
+                                {
+                                    USubKeys.AddRange(oUKey.GetSubKeyNames());
+                                }
+
+                                foreach (string sProdID in USubKeys)
+                                {
+                                    try
+                                    {
+                                        RegistryKey oRegkey = oUKey.OpenSubKey(sProdID);
+                                        bool bSystemComponent = Convert.ToBoolean(oRegkey.GetValue("SystemComponent", 0));
+                                        bool bWindowsInstaller = Convert.ToBoolean(oRegkey.GetValue("WindowsInstaller", 0));
+                                        string sParent = oRegkey.GetValue("ParentKeyName", "").ToString();
+                                        string sRelease = oRegkey.GetValue("ReleaseType", "").ToString();
+
+                                        //Check if its a SystemComponent or WindowsInstaller
+                                        if (bSystemComponent)
+                                            continue;
+
+                                        //Check if NO PrentKeyName exists
+                                        if (!string.IsNullOrEmpty(sParent))
+                                            continue;
+
+                                        //Check if NO ReleaseType exists
+                                        if (!string.IsNullOrEmpty(sRelease))
+                                            continue;
+
+                                        JObject oItem = new JObject
+                                    {
+                                        { "ProductName", oRegkey.GetValue("DisplayName", "").ToString() },
+                                        { "ProductVersion", oRegkey.GetValue("DisplayVersion", "").ToString() },
+                                        { "Manufacturer", oRegkey.GetValue("Publisher", "").ToString() }
+                                    };
+
+                                        if (string.IsNullOrEmpty(oItem["ProductName"]?.ToString()) && string.IsNullOrEmpty(oItem["ProductVersion"]?.ToString()) && string.IsNullOrEmpty(oItem["Manufacturer"]?.ToString()))
+                                            continue;
+                                        else
+                                            lScanList.Add(oItem);
+
+                                    }
+                                    catch { }
+
+
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    else
+                    {
+                        RegistryKey? oUKey = oUBase?.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", false);
+
+                        if (oUKey != null)
+                            USubKeys.AddRange(oUKey.GetSubKeyNames());
+
+                        foreach (string sProdID in USubKeys)
+                        {
+                            try
+                            {
+                                RegistryKey? oRegkey = oUKey?.OpenSubKey(sProdID);
+
+                                if (oRegkey != null)
+                                {
+                                    bool bSystemComponent = Convert.ToBoolean(oRegkey?.GetValue("SystemComponent", 0));
+                                    bool bWindowsInstaller = Convert.ToBoolean(oRegkey?.GetValue("WindowsInstaller", 0));
+                                    string? sParent = oRegkey?.GetValue("ParentKeyName", "").ToString();
+                                    string? sRelease = oRegkey?.GetValue("ReleaseType", "").ToString();
+
+                                    //Check if its a SystemComponent or WindowsInstaller
+                                    if (bSystemComponent)
+                                        continue;
+
+                                    //Check if NO PrentKeyName exists
+                                    if (!string.IsNullOrEmpty(sParent))
+                                        continue;
+
+                                    //Check if NO ReleaseType exists
+                                    if (!string.IsNullOrEmpty(sRelease))
+                                        continue;
+
+                                    JObject oItem = new JObject
+                                    {
+                                        { "ProductName", oRegkey?.GetValue("DisplayName", "").ToString() },
+                                        { "ProductVersion", oRegkey?.GetValue("DisplayVersion", "").ToString() },
+                                        { "Manufacturer", oRegkey?.GetValue("Publisher", "").ToString() }
+                                    };
+
+                                    if (string.IsNullOrEmpty(oItem["ProductName"]?.ToString()) && string.IsNullOrEmpty(oItem["ProductVersion"]?.ToString()) && string.IsNullOrEmpty(oItem["Manufacturer"]?.ToString()))
+                                        continue;
+                                    else
+                                        lScanList.Add(oItem);
+                                }
+                            }
+                            catch { }
+
+                        }
+                    }
+
+                    await Task.CompletedTask;
+                    return lScanList;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error: 856: RegScan: {ex}", ex.Message);
+                }
+            }else
+            {
+                _logger.LogWarning("RegScan: Not supported on this OS");
+            }
+
+            return new JArray();
         }
 
         internal async Task IncCounter(string shortname, string counter = "DL", string customerid = "")
@@ -716,7 +931,7 @@ namespace RZ.Base.Lib
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error: 908: RunPS: {ex}", ex.Message);
+                _logger.LogError(ex, "Error: 934: RunPS: {ex}", ex.Message);
             }
 
             return "";
@@ -749,6 +964,40 @@ namespace RZ.Base.Lib
             catch { }
 
             return bRes;
+        }
+
+        internal async Task<JArray> CheckForUpdateAsync(JArray lSoftware, string customerid = "", CancellationToken? ct = null)
+        {
+            //System.Web.Script.Serialization version
+            try
+            {
+                if (ct == null)
+                    ct = new CancellationTokenSource(90000).Token; //90s TimeOut
+
+                if (lSoftware.Count > 0)
+                {
+                    if (string.IsNullOrEmpty(customerid))
+                        customerid = Customerid;
+
+                    string sSoftware = lSoftware.ToString(Newtonsoft.Json.Formatting.None);
+
+                    HttpContent oCont = new StringContent(sSoftware, Encoding.UTF8, "application/json");
+                    var response = await oClient.PostAsync(_URL + "/rest/v2/checkforupdate?customerid=" + customerid, oCont, (CancellationToken)ct);
+                    string sRes = await response.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrEmpty(sRes) && sRes.StartsWith('['))
+                    {
+                        JArray lRes = JArray.Parse(sRes);
+                        return lRes;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Error: 997: CheckForUpdateAsync: {ex}", ex.Message);
+            }
+
+            return new JArray();
         }
     }
 
