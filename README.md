@@ -102,7 +102,7 @@ A Provider for [OneGet](https://github.com/OneGet/oneget) (part of Win10) to upd
 
 > Examples on: https://github.com/rzander/ruckzuck/wiki/RuckZuck-OneGet-Provider
 
-### RZ for Configuration Manager
+### RZ for Configuration Manager (depreciated)
 Allows applications to be imported from the RZ repository into Microsofts System Center Configuration Manager from a UI. It will create ConfigMgr Applications, DeploymentType, Collection and a Deployment. V1.5.1.8 news: https://rzander.azurewebsites.net/ruckzuck-for-configmgr-new-v1-5-18/
 
 
