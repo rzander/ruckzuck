@@ -1,3 +1,14 @@
+# March 2024: Ownership change
+***
+EN: Starting from March 1st, 2024, [ROMAWO GmbH](https://romawo.com) will assume all rights and obligations of the package manager RuckZuck.tools. RuckZuck will continue to be freely available thanks to [sponsors](https://ruckzuck.tools/Home/Sponsors). The client tools will remain an open-source solution managed on GitHub. The server components will be removed from the GitHub repository and will no longer be publicly accessible.
+ROMAWO will utilize the RuckZuck repository for commercial purposes and will update and maintain products associated with this use in the [public repository](https://ruckzuck.tools/Home/Repository). Products that have not been published in the repository in ROMAWO's interest must continue to be updated by the community. Unused or outdated products will be removed from the repository.
+ROMAWO assumes no liability and is not responsible for the licensing of the software in the public repository.
+***
+DE: Ab dem 1. März 2024 übernimmt die [ROMAWO GmbH](https://romawo.com) sämtliche Rechte und Pflichten des Paket-Managers RuckZuck.tools. RuckZuck wird weiterhin dank der [Sponsoren](https://ruckzuck.tools/Home/Sponsors) kostenlos nutzbar sein. Die Client-Tools bleiben eine Open-Source-Lösung, welche auf GitHub verwaltet werden. Die Serverkomponenten werden aus dem GitHub-Repository entfernt und sind nicht mehr öffentlich einsehbar.
+ROMAWO wird das RuckZuck-Repository für kommerzielle Zwecke nutzen und die mit dieser Nutzung verbundenen Produkte auch im [öffentlichen Repository](https://ruckzuck.tools/Home/Repository) aktualisieren und pflegen. Produkte, die nicht im Interesse von ROMAWO im Repository veröffentlicht wurden, müssen wie bisher von der Community aktualisiert werden. Ungenutzte oder veraltete Produkte werden aus dem Repository entfernt.
+ROMAWO übernimmt keine Haftung und ist nicht verantwortlich für die Lizenzierung der Software im öffentlichen Repository.
+
+***
 Software Package Manager for Windows provides a quick way to install and update software....
 
 <img src="https://cloud.githubusercontent.com/assets/11909453/24813479/7340c22a-1bce-11e7-8df7-a0d8236775df.png" width="520">
@@ -11,6 +22,8 @@ Select a software from the repository and RuckZuck handles the download and inst
  * RSS Feed: http://ruckzuck.tools/rss.aspx
 
  The RuckZuck repository does not store binaries of the software, just links to where the software is downloaded. Installing software with RuckZuck does not grant you a license for that product.
+
+
 
 # Aug22: ApiKey will be required to get definitions
 As the Api is more and more overloaded with requests that will bulk dump the software definitions, the API function "GetSoftwares" will require an APIKey. API-Keys can be requested by sending me a DM or by opening an Issue here on GitHub.
