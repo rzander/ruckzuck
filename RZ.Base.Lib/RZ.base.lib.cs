@@ -47,7 +47,7 @@ namespace RZ.Base.Lib
         public RuckZuck(string customerid = "", string URL = "", bool SendFeedback = true, ILogger<RuckZuck> logger = null)
         {
             //specify to use TLS 1.2 as default connection
-            System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
 
             _feedback = SendFeedback;
@@ -407,7 +407,7 @@ namespace RZ.Base.Lib
                             string sRes = RunPS(sURL);
                             if (sRes != null && sRes.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                sURL = sRes;
+                                sURL = sRes.Trim();
                                 _logger.LogDebug("URL: {URL}", sURL);
                             }
                             else
