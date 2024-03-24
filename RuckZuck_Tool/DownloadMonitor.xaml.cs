@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Collections.Generic;
 
 namespace RuckZuck_Tool
 {
