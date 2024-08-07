@@ -1,3 +1,6 @@
+# August 2024: Rate limiting on public infrastructure
+As usage of the API at Ruckzuck.Tools continues to grow, we are implementing rate limiting to manage the volume of requests. This will ensure that users can only send a limited number of API requests within a specified timeframe.
+
 # March 2024: Ownership change
 ***
 EN: Starting from March 1st, 2024, [ROMAWO GmbH](https://romawo.com) will assume all rights and obligations of the package manager [RuckZuck.tools](https://ruckzuck.tools/). RuckZuck will continue to be freely available thanks to [sponsors](https://ruckzuck.tools/Home/Sponsors). The client tools will remain an open-source solution managed on GitHub. The server components will be removed from the GitHub repository and will no longer be publicly accessible.
