@@ -1,5 +1,6 @@
 # August 2024: Rate limiting on public infrastructure
-As usage of the public API at [ruckzuck.tools](https://ruckzuck.tools) continues to grow, we are implementing rate limiting to manage the volume of requests. This will ensure that users can only send a limited number of API requests within a specified timeframe.
+As usage of the public API at [ruckzuck.tools](https://ruckzuck.tools) continues to grow, we are implementing rate limiting to manage the volume of requests. This will ensure that users can only send a limited number of API requests within a specified timeframe.  
+>Currently **5**req/min are allowed for **getsoftwares** and **20**req/min for **checkforupdate**.
 
 # March 2024: Ownership change
 ***
