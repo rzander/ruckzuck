@@ -3,8 +3,8 @@ RuckZuck Core Infrastructure can now be ordered from Azure Marketplace:
 [<img src="https://github.com/user-attachments/assets/55332deb-700f-48be-8030-4acf6fbfb41d">](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/romawogmbh1709662871834.ruckzuck?tab=Overview)
 
 This offer is tailored for Enterprise Customers seeking a dedicated RuckZuck infrastructure that provides:
-- Independence from rate limits
 - Isolation from public infrastructure
+- Independence from rate limits
 - The ability to cache package content, ensuring reliability regardless of download source availability
 - An option to integrate a CDN for enhanced content delivery speed
 
