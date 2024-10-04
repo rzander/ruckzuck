@@ -1,3 +1,15 @@
+# October 2024: RuckZuck Core Infrastructure as Service
+RuckZuck Core Infrastructure can now be ordered from Azure Marketplace:  
+[<img src="https://github.com/user-attachments/assets/55332deb-700f-48be-8030-4acf6fbfb41d">](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/romawogmbh1709662871834.ruckzuck?tab=Overview)
+
+This offer is tailored for Enterprise Customers seeking a dedicated RuckZuck infrastructure that provides:
+- Independence from rate limits
+- Isolation from public infrastructure
+- The ability to cache package content, ensuring reliability regardless of download source availability
+- An option to integrate a CDN for enhanced content delivery speed
+
+Note: The costs associated with the Azure infrastructure are not included in this offer and will vary based on usage.
+
 # August 2024: Rate limiting on public infrastructure
 As usage of the public API at [ruckzuck.tools](https://ruckzuck.tools) continues to grow, we are implementing rate limiting to manage the volume of requests. This will ensure that users can only send a limited number of API requests within a specified timeframe.  
 >Currently **5**req/min are allowed for **getsoftwares** and **20**req/min for **checkforupdate**.
