@@ -1,4 +1,4 @@
-﻿//
+//
 // RZUpdate (C) 2017 by Roger Zander
 // This Tool is under MS-Pl License (http://ruckzuck.codeplex.com/license)
 //
@@ -80,11 +80,11 @@ namespace RZGet
 
             if (lArgs.Contains("-?") | lArgs.Contains("/?") | lArgs.Count < 1)
             {
-                Console.WriteLine("RuckZuck CommandLine Tool (c) 2023 by Roger Zander");
+                Console.WriteLine("RuckZuck CommandLine Tool (c) 2025 by ROMAWO GmbH");
                 Console.WriteLine("Install:");
                 Console.WriteLine("Install a Software from Shortname : RZGet.exe install \"<Shortname>\"[;\"<Shortname2>\"] [/cleanup]");
                 Console.WriteLine("Install a Software from JSON File : RZGet.exe install \"<JSON full path>\"[;\"<JSON full path>\"]");
-                Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
+                Console.WriteLine("Install a Sepcific Version : RZGet.exe install --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\" [--architecture \"x64|x86|arm64|...\"]");
                 Console.WriteLine("");
                 Console.WriteLine("Update:");
                 Console.WriteLine("Update all missing updates : RZGet.exe update --all [--retry] [--user]");
@@ -95,7 +95,7 @@ namespace RZGet
                 Console.WriteLine("");
                 Console.WriteLine("Show:");
                 Console.WriteLine("Show Metadata : RZGet.exe show \"<Shortname>\"");
-                Console.WriteLine("Show Metadata for a specific Version : RZGet.exe show --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\"");
+                Console.WriteLine("Show Metadata for a specific Version : RZGet.exe show --name \"<ProductName>\" --vendor \"<Manufacturer>\" --version \"<ProductVersion>\" [--architecture \"x64|x86|arm64|...\"]");
                 Console.WriteLine("");
                 Console.WriteLine("Search:");
                 Console.WriteLine("Show full Catalog JSON: RZGet.exe search");
@@ -114,6 +114,12 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "install")
             {
+                string sArchitecture = "";
+                if (lArgs.Contains("--architecture", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--architecture", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+                if (lArgs.Contains("--arc", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--arc", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+
                 if (lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
                 {
                     try
@@ -130,7 +136,7 @@ namespace RZGet
 
                         Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
 
-                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer);
+                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer, Architecture: sArchitecture);
 
                         if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
@@ -218,7 +224,7 @@ namespace RZGet
                             try
                             {
                                 RZUpdater oRZSW = new RZUpdater();
-                                oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
+                                oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim(), sArchitecture);
 
                                 Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{shortname}'", sArg);
 
@@ -256,7 +262,7 @@ namespace RZGet
                             }
                             catch (Exception ex)
                             {
-                                Log.ForContext("Param", lArgs[0].ToLower()).Error("E214: {ex}", ex.Message);
+                                Log.ForContext("Param", lArgs[0].ToLower()).Error("E266: {ex}", ex.Message);
                                 bError = true;
                             }
                         }
@@ -272,6 +278,12 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "uninstall")
             {
+                string sArchitecture = "";
+                if (lArgs.Contains("--architecture", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--architecture", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+                if (lArgs.Contains("--arc", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--arc", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+
                 if (lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
                 {
                     try
@@ -288,7 +300,7 @@ namespace RZGet
 
                         Log.ForContext("Param", lArgs[0].ToLower()).Verbose("installing '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
 
-                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer);
+                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer, Architecture: sArchitecture);
 
                         if (oRZSW.SoftwareUpdate == null || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
@@ -358,7 +370,7 @@ namespace RZGet
                                 }
                             }
 
-                            if (await InstallAsync(oRZSW))
+                            if (await UnInstallAsync(oRZSW))
                             {
                                 if (lArgs.Contains("/cleanup"))
                                 {
@@ -376,7 +388,7 @@ namespace RZGet
                             try
                             {
                                 RZUpdater oRZSW = new RZUpdater();
-                                oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
+                                oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim(), sArchitecture);
 
                                 Log.ForContext("Param", lArgs[0].ToLower()).Verbose("uninstalling '{shortname}'", sArg);
 
@@ -673,7 +685,12 @@ namespace RZGet
 
             if (lArgs[0].ToLower() == "show")
             {
-                
+                string sArchitecture = "";
+                if (lArgs.Contains("--architecture", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--architecture", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+                if (lArgs.Contains("--arc", StringComparer.CurrentCultureIgnoreCase))
+                    sArchitecture = lArgs[lArgs.FindIndex(t => t.IndexOf("--arc", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
+
                 if (lArgs.Contains("--name", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--vendor", StringComparer.CurrentCultureIgnoreCase) || lArgs.Contains("--version", StringComparer.CurrentCultureIgnoreCase))
                 {
                     try
@@ -688,7 +705,7 @@ namespace RZGet
                         string ProductVersion = lArgs[lArgs.FindIndex(t => t.IndexOf("--version", StringComparison.CurrentCultureIgnoreCase) >= 0) + 1];
 
                         Log.ForContext("Param", lArgs[0].ToLower()).Verbose("showing '{productname}' '{productversion}' '{manufacturer}'", ProductName, ProductVersion, Manufacturer);
-                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer);
+                        oRZSW.SoftwareUpdate = new SWUpdate(ProductName, ProductVersion, Manufacturer, Architecture: sArchitecture);
 
                         if (oRZSW.SoftwareUpdate == null  || oRZSW.SoftwareUpdate.SW == null || string.IsNullOrEmpty(oRZSW.SoftwareUpdate.SW.ProductName))
                         {
@@ -722,7 +739,7 @@ namespace RZGet
                         {
                             Log.ForContext("Param", lArgs[0].ToLower()).Verbose("showing '{shortname}'", sArg);
                             RZUpdater oRZSW = new RZUpdater();
-                            oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim());
+                            oRZSW.SoftwareUpdate = new SWUpdate(sArg.Trim('"').Trim(), sArchitecture);
 
                             Log.ForContext("Param", lArgs[0].ToLower()).Debug("Software from repo: '{ProductName}' '{ProductVersion}'", oRZSW.SoftwareUpdate.SW.ProductName, oRZSW.SoftwareUpdate.SW.ProductVersion);
 
