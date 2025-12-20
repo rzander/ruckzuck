@@ -1,4 +1,4 @@
-# RuckZuck Base Library for .NET6/8
+# RuckZuck Base Library for .NET/8/10
 
 Library is published on Nuget: https://www.nuget.org/packages/RZ.Base.Lib
 
