@@ -4,7 +4,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 using System.Text;
 
 namespace RZ.Base.Lib
@@ -16,10 +15,12 @@ namespace RZ.Base.Lib
         internal readonly HttpClient oClient = new HttpClient();
         internal readonly HttpClient bClient = new HttpClient();
         internal JArray _catalog = new JArray();
+        internal DateTime _lastCatalog = DateTime.MinValue;
+        public TimeSpan catalogTimeOut = new TimeSpan(0, 30, 0);
         internal bool _feedback = true;
         public List<string> swExlude = new List<string>() { 
             "windows sdk addon", "windows 11 installation assistant", "microsoft intune management extension", "microsoft edge update", "microsoft visio -", 
-            "microsoft 365 apps for enterprise -", "vs_coreeditorfonts", "microsoft odbc driver 17 for sql server", "nvidia graphics driver", "nvidia frameview sdk", "nvidia rtx desktop manager",
+            "microsoft 365 apps for enterprise -", "vs_coreeditorfonts", "microsoft odbc driver 17 for sql server", "nvidia frameview sdk", "nvidia rtx desktop manager",
             "nvidia hd audio driver", "microsoft update health tool", "microsoft web deploy 4.0", "iis 10.0 express", "microsoft .net sdk",
             "microsoft system clr types for sql", "windows subsystem for linux update", "microsoft visual studio installer", "windows software development kit - windows 10", "windows subsystem for linux",
             "microsoft teams meeting add-in for microsoft office", "microsoft gameinput", "visual studio professional"};
@@ -30,6 +31,13 @@ namespace RZ.Base.Lib
         {
             get
             {
+                //reload Catalog every 30min
+                if (DateTime.Now - _lastCatalog > catalogTimeOut)
+                {
+                    _catalog = GetCatalogAsync().Result;
+                    _lastCatalog = DateTime.Now;
+                }
+
                 if (_catalog.Count <= 0)
                     _catalog = GetCatalogAsync().Result;
 
@@ -38,7 +46,9 @@ namespace RZ.Base.Lib
             set
             {
                 if (value == null)
-                    _catalog = GetCatalogAsync().Result;
+                {
+                    _catalog = GetCatalogAsync(bForce: true).Result;
+                }
                 else
                     _catalog = value;
             }
@@ -91,6 +101,11 @@ namespace RZ.Base.Lib
                 Customerid = customerid;
             }
 
+            if (!string.IsNullOrEmpty(URL))
+            {
+                _URL = URL.TrimEnd('/');
+            }
+
             CancellationTokenSource cts = new CancellationTokenSource(10000);
 
             if (string.IsNullOrEmpty(Customerid))
@@ -116,16 +131,16 @@ namespace RZ.Base.Lib
             _logger.LogDebug("CustomerId: {id} ; URL: {URL}", Customerid, _URL);
         }
 
-        internal async Task<JArray> GetCatalogAsync()
+        internal async Task<JArray> GetCatalogAsync(bool bForce = false)
         {
             if (!Customerid.StartsWith("--"))
             {
-                if (File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
+                if (!bForce && File.Exists(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"))) //Cached content exists
                 {
                     try
                     {
                         DateTime dCreationDate = File.GetLastWriteTime(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
-                        if ((DateTime.Now - dCreationDate) < new TimeSpan(0, 30, 0)) //Cache for 30min
+                        if ((DateTime.Now - dCreationDate) < catalogTimeOut) //Cache for x min
                         {
                             //return cached Content
                             string jRes = File.ReadAllText(Path.Combine(Environment.ExpandEnvironmentVariables("%TEMP%"), "rzcat.json"));
@@ -149,9 +164,9 @@ namespace RZ.Base.Lib
                 CancellationTokenSource cts = new CancellationTokenSource(10000);
                 string response;
                 if (string.IsNullOrEmpty(Customerid) || Customerid.Count(t => t == '.') == 3)
-                    response = await oClient.GetStringAsync(_URL + "/rest/v2/GetCatalog", cts.Token); //add cts in .NET 6
+                    response = await oClient.GetStringAsync(_URL + "/rest/v2/getcatalog", cts.Token); //add cts in .NET 6
                 else
-                    response = await oClient.GetStringAsync(_URL + "/rest/v2/GetCatalog?customerid=" + Customerid, cts.Token); //add cts in .NET 6
+                    response = await oClient.GetStringAsync(_URL + "/rest/v2/getcatalog?customerid=" + Customerid, cts.Token); //add cts in .NET 6
 
                 if (!string.IsNullOrEmpty(response) && !cts.Token.IsCancellationRequested)
                 {
@@ -237,9 +252,9 @@ namespace RZ.Base.Lib
                 string response;
 
                 if (string.IsNullOrEmpty(customerid))
-                    response = await oClient.GetStringAsync(_URL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&apikey=" + DateTime.Now.Ticks);
+                    response = await oClient.GetStringAsync(_URL + "/rest/v2/getsoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&apikey=" + DateTime.Now.Ticks);
                 else
-                    response = await oClient.GetStringAsync(_URL + "/rest/v2/GetSoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid) + "&apikey=" + DateTime.Now.Ticks);
+                    response = await oClient.GetStringAsync(_URL + "/rest/v2/getsoftwares?name=" + WebUtility.UrlEncode(productName) + "&ver=" + WebUtility.UrlEncode(productVersion) + "&man=" + WebUtility.UrlEncode(manufacturer) + "&customerid=" + WebUtility.UrlEncode(customerid) + "&apikey=" + DateTime.Now.Ticks);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -871,7 +886,7 @@ namespace RZ.Base.Lib
                 return;
             if (string.IsNullOrEmpty(customerid))
                 customerid = Customerid;
-            _ = await oClient.GetStringAsync(_URL + "/rest/v2/IncCounter?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(customerid), new CancellationTokenSource(5000).Token);
+            _ = await oClient.GetStringAsync(_URL + "/rest/v2/inccounter?shortname=" + WebUtility.UrlEncode(shortname) + "&customerid=" + WebUtility.UrlEncode(customerid), new CancellationTokenSource(5000).Token);
         }
 
         internal string RunPS(string PSScript, string WorkingDir = "")
