@@ -1,3 +1,27 @@
+# July 2026: NEW RuckZuck Sponsors
+We're pleased to announce that [Recast Software](https://www.recastsoftware.com/) has joined as a new sponsor of [ruckzuck.tools](https://ruckzuck.tools/sponsors). 
+
+<a href="https://www.recastsoftware.com/" target="_blank" rel="noopener noreferrer">
+  <img src="https://ruckzuck.tools/assets/recastLogo-Ci9IMVxZ.svg"
+       alt="Recast Software"
+       width="200"
+       height="60">
+</a>
+
+This support helps ensure the long-term continuity and ongoing development of the Windows package manager.
+
+A special thank you also goes to [itnetX](https://itnetx.ch), which has supported and sponsored the project since its inception.
+
+<a href="https://www.itnetx.ch/" target="_blank" rel="noopener noreferrer">
+  <img src="https://ruckzuck.tools/assets/ItnetxLogo-Dfbam20G.svg"
+       alt="itnetX"
+       width="140"
+       height="140">
+</a>
+
+
+The continued support of partners like [Recast Software](https://www.recastsoftware.com/) and [itnetX](https://itnetx.ch) makes the ongoing development and maintenance of ruckzuck.tools possible, ensuring it remains freely available for private use.
+
 # October 2024: RuckZuck Core Infrastructure as Service
 RuckZuck Core Infrastructure can now be ordered from Azure Marketplace:  
 [<img src="https://github.com/user-attachments/assets/55332deb-700f-48be-8030-4acf6fbfb41d">](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/romawogmbh1709662871834.ruckzuck?tab=Overview)
