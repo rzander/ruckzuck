@@ -185,7 +185,8 @@ namespace RuckZuck_Tool.Properties {
             "etString($body);\r\n    $headers = @{\r\n        \"x-ms-blob-type\" = \"BlockBlob\"\r\n   " +
             " };\r\n\r\n    if ($logRequestUris) { Write-Host $request; }\r\n    if ($logHeaders) {" +
             " WriteHeaders $headers; }\r\n\r\n    try {\r\n        $response = Invoke-WebRequest $u" +
-            "ri -Method Put -Headers $headers -Body $encodedBody;\r\n    }\r\n    catch {\r\n      " +
+            "ri -Method Put -Headers $headers -Body $encodedBody -UseBasicParsing;\r\n    }\r\n  " +
+            "  catch {\r\n      " +
             "  Write-Host -ForegroundColor Red $request;\r\n        Write-Host -ForegroundColor" +
             " Red $_.Exception.Message;\r\n        throw;\r\n    }\r\n\r\n}\r\n\r\n######################" +
             "##############################\r\n\r\nfunction FinalizeAzureStorageUpload($sasUri, $" +
@@ -578,7 +579,11 @@ namespace RuckZuck_Tool.Properties {
             "ring\r\n# args2 = ExpireTime string\r\n# args3 = Username\r\n\r\n#Fix IE Error\r\n$keyPath" +
             " = \'Registry::HKEY_LOCAL_MACHINE\\Software\\Policies\\Microsoft\\Internet Explorer\\M" +
             "ain\'\r\nif (!(Test-Path $keyPath)) { New-Item $keyPath -Force | Out-Null }\r\nSet-It" +
-            "emProperty -Path $keyPath -Name \"DisableFirstRunCustomize\" -Value 1\r\n\r\nAdd-Type " +
+            "emProperty -Path $keyPath -Name \"DisableFirstRunCustomize\" -Value 1\r\n\r\n#The IE p" +
+            "arser is not available on current Windows builds, never let Invoke-WebRequest us" +
+            "e it.\r\n#Without this, Invoke-WebRequest prompts with \"Security Warning: Script Ex" +
+            "ecution Risk\" and the script stalls.\r\n$PSDefaultParameterValues[\'Invoke-WebReques" +
+            "t:UseBasicParsing\'] = $true\r\n\r\nAdd-Type " +
             "-AssemblyName System.Web\r\n#Check if nuget provider is installed...\r\nif (-NOT (Ge" +
             "t-PackageProvider nuget -ListAvailable -ea SilentlyContinue)) { Install-PackageP" +
             "rovider -Name \"Nuget\" -Force }\r\n\r\n#Install AzureAD Module if missing\r\ntry {\r\n   " +
@@ -593,11 +598,16 @@ namespace RuckZuck_Tool.Properties {
             "tility]::UrlEncode($ShortName))&apikey=$((Get-date).Ticks)\" \r\n\r\n#rzSW can have m" +
             "ultiple InstallTypes\r\nif ($rzSW.count -gt 1) {\r\n    #take InstallType that match" +
             "es the PreRequisites\r\n    $rzsw = $rzsw | ForEach-Object { if ($_.PSPreReq | Inv" +
-            "oke-Expression) { $_ } }\r\n}\r\n\r\n$sourceFolder = \"$env:temp\\$($rzSW.ContentID)\"\r\n$" +
-            "file = $rzSW.ShortName\r\n$rzSW.Files | ForEach-Object { \r\n    $file = $_.FileName" +
-            "\r\n    $_.URL > \"$env:temp\\$($rzSW.ContentID)\\$($file).url\"\r\n}\r\n\r\nif (-NOT (Test-" +
-            "Path $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Directory }\r\nInvok" +
-            "e-WebRequest -Uri $rzSW.iconURL -OutFile \"$($sourceFolder)\\logo.png\"\r\n$rzSW | Co" +
+            "oke-Expression) { $_ } }\r\n}\r\n\r\n$sourceFolder = \"$env:temp\\$($rzSW.ContentID)\"\r\n" +
+            "if (-NOT (Test-Path $sourceFolder)) { New-Item -Path $sourceFolder -ItemType Dir" +
+            "ectory }\r\n\r\n$rzSW.Files | ForEach-Object {\r\n    $_.URL > \"$($sourceFolder)\\$($_." +
+            "FileName).url\"\r\n}\r\n\r\n#IntuneWinAppUtil needs a setup file that exists on disk. A" +
+            " file with an architecture\r\n#dependent URL resolves to \"<skip>\" on non matching " +
+            "hardware and is never downloaded,\r\n#so take the first file that is present inste" +
+            "ad of the last entry of the list.\r\n$file = ($rzSW.Files | Where-Object { Test-Pa" +
+            "th -LiteralPath \"$($sourceFolder)\\$($_.FileName)\" } | Select-Object -First 1).Fi" +
+            "leName\r\nif (-NOT $file) { $file = \"install.ps1\" }\r\n\r\nInvoke-WebRequest -Uri $rzS" +
+            "W.iconURL -OutFile \"$($sourceFolder)\\logo.png\" -UseBasicParsing\r\n$rzSW | Co" +
             "nvertTo-Json > \"$($sourceFolder)\\package.json\"\r\n\r\n#README.md\r\n\"# $($rzSW.ShortNa" +
             "me)\" > \"$($sourceFolder)\\README.md\"\r\n\"$($rzSW.Description)\" >> \"$($sourceFolder)" +
             "\\README.md\"\r\n\"  \" >> \"$($sourceFolder)\\README.md\"\r\n\"ProductName: $($rzSW.Product" +
@@ -613,11 +623,13 @@ namespace RuckZuck_Tool.Properties {
             "hToken -User $User\r\n\r\n#Download IntuneWinAppUtil\r\nif (-NOT (Test-Path \"$($env:te" +
             "mp)\\IntuneWinAppUtil.exe\")) {\r\n    Invoke-WebRequest -Uri \"https://raw.githubuse" +
             "rcontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil" +
-            ".exe\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\"\r\n}\r\n&\"$($env:temp)\\IntuneWinA" +
+            ".exe\" -OutFile \"$($env:temp)\\IntuneWinAppUtil.exe\" -UseBasicParsing\r\n}\r\n&\"$($env" +
+            ":temp)\\IntuneWinA" +
             "ppUtil.exe\" -c $sourceFolder -s $file -o $outFolder -q\r\n\r\n$file = [io.path]::Get" +
             "FileNameWithoutExtension($file)\r\n$SourceFile = \"$($outFolder)\\$($file).intunewin" +
             "\"\r\n\r\n$img = [Convert]::ToBase64String((Invoke-WebRequest \"$($rzSW.iconURL)&size=" +
-            "128\").Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)\r\n\r\n# Defining Int" +
+            "128\" -UseBasicParsing).Content)\r\n#$img = [Convert]::ToBase64String($rzSW.Image)" +
+            "\r\n\r\n# Defining Int" +
             "unewin32 detectionRules\r\n#$DetectionXML = Get-IntuneWinXML \"$SourceFile\" -fileNa" +
             "me \"detection.xml\"\r\n$PowerShellScript = \"$($sourceFolder)\\detection.ps1\"\r\n$Power" +
             "ShellRule = New-DetectionRule -PowerShell -ScriptFile \"$PowerShellScript\" -enfor" +
